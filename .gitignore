@@ -18,7 +18,6 @@
 /doxygen/
 
 /engine/vendors/
-/engine/vendors.zip
 /engine/external/glad/bin/
 /engine/external/glad/bin-int/
 /engine/external/glfw/bin/
@@ -37,4 +36,3 @@
 /application/imgui.ini
 /application/*.txt
 /application/asset/
-/application/asset.zip

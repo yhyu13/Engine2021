@@ -1,0 +1,4 @@
+[lfs]
+concurrenttransfers = 12
+clean = git-lfs clean %f
+smudge = git-lfs smudge %f

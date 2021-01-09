@@ -80,6 +80,9 @@
 #include <lua.hpp>
 #include <sol/sol.hpp>
 
+// Fast BVH
+#include <FastBVH.h>
+
 namespace AAAAgames
 {
 	namespace fs = std::filesystem;

@@ -239,7 +239,15 @@ namespace AAAAgames
 
 			inline mat4_type ToMat4() const
 			{
-				mat4_type ret(ToMat3());
+				mat4_type ret;
+				auto mat3 = ToMat3();
+				for (int i = 0; i < 3; ++i)
+				{
+					for (int j = 0; j < 3; ++j)
+					{
+						ret(i, j) = mat3(i, j);
+					}
+				}
 				ret(3, 3) = 1.0;
 				return ret;
 			}

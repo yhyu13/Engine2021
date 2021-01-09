@@ -28,6 +28,7 @@ IncludeDir["phmap"]     = "engine/vendors/phmap/include"
 IncludeDir["blaze"]     = "engine/vendors/blaze/include"
 IncludeDir["qu3e"]     = "engine/vendors/qu3e/include"
 IncludeDir["sol2"]     = "engine/vendors/sol2/include"
+IncludeDir["FastBVH"]     = "engine/vendors/Fast-BVH/include"
 
 LibDir = {}
 LibDir["assimp"] = "engine/vendors/assimp/lib/x64"
@@ -103,6 +104,7 @@ project "engine"
 		"%{IncludeDir.tileson}",
 		"%{IncludeDir.lua}",
 		"%{IncludeDir.sol2}",
+		"%{IncludeDir.FastBVH}",
 	}
 
 	libdirs
@@ -242,6 +244,7 @@ project "application"
 		"%{IncludeDir.tileson}",
 		"%{IncludeDir.lua}",
 		"%{IncludeDir.sol2}",
+		"%{IncludeDir.FastBVH}",
 	}
 
 	links

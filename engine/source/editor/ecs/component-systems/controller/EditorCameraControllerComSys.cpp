@@ -241,7 +241,7 @@ void AAAAgames::EditorCameraControllerComSys::Update(double ts)
 		/*
 			Test Blaze
 		*/
-		{
+		/*{
 			ENG_TIME("Blaze Test");
 			using Vec3r = blaze::StaticVector<double, 3UL, blaze::columnVector, blaze::aligned, blaze::padded>;
 			Vec3r i(1);
@@ -258,7 +258,7 @@ void AAAAgames::EditorCameraControllerComSys::Update(double ts)
 			BlazeCustom::Quat<double, blaze::columnMajor>::_UNIT_TEST_();
 			BlazeCustom::Quat<float, blaze::rowMajor>::_UNIT_TEST_();
 			BlazeCustom::Quat<double, blaze::rowMajor>::_UNIT_TEST_();
-		}
+		}*/
 		/*
 			Test Bullet
 		*/
@@ -430,90 +430,90 @@ void AAAAgames::EditorCameraControllerComSys::Update(double ts)
 				/*
 					Test qu3e
 				*/
-		{
-			ENG_TIME("qu3e Test");
-			class Raycast : public q3QueryCallback
-			{
-			public:
-				q3RaycastData data;
-				r32 tfinal;
-				q3Vec3 nfinal;
-				q3Body* impactBody;
+		//{
+		//	ENG_TIME("qu3e Test");
+		//	class Raycast : public q3QueryCallback
+		//	{
+		//	public:
+		//		q3RaycastData data;
+		//		r32 tfinal;
+		//		q3Vec3 nfinal;
+		//		q3Body* impactBody;
 
-				bool ReportShape(q3Box* shape)
-				{
-					if (data.toi < tfinal)
-					{
-						tfinal = data.toi;
-						nfinal = data.normal;
-						impactBody = shape->body;
-					}
+		//		bool ReportShape(q3Box* shape)
+		//		{
+		//			if (data.toi < tfinal)
+		//			{
+		//				tfinal = data.toi;
+		//				nfinal = data.normal;
+		//				impactBody = shape->body;
+		//			}
 
-					data.toi = tfinal;
-					return true;
-				}
+		//			data.toi = tfinal;
+		//			return true;
+		//		}
 
-				void Init(const q3Vec3& spot, const q3Vec3& dir)
-				{
-					data.start = spot;
-					data.dir = q3Normalize(dir);
-					data.t = r32(10000.0);
-					tfinal = FLT_MAX;
-					data.toi = data.t;
-					impactBody = NULL;
-				}
-			};
-			float dt = 1.0f / 60.0f;
-			q3Scene scene(dt);
-			Raycast rayCast;
-			{
-				// Create the floor
-				q3BodyDef bodyDef;
-				q3Body* body = scene.CreateBody(bodyDef);
+		//		void Init(const q3Vec3& spot, const q3Vec3& dir)
+		//		{
+		//			data.start = spot;
+		//			data.dir = q3Normalize(dir);
+		//			data.t = r32(10000.0);
+		//			tfinal = FLT_MAX;
+		//			data.toi = data.t;
+		//			impactBody = NULL;
+		//		}
+		//	};
+		//	float dt = 1.0f / 60.0f;
+		//	q3Scene scene(dt);
+		//	Raycast rayCast;
+		//	{
+		//		// Create the floor
+		//		q3BodyDef bodyDef;
+		//		q3Body* body = scene.CreateBody(bodyDef);
 
-				q3BoxDef boxDef;
-				boxDef.SetRestitution(0);
-				q3Transform tx;
-				q3Identity(tx);
-				boxDef.Set(tx, q3Vec3(50.0f, 1.0f, 50.0f));
-				body->AddBox(boxDef);
-			}
+		//		q3BoxDef boxDef;
+		//		boxDef.SetRestitution(0);
+		//		q3Transform tx;
+		//		q3Identity(tx);
+		//		boxDef.Set(tx, q3Vec3(50.0f, 1.0f, 50.0f));
+		//		body->AddBox(boxDef);
+		//	}
 
-			{
-				q3BodyDef bodyDef;
-				bodyDef.position.Set(0.0f, 3.0f, 0.0f);
-				bodyDef.axis.Set(q3RandomFloat(-1.0f, 1.0f), q3RandomFloat(-1.0f, 1.0f), q3RandomFloat(-1.0f, 1.0f));
-				bodyDef.angle = q3PI * q3RandomFloat(-1.0f, 1.0f);
-				bodyDef.bodyType = eDynamicBody;
-				bodyDef.angularVelocity.Set(q3RandomFloat(1.0f, 3.0f), q3RandomFloat(1.0f, 3.0f), q3RandomFloat(1.0f, 3.0f));
-				bodyDef.angularVelocity *= q3Sign(q3RandomFloat(-1.0f, 1.0f));
-				bodyDef.linearVelocity.Set(q3RandomFloat(1.0f, 3.0f), q3RandomFloat(1.0f, 3.0f), q3RandomFloat(1.0f, 3.0f));
-				bodyDef.linearVelocity *= q3Sign(q3RandomFloat(-1.0f, 1.0f));
-				q3Body* body = scene.CreateBody(bodyDef);
+		//	{
+		//		q3BodyDef bodyDef;
+		//		bodyDef.position.Set(0.0f, 3.0f, 0.0f);
+		//		bodyDef.axis.Set(q3RandomFloat(-1.0f, 1.0f), q3RandomFloat(-1.0f, 1.0f), q3RandomFloat(-1.0f, 1.0f));
+		//		bodyDef.angle = q3PI * q3RandomFloat(-1.0f, 1.0f);
+		//		bodyDef.bodyType = eDynamicBody;
+		//		bodyDef.angularVelocity.Set(q3RandomFloat(1.0f, 3.0f), q3RandomFloat(1.0f, 3.0f), q3RandomFloat(1.0f, 3.0f));
+		//		bodyDef.angularVelocity *= q3Sign(q3RandomFloat(-1.0f, 1.0f));
+		//		bodyDef.linearVelocity.Set(q3RandomFloat(1.0f, 3.0f), q3RandomFloat(1.0f, 3.0f), q3RandomFloat(1.0f, 3.0f));
+		//		bodyDef.linearVelocity *= q3Sign(q3RandomFloat(-1.0f, 1.0f));
+		//		q3Body* body = scene.CreateBody(bodyDef);
 
-				q3Transform tx;
-				q3Identity(tx);
-				q3BoxDef boxDef;
-				boxDef.Set(tx, q3Vec3(1.0f, 1.0f, 1.0f));
-				body->AddBox(boxDef);
-			}
+		//		q3Transform tx;
+		//		q3Identity(tx);
+		//		q3BoxDef boxDef;
+		//		boxDef.Set(tx, q3Vec3(1.0f, 1.0f, 1.0f));
+		//		body->AddBox(boxDef);
+		//	}
 
-			{
-				ENG_TIME("qu3e Test 1 Loop");
-				scene.Step();
-			}
+		//	{
+		//		ENG_TIME("qu3e Test 1 Loop");
+		//		scene.Step();
+		//	}
 
-			rayCast.Init(q3Vec3(3.0f, 5.0f, 3.0f), q3Vec3(-1.0f, -1.0f, -1.0f));
-			scene.RayCast(&rayCast, rayCast.data);
+		//	rayCast.Init(q3Vec3(3.0f, 5.0f, 3.0f), q3Vec3(-1.0f, -1.0f, -1.0f));
+		//	scene.RayCast(&rayCast, rayCast.data);
 
-			if (rayCast.impactBody)
-			{
-				rayCast.impactBody->SetToAwake();
-				rayCast.impactBody->ApplyForceAtWorldPoint(rayCast.data.dir * 20.0f, rayCast.data.GetImpactPoint());
-			}
+		//	if (rayCast.impactBody)
+		//	{
+		//		rayCast.impactBody->SetToAwake();
+		//		rayCast.impactBody->ApplyForceAtWorldPoint(rayCast.data.dir * 20.0f, rayCast.data.GetImpactPoint());
+		//	}
 
-			scene.RemoveAllBodies();
-		}
+		//	scene.RemoveAllBodies();
+		//}
 
 		/*
 			Test Sol Lua5.4.0 Binding
@@ -582,6 +582,67 @@ void AAAAgames::EditorCameraControllerComSys::Update(double ts)
 			}
 		}
 		));
+
+		/*
+			Fast BVH
+		*/
+		{
+			// Return a random number in [0,1]
+			auto rand01 = []() { return rand() * (1.f / RAND_MAX); };
+
+			// Return a random vector with each component in the range [-1,1]
+			auto randVector3 = [&rand01]() { return Vec3f{ rand01(), rand01(), rand01() } *2.0f - Vec3f{ 1, 1, 1 }; };
+
+			//! For the purposes of demonstrating the BVH, a simple sphere
+			struct Sphere final {
+				Vec3f center;  // Center of the sphere
+
+				float r, r2;            // Radius, Radius^2
+
+				Sphere(const Vec3f& center, float radius) noexcept
+					: center(center), r(radius), r2(radius* radius) {}
+			};
+
+			//! \brief Used for calculating the bounding boxes
+			//! associated with spheres.
+			//! \tparam Float The floating point type of the sphere and bounding box vectors.
+			class SphereBoxConverter final {
+			public:
+				//! Converts a sphere to a bounding box.
+				//! \param sphere The sphere to convert to a bounding box.
+				//! \return A bounding box that encapsulates the sphere.
+				FastBVH::BBox<float> operator()(const Sphere& sphere) const noexcept {
+					const auto& r = sphere.r;
+					auto min = sphere.center - r;
+					auto max = sphere.center + r;
+					return FastBVH::BBox<float>(FastBVH::Vector3<float>{min.x, min.y, min.z}, FastBVH::Vector3<float>{max.x, max.y, max.z});
+				}
+			};
+
+			// Create a million spheres packed in the space of a cube
+			const unsigned int N = 1000;
+
+			std::vector<Sphere> objects;
+			objects.reserve(N);
+			DEBUG_PRINT(Str("Constructing %d spheres...\n", N));
+			for (size_t i = 0; i < N; ++i) {
+				objects.emplace_back(Sphere(randVector3(), .005f));
+			}
+
+			SphereBoxConverter box_converter;
+
+			Timer stopwatch;
+
+			FastBVH::BuildStrategy<float, 1> build_strategy;
+
+			auto bvh = build_strategy(objects, box_converter);
+
+			// Output tree build time and statistics
+			double constructionTime = stopwatch.Mark();
+
+			DEBUG_PRINT(Str("Built BVH (%u nodes, with %u leafs) in %.02f ms", (unsigned int)bvh.getNodes().size(),
+				(unsigned int)bvh.countLeafs(), 1e-3 * constructionTime));
+		}
 	}
 
 	/******************************************************************************

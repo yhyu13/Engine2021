@@ -2,7 +2,7 @@
 #include "engine/ui/BaseWidget.h"
 #include "../BaseGameWidgetManager.h"
 
-namespace AAAAgames {
+namespace longmarch {
 
 	/**
 	 * @brief BaseWidget manager for 3D application editor

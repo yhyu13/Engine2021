@@ -6,7 +6,7 @@
 #include <imgui/addons/implot/implot_items.cpp>
 #include <imgui/addons/implot/implot_demo.cpp>
 
-void AAAAgames::_3DEngineMainMenu::Render()
+void longmarch::_3DEngineMainMenu::Render()
 {
 	auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
 	manager->PushWidgetStyle();
@@ -72,7 +72,7 @@ void AAAAgames::_3DEngineMainMenu::Render()
 	ImGui::End();
 }
 
-void AAAAgames::_3DEngineMainMenu::RenderEngineSettingMenu()
+void longmarch::_3DEngineMainMenu::RenderEngineSettingMenu()
 {
 	if (ImGui::TreeNode("Engine Settings"))
 	{
@@ -118,7 +118,7 @@ void AAAAgames::_3DEngineMainMenu::RenderEngineSettingMenu()
 	}
 }
 
-void AAAAgames::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
+void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 {
 	if (ImGui::TreeNode("Graphics Settings"))
 	{

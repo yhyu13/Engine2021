@@ -6,7 +6,7 @@
 #include "engine/ecs/components/3d/Transform3DCom.h"
 #include "engine/ecs/Entity.h"
 
-namespace AAAAgames
+namespace longmarch
 {
     enum RBType
     {
@@ -100,7 +100,7 @@ namespace AAAAgames
 		void Render();
 
 	public:
-		A4GAMES_Bitset<EntityType> m_entityTypeIngoreSet;
+		LongMarch_Bitset<EntityType> m_entityTypeIngoreSet;
 
 	private:
 		// params still needed: flags (tbd)

@@ -8,7 +8,7 @@
 #define SHADOW_FILTER GL_LINEAR
 #endif // !SHADOW_FILTER
 
-namespace AAAAgames {
+namespace longmarch {
 	/**************************************************************
 	*	Indexed Indirect Command Buffer
 	**************************************************************/
@@ -326,11 +326,11 @@ namespace AAAAgames {
 		uint32_t data_type;
 		switch (type)
 		{
-		case AAAAgames::FrameBuffer::BUFFER_FORMAT::UINT8:
+		case longmarch::FrameBuffer::BUFFER_FORMAT::UINT8:
 			format = GL_RGBA8;
 			data_type = GL_UNSIGNED_BYTE;
 			break;
-		case AAAAgames::FrameBuffer::BUFFER_FORMAT::Float16:
+		case longmarch::FrameBuffer::BUFFER_FORMAT::Float16:
 			format = GL_RGBA16F;
 			data_type = GL_FLOAT;
 			break;
@@ -839,10 +839,10 @@ namespace AAAAgames {
 		uint32_t format;
 		switch (type)
 		{
-		case AAAAgames::SkyBoxBuffer::BUFFER_FORMAT::Float16:
+		case longmarch::SkyBoxBuffer::BUFFER_FORMAT::Float16:
 			format = GL_RGB16F;
 			break;
-		case AAAAgames::SkyBoxBuffer::BUFFER_FORMAT::Float32:
+		case longmarch::SkyBoxBuffer::BUFFER_FORMAT::Float32:
 			format = GL_RGB32F;
 			break;
 		default:
@@ -1033,16 +1033,16 @@ namespace AAAAgames {
 	{
 		switch (tex)
 		{
-		case AAAAgames::GBuffer::GBUFFER_TEXTURE_TYPE::DEPTH:
+		case longmarch::GBuffer::GBUFFER_TEXTURE_TYPE::DEPTH:
 			return m_DepthID;
 			break;
-		case AAAAgames::GBuffer::GBUFFER_TEXTURE_TYPE::NORMAL_VELOCITY:
+		case longmarch::GBuffer::GBUFFER_TEXTURE_TYPE::NORMAL_VELOCITY:
 			return m_RenderNormal_VelocityID;
 			break;
-		case AAAAgames::GBuffer::GBUFFER_TEXTURE_TYPE::ALBEDO_EMSSIVE:
+		case longmarch::GBuffer::GBUFFER_TEXTURE_TYPE::ALBEDO_EMSSIVE:
 			return m_RenderAlbedo_EmssiveID;
 			break;
-		case AAAAgames::GBuffer::GBUFFER_TEXTURE_TYPE::AO_METALLIC_ROUGHNESS:
+		case longmarch::GBuffer::GBUFFER_TEXTURE_TYPE::AO_METALLIC_ROUGHNESS:
 			return m_RenderAO_Metallic_RoughnessID;
 			break;
 		default:
@@ -1128,10 +1128,10 @@ namespace AAAAgames {
 	{
 		switch (tex)
 		{
-		case AAAAgames::GBuffer::GBUFFER_TEXTURE_TYPE::DEPTH:
+		case longmarch::GBuffer::GBUFFER_TEXTURE_TYPE::DEPTH:
 			return m_DepthID;
 			break;
-		case AAAAgames::GBuffer::GBUFFER_TEXTURE_TYPE::NORMAL_VELOCITY:
+		case longmarch::GBuffer::GBUFFER_TEXTURE_TYPE::NORMAL_VELOCITY:
 			return m_RenderNormal_VelocityID;
 			break;
 		default:
@@ -1150,10 +1150,10 @@ namespace AAAAgames {
 		uint32_t format;
 		switch (type)
 		{
-		case AAAAgames::ComputeBuffer::BUFFER_FORMAT::Float16:
+		case longmarch::ComputeBuffer::BUFFER_FORMAT::Float16:
 			format = GL_RGBA16F;
 			break;
-		case AAAAgames::ComputeBuffer::BUFFER_FORMAT::Float32:
+		case longmarch::ComputeBuffer::BUFFER_FORMAT::Float32:
 			format = GL_RGBA32F;
 			break;
 		default:
@@ -1203,10 +1203,10 @@ namespace AAAAgames {
 		uint32_t format;
 		switch (m_buffer_format)
 		{
-		case AAAAgames::ComputeBuffer::BUFFER_FORMAT::Float16:
+		case longmarch::ComputeBuffer::BUFFER_FORMAT::Float16:
 			format = GL_RGBA16F;
 			break;
-		case AAAAgames::ComputeBuffer::BUFFER_FORMAT::Float32:
+		case longmarch::ComputeBuffer::BUFFER_FORMAT::Float32:
 			format = GL_RGBA32F;
 			break;
 		default:
@@ -1215,13 +1215,13 @@ namespace AAAAgames {
 		uint32_t texture_mode;
 		switch (mode)
 		{
-		case AAAAgames::ComputeBuffer::TEXTURE_BIND_MODE::READ_ONLY:
+		case longmarch::ComputeBuffer::TEXTURE_BIND_MODE::READ_ONLY:
 			texture_mode = GL_READ_ONLY;
 			break;
-		case AAAAgames::ComputeBuffer::TEXTURE_BIND_MODE::WRITE_ONLY:
+		case longmarch::ComputeBuffer::TEXTURE_BIND_MODE::WRITE_ONLY:
 			texture_mode = GL_WRITE_ONLY;
 			break;
-		case AAAAgames::ComputeBuffer::TEXTURE_BIND_MODE::READ_WRITE:
+		case longmarch::ComputeBuffer::TEXTURE_BIND_MODE::READ_WRITE:
 			texture_mode = GL_READ_WRITE;
 			break;
 		default:

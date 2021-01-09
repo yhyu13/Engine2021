@@ -3,7 +3,7 @@
 #include "../BaseEngineWidgetManager.h"
 #include "engine/ecs/header/header.h"
 
-AAAAgames::ComponentInspectorDock::ComponentInspectorDock()
+longmarch::ComponentInspectorDock::ComponentInspectorDock()
 {
 	m_IsVisible = true;
 	m_Size = ScaleSize({ 300, 600 });
@@ -11,7 +11,7 @@ AAAAgames::ComponentInspectorDock::ComponentInspectorDock()
 	m_removeComPopup = []() {};
 }
 
-void AAAAgames::ComponentInspectorDock::Render()
+void longmarch::ComponentInspectorDock::Render()
 {
 	auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
 	manager->PushWidgetStyle();
@@ -49,7 +49,7 @@ void AAAAgames::ComponentInspectorDock::Render()
 				{
 					auto list_string = ObjectFactory::s_instance->GetAllComponentName();
 					std::sort(list_string.begin(), list_string.end());
-					const auto list_char_ptr = A4GAMES_StrVec2ConstChar(list_string);
+					const auto list_char_ptr = LongMarch_StrVec2ConstChar(list_string);
 
 					static int selected_com_type = 0;
 					if (ImGui::Combo("Component Type", &selected_com_type, &list_char_ptr[0], list_char_ptr.size()))
@@ -89,7 +89,7 @@ void AAAAgames::ComponentInspectorDock::Render()
 					{
 						auto list_string = ObjectFactory::s_instance->GetAllComponentName();
 						std::sort(list_string.begin(), list_string.end());
-						const auto list_char_ptr = A4GAMES_StrVec2ConstChar(list_string);
+						const auto list_char_ptr = LongMarch_StrVec2ConstChar(list_string);
 
 						static int selected_com_type = 0;
 						if (ImGui::Combo("Component Type", &selected_com_type, &list_char_ptr[0], list_char_ptr.size()))

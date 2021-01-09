@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "MathUtil.h"
 
-uint32_t AAAAgames::A4GAMES_NearestPowerOfTwo(uint32_t n)
+uint32_t longmarch::LongMarch_NearestPowerOfTwo(uint32_t n)
 {
 	uint32_t v = n;
 
@@ -18,7 +18,7 @@ uint32_t AAAAgames::A4GAMES_NearestPowerOfTwo(uint32_t n)
 	return (v - n) > (n - x) ? x : v;
 }
 
-uint32_t AAAAgames::A4GAMES_NextPowerOfTwo(uint32_t n)
+uint32_t longmarch::LongMarch_NextPowerOfTwo(uint32_t n)
 {
 	uint32_t v = n;
 
@@ -33,7 +33,7 @@ uint32_t AAAAgames::A4GAMES_NextPowerOfTwo(uint32_t n)
 	return v;
 }
 
-float AAAAgames::A4GAMES_Lerp(float a, float b, float ratio)
+float longmarch::LongMarch_Lerp(float a, float b, float ratio)
 {
 	float _ratio = MIN(MAX(ratio, 0.0f), 1.0f);
 	return (1.0f - _ratio) * a + _ratio * b;

@@ -2,19 +2,19 @@
 #include "FileSystem.h"
 #include "../exception/EngineException.h"
 
-void AAAAgames::FileSystem::RegisterProtocol(const std::string& name, const fs::path& path)
+void longmarch::FileSystem::RegisterProtocol(const std::string& name, const fs::path& path)
 {
 	s_pathProtocol[name] = path;
 }
 
-fs::path AAAAgames::FileSystem::ResolveSingleBackSlash(const std::string& path)
+fs::path longmarch::FileSystem::ResolveSingleBackSlash(const std::string& path)
 {
 	auto _path = path;
 	std::replace(_path.begin(), _path.end(), '\\', '/');
 	return fs::path(_path).make_preferred();
 }
 
-fs::path AAAAgames::FileSystem::ResolveProtocol(const fs::path& _path)
+fs::path longmarch::FileSystem::ResolveProtocol(const fs::path& _path)
 {
 	const auto& string_path = _path.string();
 	auto pos_1 = string_path.find('$', 0);
@@ -45,7 +45,7 @@ fs::path AAAAgames::FileSystem::ResolveProtocol(const fs::path& _path)
 	}
 }
 
-fs::path AAAAgames::FileSystem::Absolute(const fs::path& path)
+fs::path longmarch::FileSystem::Absolute(const fs::path& path)
 {
 	std::error_code ec;
 	fs::path result = Absolute(path, ec);
@@ -53,7 +53,7 @@ fs::path AAAAgames::FileSystem::Absolute(const fs::path& path)
 	return result.make_preferred();
 }
 
-fs::path AAAAgames::FileSystem::Absolute(const fs::path& p, std::error_code& ec)
+fs::path longmarch::FileSystem::Absolute(const fs::path& p, std::error_code& ec)
 {
 	ec.clear();
 #ifdef WINDOWS_APP
@@ -103,7 +103,7 @@ fs::path AAAAgames::FileSystem::Absolute(const fs::path& p, std::error_code& ec)
 #endif
 }
 
-fs::path AAAAgames::FileSystem::CWD()
+fs::path longmarch::FileSystem::CWD()
 {
 	std::error_code ec;
 	auto result = CWD(ec);
@@ -111,7 +111,7 @@ fs::path AAAAgames::FileSystem::CWD()
 	return result;
 }
 
-bool AAAAgames::FileSystem::ExistCheck(const fs::path& path, bool throwOnNotExist)
+bool longmarch::FileSystem::ExistCheck(const fs::path& path, bool throwOnNotExist)
 {
 	if (fs::exists(path))
 	{
@@ -127,7 +127,7 @@ bool AAAAgames::FileSystem::ExistCheck(const fs::path& path, bool throwOnNotExis
 	}
 }
 
-fs::path AAAAgames::FileSystem::CWD(std::error_code& ec)
+fs::path longmarch::FileSystem::CWD(std::error_code& ec)
 {
 	ec.clear();
 #ifdef WINDOWS_APP
@@ -149,7 +149,7 @@ fs::path AAAAgames::FileSystem::CWD(std::error_code& ec)
 #endif
 }
 
-std::ifstream& AAAAgames::FileSystem::OpenIfstream(const fs::path& _file, FileType type)
+std::ifstream& longmarch::FileSystem::OpenIfstream(const fs::path& _file, FileType type)
 {
 	auto file = FileSystem::ResolveProtocol(_file).string();
 	atomic_flag_guard lock(s_IfFlag);
@@ -164,10 +164,10 @@ std::ifstream& AAAAgames::FileSystem::OpenIfstream(const fs::path& _file, FileTy
 	{
 		switch (type)
 		{
-		case AAAAgames::FileSystem::FileType::OPEN_BINARY:
+		case longmarch::FileSystem::FileType::OPEN_BINARY:
 			s_FileIStreamMap[file] = std::ifstream(file, std::ifstream::in | std::ifstream::binary);
 			break;
-		case AAAAgames::FileSystem::FileType::OPEN_TEXT:
+		case longmarch::FileSystem::FileType::OPEN_TEXT:
 			s_FileIStreamMap[file] = std::ifstream(file, std::ifstream::in);
 			break;
 		}
@@ -175,7 +175,7 @@ std::ifstream& AAAAgames::FileSystem::OpenIfstream(const fs::path& _file, FileTy
 	}
 }
 
-void AAAAgames::FileSystem::CloseIfstream(const fs::path& _file)
+void longmarch::FileSystem::CloseIfstream(const fs::path& _file)
 {
 	auto file = FileSystem::ResolveProtocol(_file).string();
 	atomic_flag_guard lock(s_IfFlag);
@@ -186,7 +186,7 @@ void AAAAgames::FileSystem::CloseIfstream(const fs::path& _file)
 	}
 }
 
-std::ofstream& AAAAgames::FileSystem::OpenOfstream(const fs::path& _file, FileType type)
+std::ofstream& longmarch::FileSystem::OpenOfstream(const fs::path& _file, FileType type)
 {
 	auto file = FileSystem::ResolveProtocol(_file).string();
 	atomic_flag_guard lock(s_OfFlag);
@@ -201,10 +201,10 @@ std::ofstream& AAAAgames::FileSystem::OpenOfstream(const fs::path& _file, FileTy
 	{
 		switch (type)
 		{
-		case AAAAgames::FileSystem::FileType::OPEN_BINARY:
+		case longmarch::FileSystem::FileType::OPEN_BINARY:
 			s_FileOStreamMap[file] = std::ofstream(file, std::ofstream::out | std::ofstream::binary);
 			break;
-		case AAAAgames::FileSystem::FileType::OPEN_TEXT:
+		case longmarch::FileSystem::FileType::OPEN_TEXT:
 			s_FileOStreamMap[file] = std::ofstream(file, std::ofstream::out);
 			break;
 		}
@@ -212,7 +212,7 @@ std::ofstream& AAAAgames::FileSystem::OpenOfstream(const fs::path& _file, FileTy
 	}
 }
 
-void AAAAgames::FileSystem::CloseOfstream(const fs::path& _file)
+void longmarch::FileSystem::CloseOfstream(const fs::path& _file)
 {
 	auto file = FileSystem::ResolveProtocol(_file).string();
 	atomic_flag_guard lock(s_OfFlag);
@@ -223,24 +223,24 @@ void AAAAgames::FileSystem::CloseOfstream(const fs::path& _file)
 	}
 }
 
-Json::Value AAAAgames::FileSystem::GetNewJsonCPP(const fs::path& _file)
+Json::Value longmarch::FileSystem::GetNewJsonCPP(const fs::path& _file)
 {
 	auto file = FileSystem::ResolveProtocol(_file).string();
 	Json::Value doc;
-	auto& stream = OpenIfstream(file, AAAAgames::FileSystem::FileType::OPEN_BINARY);
+	auto& stream = OpenIfstream(file, longmarch::FileSystem::FileType::OPEN_BINARY);
 	ENGINE_TRY_CATCH({ stream >> doc; });
 	CloseIfstream(file);
 	return doc;
 }
 
-Json::Value& AAAAgames::FileSystem::GetCachedJsonCPP(const fs::path& _file)
+Json::Value& longmarch::FileSystem::GetCachedJsonCPP(const fs::path& _file)
 {
 	auto file = FileSystem::ResolveProtocol(_file).string();
 	atomic_flag_guard lock(s_jsonFlag);
 	if (auto it = s_jsonCPPParserMap.find(file); it == s_jsonCPPParserMap.end())
 	{
 		Json::Value doc;
-		auto& stream = OpenIfstream(file, AAAAgames::FileSystem::FileType::OPEN_BINARY);
+		auto& stream = OpenIfstream(file, longmarch::FileSystem::FileType::OPEN_BINARY);
 		ENGINE_TRY_CATCH({ stream >> doc; });
 		CloseIfstream(file);
 		s_jsonCPPParserMap[file] = std::move(doc);
@@ -248,7 +248,7 @@ Json::Value& AAAAgames::FileSystem::GetCachedJsonCPP(const fs::path& _file)
 	return s_jsonCPPParserMap[file];
 }
 
-void AAAAgames::FileSystem::RemoveCachedJsonCPP(const fs::path& _file)
+void longmarch::FileSystem::RemoveCachedJsonCPP(const fs::path& _file)
 {
 	auto file = FileSystem::ResolveProtocol(_file).string();
 	atomic_flag_guard lock(s_jsonFlag);

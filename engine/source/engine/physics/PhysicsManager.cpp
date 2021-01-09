@@ -3,7 +3,7 @@
 
 #include "PhysicsManager.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 
 	PhysicsManager::PhysicsManager()
@@ -73,7 +73,7 @@ namespace AAAAgames
 	void PhysicsManager::AddScene(const std::shared_ptr<Scene>& scene)
 	{
 		LOCK_GUARD_NC();
-		if (A4GAMES_Contains(m_scenes, scene))
+		if (LongMarch_Contains(m_scenes, scene))
 		{
 			ENGINE_EXCEPT(L"Scene already exists!");
 		}

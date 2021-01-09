@@ -2,7 +2,7 @@
 
 #include "engine/math/Geommath.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	const float GRAVITY = -50.0f;
 

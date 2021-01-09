@@ -3,7 +3,7 @@
 #include "Renderer2D.h"
 #include "platform/OpenGL/OpenGLBuffer.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	std::shared_ptr<IndexedIndirectCommandBuffer> IndexedIndirectCommandBuffer::Create(const void* data, size_t size)
 	{
 		switch (Renderer2D::GetAPI())
@@ -131,11 +131,11 @@ namespace AAAAgames {
 		{
 			switch (type)
 			{
-			case AAAAgames::ShadowBuffer::SHADOW_MAP_TYPE::BASIC:
+			case longmarch::ShadowBuffer::SHADOW_MAP_TYPE::BASIC:
 				return MemoryManager::Make_shared<OpenGLShadowBuffer>(width, height);
-			case AAAAgames::ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4:
+			case longmarch::ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4:
 				return MemoryManager::Make_shared<OpenGLMSMShadowBuffer>(width, height);
-			case AAAAgames::ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE:
+			case longmarch::ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE:
 				return MemoryManager::Make_shared<OpenGLMSMCubeShadowBuffer>(width, height);
 			}
 		}
@@ -154,9 +154,9 @@ namespace AAAAgames {
 		{
 			switch (type)
 			{
-			case AAAAgames::ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_BASIC:
+			case longmarch::ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_BASIC:
 				return MemoryManager::Make_shared<OpenGLShadowArrayBuffer>(width, height, depth);
-			case AAAAgames::ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4:
+			case longmarch::ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4:
 				return MemoryManager::Make_shared<OpenGLMSMShadowArrayBuffer>(width, height, depth);
 			}
 		}
@@ -186,9 +186,9 @@ namespace AAAAgames {
 		case RendererAPI::API::OpenGL:
 			switch (type)
 			{
-			case AAAAgames::GBuffer::GBUFFER_TYPE::DEFAULT:
+			case longmarch::GBuffer::GBUFFER_TYPE::DEFAULT:
 				return MemoryManager::Make_shared<OpenGLGBuffer>(width, height);
-			case AAAAgames::GBuffer::GBUFFER_TYPE::THIN:
+			case longmarch::GBuffer::GBUFFER_TYPE::THIN:
 				return MemoryManager::Make_shared<OpenGLThinGBuffer>(width, height);
 			}
 		}

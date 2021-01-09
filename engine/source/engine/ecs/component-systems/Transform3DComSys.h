@@ -5,7 +5,7 @@
 #include "engine/ecs/GameWorld.h"
 #include "engine/ecs/components/3d/Transform3DCom.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class Transform3DComSys final : public BaseComponentSystem
 	{

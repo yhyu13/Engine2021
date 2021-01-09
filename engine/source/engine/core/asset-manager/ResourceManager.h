@@ -4,7 +4,7 @@
 #include "../exception/EngineException.h"
 #include "../file-system/FileSystem.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/**
 	 * @brief Custom ResourceManager template that manages the life time of resources
@@ -461,7 +461,7 @@ namespace AAAAgames
 		{
 			LOCK_GUARD_NC();
 			std::vector<std::string> names;
-			A4GAMES_MapKeyToVec(m_resources, names);
+			LongMarch_MapKeyToVec(m_resources, names);
 			std::sort(names.begin(), names.end());
 			return names;
 		}
@@ -530,9 +530,9 @@ namespace AAAAgames
 			return std::pair<std::string, fs::path>();
 		}
 
-		[[nodiscard]] inline const A4GAMES_Vector<ResourcePtr> GetAllResources() const noexcept
+		[[nodiscard]] inline const LongMarch_Vector<ResourcePtr> GetAllResources() const noexcept
 		{
-			A4GAMES_Vector<ResourcePtr> ret;
+			LongMarch_Vector<ResourcePtr> ret;
 			for (const auto& item : m_resources)
 			{
 				if (const auto& res_ref = item.second.second; res_ref)
@@ -545,7 +545,7 @@ namespace AAAAgames
 
 	private:
 		ResourceLoadFromFile m_loadFromFileFunc;
-		A4GAMES_UnorderedMap_flat<std::string, std::pair<fs::path, ResourceTask>> m_resources;
-		A4GAMES_UnorderedMap_flat<std::string, std::vector<ResourcePromise>> m_promises;
+		LongMarch_UnorderedMap_flat<std::string, std::pair<fs::path, ResourceTask>> m_resources;
+		LongMarch_UnorderedMap_flat<std::string, std::vector<ResourcePromise>> m_promises;
 	};
 }

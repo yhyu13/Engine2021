@@ -3,7 +3,7 @@
 #include "Renderer2D.h"
 #include "platform/OpenGL/OpenGLVertexArray.h"
 
-namespace AAAAgames {
+namespace longmarch {
 
 	std::shared_ptr<VertexArray> VertexArray::Create()
 	{

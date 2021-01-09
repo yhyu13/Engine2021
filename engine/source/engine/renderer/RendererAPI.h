@@ -4,7 +4,7 @@
 #include "engine/core/EngineCore.h"
 #include "engine/math/Geommath.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	class ENGINE_API RendererAPI
 	{
 	public:
@@ -65,12 +65,12 @@ namespace AAAAgames {
 
 		virtual void Reverse_Z(bool b) = 0;
 		virtual void DepthTest(bool test, bool write) = 0;
-		virtual void DepthFunc(AAAAgames::RendererAPI::CompareEnum e) = 0;
+		virtual void DepthFunc(longmarch::RendererAPI::CompareEnum e) = 0;
 		virtual void StencilTest(bool test, bool write) = 0;
 
 		virtual void CullFace(bool enabled, bool front) = 0;
 		virtual void Blend(bool enabled) = 0;
-		virtual void BlendFunc(AAAAgames::RendererAPI::BlendFuncEnum e) = 0;
+		virtual void BlendFunc(longmarch::RendererAPI::BlendFuncEnum e) = 0;
 		virtual void DepthClamp(bool enabled) = 0;
 
 		inline static API GetAPI() { return s_API; }

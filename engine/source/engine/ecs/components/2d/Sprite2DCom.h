@@ -4,7 +4,7 @@
 #include "engine/allocator/ResouceManager.h"
 #include "engine/renderer/Sprite.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/* Data class of sprite */
 	struct CACHE_ALIGN32 Sprite2DCom final : BaseComponent<Sprite2DCom>{

@@ -1,7 +1,7 @@
 #pragma once
 #include "Buffer.h"
 
-namespace AAAAgames {
+namespace longmarch {
 
 	class VertexArray
 	{

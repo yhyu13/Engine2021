@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 
-namespace AAAAgames
+namespace longmarch
 {
 	enum class EditorEventType : uint32_t
 	{
@@ -16,4 +16,4 @@ namespace AAAAgames
 	};
 }
 
-std::ostream& operator<<(std::ostream& o, AAAAgames::EditorEventType n);
+std::ostream& operator<<(std::ostream& o, longmarch::EditorEventType n);

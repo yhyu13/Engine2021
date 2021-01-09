@@ -12,7 +12,7 @@
 
 #include "Scene.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class ENGINE_API PhysicsManager final : public BaseAtomicClassNC, public BaseEventSubHandleClass
 	{
@@ -38,7 +38,7 @@ namespace AAAAgames
 
 	private:
 		// map of Scene ID -> Scene, where each scene is an instance of the physics of a game world
-		A4GAMES_Vector<std::shared_ptr<Scene>> m_scenes;
+		LongMarch_Vector<std::shared_ptr<Scene>> m_scenes;
 
 		bool m_paused;
 	};

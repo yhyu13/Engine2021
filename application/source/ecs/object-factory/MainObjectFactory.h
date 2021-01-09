@@ -4,7 +4,7 @@
 #include "engine/ecs/EntityDecorator.h"
 #include <json/json.h>
 
-namespace AAAAgames
+namespace longmarch
 {
 	class MainObjectFactory final : public ObjectFactory
 	{

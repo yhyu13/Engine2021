@@ -3,7 +3,7 @@
 #include "engine/math/Geommath.h"
 #include "engine/core/utility/TypeHelper.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	namespace pathfinding
 	{
@@ -17,12 +17,12 @@ namespace AAAAgames
 		};
 
 		//! Genearte the arc length LUT from a give path
-		A4GAMES_Vector<float> GetArcLengthLUT(const A4GAMES_Vector<Vec3f>& result);
+		LongMarch_Vector<float> GetArcLengthLUT(const LongMarch_Vector<Vec3f>& result);
 
 		//! Applying the C1 Catmull-Rom interpolation onto a list of vectors (commonly used for sommothing path finding results)
-		A4GAMES_Vector<Vec3f> CatmullRomSmoothing(const A4GAMES_Vector<Vec3f>& result, const SmoothingSetting& setting);
+		LongMarch_Vector<Vec3f> CatmullRomSmoothing(const LongMarch_Vector<Vec3f>& result, const SmoothingSetting& setting);
 
 		//! Applying the C2 cubic B-spline interpolation onto a list of vectors (commonly used for flying camera)
-		A4GAMES_Vector<Vec3f> CubicBSplineSmoothing(const A4GAMES_Vector<Vec3f>& result, const SmoothingSetting& setting);
+		LongMarch_Vector<Vec3f> CubicBSplineSmoothing(const LongMarch_Vector<Vec3f>& result, const SmoothingSetting& setting);
 	}
 }

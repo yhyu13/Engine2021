@@ -4,7 +4,7 @@
 #include "engine/events/EventQueue.h"
 #include "engine/ecs/EntityDecorator.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	struct EditorCameraTeleportToEntityEvent : public Event<EditorEventType> {
 		explicit EditorCameraTeleportToEntityEvent(const EntityDecorator& entity)

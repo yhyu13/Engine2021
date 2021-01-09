@@ -6,7 +6,7 @@
 #include "engine/ecs/BaseComponent.h"
 #include "engine/ecs/BaseComponentSystem.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class GameWorld;
 
@@ -17,9 +17,9 @@ namespace AAAAgames
 		ObjectFactory();
 		virtual ~ObjectFactory() = default;
 
-		const A4GAMES_Vector<std::string> GetAllEntityTypeName() const;
-		const A4GAMES_Vector<std::string> GetAllComponentName() const;
-		const A4GAMES_Vector<std::string> GetAllComponentSystemName() const;
+		const LongMarch_Vector<std::string> GetAllEntityTypeName() const;
+		const LongMarch_Vector<std::string> GetAllComponentName() const;
+		const LongMarch_Vector<std::string> GetAllComponentSystemName() const;
 
 		const EntityType GetEntityTypeFromName(const std::string& s_type) const;
 		const std::string GetEntityNameFromType(EntityType e_type) const;
@@ -39,11 +39,11 @@ namespace AAAAgames
 		virtual void SaveGameWorldScene(const fs::path& filepath, GameWorld* world) const;
 
 	protected:
-		A4GAMES_Vector<EntityNameToType> m_EntityNameToTypeList;
-		A4GAMES_Vector<EntityTypeToName> m_EntityTypeToNameList;
+		LongMarch_Vector<EntityNameToType> m_EntityNameToTypeList;
+		LongMarch_Vector<EntityTypeToName> m_EntityTypeToNameList;
 
-		A4GAMES_Vector<std::string> m_ComponentNameList;
-		A4GAMES_Vector<std::string> m_ComponentSystemNameList;
+		LongMarch_Vector<std::string> m_ComponentNameList;
+		LongMarch_Vector<std::string> m_ComponentSystemNameList;
 
 	public:
 		inline static ObjectFactory* s_instance = { nullptr };

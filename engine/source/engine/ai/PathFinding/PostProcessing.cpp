@@ -2,9 +2,9 @@
 #include "PostProcessing.h"
 
 //! Genearte the arc length LUT from a give path
-A4GAMES_Vector<float> AAAAgames::pathfinding::GetArcLengthLUT(const A4GAMES_Vector<Vec3f>& result)
+LongMarch_Vector<float> longmarch::pathfinding::GetArcLengthLUT(const LongMarch_Vector<Vec3f>& result)
 {
-	A4GAMES_Vector<float> ret(result.size());
+	LongMarch_Vector<float> ret(result.size());
 	ret[0] = 0;
 	for (auto i(1u); i < result.size(); ++i)
 	{
@@ -14,7 +14,7 @@ A4GAMES_Vector<float> AAAAgames::pathfinding::GetArcLengthLUT(const A4GAMES_Vect
 }
 
 //! Applying the Catmull-Rom interpolation onto a list of vectors
-A4GAMES_Vector<Vec3f> AAAAgames::pathfinding::CatmullRomSmoothing(const A4GAMES_Vector<Vec3f>& result, const SmoothingSetting& setting)
+LongMarch_Vector<Vec3f> longmarch::pathfinding::CatmullRomSmoothing(const LongMarch_Vector<Vec3f>& result, const SmoothingSetting& setting)
 {
 	if (result.size() <= 1)
 	{
@@ -38,7 +38,7 @@ A4GAMES_Vector<Vec3f> AAAAgames::pathfinding::CatmullRomSmoothing(const A4GAMES_
 	};
 
 	//! Adaptive subdivide the parametric curve based on cos angle of midpoint
-	std::function<void(A4GAMES_Vector<Vec3f>&, const Vec3f&, const Vec3f&, const Vec3f&, const Vec3f&, const float, const float)> RecursiveAdpativeStep = [&](A4GAMES_Vector<Vec3f>& result, const Vec3f& p0, const Vec3f& p1, const Vec3f& p2, const Vec3f& p3, const float t0, const float t1)
+	std::function<void(LongMarch_Vector<Vec3f>&, const Vec3f&, const Vec3f&, const Vec3f&, const Vec3f&, const float, const float)> RecursiveAdpativeStep = [&](LongMarch_Vector<Vec3f>& result, const Vec3f& p0, const Vec3f& p1, const Vec3f& p2, const Vec3f& p3, const float t0, const float t1)
 	{
 		auto t_mid = (t0 + t1) * 0.5f;
 		auto pt0 = CatmullRom(p0, p1, p2, p3, t0);
@@ -64,7 +64,7 @@ A4GAMES_Vector<Vec3f> AAAAgames::pathfinding::CatmullRomSmoothing(const A4GAMES_
 	result_.insert(result_.begin(), *(result_.begin()));
 	result_.insert(result_.end(), *(result_.end() - 1));
 
-	A4GAMES_Vector<Vec3f> ret;
+	LongMarch_Vector<Vec3f> ret;
 	ret.reserve(result_.size() * int(1.0f / end_points_fine_grain_stride));
 
 	// rubber banding stops if we have reach the iterator just before the first copy of the target
@@ -116,7 +116,7 @@ A4GAMES_Vector<Vec3f> AAAAgames::pathfinding::CatmullRomSmoothing(const A4GAMES_
 	return ret;
 }
 
-A4GAMES_Vector<Vec3f> AAAAgames::pathfinding::CubicBSplineSmoothing(const A4GAMES_Vector<Vec3f>& result, const SmoothingSetting& setting)
+LongMarch_Vector<Vec3f> longmarch::pathfinding::CubicBSplineSmoothing(const LongMarch_Vector<Vec3f>& result, const SmoothingSetting& setting)
 {
 	if (result.size() <= 1)
 	{
@@ -146,7 +146,7 @@ A4GAMES_Vector<Vec3f> AAAAgames::pathfinding::CubicBSplineSmoothing(const A4GAME
 			0.f, 0.f, 1.f, 2.f);
 		static auto NaturalCubicBSplineMatrix_Inv = Geommath::SmartInverse(NaturalCubicBSplineMatrix);
 
-		A4GAMES_Vector<Vec3f> ret(4);
+		LongMarch_Vector<Vec3f> ret(4);
 		for (int i = 0; i < 3; ++i)
 		{
 			Vec4f E(3.f * (p1[i] - p0[i]), 3.f * (p2[i] - p0[i]), 3.f * (p3[i] - p1[i]), 3.f * (p3[i] - p2[i]));
@@ -160,7 +160,7 @@ A4GAMES_Vector<Vec3f> AAAAgames::pathfinding::CubicBSplineSmoothing(const A4GAME
 	};
 
 	//! Adaptive subdivide the parametric curve based on cos angle of midpoint
-	std::function<void(A4GAMES_Vector<Vec3f>&, const Vec3f&, const Vec3f&, const Vec3f&, const Vec3f&, const float, const float)> RecursiveAdpativeStep = [&](A4GAMES_Vector<Vec3f>& result, const Vec3f& p0, const Vec3f& p1, const Vec3f& p2, const Vec3f& p3, const float t0, const float t1)
+	std::function<void(LongMarch_Vector<Vec3f>&, const Vec3f&, const Vec3f&, const Vec3f&, const Vec3f&, const float, const float)> RecursiveAdpativeStep = [&](LongMarch_Vector<Vec3f>& result, const Vec3f& p0, const Vec3f& p1, const Vec3f& p2, const Vec3f& p3, const float t0, const float t1)
 	{
 		auto t_mid = (t0 + t1) * 0.5f;
 		auto pt0 = Bezier(p0, p1, p2, p3, t0);
@@ -186,7 +186,7 @@ A4GAMES_Vector<Vec3f> AAAAgames::pathfinding::CubicBSplineSmoothing(const A4GAME
 	result_.insert(result_.begin(), *(result_.begin()));
 	result_.insert(result_.end(), *(result_.end() - 1));
 
-	A4GAMES_Vector<Vec3f> ret;
+	LongMarch_Vector<Vec3f> ret;
 	ret.reserve(result_.size() * int(1.0f / end_points_fine_grain_stride));
 
 	// rubber banding stops if we have reach the iterator just before the first copy of the target

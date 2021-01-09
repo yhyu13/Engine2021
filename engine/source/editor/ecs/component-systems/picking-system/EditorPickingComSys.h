@@ -2,7 +2,7 @@
 #include "engine/ecs/BaseComponentSystem.h"
 #include "editor/renderer/render-pass/PickingPass3D.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/**
 	 * @brief Editor's object picking sytem

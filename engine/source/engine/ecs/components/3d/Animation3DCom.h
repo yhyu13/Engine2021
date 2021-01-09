@@ -4,7 +4,7 @@
 #include "engine/scene-graph/Scene3DNode.h"
 #include "engine/core/asset-manager/ResourceManager.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	//! Data class that stores references to the current animation and maintain an animation state map
 	struct CACHE_ALIGN32 Animation3DCom final : BaseComponent<Animation3DCom>

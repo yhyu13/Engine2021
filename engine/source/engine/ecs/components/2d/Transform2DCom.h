@@ -5,7 +5,7 @@
 
 using namespace glm;
 
-namespace AAAAgames
+namespace longmarch
 {
 	struct CACHE_ALIGN32 Transform2DCom final : BaseComponent<Transform2DCom> {
 		Transform2DCom()

@@ -13,7 +13,7 @@
 #include "Lock.h"
 #include "../utility/TypeHelper.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class Scheduler : BaseAtomicClassNC
 	{
@@ -134,6 +134,6 @@ namespace AAAAgames
 		using EventSet = std::set<event_ctx>; // Should not use phmap's block set because iterators are invalidated on erase
 		EventSet m_events;
 	private:
-		inline static A4GAMES_UnorderedMap<uint32_t, A4GAMES_Unique_ptr<Scheduler>> s_intanceManager;
+		inline static LongMarch_UnorderedMap<uint32_t, LongMarch_Unique_ptr<Scheduler>> s_intanceManager;
 	};
 }

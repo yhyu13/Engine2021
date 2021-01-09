@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "Skeleton.h"
 
-std::shared_ptr<Skeleton> AAAAgames::Skeleton::LoadSkeleton(const aiScene* aiscene, const std::string& id)
+std::shared_ptr<Skeleton> longmarch::Skeleton::LoadSkeleton(const aiScene* aiscene, const std::string& id)
 {
 	auto ret = MemoryManager::Make_shared<Skeleton>();
 	ret->id = id;
@@ -12,7 +12,7 @@ std::shared_ptr<Skeleton> AAAAgames::Skeleton::LoadSkeleton(const aiScene* aisce
 
 //! Utility function to load assimp file into scene node
 
-Skeleton::Node AAAAgames::Skeleton::LoadAllNodes(const aiNode* node, const std::string& parent_name)
+Skeleton::Node longmarch::Skeleton::LoadAllNodes(const aiNode* node, const std::string& parent_name)
 {
 	Node ret{ .nodeTransform = AssimpHelper::Assimp2Glm(node->mTransformation), .parent_name = parent_name, .name = node->mName.C_Str() };
 	// Recurse onto this node's children
@@ -23,7 +23,7 @@ Skeleton::Node AAAAgames::Skeleton::LoadAllNodes(const aiNode* node, const std::
 	return ret;
 }
 
-void AAAAgames::Skeleton::ReadHierarchy(Skeleton& s, const aiScene* aiscene, const aiNode* node, const aiMatrix4x4& parentTr, unsigned int level)
+void longmarch::Skeleton::ReadHierarchy(Skeleton& s, const aiScene* aiscene, const aiNode* node, const aiMatrix4x4& parentTr, unsigned int level)
 {
 	// Accumulating transformations while traversing down the hierarchy.
 	const aiMatrix4x4 childTr = parentTr * node->mTransformation; //TODO: whether or not to accumulate transformation
@@ -60,7 +60,7 @@ void AAAAgames::Skeleton::ReadHierarchy(Skeleton& s, const aiScene* aiscene, con
 	}
 }
 
-int AAAAgames::Skeleton::GetBoneIndex(const std::string& bone_name) const
+int longmarch::Skeleton::GetBoneIndex(const std::string& bone_name) const
 {
 	if (auto it = boneIndexLUT.find(bone_name); it != boneIndexLUT.end())
 	{
@@ -72,7 +72,7 @@ int AAAAgames::Skeleton::GetBoneIndex(const std::string& bone_name) const
 	}
 }
 
-void AAAAgames::Skeleton::ApplyInverseBindTransform(const Skeleton::Bone_Transform_LUT& bone_Transform_LUT_IN, Skeleton::Bone_Transform_LUT& bone_inverseFinalTransform_LUT_OUT) const
+void longmarch::Skeleton::ApplyInverseBindTransform(const Skeleton::Bone_Transform_LUT& bone_Transform_LUT_IN, Skeleton::Bone_Transform_LUT& bone_inverseFinalTransform_LUT_OUT) const
 {
 	ASSERT(bone_Transform_LUT_IN.size() == bone_inverseBindTransform_LUT.size(), "Bone transform has different size!")
 	if (bone_Transform_LUT_IN.size() != bone_inverseFinalTransform_LUT_OUT.size())
@@ -85,14 +85,14 @@ void AAAAgames::Skeleton::ApplyInverseBindTransform(const Skeleton::Bone_Transfo
 	}
 }
 
-void AAAAgames::Skeleton::ResetBoneTransform(Skeleton::Bone_Transform_LUT& bone_Transform_LUT) const
+void longmarch::Skeleton::ResetBoneTransform(Skeleton::Bone_Transform_LUT& bone_Transform_LUT) const
 {
 	// Resize buffer
 	bone_Transform_LUT.clear();
 	bone_Transform_LUT.resize(bone_inverseBindTransform_LUT.size(), Mat4(1.0f));
 }
 
-Mat4 AAAAgames::Skeleton::GetBoneTransform(const std::string& bone_name, const Bone_Transform_LUT& bone_Transform_LUT) const
+Mat4 longmarch::Skeleton::GetBoneTransform(const std::string& bone_name, const Bone_Transform_LUT& bone_Transform_LUT) const
 {
 	ASSERT(bone_Transform_LUT.size() == bone_inverseBindTransform_LUT.size(), "Bone LUT has different size!");
 	if (auto index = GetBoneIndex(bone_name); index != -1)
@@ -105,7 +105,7 @@ Mat4 AAAAgames::Skeleton::GetBoneTransform(const std::string& bone_name, const B
 	}
 }
 
-const Skeleton::Node& AAAAgames::Skeleton::GetBoneNode(const std::string& bone_name) const
+const Skeleton::Node& longmarch::Skeleton::GetBoneNode(const std::string& bone_name) const
 {
 	if (!IsBoneNode(bone_name))
 	{
@@ -141,9 +141,9 @@ const Skeleton::Node& AAAAgames::Skeleton::GetBoneNode(const std::string& bone_n
 	}
 }
 
-A4GAMES_Vector<std::string> AAAAgames::Skeleton::GetBoneAllParentsName(const std::string& bone_name) const
+LongMarch_Vector<std::string> longmarch::Skeleton::GetBoneAllParentsName(const std::string& bone_name) const
 {
-	A4GAMES_Vector<std::string> ret;
+	LongMarch_Vector<std::string> ret;
 	auto node = GetBoneNode(bone_name);
 	// Get all parent bones until we hit a none-bone node
 	while (IsBoneNode(node.name))
@@ -161,7 +161,7 @@ A4GAMES_Vector<std::string> AAAAgames::Skeleton::GetBoneAllParentsName(const std
 	return ret;
 }
 
-bool AAAAgames::Skeleton::IsBoneNode(const std::string& node_name) const
+bool longmarch::Skeleton::IsBoneNode(const std::string& node_name) const
 {
 	if (auto it = boneIndexLUT.find(node_name); it != boneIndexLUT.end())
 	{
@@ -173,9 +173,9 @@ bool AAAAgames::Skeleton::IsBoneNode(const std::string& node_name) const
 	}
 }
 
-A4GAMES_Vector<std::string> AAAAgames::Skeleton::GetAllBoneNames() const
+LongMarch_Vector<std::string> longmarch::Skeleton::GetAllBoneNames() const
 {
-	A4GAMES_Vector<std::string> ret;
-	A4GAMES_MapKeyToVec(boneIndexLUT, ret);
+	LongMarch_Vector<std::string> ret;
+	LongMarch_MapKeyToVec(boneIndexLUT, ret);
 	return ret;
 }

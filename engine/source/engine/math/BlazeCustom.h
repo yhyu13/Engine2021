@@ -1,7 +1,7 @@
 #pragma once
 #include <blaze/Blaze.h>
 
-namespace AAAAgames
+namespace longmarch
 {
 	namespace BlazeCustom
 	{

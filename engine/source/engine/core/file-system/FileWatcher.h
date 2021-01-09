@@ -14,7 +14,7 @@
 
 #include "../utility/Timer.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	namespace filewatcher
 	{

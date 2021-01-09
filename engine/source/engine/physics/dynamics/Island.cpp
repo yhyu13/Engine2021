@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "Island.h"
 
-namespace AAAAgames
+namespace longmarch
 {
     void Island::Solve()
     {

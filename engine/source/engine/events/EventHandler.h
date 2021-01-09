@@ -3,7 +3,7 @@
 #include <functional>
 #include "Event.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/**
 	 * @brief Base class event callback

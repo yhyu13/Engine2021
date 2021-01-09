@@ -8,7 +8,7 @@
 #include "engine/events/engineEvents/EngineEventType.h"
 #include "engine/events/EventQueue.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	using AudioVector3 = Vec3f;
 	struct ENGINE_API FMODInstance
 	{

@@ -6,7 +6,7 @@
 #include "engine/ecs/components/3d/Transform3DCom.h"
 #include "engine/ecs/components/PerspectiveCameraCom.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class PerspectiveCameraComSys final : public BaseComponentSystem
 	{

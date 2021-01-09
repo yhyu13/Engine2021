@@ -3,7 +3,7 @@
 #include "RendererAPI.h"
 #include "engine/core/EngineCore.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class ENGINE_API RenderCommand
 	{
@@ -124,7 +124,7 @@ namespace AAAAgames
 			s_RendererAPI->DepthTest(test, write);
 		}
 
-		inline static void DepthFunc(AAAAgames::RendererAPI::CompareEnum e)
+		inline static void DepthFunc(longmarch::RendererAPI::CompareEnum e)
 		{
 			s_RendererAPI->DepthFunc(e);
 		}
@@ -144,7 +144,7 @@ namespace AAAAgames
 			s_RendererAPI->Blend(enabled);
 		}
 
-		inline static void BlendFunc(AAAAgames::RendererAPI::BlendFuncEnum e)
+		inline static void BlendFunc(longmarch::RendererAPI::BlendFuncEnum e)
 		{
 			s_RendererAPI->BlendFunc(e);
 		}

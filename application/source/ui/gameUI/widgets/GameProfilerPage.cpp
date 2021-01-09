@@ -1,7 +1,7 @@
 #include "application-precompiled-header.h"
 #include "GameProfilerPage.h"
 
-void AAAAgames::GameProfilerPage::Render()
+void longmarch::GameProfilerPage::Render()
 {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 	ImGui::PushStyleColor(ImGuiCol_ResizeGrip, 0);

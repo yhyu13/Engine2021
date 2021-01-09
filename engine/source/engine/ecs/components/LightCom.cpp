@@ -2,7 +2,7 @@
 #include "LightCom.h"
 #include "engine/renderer/Renderer3D.h"
 
-void AAAAgames::LightCom::JsonSerialize(Json::Value& value)
+void longmarch::LightCom::JsonSerialize(Json::Value& value)
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
 	LOCK_GUARD2();
@@ -14,7 +14,7 @@ void AAAAgames::LightCom::JsonSerialize(Json::Value& value)
 
 		if (attenuation != _default.attenuation)
 		{
-			val["attenuation"] = A4GAMES_ArrayToJsonValue(attenuation, 4);
+			val["attenuation"] = LongMarch_ArrayToJsonValue(attenuation, 4);
 		}
 		if (collisionRadius != _default.collisionRadius)
 		{
@@ -73,7 +73,7 @@ void AAAAgames::LightCom::JsonSerialize(Json::Value& value)
 		}
 		switch (type)
 		{
-		case AAAAgames::LightCom::LIGHT_TYPE::DIRECTIONAL:
+		case longmarch::LightCom::LIGHT_TYPE::DIRECTIONAL:
 		{
 			auto& val2 = val["directional"];
 			val2["type"] = true;
@@ -87,7 +87,7 @@ void AAAAgames::LightCom::JsonSerialize(Json::Value& value)
 			}
 		}
 		break;
-		case AAAAgames::LightCom::LIGHT_TYPE::POINT:
+		case longmarch::LightCom::LIGHT_TYPE::POINT:
 		{
 			auto& val2 = val["point"];
 			val2["type"] = true;
@@ -101,7 +101,7 @@ void AAAAgames::LightCom::JsonSerialize(Json::Value& value)
 			}
 		}
 		break;
-		case AAAAgames::LightCom::LIGHT_TYPE::SPOT:
+		case longmarch::LightCom::LIGHT_TYPE::SPOT:
 		{
 			auto& val2 = val["spot"];
 			val2["type"] = true;
@@ -134,7 +134,7 @@ void AAAAgames::LightCom::JsonSerialize(Json::Value& value)
 	}
 }
 
-void AAAAgames::LightCom::JsonDeserialize(const Json::Value& value)
+void longmarch::LightCom::JsonDeserialize(const Json::Value& value)
 {
 	if (value.isNull())
 	{
@@ -367,7 +367,7 @@ void AAAAgames::LightCom::JsonDeserialize(const Json::Value& value)
 	}
 }
 
-void AAAAgames::LightCom::ImGuiRender()
+void longmarch::LightCom::ImGuiRender()
 {
 	LOCK_GUARD2();
 	if (ImGui::TreeNode("Light"))
@@ -604,25 +604,25 @@ void AAAAgames::LightCom::ImGuiRender()
 	}
 }
 
-void AAAAgames::LightCom::AllocateShadowBuffer()
+void longmarch::LightCom::AllocateShadowBuffer()
 {
 	if (!shadow.bInit && shadow.bCastShadow)
 	{
 		shadow.bInit = true;
 		switch (type)
 		{
-		case AAAAgames::LightCom::LIGHT_TYPE::DIRECTIONAL:
+		case longmarch::LightCom::LIGHT_TYPE::DIRECTIONAL:
 			shadow.shadowBuffer = ShadowBuffer::CreateArray(
 				shadow.dimension, shadow.dimension,
 				directionalLight.numOfCSM,
 				ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
 			break;
-		case AAAAgames::LightCom::LIGHT_TYPE::POINT:
+		case longmarch::LightCom::LIGHT_TYPE::POINT:
 			shadow.shadowBuffer = ShadowBuffer::Create(
 				shadow.dimension, shadow.dimension,
 				ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE);
 			break;
-		case AAAAgames::LightCom::LIGHT_TYPE::SPOT:
+		case longmarch::LightCom::LIGHT_TYPE::SPOT:
 			shadow.shadowBuffer = ShadowBuffer::Create(
 				shadow.dimension, shadow.dimension,
 				ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4);
@@ -632,18 +632,18 @@ void AAAAgames::LightCom::AllocateShadowBuffer()
 		{
 			switch (type)
 			{
-			case AAAAgames::LightCom::LIGHT_TYPE::DIRECTIONAL:
+			case longmarch::LightCom::LIGHT_TYPE::DIRECTIONAL:
 				shadow.shadowBuffer2 = ShadowBuffer::CreateArray(
 					shadow.backBufferDimension, shadow.backBufferDimension,
 					directionalLight.numOfCSM,
 					ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
 				break;
-			case AAAAgames::LightCom::LIGHT_TYPE::POINT:
+			case longmarch::LightCom::LIGHT_TYPE::POINT:
 				shadow.shadowBuffer2 = ShadowBuffer::Create(
 					shadow.backBufferDimension, shadow.backBufferDimension,
 					ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE);
 				break;
-			case AAAAgames::LightCom::LIGHT_TYPE::SPOT:
+			case longmarch::LightCom::LIGHT_TYPE::SPOT:
 				shadow.shadowBuffer2 = ShadowBuffer::Create(
 					shadow.backBufferDimension, shadow.backBufferDimension,
 					ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4);
@@ -653,14 +653,14 @@ void AAAAgames::LightCom::AllocateShadowBuffer()
 	}
 }
 
-void AAAAgames::LightCom::ReleaseShadowBuffer()
+void longmarch::LightCom::ReleaseShadowBuffer()
 {
 	shadow.shadowBuffer.reset();
 	shadow.shadowBuffer2.reset();
 	shadow.bInit = false;
 }
 
-bool AAAAgames::LightCom::HandleShadowBufferDropOff(float distance)
+bool longmarch::LightCom::HandleShadowBufferDropOff(float distance)
 {
 	constexpr uint32_t drop_off_ratio = 4;
 	float drop_off_ratio_distance = shadow.dropOffDistance / static_cast<float>(drop_off_ratio);

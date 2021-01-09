@@ -4,7 +4,7 @@
 #include "Blackboard.h"
 #include "engine/ecs/components/3d/Body3DCom.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class BehaviorTree
 	{

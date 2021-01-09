@@ -5,7 +5,7 @@
 #include "Gamepad.h"
 #include "engine/core/EngineCore.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	std::function<float(float, float)> Gamepad::s_remap_stick = [](float v, float dead_zone)->float
 	{

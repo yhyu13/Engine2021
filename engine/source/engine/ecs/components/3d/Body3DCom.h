@@ -9,11 +9,11 @@
 #include "engine/physics/dynamics/RigidBody.h"
 #include "engine/physics/Scene.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	struct RigidBodyInfo
 	{
-		A4GAMES_Set<EntityType> entityTypeIngoreSet;
+		LongMarch_Set<EntityType> entityTypeIngoreSet;
 		Vec3f linearVelocity{ 0.f };
 		RBType type{RBType::staticBody};
 		float mass{1.0f};

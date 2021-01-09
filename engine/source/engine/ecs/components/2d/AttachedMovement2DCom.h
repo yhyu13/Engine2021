@@ -2,7 +2,7 @@
 
 #include "engine/ecs/BaseComponent.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/* Data class of sprite */
 	struct CACHE_ALIGN32 AttachedMovementCom final : BaseComponent<AttachedMovementCom> {

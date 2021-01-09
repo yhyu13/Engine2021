@@ -4,7 +4,7 @@
 #include "engine/core/exception/EngineException.h"
 #include "engine/events/engineEvents/EngineCustomEvent.h"
 
-AAAAgames::FMODInstance::FMODInstance()
+longmarch::FMODInstance::FMODInstance()
 	:
 	mnNextChannelId(0)
 {
@@ -19,13 +19,13 @@ AAAAgames::FMODInstance::FMODInstance()
 	AudioManager::ErrorCheck(mpStudioSystem->getCoreSystem(&mpSystem));
 }
 
-AAAAgames::FMODInstance::~FMODInstance()
+longmarch::FMODInstance::~FMODInstance()
 {
 	AudioManager::ErrorCheck(mpStudioSystem->unloadAll());
 	AudioManager::ErrorCheck(mpStudioSystem->release());
 }
 
-void AAAAgames::FMODInstance::Update()
+void longmarch::FMODInstance::Update()
 {
 	std::vector<int> pStoppedChannels;
 	for (auto it = mChannels.begin(), itEnd = mChannels.end(); it != itEnd; ++it)
@@ -46,13 +46,13 @@ void AAAAgames::FMODInstance::Update()
 	AudioManager::ErrorCheck(mpStudioSystem->update());
 }
 
-AAAAgames::AudioManager* AAAAgames::AudioManager::GetInstance()
+longmarch::AudioManager* longmarch::AudioManager::GetInstance()
 {
 	static AudioManager instance;
 	return &instance;
 }
 
-AAAAgames::AudioManager::AudioManager()
+longmarch::AudioManager::AudioManager()
 {
 	m_fmodInstance = std::make_unique<FMODInstance>();
 	{
@@ -64,12 +64,12 @@ AAAAgames::AudioManager::AudioManager()
 	}
 }
 
-void AAAAgames::AudioManager::Update(double deltaTime)
+void longmarch::AudioManager::Update(double deltaTime)
 {
 	m_fmodInstance->Update();
 }
 
-int AAAAgames::AudioManager::ErrorCheck(FMOD_RESULT result)
+int longmarch::AudioManager::ErrorCheck(FMOD_RESULT result)
 {
 	if (result != FMOD_OK) {
 		std::cout << "FMOD ERROR " << result << std::endl;
@@ -79,7 +79,7 @@ int AAAAgames::AudioManager::ErrorCheck(FMOD_RESULT result)
 	return 0;
 }
 
-int AAAAgames::AudioManager::GetSoundChannel(const std::string& strSoundName)
+int longmarch::AudioManager::GetSoundChannel(const std::string& strSoundName)
 {
 	int id = -1;
 	if (m_fmodInstance->mSound2Channels.find(strSoundName) != m_fmodInstance->mSound2Channels.end())
@@ -89,7 +89,7 @@ int AAAAgames::AudioManager::GetSoundChannel(const std::string& strSoundName)
 	return id;
 }
 
-void AAAAgames::AudioManager::LoadBank(const std::string& strBankName, FMOD_STUDIO_LOAD_BANK_FLAGS flags)
+void longmarch::AudioManager::LoadBank(const std::string& strBankName, FMOD_STUDIO_LOAD_BANK_FLAGS flags)
 {
 	auto tFoundIt = m_fmodInstance->mBanks.find(strBankName);
 	if (tFoundIt != m_fmodInstance->mBanks.end())
@@ -101,7 +101,7 @@ void AAAAgames::AudioManager::LoadBank(const std::string& strBankName, FMOD_STUD
 	}
 }
 
-void AAAAgames::AudioManager::LoadEvent(const std::string& strEventName)
+void longmarch::AudioManager::LoadEvent(const std::string& strEventName)
 {
 	auto tFoundit = m_fmodInstance->mEvents.find(strEventName);
 	if (tFoundit != m_fmodInstance->mEvents.end())
@@ -120,7 +120,7 @@ void AAAAgames::AudioManager::LoadEvent(const std::string& strEventName)
 /*
 	Load sound from path
 */
-void AAAAgames::AudioManager::LoadSound(const std::string& strSoundName, const fs::path& strSoundPath, bool bLooping, bool b3d, bool bStream)
+void longmarch::AudioManager::LoadSound(const std::string& strSoundName, const fs::path& strSoundPath, bool bLooping, bool b3d, bool bStream)
 {
 	auto tFoundIt = m_fmodInstance->mSounds.find(strSoundName);
 	if (tFoundIt != m_fmodInstance->mSounds.end())
@@ -146,7 +146,7 @@ void AAAAgames::AudioManager::LoadSound(const std::string& strSoundName, const f
 	}
 }
 
-void AAAAgames::AudioManager::UnLoadSound(const std::string& strSoundName)
+void longmarch::AudioManager::UnLoadSound(const std::string& strSoundName)
 {
 	auto tFoundIt = m_fmodInstance->mSounds.find(strSoundName);
 	if (tFoundIt == m_fmodInstance->mSounds.end())
@@ -156,7 +156,7 @@ void AAAAgames::AudioManager::UnLoadSound(const std::string& strSoundName)
 	m_fmodInstance->mSounds.erase(tFoundIt);
 }
 
-void AAAAgames::AudioManager::Set3dListenerAndOrientation(const AudioVector3& vPos, float fVolumedB)
+void longmarch::AudioManager::Set3dListenerAndOrientation(const AudioVector3& vPos, float fVolumedB)
 {
 	auto pos = VectorToFmod(vPos);
 	auto vel = VectorToFmod(AudioVector3(0));
@@ -165,7 +165,7 @@ void AAAAgames::AudioManager::Set3dListenerAndOrientation(const AudioVector3& vP
 	m_fmodInstance->mpSystem->set3DListenerAttributes(0, &pos, &vel, &forward, &up);
 }
 
-int AAAAgames::AudioManager::PlaySoundByName(const std::string& strSoundName, const AudioVector3& vPos, float fVolumedB, float frequency)
+int longmarch::AudioManager::PlaySoundByName(const std::string& strSoundName, const AudioVector3& vPos, float fVolumedB, float frequency)
 {
 	auto tFoundIt = m_fmodInstance->mSounds.find(strSoundName);
 	if (tFoundIt == m_fmodInstance->mSounds.end())
@@ -194,7 +194,7 @@ int AAAAgames::AudioManager::PlaySoundByName(const std::string& strSoundName, co
 	return -1;
 }
 
-int AAAAgames::AudioManager::StopSound(const std::string& strSoundName)
+int longmarch::AudioManager::StopSound(const std::string& strSoundName)
 {
 	auto tFoundIt = m_fmodInstance->mSounds.find(strSoundName);
 	if (tFoundIt == m_fmodInstance->mSounds.end())
@@ -213,7 +213,7 @@ int AAAAgames::AudioManager::StopSound(const std::string& strSoundName)
 	return -1;
 }
 
-void AAAAgames::AudioManager::SetSoundFreqency(const std::string& strSoundName, float frequency)
+void longmarch::AudioManager::SetSoundFreqency(const std::string& strSoundName, float frequency)
 {
 	int id = GetSoundChannel(strSoundName);
 	if (id != -1)
@@ -225,7 +225,7 @@ void AAAAgames::AudioManager::SetSoundFreqency(const std::string& strSoundName, 
 	}
 }
 
-void AAAAgames::AudioManager::SetSoundDB(const std::string& strSoundName, float fVolumedB)
+void longmarch::AudioManager::SetSoundDB(const std::string& strSoundName, float fVolumedB)
 {
 	int id = GetSoundChannel(strSoundName);
 	if (id != -1)
@@ -237,7 +237,7 @@ void AAAAgames::AudioManager::SetSoundDB(const std::string& strSoundName, float 
 	}
 }
 
-void AAAAgames::AudioManager::SetSoundVol(const std::string& strSoundName, float vol)
+void longmarch::AudioManager::SetSoundVol(const std::string& strSoundName, float vol)
 {
 	int id = GetSoundChannel(strSoundName);
 	if (id != -1)
@@ -249,7 +249,7 @@ void AAAAgames::AudioManager::SetSoundVol(const std::string& strSoundName, float
 	}
 }
 
-void AAAAgames::AudioManager::SetSoundPause(const std::string& strSoundName, bool pause)
+void longmarch::AudioManager::SetSoundPause(const std::string& strSoundName, bool pause)
 {
 	int id = GetSoundChannel(strSoundName);
 	if (id != -1)
@@ -261,7 +261,7 @@ void AAAAgames::AudioManager::SetSoundPause(const std::string& strSoundName, boo
 	}
 }
 
-void AAAAgames::AudioManager::SetSoundMute(const std::string& strSoundName, bool mute)
+void longmarch::AudioManager::SetSoundMute(const std::string& strSoundName, bool mute)
 {
 	int id = GetSoundChannel(strSoundName);
 	if (id != -1)
@@ -273,7 +273,7 @@ void AAAAgames::AudioManager::SetSoundMute(const std::string& strSoundName, bool
 	}
 }
 
-void AAAAgames::AudioManager::PlayEvent(const std::string& strEventName)
+void longmarch::AudioManager::PlayEvent(const std::string& strEventName)
 {
 	auto tFoundit = m_fmodInstance->mEvents.find(strEventName);
 	if (tFoundit == m_fmodInstance->mEvents.end()) {
@@ -285,7 +285,7 @@ void AAAAgames::AudioManager::PlayEvent(const std::string& strEventName)
 	tFoundit->second->start();
 }
 
-void AAAAgames::AudioManager::StopChannel(int nChannelId)
+void longmarch::AudioManager::StopChannel(int nChannelId)
 {
 	auto tFoundIt = m_fmodInstance->mChannels.find(nChannelId);
 	if (tFoundIt == m_fmodInstance->mChannels.end())
@@ -294,7 +294,7 @@ void AAAAgames::AudioManager::StopChannel(int nChannelId)
 	AudioManager::ErrorCheck(tFoundIt->second->stop());
 }
 
-void AAAAgames::AudioManager::StopEvent(const std::string& strEventName, bool bImmediate)
+void longmarch::AudioManager::StopEvent(const std::string& strEventName, bool bImmediate)
 {
 	auto tFoundIt = m_fmodInstance->mEvents.find(strEventName);
 	if (tFoundIt == m_fmodInstance->mEvents.end())
@@ -305,7 +305,7 @@ void AAAAgames::AudioManager::StopEvent(const std::string& strEventName, bool bI
 	AudioManager::ErrorCheck(tFoundIt->second->stop(eMode));
 }
 
-void AAAAgames::AudioManager::StopAllChannels()
+void longmarch::AudioManager::StopAllChannels()
 {
 	for (auto iter = m_fmodInstance->mChannels.begin(); iter != m_fmodInstance->mChannels.end(); ++iter)
 	{
@@ -313,7 +313,7 @@ void AAAAgames::AudioManager::StopAllChannels()
 	}
 }
 
-void AAAAgames::AudioManager::PauseAllChannels(bool pause)
+void longmarch::AudioManager::PauseAllChannels(bool pause)
 {
 	for (auto iter = m_fmodInstance->mChannels.begin(); iter != m_fmodInstance->mChannels.end(); ++iter)
 	{
@@ -321,7 +321,7 @@ void AAAAgames::AudioManager::PauseAllChannels(bool pause)
 	}
 }
 
-void AAAAgames::AudioManager::SetChannel3dPosition(int nChannelId, const AudioVector3& vPosition)
+void longmarch::AudioManager::SetChannel3dPosition(int nChannelId, const AudioVector3& vPosition)
 {
 	auto tFoundIt = m_fmodInstance->mChannels.find(nChannelId);
 	if (tFoundIt == m_fmodInstance->mChannels.end())
@@ -331,7 +331,7 @@ void AAAAgames::AudioManager::SetChannel3dPosition(int nChannelId, const AudioVe
 	AudioManager::ErrorCheck(tFoundIt->second->set3DAttributes(&position, NULL));
 }
 
-void AAAAgames::AudioManager::SetChannelvolume(int nChannelId, float fVolumedB)
+void longmarch::AudioManager::SetChannelvolume(int nChannelId, float fVolumedB)
 {
 	auto tFoundIt = m_fmodInstance->mChannels.find(nChannelId);
 	if (tFoundIt == m_fmodInstance->mChannels.end())
@@ -340,7 +340,7 @@ void AAAAgames::AudioManager::SetChannelvolume(int nChannelId, float fVolumedB)
 	AudioManager::ErrorCheck(tFoundIt->second->setVolume(dbToVolume(fVolumedB)));
 }
 
-bool AAAAgames::AudioManager::IsPlaying(const std::string& strSoundName)
+bool longmarch::AudioManager::IsPlaying(const std::string& strSoundName)
 {
 	int id = GetSoundChannel(strSoundName);
 	if (id != -1)
@@ -354,7 +354,7 @@ bool AAAAgames::AudioManager::IsPlaying(const std::string& strSoundName)
 	}
 }
 
-bool AAAAgames::AudioManager::IsPlaying(int nChannelId)
+bool longmarch::AudioManager::IsPlaying(int nChannelId)
 {
 	auto tFoundIt = m_fmodInstance->mChannels.find(nChannelId);
 	if (tFoundIt == m_fmodInstance->mChannels.end())
@@ -366,7 +366,7 @@ bool AAAAgames::AudioManager::IsPlaying(int nChannelId)
 	return bIsPlaying;
 }
 
-bool AAAAgames::AudioManager::IsEventPlaying(const std::string& strEventName) const
+bool longmarch::AudioManager::IsEventPlaying(const std::string& strEventName) const
 {
 	auto tFoundIt = m_fmodInstance->mEvents.find(strEventName);
 	if (tFoundIt == m_fmodInstance->mEvents.end())
@@ -379,17 +379,17 @@ bool AAAAgames::AudioManager::IsEventPlaying(const std::string& strEventName) co
 	return false;
 }
 
-float AAAAgames::AudioManager::dbToVolume(float db)
+float longmarch::AudioManager::dbToVolume(float db)
 {
 	return powf(10.0f, 0.05f * db);
 }
 
-float AAAAgames::AudioManager::VolumeTodb(float volume)
+float longmarch::AudioManager::VolumeTodb(float volume)
 {
 	return 20.0f * log10f(volume);
 }
 
-FMOD_VECTOR AAAAgames::AudioManager::VectorToFmod(const AudioVector3& vPosition)
+FMOD_VECTOR longmarch::AudioManager::VectorToFmod(const AudioVector3& vPosition)
 {
 	FMOD_VECTOR fVec;
 	fVec.x = vPosition.x;
@@ -398,7 +398,7 @@ FMOD_VECTOR AAAAgames::AudioManager::VectorToFmod(const AudioVector3& vPosition)
 	return fVec;
 }
 
-bool AAAAgames::AudioManager::FadeIn(int fadetime)
+bool longmarch::AudioManager::FadeIn(int fadetime)
 {
 	unsigned long long dspClock;
 	FMOD::System* sys;
@@ -420,7 +420,7 @@ bool AAAAgames::AudioManager::FadeIn(int fadetime)
 	return true;
 }
 
-bool AAAAgames::AudioManager::FadeOut(int fadetime)
+bool longmarch::AudioManager::FadeOut(int fadetime)
 {
 	unsigned long long dspClock;
 	FMOD::System* sys;
@@ -444,7 +444,7 @@ bool AAAAgames::AudioManager::FadeOut(int fadetime)
 	return true;
 }
 
-void AAAAgames::AudioManager::_ON_PAUSE(EventQueue<EngineEventType>::EventPtr e)
+void longmarch::AudioManager::_ON_PAUSE(EventQueue<EngineEventType>::EventPtr e)
 {
 	if (auto event = std::dynamic_pointer_cast<EngineWindowInterruptionEvent>(e); event)
 	{

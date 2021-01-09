@@ -4,7 +4,7 @@
 #include "engine/core/exception/EngineException.h"
 #include "engine/core/allocator/MemoryManager.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class AssimpSceneObject
 	{

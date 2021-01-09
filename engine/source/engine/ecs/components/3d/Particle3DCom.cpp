@@ -6,7 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "../../../audio/AudioManager.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	Particle3DCom::Particle3DCom(const EntityDecorator& _this)
 		:
@@ -36,7 +36,7 @@ namespace AAAAgames
 		{
 			// draw calls for particle systems
 			// TODO collect data for all particles in a map [texture, vector of particle instanced data]
-			A4GAMES_Vector<std::pair<int, Renderer3D::ParticleInstanceData>> instancedDataList;
+			LongMarch_Vector<std::pair<int, Renderer3D::ParticleInstanceData>> instancedDataList;
 
 			std::vector<Particle3D> particles = m_particleSystem->GetParticles();
 			Renderer3D::ParticleInstanceData instanceData;

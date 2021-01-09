@@ -3,7 +3,7 @@
 #include "../../RendererAPI.h"
 #include "OpenGLUtil.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	class OpenGLRendererAPI : public RendererAPI
 	{
 	public:
@@ -46,12 +46,12 @@ namespace AAAAgames {
 		virtual void Reverse_Z(bool b) override;
 
 		virtual void DepthTest(bool test, bool write) override;
-		virtual void DepthFunc(AAAAgames::RendererAPI::CompareEnum e) override;
+		virtual void DepthFunc(longmarch::RendererAPI::CompareEnum e) override;
 		virtual void StencilTest(bool test, bool write) override;
 
 		virtual void CullFace(bool enabled, bool front) override;
 		virtual void Blend(bool enabled) override;
-		virtual void BlendFunc(AAAAgames::RendererAPI::BlendFuncEnum e) override;
+		virtual void BlendFunc(longmarch::RendererAPI::BlendFuncEnum e) override;
 		virtual void DepthClamp(bool enabled) override;
 	};
 }

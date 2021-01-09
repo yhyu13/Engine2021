@@ -1,19 +1,19 @@
 #include "engine-precompiled-header.h"
 #include "PerspectiveCameraCom.h"
 
-void AAAAgames::PerspectiveCameraCom::SetCamera(const PerspectiveCamera& cam)
+void longmarch::PerspectiveCameraCom::SetCamera(const PerspectiveCamera& cam)
 {
 	LOCK_GUARD2();
 	m_camera = cam;
 }
 
-PerspectiveCamera* AAAAgames::PerspectiveCameraCom::GetCamera()
+PerspectiveCamera* longmarch::PerspectiveCameraCom::GetCamera()
 {
 	LOCK_GUARD2();
 	return &m_camera;
 }
 
-void AAAAgames::PerspectiveCameraCom::JsonSerialize(Json::Value& value)
+void longmarch::PerspectiveCameraCom::JsonSerialize(Json::Value& value)
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
 	LOCK_GUARD2();
@@ -33,7 +33,7 @@ void AAAAgames::PerspectiveCameraCom::JsonSerialize(Json::Value& value)
 	}
 }
 
-void AAAAgames::PerspectiveCameraCom::JsonDeserialize(const Json::Value& value)
+void longmarch::PerspectiveCameraCom::JsonDeserialize(const Json::Value& value)
 {
 	if (value.isNull())
 	{
@@ -79,7 +79,7 @@ void AAAAgames::PerspectiveCameraCom::JsonDeserialize(const Json::Value& value)
 	}
 }
 
-void AAAAgames::PerspectiveCameraCom::ImGuiRender()
+void longmarch::PerspectiveCameraCom::ImGuiRender()
 {
 	if (ImGui::TreeNode("PerspectiveCamera"))
 	{

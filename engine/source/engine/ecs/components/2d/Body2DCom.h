@@ -6,7 +6,7 @@
 #include "engine/ecs/Entity.h"
 #include "engine/physics/CollisionsManager.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	
 	struct CACHE_ALIGN32 Body2DCom final : BaseComponent<Body2DCom>

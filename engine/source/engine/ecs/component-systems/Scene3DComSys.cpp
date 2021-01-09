@@ -3,7 +3,7 @@
 #include "engine/ecs/header/header.h"
 #include "engine/core/thread/StealThreadPool.h"
 
-void AAAAgames::Scene3DComSys::PreRenderUpdate(double dt)
+void longmarch::Scene3DComSys::PreRenderUpdate(double dt)
 {
 	/**************************************************************
 	*	Update light buffer
@@ -64,7 +64,7 @@ void AAAAgames::Scene3DComSys::PreRenderUpdate(double dt)
 	}
 }
 
-void AAAAgames::Scene3DComSys::PrepareScene(double dt)
+void longmarch::Scene3DComSys::PrepareScene(double dt)
 {
 	Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_BUFFERED.clear();
 
@@ -105,7 +105,7 @@ void AAAAgames::Scene3DComSys::PrepareScene(double dt)
 #endif
 }
 
-void AAAAgames::Scene3DComSys::RecursivePrepareScene(double dt, const Entity& parent, Transform3DCom* parentTr, ChildrenCom* parentChildrenCom, unsigned int level)
+void longmarch::Scene3DComSys::RecursivePrepareScene(double dt, const Entity& parent, Transform3DCom* parentTr, ChildrenCom* parentChildrenCom, unsigned int level)
 {
 	const auto& children = parentChildrenCom->GetChildren();
 	for (const auto& child : children)
@@ -131,7 +131,7 @@ void AAAAgames::Scene3DComSys::RecursivePrepareScene(double dt, const Entity& pa
 	}
 }
 
-void AAAAgames::Scene3DComSys::RenderWithRenderObj()
+void longmarch::Scene3DComSys::RenderWithRenderObj()
 {
 	switch (Engine::GetEngineMode())
 	{
@@ -150,7 +150,7 @@ void AAAAgames::Scene3DComSys::RenderWithRenderObj()
 	}
 }
 
-void AAAAgames::Scene3DComSys::RenderWithMode(Renderer3D::RenderObj_CPU& renderObj)
+void longmarch::Scene3DComSys::RenderWithMode(Renderer3D::RenderObj_CPU& renderObj)
 {
 	{
 		auto scene = renderObj.entity.GetComponent<Scene3DCom>();
@@ -201,7 +201,7 @@ void AAAAgames::Scene3DComSys::RenderWithMode(Renderer3D::RenderObj_CPU& renderO
 }
 
 
-void AAAAgames::Scene3DComSys::RenderWithModeInGame(Renderer3D::RenderObj_CPU& renderObj)
+void longmarch::Scene3DComSys::RenderWithModeInGame(Renderer3D::RenderObj_CPU& renderObj)
 {
 	{
 		auto scene = renderObj.entity.GetComponent<Scene3DCom>();

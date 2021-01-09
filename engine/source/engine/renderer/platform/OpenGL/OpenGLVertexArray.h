@@ -2,7 +2,7 @@
 #include "../../VertexArray.h"
 #include "OpenGLUtil.h"
 
-namespace AAAAgames {
+namespace longmarch {
 
 	class OpenGLVertexArray : public VertexArray
 	{

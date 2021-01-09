@@ -2,7 +2,7 @@
 #include "engine/core/EngineCore.h"
 #include <iostream>
 
-namespace AAAAgames
+namespace longmarch
 {
 	typedef uint32_t EntityID;
 	typedef int32_t EntityType;
@@ -59,7 +59,7 @@ namespace AAAAgames
 			return lhs.m_id < rhs.m_id;
 		}
 
-		friend inline std::ostream& operator<<(std::ostream& os, const AAAAgames::Entity& dt)
+		friend inline std::ostream& operator<<(std::ostream& os, const longmarch::Entity& dt)
 		{
 			os << dt.m_id << '/' << dt.m_type;
 			return os;
@@ -73,11 +73,11 @@ namespace AAAAgames
 namespace std
 {
 	template <>
-	struct hash<AAAAgames::Entity>
+	struct hash<longmarch::Entity>
 	{
-		std::size_t operator()(const AAAAgames::Entity& e) const
+		std::size_t operator()(const longmarch::Entity& e) const
 		{
-			return hash<AAAAgames::EntityID>()(e.m_id);
+			return hash<longmarch::EntityID>()(e.m_id);
 		}
 	};
 }

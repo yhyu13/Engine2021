@@ -4,7 +4,7 @@
 #include "engine/events/EventQueue.h"
 #include "engine/ecs/EntityDecorator.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	struct EngineCollisionEvent : public Event<EngineEventType> {
 		explicit EngineCollisionEvent(const EntityDecorator& entity1, const EntityDecorator& entity2, void* collisionData)

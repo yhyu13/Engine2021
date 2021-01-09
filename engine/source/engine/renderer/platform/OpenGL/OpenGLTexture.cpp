@@ -8,7 +8,7 @@
 #include <glad/glad.h>
 #include <SOIL2.h>
 
-namespace AAAAgames {
+namespace longmarch {
 	OpenGLTexture2D::OpenGLTexture2D(Texture::Setting data)
 		:
 		m_Width(data.width),

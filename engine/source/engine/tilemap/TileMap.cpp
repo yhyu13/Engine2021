@@ -6,7 +6,7 @@ namespace fs = std::filesystem;
 /*
 	Implementation reference : https://github.com/SSBMTonberry/tileson
 */
-std::shared_ptr<TileMap> AAAAgames::TileMap::LoadFromFile(const fs::path& path)
+std::shared_ptr<TileMap> longmarch::TileMap::LoadFromFile(const fs::path& path)
 {
 	tson::Tileson parser;
 	auto result = MemoryManager::Make_shared<TileMap>(path.filename().string());
@@ -48,12 +48,12 @@ std::shared_ptr<TileMap> AAAAgames::TileMap::LoadFromFile(const fs::path& path)
 	return nullptr;
 }
 
-std::shared_ptr<tson::Map> AAAAgames::TileMap::GetMap()
+std::shared_ptr<tson::Map> longmarch::TileMap::GetMap()
 {
 	return m_Map;
 }
 
-AAAAgames::TileMap::TileGrid* AAAAgames::TileMap::GetTileGrid(const std::string& name)
+longmarch::TileMap::TileGrid* longmarch::TileMap::GetTileGrid(const std::string& name)
 {
 	if (m_Grids.find(name) == m_Grids.end())
 	{
@@ -62,7 +62,7 @@ AAAAgames::TileMap::TileGrid* AAAAgames::TileMap::GetTileGrid(const std::string&
 	return &m_Grids[name];
 }
 
-std::shared_ptr<AAAAgames::TileMap::PathFinder> AAAAgames::TileMap::GetPathFinder(const std::string& name)
+std::shared_ptr<longmarch::TileMap::PathFinder> longmarch::TileMap::GetPathFinder(const std::string& name)
 {
 	if (!m_PathFinder)
 	{
@@ -73,26 +73,26 @@ std::shared_ptr<AAAAgames::TileMap::PathFinder> AAAAgames::TileMap::GetPathFinde
 	return m_PathFinder;
 }
 
-Vec2i AAAAgames::TileMap::World2Grid(const Vec2f& v)
+Vec2i longmarch::TileMap::World2Grid(const Vec2f& v)
 {
-	return Vec2i(int(v.x * A4GAMES_GetPixel2WorldNumerator() / m_Map->getTileSize().x),
-		int(-v.y * A4GAMES_GetPixel2WorldNumerator() / m_Map->getTileSize().y));
+	return Vec2i(int(v.x * LongMarch_GetPixel2WorldNumerator() / m_Map->getTileSize().x),
+		int(-v.y * LongMarch_GetPixel2WorldNumerator() / m_Map->getTileSize().y));
 }
 
-Vec2f AAAAgames::TileMap::World2Pixel(const Vec2f& v)
+Vec2f longmarch::TileMap::World2Pixel(const Vec2f& v)
 {
-	return Vec2f(v.x * A4GAMES_GetPixel2WorldNumerator(),
-		-v.y * A4GAMES_GetPixel2WorldNumerator());
+	return Vec2f(v.x * LongMarch_GetPixel2WorldNumerator(),
+		-v.y * LongMarch_GetPixel2WorldNumerator());
 }
 
-Vec2f AAAAgames::TileMap::Pixel2World(const Vec2f& v)
+Vec2f longmarch::TileMap::Pixel2World(const Vec2f& v)
 {
-	return Vec2f((float)v.x / A4GAMES_GetPixel2WorldNumerator(),
-		(float)-v.y / A4GAMES_GetPixel2WorldNumerator());
+	return Vec2f((float)v.x / LongMarch_GetPixel2WorldNumerator(),
+		(float)-v.y / LongMarch_GetPixel2WorldNumerator());
 }
 
-Vec2f AAAAgames::TileMap::Grid2World(const Vec2i& v)
+Vec2f longmarch::TileMap::Grid2World(const Vec2i& v)
 {
-	return Vec2f((float)v.x * (float)m_Map->getTileSize().x / A4GAMES_GetPixel2WorldNumerator(),
-		(float)-v.y * (float)m_Map->getTileSize().y / A4GAMES_GetPixel2WorldNumerator());
+	return Vec2f((float)v.x * (float)m_Map->getTileSize().x / LongMarch_GetPixel2WorldNumerator(),
+		(float)-v.y * (float)m_Map->getTileSize().y / LongMarch_GetPixel2WorldNumerator());
 }

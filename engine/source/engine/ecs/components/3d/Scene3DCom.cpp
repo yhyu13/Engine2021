@@ -5,26 +5,26 @@
 #include "engine/ecs/components/3d/Transform3DCom.h"
 #include "engine/ecs/components/3d/Animation3DCom.h"
 
-AAAAgames::Scene3DCom::Scene3DCom(const EntityDecorator& _this)
+longmarch::Scene3DCom::Scene3DCom(const EntityDecorator& _this)
 	:
 	BaseComponent(_this.GetWorld()),
 	m_this(_this.GetEntity())
 {
 }
 
-void AAAAgames::Scene3DCom::SetSceneData(const Scene3DCom::SceneDataRef& obj)
+void longmarch::Scene3DCom::SetSceneData(const Scene3DCom::SceneDataRef& obj)
 {
 	LOCK_GUARD2();
 	m_objDatasRef = obj->Copy();
 }
 
-void AAAAgames::Scene3DCom::SetSceneData(const ResourceManager<Scene3DNode>::ResourceHandle& handle)
+void longmarch::Scene3DCom::SetSceneData(const ResourceManager<Scene3DNode>::ResourceHandle& handle)
 {
 	LOCK_GUARD2();
 	m_objDatasHandle = handle;
 }
 
-Scene3DCom::SceneDataRef& AAAAgames::Scene3DCom::GetSceneData(bool waitOnHandle)
+Scene3DCom::SceneDataRef& longmarch::Scene3DCom::GetSceneData(bool waitOnHandle)
 {
 	LOCK_GUARD2();
 	if (m_objDatasHandle && m_objDatasHandle->IsFutureValid())
@@ -47,7 +47,7 @@ Scene3DCom::SceneDataRef& AAAAgames::Scene3DCom::GetSceneData(bool waitOnHandle)
 	return m_objDatasRef;
 }
 
-bool AAAAgames::Scene3DCom::IsEmissive() const
+bool longmarch::Scene3DCom::IsEmissive() const
 {
 	LOCK_GUARD2();
 	if (!m_objDatasRef)
@@ -65,67 +65,67 @@ bool AAAAgames::Scene3DCom::IsEmissive() const
 	return false;
 }
 
-void AAAAgames::Scene3DCom::SetShaderName(const std::string& name)
+void longmarch::Scene3DCom::SetShaderName(const std::string& name)
 {
 	LOCK_GUARD2();
 	m_shaderName = name;
 }
 
-bool AAAAgames::Scene3DCom::IsVisible() const
+bool longmarch::Scene3DCom::IsVisible() const
 {
 	LOCK_GUARD2();
 	return m_visible;
 }
 
-void AAAAgames::Scene3DCom::SetVisiable(bool b)
+void longmarch::Scene3DCom::SetVisiable(bool b)
 {
 	LOCK_GUARD2();
 	m_visible = b;
 }
 
-bool AAAAgames::Scene3DCom::IsHideInGame() const
+bool longmarch::Scene3DCom::IsHideInGame() const
 {
 	LOCK_GUARD2();
 	return m_hideInGame;
 }
 
-void AAAAgames::Scene3DCom::SetHideInGame(bool b)
+void longmarch::Scene3DCom::SetHideInGame(bool b)
 {
 	LOCK_GUARD2();
 	m_hideInGame = b;
 }
 
-bool AAAAgames::Scene3DCom::IsCastShadow() const
+bool longmarch::Scene3DCom::IsCastShadow() const
 {
 	LOCK_GUARD2();
 	return m_castShadow;
 }
 
-void AAAAgames::Scene3DCom::SetCastShadow(bool b)
+void longmarch::Scene3DCom::SetCastShadow(bool b)
 {
 	LOCK_GUARD2();
 	m_castShadow = b;
 }
 
-bool AAAAgames::Scene3DCom::IsCastReflection() const
+bool longmarch::Scene3DCom::IsCastReflection() const
 {
 	LOCK_GUARD2();
 	return m_castReflection;
 }
 
-void AAAAgames::Scene3DCom::SetCastReflection(bool b)
+void longmarch::Scene3DCom::SetCastReflection(bool b)
 {
 	LOCK_GUARD2();
 	m_castReflection = b;
 }
 
-void AAAAgames::Scene3DCom::SetShouldDraw(bool b, bool _override)
+void longmarch::Scene3DCom::SetShouldDraw(bool b, bool _override)
 {
 	LOCK_GUARD2();
 	(_override) ? m_shoudlDraw = b : m_shoudlDraw &= b;
 }
 
-void AAAAgames::Scene3DCom::Draw(const std::function<void(const Renderer3D::RenderData_CPU&)>& drawFunc)
+void longmarch::Scene3DCom::Draw(const std::function<void(const Renderer3D::RenderData_CPU&)>& drawFunc)
 {
 	GetSceneData(false);
 	{
@@ -147,7 +147,7 @@ void AAAAgames::Scene3DCom::Draw(const std::function<void(const Renderer3D::Rend
 }
 
 //Always set shouldDraw before Render
-void AAAAgames::Scene3DCom::Draw()
+void longmarch::Scene3DCom::Draw()
 {
 	GetSceneData(false);
 	{
@@ -163,7 +163,7 @@ void AAAAgames::Scene3DCom::Draw()
 	}
 }
 
-void AAAAgames::Scene3DCom::JsonSerialize(Json::Value& value)
+void longmarch::Scene3DCom::JsonSerialize(Json::Value& value)
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
 	LOCK_GUARD2();
@@ -207,7 +207,7 @@ void AAAAgames::Scene3DCom::JsonSerialize(Json::Value& value)
 						const auto& mat = allMat[0];
 						static const auto& _default = Material();
 
-						val2[(mat->emissive) ? "Kd" : "albedo"] = A4GAMES_ArrayToJsonValue(mat->Kd, 3);
+						val2[(mat->emissive) ? "Kd" : "albedo"] = LongMarch_ArrayToJsonValue(mat->Kd, 3);
 						if (mat->emissive != _default.emissive)
 						{
 							val2["emissive"] = mat->emissive;
@@ -251,7 +251,7 @@ void AAAAgames::Scene3DCom::JsonSerialize(Json::Value& value)
 	}
 }
 
-void AAAAgames::Scene3DCom::JsonDeserialize(const Json::Value& value)
+void longmarch::Scene3DCom::JsonDeserialize(const Json::Value& value)
 {
 	if (value.isNull())
 	{
@@ -364,7 +364,7 @@ void AAAAgames::Scene3DCom::JsonDeserialize(const Json::Value& value)
 	}
 }
 
-void AAAAgames::Scene3DCom::ImGuiRender()
+void longmarch::Scene3DCom::ImGuiRender()
 {
 	if (ImGui::TreeNode("Scene3D"))
 	{
@@ -406,8 +406,8 @@ void AAAAgames::Scene3DCom::ImGuiRender()
 			const auto meshName = (m_objDatasRef) ? m_objDatasRef->Name() : "None";
 			auto vs = ResourceManager<Scene3DNode>::GetInstance()->GetAllNames();
 			vs.insert(vs.begin(), std::string("None"));
-			const auto vc = A4GAMES_StrVec2ConstChar(vs);
-			int index = A4GAMES_findFristIndex(vs, meshName);
+			const auto vc = LongMarch_StrVec2ConstChar(vs);
+			int index = LongMarch_findFristIndex(vs, meshName);
 			if (ImGui::Combo("Scene Mesh", &index, &vc[0], vc.size()))
 			{
 				Scene3DManager::GetInstance()->LoadSceneNodeToEntity(EntityDecorator{ m_this, m_world }, vs[index]);
@@ -422,23 +422,23 @@ void AAAAgames::Scene3DCom::ImGuiRender()
 		for (auto& [level, data] : *m_objDatasRef)
 		{
 			auto levelname = "Level " + Str(level) + " : " + data->meshName;
-			if (ImGui::TreeNode(A4GAMES_ImGuiHashTagName("Level " + Str(level) + " : " + data->meshName, levelname + Str(data.get()))))
+			if (ImGui::TreeNode(LongMarch_ImGuiHashTagName("Level " + Str(level) + " : " + data->meshName, levelname + Str(data.get()))))
 			{
 				auto& mesh = data->meshData;
 				auto& mat = data->material;
 				ENGINE_EXCEPT_IF(!mesh || !mat, L"Trying to ImGuiRender a nullptr mesh or material!");
-				if (ImGui::TreeNode(A4GAMES_ImGuiHashTagName("Material", "mat" + Str(data.get()))))
+				if (ImGui::TreeNode(LongMarch_ImGuiHashTagName("Material", "mat" + Str(data.get()))))
 				{
-					if (ImGui::TreeNode(A4GAMES_ImGuiHashTagName("Textures", "tex" + Str(data.get()))))
+					if (ImGui::TreeNode(LongMarch_ImGuiHashTagName("Textures", "tex" + Str(data.get()))))
 					{
 						auto rm_texture2D = ResourceManager<Texture2D>::GetInstance();
 						auto vs = rm_texture2D->GetAllNames();
 						vs.insert(vs.begin(), std::string("None"));
-						const auto vc = A4GAMES_StrVec2ConstChar(vs);
+						const auto vc = LongMarch_StrVec2ConstChar(vs);
 						{
 							const auto texture_name = rm_texture2D->GetName(mat->textures.albedo_texture);
-							int index = A4GAMES_findFristIndex(vs, texture_name);
-							if (ImGui::Combo(A4GAMES_ImGuiHashTagName("Albedo", "alb_tex" + Str(data.get())), &index, &vc[0], vc.size()))
+							int index = LongMarch_findFristIndex(vs, texture_name);
+							if (ImGui::Combo(LongMarch_ImGuiHashTagName("Albedo", "alb_tex" + Str(data.get())), &index, &vc[0], vc.size()))
 							{
 								auto name = vs[index];
 								if (name != "None")
@@ -455,8 +455,8 @@ void AAAAgames::Scene3DCom::ImGuiRender()
 						ImGui::Dummy(ImVec2(0, yoffset_item));
 						{
 							const auto texture_name = rm_texture2D->GetName(mat->textures.normal_texture);
-							int index = A4GAMES_findFristIndex(vs, texture_name);
-							if (ImGui::Combo(A4GAMES_ImGuiHashTagName("Normal", "nrm_tex" + Str(data.get())), &index, &vc[0], vc.size()))
+							int index = LongMarch_findFristIndex(vs, texture_name);
+							if (ImGui::Combo(LongMarch_ImGuiHashTagName("Normal", "nrm_tex" + Str(data.get())), &index, &vc[0], vc.size()))
 							{
 								auto name = vs[index];
 								if (name != "None")
@@ -473,8 +473,8 @@ void AAAAgames::Scene3DCom::ImGuiRender()
 						ImGui::Dummy(ImVec2(0, yoffset_item));
 						{
 							const auto texture_name = rm_texture2D->GetName(mat->textures.metallic_texture);
-							int index = A4GAMES_findFristIndex(vs, texture_name);
-							if (ImGui::Combo(A4GAMES_ImGuiHashTagName("Metallic", "met_tex" + Str(data.get())), &index, &vc[0], vc.size()))
+							int index = LongMarch_findFristIndex(vs, texture_name);
+							if (ImGui::Combo(LongMarch_ImGuiHashTagName("Metallic", "met_tex" + Str(data.get())), &index, &vc[0], vc.size()))
 							{
 								auto name = vs[index];
 								if (name != "None")
@@ -491,8 +491,8 @@ void AAAAgames::Scene3DCom::ImGuiRender()
 						ImGui::Dummy(ImVec2(0, yoffset_item));
 						{
 							const auto texture_name = rm_texture2D->GetName(mat->textures.roughness_texture);
-							int index = A4GAMES_findFristIndex(vs, texture_name);
-							if (ImGui::Combo(A4GAMES_ImGuiHashTagName("Roughness", "roug_tex" + Str(data.get())), &index, &vc[0], vc.size()))
+							int index = LongMarch_findFristIndex(vs, texture_name);
+							if (ImGui::Combo(LongMarch_ImGuiHashTagName("Roughness", "roug_tex" + Str(data.get())), &index, &vc[0], vc.size()))
 							{
 								auto name = vs[index];
 								if (name != "None")
@@ -509,8 +509,8 @@ void AAAAgames::Scene3DCom::ImGuiRender()
 						ImGui::Dummy(ImVec2(0, yoffset_item));
 						{
 							const auto texture_name = rm_texture2D->GetName(mat->textures.ao_texture);
-							int index = A4GAMES_findFristIndex(vs, texture_name);
-							if (ImGui::Combo(A4GAMES_ImGuiHashTagName("Ambient Occlusion", "ao_tex" + Str(data.get())), &index, &vc[0], vc.size()))
+							int index = LongMarch_findFristIndex(vs, texture_name);
+							if (ImGui::Combo(LongMarch_ImGuiHashTagName("Ambient Occlusion", "ao_tex" + Str(data.get())), &index, &vc[0], vc.size()))
 							{
 								auto name = vs[index];
 								if (name != "None")
@@ -526,34 +526,34 @@ void AAAAgames::Scene3DCom::ImGuiRender()
 						}
 						ImGui::TreePop();
 					}
-					if (ImGui::TreeNode(A4GAMES_ImGuiHashTagName("Kd", "kd_tree" + Str(data.get()))))
+					if (ImGui::TreeNode(LongMarch_ImGuiHashTagName("Kd", "kd_tree" + Str(data.get()))))
 					{
 						auto kd = mat->Kd;
-						ImGui::ColorPicker3(A4GAMES_ImGuiHashTagName("Kd", "kd_picker" + Str(data.get())), &kd[0], ImGuiColorEditFlags_NoAlpha);
+						ImGui::ColorPicker3(LongMarch_ImGuiHashTagName("Kd", "kd_picker" + Str(data.get())), &kd[0], ImGuiColorEditFlags_NoAlpha);
 						{
 							float speed = 0.01f;
-							ImGui::DragFloat(A4GAMES_ImGuiHashTagName("R", "kd_picker_r" + Str(data.get())), &kd[0], speed, 0.f, 1.f);
-							ImGui::DragFloat(A4GAMES_ImGuiHashTagName("G", "kd_picker_g" + Str(data.get())), &kd[1], speed, 0.f, 1.f);
-							ImGui::DragFloat(A4GAMES_ImGuiHashTagName("B", "kd_picker_b" + Str(data.get())), &kd[2], speed, 0.f, 1.f);
+							ImGui::DragFloat(LongMarch_ImGuiHashTagName("R", "kd_picker_r" + Str(data.get())), &kd[0], speed, 0.f, 1.f);
+							ImGui::DragFloat(LongMarch_ImGuiHashTagName("G", "kd_picker_g" + Str(data.get())), &kd[1], speed, 0.f, 1.f);
+							ImGui::DragFloat(LongMarch_ImGuiHashTagName("B", "kd_picker_b" + Str(data.get())), &kd[2], speed, 0.f, 1.f);
 						}
 						mat->Kd = kd;
 						ImGui::TreePop();
 					}
-					if (ImGui::TreeNode(A4GAMES_ImGuiHashTagName("Metallic", "met_tree" + Str(data.get()))))
+					if (ImGui::TreeNode(LongMarch_ImGuiHashTagName("Metallic", "met_tree" + Str(data.get()))))
 					{
 						float speed = 0.01f;
 						auto metallic = mat->metallic;
-						if (ImGui::DragFloat(A4GAMES_ImGuiHashTagName("Metallic", "met_picker" + Str(data.get())), &metallic, speed, 0.0f, 1.0f))
+						if (ImGui::DragFloat(LongMarch_ImGuiHashTagName("Metallic", "met_picker" + Str(data.get())), &metallic, speed, 0.0f, 1.0f))
 						{
 							mat->metallic = metallic;
 						}
 						ImGui::TreePop();
 					}
-					if (ImGui::TreeNode(A4GAMES_ImGuiHashTagName("Roughness", "roug_tree" + Str(data.get()))))
+					if (ImGui::TreeNode(LongMarch_ImGuiHashTagName("Roughness", "roug_tree" + Str(data.get()))))
 					{
 						float speed = 0.01f;
 						auto roughness = mat->roughness;
-						if (ImGui::DragFloat(A4GAMES_ImGuiHashTagName("Roughness", "roug_picker" + Str(data.get())), &roughness, speed, 0.0f, 1.0f))
+						if (ImGui::DragFloat(LongMarch_ImGuiHashTagName("Roughness", "roug_picker" + Str(data.get())), &roughness, speed, 0.0f, 1.0f))
 						{
 							mat->roughness = roughness;
 						}

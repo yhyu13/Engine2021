@@ -8,7 +8,7 @@
 #define ALIGN(x, a)         (((x) + ((a) - 1)) & ~((a) - 1))
 #endif
 
-void AAAAgames::Allocator::Reset(size_t data_size, size_t page_size, size_t alignment) noexcept
+void longmarch::Allocator::Reset(size_t data_size, size_t page_size, size_t alignment) noexcept
 {
 	FreeAll();
 
@@ -30,7 +30,7 @@ void AAAAgames::Allocator::Reset(size_t data_size, size_t page_size, size_t alig
 	m_nBlocksPerPage = (m_szPageSize) / (m_szBlockSize + sizeof(BlockHeader));
 }
 
-void AAAAgames::Allocator::AllocateNewPage() noexcept
+void longmarch::Allocator::AllocateNewPage() noexcept
 {
 	// allocate a new page
 	auto alloc = this;
@@ -67,7 +67,7 @@ void AAAAgames::Allocator::AllocateNewPage() noexcept
 	}
 }
 
-void* AAAAgames::Allocator::Allocate() noexcept
+void* longmarch::Allocator::Allocate() noexcept
 {
 	LOCK_GUARD_NC();
 	if (!m_pFreeList) [[unlikely]]
@@ -84,7 +84,7 @@ void* AAAAgames::Allocator::Allocate() noexcept
 	return BlockHeader::GetPtr(freeBlock);
 }
 
-void AAAAgames::Allocator::Free(void* p)
+void longmarch::Allocator::Free(void* p)
 {
 	LOCK_GUARD_NC();
 	if (BlockHeader* block = BlockHeader::GetBlock(p);
@@ -108,7 +108,7 @@ void AAAAgames::Allocator::Free(void* p)
 	}
 }
 
-void AAAAgames::Allocator::FreeAll() noexcept
+void longmarch::Allocator::FreeAll() noexcept
 {
 	while (!m_pPageList.empty())
 	{
@@ -125,7 +125,7 @@ void AAAAgames::Allocator::FreeAll() noexcept
 }
 
 #if defined(_DEBUG)
-void AAAAgames::Allocator::FillFreePage(PageHeader* pPage) noexcept
+void longmarch::Allocator::FillFreePage(PageHeader* pPage) noexcept
 {
 	// blocks
 	BlockHeader* pBlock = pPage->Blocks();
@@ -136,7 +136,7 @@ void AAAAgames::Allocator::FillFreePage(PageHeader* pPage) noexcept
 	}
 }
 
-void AAAAgames::Allocator::FillFreeBlock(BlockHeader* pBlock) noexcept
+void longmarch::Allocator::FillFreeBlock(BlockHeader* pBlock) noexcept
 {
 	// block header + data
 	memset(pBlock + 1, PATTERN_FREE, m_szBlockSize - m_szAlignmentSize);
@@ -146,7 +146,7 @@ void AAAAgames::Allocator::FillFreeBlock(BlockHeader* pBlock) noexcept
 		PATTERN_ALIGN, m_szAlignmentSize);
 }
 
-void AAAAgames::Allocator::FillAllocatedBlock(BlockHeader* pBlock) noexcept
+void longmarch::Allocator::FillAllocatedBlock(BlockHeader* pBlock) noexcept
 {
 	// block header + data
 	memset(pBlock + 1, PATTERN_ALLOC, m_szBlockSize - m_szAlignmentSize);

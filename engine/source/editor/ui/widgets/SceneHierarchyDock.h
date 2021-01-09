@@ -1,7 +1,7 @@
 #pragma once
 #include "engine/ui/BaseWidget.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/**
 	 * @brief Display all scene nodes in the hierarchical order. Enables single selection and multi-selection
@@ -29,6 +29,6 @@ namespace AAAAgames
 		std::function<void()> m_removeEntityPopup;
 
 		ImVec2 m_Size;
-		A4GAMES_UnorderedMap<Entity, bool> m_PerEntitySelectionMask;
+		LongMarch_UnorderedMap<Entity, bool> m_PerEntitySelectionMask;
 	};
 }

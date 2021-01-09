@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "Contact.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 
 }

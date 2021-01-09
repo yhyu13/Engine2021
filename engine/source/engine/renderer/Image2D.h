@@ -2,7 +2,7 @@
 #include "engine/EngineEssential.h"
 #include "engine/math/Geommath.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class Image2D
 	{

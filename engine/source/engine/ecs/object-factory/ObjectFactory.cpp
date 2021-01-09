@@ -2,13 +2,13 @@
 #include "ObjectFactory.h"
 #include "engine/ecs/header/header.h"
 
-AAAAgames::ObjectFactory::ObjectFactory()
+longmarch::ObjectFactory::ObjectFactory()
 {
 	s_instance = nullptr;
 	m_EntityNameToTypeList.emplace_back(EngineEntity::TypeNameMap);
 	m_EntityTypeToNameList.emplace_back(EngineEntity::TypeNameMapInv);
 
-	const A4GAMES_Vector<std::string> components{
+	const LongMarch_Vector<std::string> components{
 		"Transform3DCom",
 		"PerspectiveCameraCom",
 		"Scene3DCom",
@@ -19,7 +19,7 @@ AAAAgames::ObjectFactory::ObjectFactory()
 	};
 	std::move(components.begin(), components.end(), std::back_inserter(m_ComponentNameList));
 
-	const A4GAMES_Vector<std::string> componentSys{
+	const LongMarch_Vector<std::string> componentSys{
 	"Scene3DComSys",
 	"EntityGCComSys",
 	"Transform3DComSys",
@@ -30,31 +30,31 @@ AAAAgames::ObjectFactory::ObjectFactory()
 	std::move(componentSys.begin(), componentSys.end(), std::back_inserter(m_ComponentSystemNameList));
 }
 
-const A4GAMES_Vector<std::string> AAAAgames::ObjectFactory::GetAllEntityTypeName() const
+const LongMarch_Vector<std::string> longmarch::ObjectFactory::GetAllEntityTypeName() const
 {
-	A4GAMES_Vector<std::string> ret;
+	LongMarch_Vector<std::string> ret;
 	for (const auto& name2type : m_EntityNameToTypeList)
 	{
-		A4GAMES_MapKeyToVec(name2type, ret);
+		LongMarch_MapKeyToVec(name2type, ret);
 	}
 	return ret;
 }
 
-const A4GAMES_Vector<std::string> AAAAgames::ObjectFactory::GetAllComponentName() const
+const LongMarch_Vector<std::string> longmarch::ObjectFactory::GetAllComponentName() const
 {
 	return m_ComponentNameList;
 }
 
-const A4GAMES_Vector<std::string> AAAAgames::ObjectFactory::GetAllComponentSystemName() const
+const LongMarch_Vector<std::string> longmarch::ObjectFactory::GetAllComponentSystemName() const
 {
 	return m_ComponentSystemNameList;
 }
 
-const EntityType AAAAgames::ObjectFactory::GetEntityTypeFromName(const std::string& s_type) const
+const EntityType longmarch::ObjectFactory::GetEntityTypeFromName(const std::string& s_type) const
 {
 	for (auto& list : m_EntityNameToTypeList)
 	{
-		if (A4GAMES_contains(list, s_type))
+		if (LongMarch_contains(list, s_type))
 		{
 			return list.at(s_type);
 		}
@@ -62,11 +62,11 @@ const EntityType AAAAgames::ObjectFactory::GetEntityTypeFromName(const std::stri
 	ENGINE_EXCEPT(L"Entity type " + str2wstr(s_type) + L" is not found!");
 }
 
-const std::string AAAAgames::ObjectFactory::GetEntityNameFromType(EntityType e_type) const
+const std::string longmarch::ObjectFactory::GetEntityNameFromType(EntityType e_type) const
 {
 	for (auto& list : m_EntityTypeToNameList)
 	{
-		if (A4GAMES_contains(list, e_type))
+		if (LongMarch_contains(list, e_type))
 		{
 			return list.at(e_type);
 		}
@@ -74,7 +74,7 @@ const std::string AAAAgames::ObjectFactory::GetEntityNameFromType(EntityType e_t
 	ENGINE_EXCEPT(L"Entity type " + wStr(e_type) + L" is not found!");
 }
 
-BaseComponentInterface* AAAAgames::ObjectFactory::AddComponentByName(const std::string& com_type, EntityDecorator entity) const
+BaseComponentInterface* longmarch::ObjectFactory::AddComponentByName(const std::string& com_type, EntityDecorator entity) const
 {
 	/*
 	 1, Modify this map for new compoent
@@ -175,7 +175,7 @@ BaseComponentInterface* AAAAgames::ObjectFactory::AddComponentByName(const std::
 	return ret;
 }
 
-std::shared_ptr<BaseComponentSystem> AAAAgames::ObjectFactory::AddComponentSystemByName(const std::string& comsys_type, GameWorld* world) const
+std::shared_ptr<BaseComponentSystem> longmarch::ObjectFactory::AddComponentSystemByName(const std::string& comsys_type, GameWorld* world) const
 {
 	/*
 		1, Modify this map for new compoent systems
@@ -224,7 +224,7 @@ std::shared_ptr<BaseComponentSystem> AAAAgames::ObjectFactory::AddComponentSyste
 	return system;
 }
 
-bool AAAAgames::ObjectFactory::RemoveComponentByName(const std::string& com_type, EntityDecorator entity) const
+bool longmarch::ObjectFactory::RemoveComponentByName(const std::string& com_type, EntityDecorator entity) const
 {
 	/*
 	 1, Modify this map for new compoent
@@ -317,7 +317,7 @@ bool AAAAgames::ObjectFactory::RemoveComponentByName(const std::string& com_type
 	return false;
 }
 
-bool AAAAgames::ObjectFactory::RemoveComponentSystemByName(const std::string& comsys_type, GameWorld* world) const
+bool longmarch::ObjectFactory::RemoveComponentSystemByName(const std::string& comsys_type, GameWorld* world) const
 {
 	/*
 		1, Modify this map for new compoent systems
@@ -336,32 +336,32 @@ bool AAAAgames::ObjectFactory::RemoveComponentSystemByName(const std::string& co
 	return false;
 }
 
-void AAAAgames::ObjectFactory::LoadLevel(const fs::path& filepath, GameWorld* world) const
+void longmarch::ObjectFactory::LoadLevel(const fs::path& filepath, GameWorld* world) const
 {
 	throw NotImplementedException();
 }
 
-void AAAAgames::ObjectFactory::SaveLevel(const fs::path& filepath, GameWorld* world) const
+void longmarch::ObjectFactory::SaveLevel(const fs::path& filepath, GameWorld* world) const
 {
 	throw NotImplementedException();
 }
 
-void AAAAgames::ObjectFactory::LoadResources(const fs::path& filepath, GameWorld* world) const
+void longmarch::ObjectFactory::LoadResources(const fs::path& filepath, GameWorld* world) const
 {
 	throw NotImplementedException();
 }
 
-void AAAAgames::ObjectFactory::LoadSystems(const fs::path& filepath, GameWorld* world) const
+void longmarch::ObjectFactory::LoadSystems(const fs::path& filepath, GameWorld* world) const
 {
 	throw NotImplementedException();
 }
 
-void AAAAgames::ObjectFactory::LoadGameWorldScene(const fs::path& filepath, GameWorld* world) const
+void longmarch::ObjectFactory::LoadGameWorldScene(const fs::path& filepath, GameWorld* world) const
 {
 	throw NotImplementedException();
 }
 
-void AAAAgames::ObjectFactory::SaveGameWorldScene(const fs::path& filepath, GameWorld* world) const
+void longmarch::ObjectFactory::SaveGameWorldScene(const fs::path& filepath, GameWorld* world) const
 {
 	throw NotImplementedException();
 }

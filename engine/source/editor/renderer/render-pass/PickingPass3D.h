@@ -1,7 +1,7 @@
 #pragma once
 #include "engine/renderer/render-pass/RenderPass3D.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/**
 	 * @brief Picking system render pass
@@ -39,8 +39,8 @@ namespace AAAAgames
 		constexpr static uint32_t texture_dim = { 1u }; //!< The picking system simply need 1 entity, so a 1x1 texture should suffice.
 
 	private:
-		A4GAMES_Vector<int> m_multiDraw_PickingEntityId; // Picking
-		A4GAMES_Vector<Mat4> m_multiDraw_PickingTr; // Picking
+		LongMarch_Vector<int> m_multiDraw_PickingEntityId; // Picking
+		LongMarch_Vector<Mat4> m_multiDraw_PickingTr; // Picking
 		std::shared_ptr<ShaderStorageBuffer> m_multiDraw_ssbo_PickingModelTrsBuffer{ nullptr }; // Picking
 		std::shared_ptr<ShaderStorageBuffer> m_multiDraw_ssbo_PickingEntityIdsBuffer{ nullptr }; // Picking
 

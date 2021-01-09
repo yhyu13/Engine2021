@@ -8,14 +8,14 @@
 #include "engine/ecs/components/IDNameCom.h"
 #include "engine/events/engineEvents/EngineCustomEvent.h"
 
-AAAAgames::Animation3DCom::Animation3DCom(const EntityDecorator& _this)
+longmarch::Animation3DCom::Animation3DCom(const EntityDecorator& _this)
 	:
 	BaseComponent(_this.GetWorld()),
 	m_this(_this.GetEntity())
 {
 }
 
-void AAAAgames::Animation3DCom::SetAnimationCollection(const std::string& name)
+void longmarch::Animation3DCom::SetAnimationCollection(const std::string& name)
 {
 	LOCK_GUARD2();
 	if (ResourceManager<Animation3D>::GetInstance()->Has(name))
@@ -30,7 +30,7 @@ void AAAAgames::Animation3DCom::SetAnimationCollection(const std::string& name)
 	}
 }
 
-void AAAAgames::Animation3DCom::SetCurrentAnimation(const AnimationSetting& anima)
+void longmarch::Animation3DCom::SetCurrentAnimation(const AnimationSetting& anima)
 {
 	LOCK_GUARD2();
 	if (m_animaRef->HasAnimation(anima.name))
@@ -50,14 +50,14 @@ void AAAAgames::Animation3DCom::SetCurrentAnimation(const AnimationSetting& anim
 	}
 }
 
-void AAAAgames::Animation3DCom::SetAnimationTickTimer(float period)
+void longmarch::Animation3DCom::SetAnimationTickTimer(float period)
 {
 	LOCK_GUARD2();
 	animationTickTimer.Reset();
 	animationTickTimer.SetPeriod(period);
 }
 
-void AAAAgames::Animation3DCom::UpdateAnimation(double dt, Scene3DNode* sceneNode)
+void longmarch::Animation3DCom::UpdateAnimation(double dt, Scene3DNode* sceneNode)
 {
 	LOCK_GUARD2();
 	if (currentAnimName != "None" && !pause && m_animaRef)
@@ -111,7 +111,7 @@ void AAAAgames::Animation3DCom::UpdateAnimation(double dt, Scene3DNode* sceneNod
 	}
 }
 
-void AAAAgames::Animation3DCom::JsonSerialize(Json::Value& value)
+void longmarch::Animation3DCom::JsonSerialize(Json::Value& value)
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
 	LOCK_GUARD2();
@@ -146,7 +146,7 @@ void AAAAgames::Animation3DCom::JsonSerialize(Json::Value& value)
 	}
 }
 
-void AAAAgames::Animation3DCom::JsonDeserialize(const Json::Value& value)
+void longmarch::Animation3DCom::JsonDeserialize(const Json::Value& value)
 {
 	if (value.isNull())
 	{
@@ -198,7 +198,7 @@ void AAAAgames::Animation3DCom::JsonDeserialize(const Json::Value& value)
 	}
 }
 
-void AAAAgames::Animation3DCom::ImGuiRender()
+void longmarch::Animation3DCom::ImGuiRender()
 {
 	if (ImGui::TreeNode("Animation3D"))
 	{
@@ -210,8 +210,8 @@ void AAAAgames::Animation3DCom::ImGuiRender()
 			const auto animationName = (m_animaRef) ? ResourceManager<Animation3D>::GetInstance()->GetName(m_animaRef) : "None";
 			auto vs = ResourceManager<Animation3D>::GetInstance()->GetAllNames();
 			vs.insert(vs.begin(), std::string("None"));
-			const auto vc = A4GAMES_StrVec2ConstChar(vs);
-			int index = A4GAMES_findFristIndex(vs, animationName);
+			const auto vc = LongMarch_StrVec2ConstChar(vs);
+			int index = LongMarch_findFristIndex(vs, animationName);
 			if (ImGui::Combo("Animation collection", &index, &vc[0], vc.size()))
 			{
 				m_animaRef = ResourceManager<Animation3D>::GetInstance()->TryGet(vc[index])->Get();
@@ -227,8 +227,8 @@ void AAAAgames::Animation3DCom::ImGuiRender()
 		{
 			auto skeleton_name = ResourceManager<Skeleton>::GetInstance()->GetName(m_animaRef->skeletonRef);
 			auto vs = ResourceManager<Skeleton>::GetInstance()->GetAllNames();
-			const auto vc = A4GAMES_StrVec2ConstChar(vs);
-			int index = A4GAMES_findFristIndex(vs, skeleton_name);
+			const auto vc = LongMarch_StrVec2ConstChar(vs);
+			int index = LongMarch_findFristIndex(vs, skeleton_name);
 			if (index != -1)
 			{
 				ImGui::LabelText("Skeleton", vc[index]);
@@ -287,8 +287,8 @@ void AAAAgames::Animation3DCom::ImGuiRender()
 				}
 				{
 					auto vs = m_IKResolverRef->skeletonRef->GetAllBoneNames();
-					const auto vc = A4GAMES_StrVec2ConstChar(vs);
-					int index = A4GAMES_findFristIndex(vs, debug.ee_bone_name);
+					const auto vc = LongMarch_StrVec2ConstChar(vs);
+					int index = LongMarch_findFristIndex(vs, debug.ee_bone_name);
 					if (index == -1)
 					{
 						debug.ee_bone_name = vs[0];
@@ -365,8 +365,8 @@ void AAAAgames::Animation3DCom::ImGuiRender()
 		{
 			auto vs = m_animaRef->GetAllAnimationNames();
 			vs.insert(vs.begin(), std::string("None"));
-			const auto vc = A4GAMES_StrVec2ConstChar(vs);
-			int index = A4GAMES_findFristIndex(vs, currentAnimName);
+			const auto vc = LongMarch_StrVec2ConstChar(vs);
+			int index = LongMarch_findFristIndex(vs, currentAnimName);
 			if (ImGui::Combo("Current Animation", &index, &vc[0], vc.size()))
 			{
 				currentAnimName = vs[index];

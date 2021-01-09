@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "IDNameCom.h"
 
-AAAAgames::IDNameCom::IDNameCom(const Entity& _this, const std::string& _name)
+longmarch::IDNameCom::IDNameCom(const Entity& _this, const std::string& _name)
 	:
 	m_this(_this),
 	m_name(_name)
@@ -12,30 +12,30 @@ AAAAgames::IDNameCom::IDNameCom(const Entity& _this, const std::string& _name)
 	}
 }
 
-void AAAAgames::IDNameCom::SetName(const std::string& name)
+void longmarch::IDNameCom::SetName(const std::string& name)
 {
 	LOCK_GUARD2();
 	m_name = name;
 }
 
-std::string AAAAgames::IDNameCom::GetName()
+std::string longmarch::IDNameCom::GetName()
 {
 	LOCK_GUARD2();
 	return m_name;
 }
 
-std::string AAAAgames::IDNameCom::GetUniqueName()
+std::string longmarch::IDNameCom::GetUniqueName()
 {
 	LOCK_GUARD2();
 	return Str(m_this) + "_" + m_name;
 }
 
-Entity AAAAgames::IDNameCom::GetEntity()
+Entity longmarch::IDNameCom::GetEntity()
 {
 	return m_this;
 }
 
-void AAAAgames::IDNameCom::JsonSerialize(Json::Value& value)
+void longmarch::IDNameCom::JsonSerialize(Json::Value& value)
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
 	LOCK_GUARD2();
@@ -55,7 +55,7 @@ void AAAAgames::IDNameCom::JsonSerialize(Json::Value& value)
 	}
 }
 
-void AAAAgames::IDNameCom::JsonDeserialize(const Json::Value& value)
+void longmarch::IDNameCom::JsonDeserialize(const Json::Value& value)
 {
 	if (value.isNull())
 	{
@@ -70,7 +70,7 @@ void AAAAgames::IDNameCom::JsonDeserialize(const Json::Value& value)
 	}
 }
 
-void AAAAgames::IDNameCom::ImGuiRender()
+void longmarch::IDNameCom::ImGuiRender()
 {
 	if (ImGui::TreeNode("ID Name"))
 	{

@@ -5,7 +5,7 @@
 #include <GLFW/glfw3.h>
 #include "engine/core/file-system/FileSystem.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	OpenGLPostProcessing::OpenGLPostProcessing()
 	{
 	}

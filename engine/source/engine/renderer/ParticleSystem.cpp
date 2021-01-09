@@ -4,7 +4,7 @@
 #include "engine/core/utility/Random.h"
 #include <glm/gtx/compatibility.hpp>
 
-namespace AAAAgames {
+namespace longmarch {
 	ParticleSystem::ParticleSystem()
 	{
 		m_ParticlePool.resize(m_ParticlePoolSize);

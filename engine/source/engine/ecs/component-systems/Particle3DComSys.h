@@ -8,7 +8,7 @@
 #include "engine/ecs/components/PerspectiveCameraCom.h"
 #include "engine/Engine.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class Particle3DComSys final : public BaseComponentSystem
 	{

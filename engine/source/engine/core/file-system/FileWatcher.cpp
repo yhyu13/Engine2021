@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "FileWatcher.h"
 
-void AAAAgames::filewatcher::fileWatcherThread(CFileSystemWatcher& watcherObj)
+void longmarch::filewatcher::fileWatcherThread(CFileSystemWatcher& watcherObj)
 {
 	HANDLE hDir = CreateFile(watcherObj.GetDir().c_str(), // pointer to the file name
 		FILE_LIST_DIRECTORY,                // access (read/write) mode
@@ -70,56 +70,56 @@ void AAAAgames::filewatcher::fileWatcherThread(CFileSystemWatcher& watcherObj)
 	CloseHandle(hDir);
 }
 
-AAAAgames::filewatcher::CFileSystemWatcher::CFileSystemWatcher(const std::wstring& logDir) :m_sDir(logDir), m_bRunning(false)
+longmarch::filewatcher::CFileSystemWatcher::CFileSystemWatcher(const std::wstring& logDir) :m_sDir(logDir), m_bRunning(false)
 {
 }
 
-void AAAAgames::filewatcher::CFileSystemWatcher::AddFileChangeListener(IFileWatcherListener* listener)
+void longmarch::filewatcher::CFileSystemWatcher::AddFileChangeListener(IFileWatcherListener* listener)
 {
 	m_Listeners.push_back(listener);
 }
 
-void AAAAgames::filewatcher::CFileSystemWatcher::OnFileChange(const std::wstring& fileName)
+void longmarch::filewatcher::CFileSystemWatcher::OnFileChange(const std::wstring& fileName)
 {
 	for (auto& listener : m_Listeners) {
 		listener->OnFileChange(fileName);
 	}
 }
 
-void AAAAgames::filewatcher::CFileSystemWatcher::OnFileAdded(const std::wstring& sFile)
+void longmarch::filewatcher::CFileSystemWatcher::OnFileAdded(const std::wstring& sFile)
 {
 	for (auto& listener : m_Listeners) {
 		listener->OnFileAdded(sFile);
 	}
 }
 
-void AAAAgames::filewatcher::CFileSystemWatcher::OnFileRemoved(const std::wstring& sFile)
+void longmarch::filewatcher::CFileSystemWatcher::OnFileRemoved(const std::wstring& sFile)
 {
 	for (auto& listener : m_Listeners) {
 		listener->OnFileRemoved(sFile);
 	}
 }
 
-void AAAAgames::filewatcher::CFileSystemWatcher::OnFileRenamed(const std::wstring& sFile)
+void longmarch::filewatcher::CFileSystemWatcher::OnFileRenamed(const std::wstring& sFile)
 {
 	for (auto& listener : m_Listeners) {
 		listener->OnFileRenamed(sFile);
 	}
 }
 
-void AAAAgames::filewatcher::CFileSystemWatcher::Start()
+void longmarch::filewatcher::CFileSystemWatcher::Start()
 {
 	m_bRunning = true;
 	m_pFileWatcherThread = std::unique_ptr<std::thread>(new std::thread(fileWatcherThread, std::ref(*this)));
 	m_pFileWatcherThread->detach();
 }
 
-void AAAAgames::filewatcher::CFileSystemWatcher::Stop()
+void longmarch::filewatcher::CFileSystemWatcher::Stop()
 {
 	m_bRunning = false;
 }
 
-AAAAgames::filewatcher::CFileSystemWatcher::~CFileSystemWatcher()
+longmarch::filewatcher::CFileSystemWatcher::~CFileSystemWatcher()
 {
 	Stop();
 }

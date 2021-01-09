@@ -2,7 +2,7 @@
 #include "ImGuiUtil.h"
 #include "engine/core/EngineCore.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	namespace gui
 	{

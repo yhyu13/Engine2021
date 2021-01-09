@@ -3,7 +3,7 @@
 #include "engine/ecs/BaseComponent.h"
 #include "engine/renderer/Buffer.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/*
 		A universal component manages lights parameters and shadowing parameters

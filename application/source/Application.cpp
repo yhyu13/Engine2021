@@ -3,7 +3,7 @@
 #include "editor/layer/header/header.h"
 #include "engine/Main.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class Application final : public Engine
 	{

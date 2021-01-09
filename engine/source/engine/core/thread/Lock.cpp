@@ -4,13 +4,13 @@
 
 #define DEBUG_TIMER 1
 
-namespace AAAAgames
+namespace longmarch
 {
 	std::atomic_flag stbi_hdr_write_lock;
 	std::atomic_flag stbi_png_write_lock;
 }
 
-AAAAgames::atomic_flag_guard::atomic_flag_guard(std::atomic_flag& flag) noexcept
+longmarch::atomic_flag_guard::atomic_flag_guard(std::atomic_flag& flag) noexcept
 	:
 	m_lock(&flag)
 {
@@ -30,12 +30,12 @@ AAAAgames::atomic_flag_guard::atomic_flag_guard(std::atomic_flag& flag) noexcept
 	}
 }
 
-AAAAgames::atomic_flag_guard::~atomic_flag_guard() noexcept
+longmarch::atomic_flag_guard::~atomic_flag_guard() noexcept
 {
 	m_lock->clear(std::memory_order_release);
 }
 
-AAAAgames::atomic_bool_guard::atomic_bool_guard(std::atomic_bool& flag) noexcept
+longmarch::atomic_bool_guard::atomic_bool_guard(std::atomic_bool& flag) noexcept
 	:
 	m_lock(&flag)
 {
@@ -56,12 +56,12 @@ AAAAgames::atomic_bool_guard::atomic_bool_guard(std::atomic_bool& flag) noexcept
 	}
 }
 
-AAAAgames::atomic_bool_guard::~atomic_bool_guard() noexcept
+longmarch::atomic_bool_guard::~atomic_bool_guard() noexcept
 {
 	m_lock->store(false, std::memory_order_release);
 }
 
-void AAAAgames::BaseAtomicClassStatic::LockS() noexcept
+void longmarch::BaseAtomicClassStatic::LockS() noexcept
 {
 #if DEBUG_TIMER == 1
 	Timer timer;
@@ -79,12 +79,12 @@ void AAAAgames::BaseAtomicClassStatic::LockS() noexcept
 	}
 }
 
-void AAAAgames::BaseAtomicClassStatic::UnlockS() noexcept
+void longmarch::BaseAtomicClassStatic::UnlockS() noexcept
 {
 	sc_flag.clear(std::memory_order_release);
 }
 
-void AAAAgames::BaseAtomicClassNI::LockNI() noexcept
+void longmarch::BaseAtomicClassNI::LockNI() noexcept
 {
 #if DEBUG_TIMER == 1
 	Timer timer;
@@ -102,12 +102,12 @@ void AAAAgames::BaseAtomicClassNI::LockNI() noexcept
 	}
 }
 
-void AAAAgames::BaseAtomicClassNI::UnlockNI() noexcept
+void longmarch::BaseAtomicClassNI::UnlockNI() noexcept
 {
 	ni_flag.clear(std::memory_order_release);
 }
 
-void AAAAgames::BaseAtomicClassNC::LockNC() const noexcept
+void longmarch::BaseAtomicClassNC::LockNC() const noexcept
 {
 #if DEBUG_TIMER == 1
 	Timer timer;
@@ -125,12 +125,12 @@ void AAAAgames::BaseAtomicClassNC::LockNC() const noexcept
 	}
 }
 
-void AAAAgames::BaseAtomicClassNC::UnlockNC() const noexcept
+void longmarch::BaseAtomicClassNC::UnlockNC() const noexcept
 {
 	nc_flag.clear(std::memory_order_release);
 }
 
-void AAAAgames::BaseAtomicClass2::Lock2() const noexcept
+void longmarch::BaseAtomicClass2::Lock2() const noexcept
 {
 #if DEBUG_TIMER == 1
 	Timer timer;
@@ -148,7 +148,7 @@ void AAAAgames::BaseAtomicClass2::Lock2() const noexcept
 	}
 }
 
-void AAAAgames::BaseAtomicClass2::Unlock2() const noexcept
+void longmarch::BaseAtomicClass2::Unlock2() const noexcept
 {
 	m_flag.clear(std::memory_order_release);
 }

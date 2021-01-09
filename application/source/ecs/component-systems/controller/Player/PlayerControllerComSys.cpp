@@ -4,7 +4,7 @@
 #include "ecs/EntityType.h"
 #include "engine/ui/ImGuiUtil.h"
 
-void AAAAgames::PlayerControllerComSys::Update(double dt)
+void longmarch::PlayerControllerComSys::Update(double dt)
 {
 	switch (Engine::GetEngineMode())
 	{
@@ -57,11 +57,11 @@ void AAAAgames::PlayerControllerComSys::Update(double dt)
 		static Vec3f pos2 = trans->GetGlobalPos();
 		switch (cam->type)
 		{
-		case AAAAgames::PerspectiveCameraType::LOOK_AT:
+		case longmarch::PerspectiveCameraType::LOOK_AT:
 			cam->type = PerspectiveCameraType::FIRST_PERSON;
 			PRINT("Switch to FIRST_PERSON camera");
 			break;
-		case AAAAgames::PerspectiveCameraType::FIRST_PERSON:
+		case longmarch::PerspectiveCameraType::FIRST_PERSON:
 			cam->type = PerspectiveCameraType::LOOK_AT;
 			PRINT("Switch to LOOK AT camera");
 			break;
@@ -82,14 +82,14 @@ void AAAAgames::PlayerControllerComSys::Update(double dt)
 		}
 		switch (cam->type)
 		{
-		case AAAAgames::PerspectiveCameraType::LOOK_AT:
+		case longmarch::PerspectiveCameraType::LOOK_AT:
 			if (input->IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && bUINotHoldMouse)
 			{
 				mouse_delta_pixel = input->GetCursorPositionDeltaXY();
 				constexpr float pixel_threshold = 1.0f;
 				constexpr float pixel_max_threshold = 50.0f;
-				float x_multi = A4GAMES_Lerp(1.0f, 2.0f * rotation_speed, fabs(mouse_delta_pixel.x - pixel_threshold) / pixel_max_threshold);
-				float y_multi = A4GAMES_Lerp(1.0f, 2.0f * rotation_speed, fabs(mouse_delta_pixel.y - pixel_threshold) / pixel_max_threshold);
+				float x_multi = LongMarch_Lerp(1.0f, 2.0f * rotation_speed, fabs(mouse_delta_pixel.x - pixel_threshold) / pixel_max_threshold);
+				float y_multi = LongMarch_Lerp(1.0f, 2.0f * rotation_speed, fabs(mouse_delta_pixel.y - pixel_threshold) / pixel_max_threshold);
 
 				if (mouse_delta_pixel.x > pixel_threshold)
 				{
@@ -114,7 +114,7 @@ void AAAAgames::PlayerControllerComSys::Update(double dt)
 				cam->SetZoom(cam->GetZoom() - y_offset * speed_up_multi);
 			}
 			break;
-		case AAAAgames::PerspectiveCameraType::FIRST_PERSON:
+		case longmarch::PerspectiveCameraType::FIRST_PERSON:
 			// UE4 like movement with MMB pressed :
 			// panning on local right / left and global up / down
 			if (input->IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE) && bUINotHoldMouse)
@@ -122,8 +122,8 @@ void AAAAgames::PlayerControllerComSys::Update(double dt)
 				mouse_delta_pixel = input->GetCursorPositionDeltaXY();
 				constexpr float pixel_threshold = 1.0f;
 				constexpr float pixel_max_threshold = 50.0f;
-				float x_multi = A4GAMES_Lerp(v_speed, v_max, fabs(mouse_delta_pixel.x - pixel_threshold) / pixel_max_threshold);
-				float y_multi = A4GAMES_Lerp(v_speed, v_max, fabs(mouse_delta_pixel.y - pixel_threshold) / pixel_max_threshold);
+				float x_multi = LongMarch_Lerp(v_speed, v_max, fabs(mouse_delta_pixel.x - pixel_threshold) / pixel_max_threshold);
+				float y_multi = LongMarch_Lerp(v_speed, v_max, fabs(mouse_delta_pixel.y - pixel_threshold) / pixel_max_threshold);
 
 				if (mouse_delta_pixel.x > pixel_threshold)
 				{
@@ -167,8 +167,8 @@ void AAAAgames::PlayerControllerComSys::Update(double dt)
 				mouse_delta_pixel = input->GetCursorPositionDeltaXY();
 				constexpr float pixel_threshold = 1.0f;
 				constexpr float pixel_max_threshold = 50.0f;
-				float x_multi = A4GAMES_Lerp(0.0f, 2.0f * rotation_speed, (fabs(mouse_delta_pixel.x) - pixel_threshold) / pixel_max_threshold);
-				float y_multi = A4GAMES_Lerp(0.0f, 2.0f * rotation_speed, (fabs(mouse_delta_pixel.y) - pixel_threshold) / pixel_max_threshold);
+				float x_multi = LongMarch_Lerp(0.0f, 2.0f * rotation_speed, (fabs(mouse_delta_pixel.x) - pixel_threshold) / pixel_max_threshold);
+				float y_multi = LongMarch_Lerp(0.0f, 2.0f * rotation_speed, (fabs(mouse_delta_pixel.y) - pixel_threshold) / pixel_max_threshold);
 
 				if (mouse_delta_pixel.x > pixel_threshold)
 				{
@@ -205,7 +205,7 @@ void AAAAgames::PlayerControllerComSys::Update(double dt)
 		{
 			switch (cam->type)
 			{
-			case AAAAgames::PerspectiveCameraType::LOOK_AT:
+			case longmarch::PerspectiveCameraType::LOOK_AT:
 			{
 				{
 					gamepad_right_aixs = input->GetGamepadRightStickXY();
@@ -224,7 +224,7 @@ void AAAAgames::PlayerControllerComSys::Update(double dt)
 				}
 			}
 			break;
-			case AAAAgames::PerspectiveCameraType::FIRST_PERSON:
+			case longmarch::PerspectiveCameraType::FIRST_PERSON:
 			{
 				// Move by left axis, rotate by right axis
 				{
@@ -250,8 +250,8 @@ void AAAAgames::PlayerControllerComSys::Update(double dt)
 					float left_trigger = input->GetGamepadLeftTrigger();
 					float right_trigger = input->GetGamepadRightTrigger();
 
-					float x_multi = A4GAMES_Lerp(v_speed, v_max, left_trigger);
-					float y_multi = A4GAMES_Lerp(v_speed, v_max, right_trigger);
+					float x_multi = LongMarch_Lerp(v_speed, v_max, left_trigger);
+					float y_multi = LongMarch_Lerp(v_speed, v_max, right_trigger);
 
 					global_v += -x_multi * Geommath::WorldUp;
 					global_v += y_multi * Geommath::WorldUp;
@@ -287,13 +287,13 @@ void AAAAgames::PlayerControllerComSys::Update(double dt)
 	}
 	switch (cam->type)
 	{
-	case AAAAgames::PerspectiveCameraType::LOOK_AT:
+	case longmarch::PerspectiveCameraType::LOOK_AT:
 		trans->SetLocalVel(Vec3f(0));
 		trans->SetGlobalVel(Vec3f(0));
 		trans->SetGlobalRotVel(-rv_yaw);
 		trans->SetLocalRotVel(-rv_pitch);
 		break;
-	case AAAAgames::PerspectiveCameraType::FIRST_PERSON:
+	case longmarch::PerspectiveCameraType::FIRST_PERSON:
 		trans->SetLocalVel(friction_local_v + local_v);
 		trans->SetGlobalVel(friction_global_v + global_v);
 		trans->SetGlobalRotVel(rv_yaw);

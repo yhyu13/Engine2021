@@ -3,7 +3,7 @@
 #include <queue>
 #include <atomic>
 
-namespace AAAAgames
+namespace longmarch
 {
 	extern std::atomic_flag stbi_hdr_write_lock;
 	extern std::atomic_flag stbi_png_write_lock;

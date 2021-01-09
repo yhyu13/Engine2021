@@ -5,7 +5,7 @@
 #define ALIGN(x, a)         (((x) + ((a) - 1)) & ~((a) - 1))
 #endif
 
-void AAAAgames::MemoryManager::Init()
+void longmarch::MemoryManager::Init()
 {
 	// initialize block size lookup table
 	s_pBlockSizeLookup = new size_t[kMaxBlockSize + 1];
@@ -28,7 +28,7 @@ void AAAAgames::MemoryManager::Init()
 	}
 }
 
-void AAAAgames::MemoryManager::Shutdown()
+void longmarch::MemoryManager::Shutdown()
 {
 	/* We found that shared pointers might call deleter in the very end of the exit
 	   even after Shutdown() while s_pAllocators and s_pBlockSizeLookup
@@ -39,7 +39,7 @@ void AAAAgames::MemoryManager::Shutdown()
 	   //delete[] s_pBlockSizeLookup;
 }
 
-Allocator* AAAAgames::MemoryManager::LookUpAllocator(const size_t size) noexcept
+Allocator* longmarch::MemoryManager::LookUpAllocator(const size_t size) noexcept
 {
 	// check eligibility for lookup
 	if (size <= kMaxBlockSize) [[likely]]
@@ -53,7 +53,7 @@ Allocator* AAAAgames::MemoryManager::LookUpAllocator(const size_t size) noexcept
 }
 
 [[nodiscard]]
-void* AAAAgames::MemoryManager::Allocate(const size_t size, const size_t alignment) noexcept
+void* longmarch::MemoryManager::Allocate(const size_t size, const size_t alignment) noexcept
 {
 	// There might be cases where allocation happens before we call Init, so we do init here
 	std::call_once(s_flag_init, MemoryManager::Init);
@@ -77,7 +77,7 @@ void* AAAAgames::MemoryManager::Allocate(const size_t size, const size_t alignme
 // Replacement for malloc()
 
 [[nodiscard]]
-void* AAAAgames::MemoryManager::Allocate(const size_t size) noexcept
+void* longmarch::MemoryManager::Allocate(const size_t size) noexcept
 {
 	// There might be cases where allocation happens before we call Init, so we do init here
 	std::call_once(s_flag_init, MemoryManager::Init);
@@ -98,7 +98,7 @@ void* AAAAgames::MemoryManager::Allocate(const size_t size) noexcept
 
 // Replacement for free()
 
-void AAAAgames::MemoryManager::Free(void* p, const size_t size) noexcept
+void longmarch::MemoryManager::Free(void* p, const size_t size) noexcept
 {
 #if CUSTOM_ALLOCATOR
 	if (size <= kMaxBlockSize) [[likely]]

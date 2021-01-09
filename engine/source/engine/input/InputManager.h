@@ -5,7 +5,7 @@
 #include "engine/input/Gamepad.h"
 #include "engine/core/thread/Lock.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class ENGINE_API InputManager final : public BaseAtomicClassNC
 	{
@@ -69,7 +69,7 @@ namespace AAAAgames
 		std::chrono::steady_clock::time_point m_pressMouseButtonTimeStamp[MOUSE_BUTTON_LAST + 1];
 
 		// Gamepad
-		AAAAgames::Gamepad m_gamepad;
+		longmarch::Gamepad m_gamepad;
 
 		Vec2f m_cursorPrevPosition;
 		Vec2f m_cursorPosition;

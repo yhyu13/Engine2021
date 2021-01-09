@@ -2,18 +2,18 @@
 #include "BaseEngineWidgetManager.h"
 #include "engine/ecs/GameWorld.h"
 
-void AAAAgames::BaseEngineWidgetManager::BeginFrame()
+void longmarch::BaseEngineWidgetManager::BeginFrame()
 {
 	UpdateSelectedEntity();
 }
 
-void AAAAgames::BaseEngineWidgetManager::EndFrame()
+void longmarch::BaseEngineWidgetManager::EndFrame()
 {
 	CaptureMouseAndKeyboardOnMenu();
 	UpdateGameWorldTabs();
 }
 
-void AAAAgames::BaseEngineWidgetManager::CaptureMouseAndKeyboardOnMenu()
+void longmarch::BaseEngineWidgetManager::CaptureMouseAndKeyboardOnMenu()
 {
 	ImGuiIO& io = ImGui::GetIO();
 	bool isWindowFocused = ImGui::IsWindowHovered() || ImGui::IsAnyItemHovered();
@@ -25,31 +25,31 @@ void AAAAgames::BaseEngineWidgetManager::CaptureMouseAndKeyboardOnMenu()
 	}
 }
 
-void AAAAgames::BaseEngineWidgetManager::PushBackSelectedEntity(const Entity& e)
+void longmarch::BaseEngineWidgetManager::PushBackSelectedEntity(const Entity& e)
 {
-	if (!A4GAMES_Contains(m_SelectedEntityBuffer, e))
+	if (!LongMarch_Contains(m_SelectedEntityBuffer, e))
 	{
 		m_SelectedEntityBuffer.emplace_back(e);
 	}
 }
 
-const A4GAMES_Vector<Entity> AAAAgames::BaseEngineWidgetManager::GetAllSelectedEntity()
+const LongMarch_Vector<Entity> longmarch::BaseEngineWidgetManager::GetAllSelectedEntity()
 {
 	return m_SelectedEntity;
 }
 
-const A4GAMES_Vector<Entity> AAAAgames::BaseEngineWidgetManager::GetAllSelectedEntityBuffered()
+const LongMarch_Vector<Entity> longmarch::BaseEngineWidgetManager::GetAllSelectedEntityBuffered()
 {
 	return m_SelectedEntityBuffer;
 }
 
-void AAAAgames::BaseEngineWidgetManager::UpdateSelectedEntity()
+void longmarch::BaseEngineWidgetManager::UpdateSelectedEntity()
 {
 	m_SelectedEntity = m_SelectedEntityBuffer;
 	m_SelectedEntityBuffer.clear();
 }
 
-void AAAAgames::BaseEngineWidgetManager::AddNewGameWorldLevel(const std::string& name)
+void longmarch::BaseEngineWidgetManager::AddNewGameWorldLevel(const std::string& name)
 {
 	for (auto& [_, isSelect, __, ___] : m_gameWorldLevels)
 	{
@@ -60,7 +60,7 @@ void AAAAgames::BaseEngineWidgetManager::AddNewGameWorldLevel(const std::string&
 	m_gameWorldLevels.emplace_back(name, true, true, false);
 }
 
-void AAAAgames::BaseEngineWidgetManager::UpdateGameWorldTabs()
+void longmarch::BaseEngineWidgetManager::UpdateGameWorldTabs()
 {
 	// Remove closed game worlds
 	{

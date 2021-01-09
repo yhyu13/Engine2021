@@ -11,7 +11,7 @@
 #include "engine/physics/AABB.h"
 #include "engine/ecs/GameWorld.h"
 
-void AAAAgames::Renderer3D::Init()
+void longmarch::Renderer3D::Init()
 {
 	static bool _init = false;
 	if (_init)
@@ -29,15 +29,15 @@ void AAAAgames::Renderer3D::Init()
 	**************************************************************/
 	{
 		s_Data.RENDER_MODE = (graphicsConfiguration["Multi-draw"].asBool()) ? RENDER_MODE::MULTIDRAW : RENDER_MODE::CANONICAL;
-		s_Data.MAX_LIGHT = A4GAMES_MAX_LIGHT;
+		s_Data.MAX_LIGHT = LongMarch_MAX_LIGHT;
 		s_Data.NUM_LIGHT = 0;
 
 		s_Data.MAX_SPOT_SHADOW = MAX_SPOT_LIGHT_SHADOWS;
 		s_Data.MAX_POINT_SHADOW = MAX_POINT_LIGHT_SHADOWS;
-		s_Data.MAX_DIRECTIONAL_SHADOW = A4GAMES_MAX_NUM_DIRECTIONAL_SHADOW;
+		s_Data.MAX_DIRECTIONAL_SHADOW = LongMarch_MAX_NUM_DIRECTIONAL_SHADOW;
 
-		s_Data.MAX_SHADOW_BATCH = A4GAMES_MAX_SHADOW_PASS_BATCH;
-		s_Data.MAX_SCENE_BATCH = A4GAMES_MAX_SCENE_PASS_BATCH;
+		s_Data.MAX_SHADOW_BATCH = LongMarch_MAX_SHADOW_PASS_BATCH;
+		s_Data.MAX_SCENE_BATCH = LongMarch_MAX_SCENE_PASS_BATCH;
 
 		s_Data.cpuBuffer.RENDERABLE_OBJ_BUFFERED.reserve(TWO_12);
 		s_Data.cpuBuffer.LIGHTS_BUFFERED.reserve(s_Data.MAX_LIGHT);
@@ -46,7 +46,7 @@ void AAAAgames::Renderer3D::Init()
 		s_Data.cpuBuffer.SPOT_LIGHT_PROCESSED.reserve(128);
 		s_Data.cpuBuffer.SHADOW_DATA_PROCESSED.reserve(128);
 
-		s_Data.gpuBuffer.DirectionalLightShadowBuffer.reserve(A4GAMES_MAX_NUM_DIRECTIONAL_SHADOW);
+		s_Data.gpuBuffer.DirectionalLightShadowBuffer.reserve(LongMarch_MAX_NUM_DIRECTIONAL_SHADOW);
 		s_Data.gpuBuffer.PointLightShadowBuffer.reserve(MAX_POINT_LIGHT_SHADOWS);
 		s_Data.gpuBuffer.SpotLightShadowBuffer.reserve(MAX_SPOT_LIGHT_SHADOWS);
 
@@ -201,17 +201,17 @@ void AAAAgames::Renderer3D::Init()
 			it->second->Bind();
 			it->second->SetFloat3("Ia", Vec3f(0.2));
 
-			it->second->SetInt("u_AlbedoTexture", s_Data.fragTexture_empty_slot + A4GAMES_ToUnderlying(Material::MAT_TEXTURE_TYPE::ALBEDO));
-			it->second->SetInt("u_NormalTexture", s_Data.fragTexture_empty_slot + A4GAMES_ToUnderlying(Material::MAT_TEXTURE_TYPE::NORMAL));
-			it->second->SetInt("u_MetallicTexture", s_Data.fragTexture_empty_slot + A4GAMES_ToUnderlying(Material::MAT_TEXTURE_TYPE::METALLIC));
-			it->second->SetInt("u_RoughnessTexture", s_Data.fragTexture_empty_slot + A4GAMES_ToUnderlying(Material::MAT_TEXTURE_TYPE::ROUGHNESS));
-			it->second->SetInt("u_AOTexture", s_Data.fragTexture_empty_slot + A4GAMES_ToUnderlying(Material::MAT_TEXTURE_TYPE::AO));
+			it->second->SetInt("u_AlbedoTexture", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::ALBEDO));
+			it->second->SetInt("u_NormalTexture", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::NORMAL));
+			it->second->SetInt("u_MetallicTexture", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::METALLIC));
+			it->second->SetInt("u_RoughnessTexture", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::ROUGHNESS));
+			it->second->SetInt("u_AOTexture", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::AO));
 
-			it->second->SetInt("g_Depth", s_Data.fragTexture_empty_slot + A4GAMES_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::DEPTH));
-			it->second->SetInt("g_Normal_Velocity", s_Data.fragTexture_empty_slot + A4GAMES_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NORMAL_VELOCITY));
-			it->second->SetInt("g_Albedo_Emssive", s_Data.fragTexture_empty_slot + A4GAMES_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::ALBEDO_EMSSIVE));
-			it->second->SetInt("g_BackedAO_Metallic_Roughness", s_Data.fragTexture_empty_slot + A4GAMES_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::AO_METALLIC_ROUGHNESS));
-			it->second->SetInt("g_DynamicAO_IndirectLight", s_Data.fragTexture_empty_slot + A4GAMES_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM));
+			it->second->SetInt("g_Depth", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::DEPTH));
+			it->second->SetInt("g_Normal_Velocity", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NORMAL_VELOCITY));
+			it->second->SetInt("g_Albedo_Emssive", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::ALBEDO_EMSSIVE));
+			it->second->SetInt("g_BackedAO_Metallic_Roughness", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::AO_METALLIC_ROUGHNESS));
+			it->second->SetInt("g_DynamicAO_IndirectLight", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM));
 
 			it->second->SetInt("u_FragTexture", s_Data.fragTexture_0_slot);
 			it->second->SetInt("u_FragTexture2", s_Data.fragTexture_1_slot);
@@ -302,7 +302,7 @@ void AAAAgames::Renderer3D::Init()
 			s_Data.gpuBuffer.CurrentThinGBuffer = GBuffer::Create(1, 1, GBuffer::GBUFFER_TYPE::THIN);
 
 			// IBL related buffers
-			A4GAMES_UnorderedMap<std::string, std::shared_ptr<SkyBoxBuffer>> _envmaps;
+			LongMarch_UnorderedMap<std::string, std::shared_ptr<SkyBoxBuffer>> _envmaps;
 			_envmaps.emplace("original", nullptr);
 			_envmaps.emplace("irradiance", nullptr);
 			const auto& skyboxes = graphicsConfiguration["Sky-box"];
@@ -556,61 +556,61 @@ void AAAAgames::Renderer3D::Init()
 	}
 }
 
-void AAAAgames::Renderer3D::_ON_TOGGLE_SHADOW(EventQueue<EngineGraphicsDebugEventType>::EventPtr e)
+void longmarch::Renderer3D::_ON_TOGGLE_SHADOW(EventQueue<EngineGraphicsDebugEventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<ToggleShadowEvent>(e);
 	s_Data.enable_shadow = event->m_enable;
 }
 
-void AAAAgames::Renderer3D::_ON_SWITCH_GBUFFER_MODE(EventQueue<EngineGraphicsDebugEventType>::EventPtr e)
+void longmarch::Renderer3D::_ON_SWITCH_GBUFFER_MODE(EventQueue<EngineGraphicsDebugEventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<SwitchGBufferEvent>(e);
 	s_Data.gBuffer_display_mode = event->m_value;
 }
 
-void AAAAgames::Renderer3D::_ON_TOGGLE_SLICES(EventQueue<EngineGraphicsDebugEventType>::EventPtr e)
+void longmarch::Renderer3D::_ON_TOGGLE_SLICES(EventQueue<EngineGraphicsDebugEventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<ToggleSlicesEvent>(e);
 	s_Data.enable_debug_cluster_light = event->m_enable;
 }
 
-void AAAAgames::Renderer3D::_ON_TOGGLE_MOTION_BLUR(EventQueue<EngineGraphicsEventType>::EventPtr e)
+void longmarch::Renderer3D::_ON_TOGGLE_MOTION_BLUR(EventQueue<EngineGraphicsEventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<ToggleMotionBlurEvent>(e);
 	s_Data.enable_motionblur = event->m_enable;
 }
 
-void AAAAgames::Renderer3D::_ON_TOGGLE_TAA(EventQueue<EngineGraphicsEventType>::EventPtr e)
+void longmarch::Renderer3D::_ON_TOGGLE_TAA(EventQueue<EngineGraphicsEventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<ToggleTAAEvent>(e);
 	s_Data.enable_taa = event->m_enable;
 }
 
-void AAAAgames::Renderer3D::_ON_TOGGLE_FXAA(EventQueue<EngineGraphicsEventType>::EventPtr e)
+void longmarch::Renderer3D::_ON_TOGGLE_FXAA(EventQueue<EngineGraphicsEventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<ToggleFXAAEvent>(e);
 	s_Data.enable_fxaa = event->m_enable;
 }
 
-void AAAAgames::Renderer3D::_ON_TOGGLE_SMAA(EventQueue<EngineGraphicsEventType>::EventPtr e)
+void longmarch::Renderer3D::_ON_TOGGLE_SMAA(EventQueue<EngineGraphicsEventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<ToggleSMAAEvent>(e);
 	s_Data.enable_smaa = event->m_enable;
 }
 
-void AAAAgames::Renderer3D::_ON_SWITCH_TONEMAP_MODE(EventQueue<EngineGraphicsEventType>::EventPtr e)
+void longmarch::Renderer3D::_ON_SWITCH_TONEMAP_MODE(EventQueue<EngineGraphicsEventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<SwitchToneMappingEvent>(e);
 	s_Data.toneMapping_mode = event->m_value;
 }
 
-void AAAAgames::Renderer3D::_ON_SET_GAMMA_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e)
+void longmarch::Renderer3D::_ON_SET_GAMMA_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<SetGammaValueEvent>(e);
 	s_Data.value_gamma = event->m_value;
 }
 
-void AAAAgames::Renderer3D::_ON_SET_AO_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e)
+void longmarch::Renderer3D::_ON_SET_AO_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<SetAOValueEvent>(e);
 	s_Data.AOSettings.enable = event->m_enable;
@@ -632,7 +632,7 @@ void AAAAgames::Renderer3D::_ON_SET_AO_VALUE(EventQueue<EngineGraphicsEventType>
 *	Render3D highlevel API : BeginRendering
 *
 **************************************************************/
-void AAAAgames::Renderer3D::BeginRendering()
+void longmarch::Renderer3D::BeginRendering()
 {
 }
 
@@ -640,7 +640,7 @@ void AAAAgames::Renderer3D::BeginRendering()
 *	Render3D highlevel API : BeginShadowing
 *
 **************************************************************/
-void AAAAgames::Renderer3D::BeginShadowing(
+void longmarch::Renderer3D::BeginShadowing(
 	const PerspectiveCamera* camera,
 	const std::function<void()>& f_render,
 	const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
@@ -680,7 +680,7 @@ void AAAAgames::Renderer3D::BeginShadowing(
 
 	static auto CSMSplitPlaneHelper = [](float vf_near, float vf_far, float f_i, float f_num_CSM, float lambda) -> float
 	{
-		return A4GAMES_Lerp(vf_near * powf(vf_far / vf_near, f_i / f_num_CSM), (vf_near + (f_i / f_num_CSM) * (vf_far - vf_near)), lambda);
+		return LongMarch_Lerp(vf_near * powf(vf_far / vf_near, f_i / f_num_CSM), (vf_near + (f_i / f_num_CSM) * (vf_far - vf_near)), lambda);
 	};
 
 	static auto OvercomeShadowShimmering = [](float shadowSize, const Mat4& ShadowP, const Mat4& ShadowV) -> Mat4
@@ -765,7 +765,7 @@ void AAAAgames::Renderer3D::BeginShadowing(
 			switch (currentLight.type)
 			{
 				//0 - directional light
-			case A4GAMES_ToUnderlying(LIGHT_TYPE::DIRECTIONAL):
+			case LongMarch_ToUnderlying(LIGHT_TYPE::DIRECTIONAL):
 			{
 				ENG_TIME("Shadow phase: DIRECTIONAL");
 				BeginDirectionLight();
@@ -949,7 +949,7 @@ void AAAAgames::Renderer3D::BeginShadowing(
 			}
 			continue;
 			//1 - point light
-			case A4GAMES_ToUnderlying(LIGHT_TYPE::POINT):
+			case LongMarch_ToUnderlying(LIGHT_TYPE::POINT):
 			{
 				ENG_TIME("Shadow phase: POINT");
 				const auto& light_pos = currentLight.Pos;
@@ -1075,7 +1075,7 @@ void AAAAgames::Renderer3D::BeginShadowing(
 			}
 			continue;
 			//2 - spot light
-			case A4GAMES_ToUnderlying(LIGHT_TYPE::SPOT):
+			case LongMarch_ToUnderlying(LIGHT_TYPE::SPOT):
 			{
 				ENG_TIME("Shadow phase: SPOT");
 				const auto fov_in = lightCom->spotLight.innerConeRad;
@@ -1327,7 +1327,7 @@ void AAAAgames::Renderer3D::BeginShadowing(
 *	Render3D highlevel API : EndShadowing
 *
 **************************************************************/
-void AAAAgames::Renderer3D::EndShadowing()
+void longmarch::Renderer3D::EndShadowing()
 {
 }
 
@@ -1335,7 +1335,7 @@ void AAAAgames::Renderer3D::EndShadowing()
 *	Render3D highlevel API : BeginScene
 *
 **************************************************************/
-void AAAAgames::Renderer3D::BeginScene(
+void longmarch::Renderer3D::BeginScene(
 	const PerspectiveCamera* camera,
 	const std::function<void()>& f_render,
 	const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
@@ -1479,7 +1479,7 @@ void AAAAgames::Renderer3D::BeginScene(
 	}
 }
 
-void AAAAgames::Renderer3D::RenderParticles(const A4GAMES_Vector<std::pair<int, ParticleInstanceData>> particleData, const PerspectiveCamera* camera)
+void longmarch::Renderer3D::RenderParticles(const LongMarch_Vector<std::pair<int, ParticleInstanceData>> particleData, const PerspectiveCamera* camera)
 {
 	s_Data.CurrentShader = s_Data.ShaderMap["ParticleShader"];
 
@@ -1533,7 +1533,7 @@ void AAAAgames::Renderer3D::RenderParticles(const A4GAMES_Vector<std::pair<int, 
 	}
 }
 
-void AAAAgames::Renderer3D::_BeginClusterBuildGrid(const PerspectiveCamera* camera)
+void longmarch::Renderer3D::_BeginClusterBuildGrid(const PerspectiveCamera* camera)
 {
 	s_Data.CurrentShader = s_Data.ShaderMap["BuildAABBGridCompShader"];
 	s_Data.CurrentShader->Bind();
@@ -1541,7 +1541,7 @@ void AAAAgames::Renderer3D::_BeginClusterBuildGrid(const PerspectiveCamera* came
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 
-void AAAAgames::Renderer3D::_BeginLightCullingPass(const PerspectiveCamera* camera)
+void longmarch::Renderer3D::_BeginLightCullingPass(const PerspectiveCamera* camera)
 {
 	s_Data.CurrentShader = s_Data.ShaderMap["CullLightsCompShader"];
 	s_Data.CurrentShader->Bind();
@@ -1550,7 +1550,7 @@ void AAAAgames::Renderer3D::_BeginLightCullingPass(const PerspectiveCamera* came
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 
-void AAAAgames::Renderer3D::_BeginDebugCluster(const std::shared_ptr<FrameBuffer>& framebuffer_out)
+void longmarch::Renderer3D::_BeginDebugCluster(const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
 	{
 		// bind framebuffer to store frag color
@@ -1587,7 +1587,7 @@ void AAAAgames::Renderer3D::_BeginDebugCluster(const std::shared_ptr<FrameBuffer
 	s_Data.gpuBuffer.FinalFrameBuffer = s_Data.gpuBuffer.CurrentFrameBuffer;
 }
 
-void AAAAgames::Renderer3D::_BeginForwardGeomtryPass(const PerspectiveCamera* camera, const Vec4f& clear_color, const std::shared_ptr<FrameBuffer>& framebuffer_out)
+void longmarch::Renderer3D::_BeginForwardGeomtryPass(const PerspectiveCamera* camera, const Vec4f& clear_color, const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
 	{
 		ENG_TIME("Scene Begin Forward");
@@ -1608,7 +1608,7 @@ void AAAAgames::Renderer3D::_BeginForwardGeomtryPass(const PerspectiveCamera* ca
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
-void AAAAgames::Renderer3D::_BeginDeferredGeomtryPass(const PerspectiveCamera* camera, const Vec4f& clear_color, const std::shared_ptr<GBuffer>& gBuffer_out)
+void longmarch::Renderer3D::_BeginDeferredGeomtryPass(const PerspectiveCamera* camera, const Vec4f& clear_color, const std::shared_ptr<GBuffer>& gBuffer_out)
 {
 	{
 		ENG_TIME("Scene Begin Deferred");
@@ -1622,7 +1622,7 @@ void AAAAgames::Renderer3D::_BeginDeferredGeomtryPass(const PerspectiveCamera* c
 	}
 }
 
-void AAAAgames::Renderer3D::_PopulateShadingPassUniformsVariables(const PerspectiveCamera* camera)
+void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const PerspectiveCamera* camera)
 {
 	Mat4 v = camera->GetViewMatrix();
 	Mat4 v_inv = Geommath::SmartInverse(v);
@@ -1646,11 +1646,11 @@ void AAAAgames::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 		ppv = camera->GetPrevViewProjectionMatrix();
 	}
 
-	static const A4GAMES_Vector<std::string> forwardShader = { "ForwardShader" };
-	static const A4GAMES_Vector<std::string> clusteredShader = { "BuildAABBGridCompShader", "CullLightsCompShader","ClusterShader", "ClusterDebugShader" };
-	static const A4GAMES_Vector<std::string> deferredShader = { "GBufferShader","DeferredShader" };
-	static const A4GAMES_Vector<std::string> MiscShader = { "BBoxShader", "SkyboxShader","TAAShader","DynamicAOShader","GaussianBlur_AO","MotionBlur" };
-	A4GAMES_Vector<std::string> render_shader;
+	static const LongMarch_Vector<std::string> forwardShader = { "ForwardShader" };
+	static const LongMarch_Vector<std::string> clusteredShader = { "BuildAABBGridCompShader", "CullLightsCompShader","ClusterShader", "ClusterDebugShader" };
+	static const LongMarch_Vector<std::string> deferredShader = { "GBufferShader","DeferredShader" };
+	static const LongMarch_Vector<std::string> MiscShader = { "BBoxShader", "SkyboxShader","TAAShader","DynamicAOShader","GaussianBlur_AO","MotionBlur" };
+	LongMarch_Vector<std::string> render_shader;
 	switch (s_Data.RENDER_PIPE)
 	{
 	case RENDER_PIPE::CLUSTER:
@@ -1663,7 +1663,7 @@ void AAAAgames::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 		render_shader = forwardShader;
 		break;
 	}
-	A4GAMES_Vector<std::string> shaders = render_shader;
+	LongMarch_Vector<std::string> shaders = render_shader;
 	shaders.insert(shaders.end(), MiscShader.begin(), MiscShader.end());
 
 	// Update shader uniforms
@@ -1895,7 +1895,7 @@ void AAAAgames::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 *	Render3D highlevel API : EndScene
 *
 **************************************************************/
-void AAAAgames::Renderer3D::EndScene()
+void longmarch::Renderer3D::EndScene()
 {
 }
 
@@ -1903,7 +1903,7 @@ void AAAAgames::Renderer3D::EndScene()
 *	Render3D highlevel API : BeginLighting
 *
 **************************************************************/
-void AAAAgames::Renderer3D::BeginLighting(
+void longmarch::Renderer3D::BeginLighting(
 	const PerspectiveCamera* camera,
 	const std::function<void()>& f_render,
 	const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
@@ -1938,7 +1938,7 @@ void AAAAgames::Renderer3D::BeginLighting(
 		Renderer3D::_BeginSkyBoxPass(s_Data.gpuBuffer.CurrentFrameBuffer);
 }
 
-void AAAAgames::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<GBuffer>& gbuffer_in)
+void longmarch::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<GBuffer>& gbuffer_in)
 {
 	RenderCommand::PolyModeFill();			// Draw full model
 	RenderCommand::Blend(false);			// Disable blend
@@ -2015,7 +2015,7 @@ void AAAAgames::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<GBuffer>& 
 	}
 }
 
-void AAAAgames::Renderer3D::_BeginDeferredLightingPass(
+void longmarch::Renderer3D::_BeginDeferredLightingPass(
 	const PerspectiveCamera* camera,
 	const std::function<void()>& f_render,
 	const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
@@ -2071,7 +2071,7 @@ void AAAAgames::Renderer3D::_BeginDeferredLightingPass(
 				s_Data.fragTexture_empty_slot // offsets to be after all frame buffers
 				);
 			// Bind AO buffer in some alot other than the gbuffer types
-			s_Data.gpuBuffer.CurrentDynamicAOBuffer->BindTexture(s_Data.fragTexture_empty_slot + A4GAMES_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM));
+			s_Data.gpuBuffer.CurrentDynamicAOBuffer->BindTexture(s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM));
 			// Render quad
 			Renderer3D::_RenderFullScreenQuad();
 		}
@@ -2090,7 +2090,7 @@ void AAAAgames::Renderer3D::_BeginDeferredLightingPass(
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
-void AAAAgames::Renderer3D::_BeginForwardLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out)
+void longmarch::Renderer3D::_BeginForwardLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
 	{
 		if (framebuffer_out)
@@ -2110,7 +2110,7 @@ void AAAAgames::Renderer3D::_BeginForwardLightingPass(const std::shared_ptr<Fram
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
-void AAAAgames::Renderer3D::_BeginClusterLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out)
+void longmarch::Renderer3D::_BeginClusterLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
 	{
 		if (framebuffer_out)
@@ -2132,7 +2132,7 @@ void AAAAgames::Renderer3D::_BeginClusterLightingPass(const std::shared_ptr<Fram
 	}
 }
 
-void AAAAgames::Renderer3D::_BeginSkyBoxPass(const std::shared_ptr<FrameBuffer>& framebuffer_out)
+void longmarch::Renderer3D::_BeginSkyBoxPass(const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
 	{
 		ENG_TIME("SkyBox phase");
@@ -2172,7 +2172,7 @@ void AAAAgames::Renderer3D::_BeginSkyBoxPass(const std::shared_ptr<FrameBuffer>&
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
-void AAAAgames::Renderer3D::_RenderBoundingBox(const std::shared_ptr<FrameBuffer>& framebuffer_out)
+void longmarch::Renderer3D::_RenderBoundingBox(const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
 	size_t num_instance = s_Data.cpuBuffer.InstancedDraw_BVModelTr.size();
 	if (s_Data.enable_drawingBoundingVolume && num_instance > 0)
@@ -2212,7 +2212,7 @@ void AAAAgames::Renderer3D::_RenderBoundingBox(const std::shared_ptr<FrameBuffer
 *	Render3D highlevel API : EndLighting
 *
 **************************************************************/
-void AAAAgames::Renderer3D::EndLighting()
+void longmarch::Renderer3D::EndLighting()
 {
 	if (s_Data.enable_debug_cluster_light)
 		return;
@@ -2223,7 +2223,7 @@ void AAAAgames::Renderer3D::EndLighting()
 *	Render3D highlevel API : BeginPostProcessing
 *
 **************************************************************/
-void AAAAgames::Renderer3D::BeginPostProcessing()
+void longmarch::Renderer3D::BeginPostProcessing()
 {
 	if (s_Data.enable_debug_cluster_light)
 		return;
@@ -2263,7 +2263,7 @@ void AAAAgames::Renderer3D::BeginPostProcessing()
 	}
 }
 
-void AAAAgames::Renderer3D::_BeginTAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
+void longmarch::Renderer3D::_BeginTAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
 	if (framebuffer_out)
 	{
@@ -2311,7 +2311,7 @@ void AAAAgames::Renderer3D::_BeginTAAPass(const std::shared_ptr<FrameBuffer>& fr
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
-void AAAAgames::Renderer3D::_BeginFXAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
+void longmarch::Renderer3D::_BeginFXAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
 	if (framebuffer_out)
 	{
@@ -2349,7 +2349,7 @@ void AAAAgames::Renderer3D::_BeginFXAAPass(const std::shared_ptr<FrameBuffer>& f
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
-void AAAAgames::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_edge, const std::shared_ptr<FrameBuffer>& framebuffer_blend, const std::shared_ptr<FrameBuffer>& framebuffer_out)
+void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_edge, const std::shared_ptr<FrameBuffer>& framebuffer_blend, const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
 	if (s_Data.enable_smaa)
 	{
@@ -2436,7 +2436,7 @@ void AAAAgames::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
-void AAAAgames::Renderer3D::_BeginMotionBlurPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
+void longmarch::Renderer3D::_BeginMotionBlurPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
 	if (framebuffer_out)
 	{
@@ -2482,7 +2482,7 @@ void AAAAgames::Renderer3D::_BeginMotionBlurPass(const std::shared_ptr<FrameBuff
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
-void AAAAgames::Renderer3D::_BeginToneMappingPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
+void longmarch::Renderer3D::_BeginToneMappingPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
 	if (framebuffer_out)
 	{
@@ -2516,7 +2516,7 @@ void AAAAgames::Renderer3D::_BeginToneMappingPass(const std::shared_ptr<FrameBuf
 *	Render3D highlevel API : EndPostProcessing
 *
 **************************************************************/
-void AAAAgames::Renderer3D::EndPostProcessing()
+void longmarch::Renderer3D::EndPostProcessing()
 {
 	if (s_Data.enable_debug_cluster_light)
 		return;
@@ -2526,7 +2526,7 @@ void AAAAgames::Renderer3D::EndPostProcessing()
 *	Render3D highlevel API : EndRendering
 *
 **************************************************************/
-void AAAAgames::Renderer3D::EndRendering()
+void longmarch::Renderer3D::EndRendering()
 {
 	/*
 		Blit FinalFrameBuffer to have the same size as the back buffer.
@@ -2542,7 +2542,7 @@ void AAAAgames::Renderer3D::EndRendering()
 	);
 }
 
-void AAAAgames::Renderer3D::BeginRenderingParticles(PerspectiveCamera* camera, const std::function<void(PerspectiveCamera*)>& f_render, const std::function<void(const std::string&)>& f_setRenderShaderName, const Vec4f& clear_color)
+void longmarch::Renderer3D::BeginRenderingParticles(PerspectiveCamera* camera, const std::function<void(PerspectiveCamera*)>& f_render, const std::function<void(const std::string&)>& f_setRenderShaderName, const Vec4f& clear_color)
 {
 	RenderCommand::Blend(true);
 	RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ONE_MINUS_SRC_APLHA);
@@ -2551,21 +2551,21 @@ void AAAAgames::Renderer3D::BeginRenderingParticles(PerspectiveCamera* camera, c
 	f_render(camera);
 }
 
-void AAAAgames::Renderer3D::EndRenderingParticles()
+void longmarch::Renderer3D::EndRenderingParticles()
 {
 	RenderCommand::Blend(false);
 	RenderCommand::CullFace(true, false);
 	RenderCommand::DepthTest(true, true);
 }
 
-void AAAAgames::Renderer3D::_RenderFullScreenQuad()
+void longmarch::Renderer3D::_RenderFullScreenQuad()
 {
 	// Render quad
 	s_Data.gpuBuffer.FullScreenQuadVAO->Bind();
 	RenderCommand::DrawTriangleIndexed(s_Data.gpuBuffer.FullScreenQuadVAO);
 }
 
-void AAAAgames::Renderer3D::_RenderFullScreenCube()
+void longmarch::Renderer3D::_RenderFullScreenCube()
 {
 	// Render quad
 	s_Data.gpuBuffer.FullScreenCubeVAO->Bind();
@@ -2576,7 +2576,7 @@ void AAAAgames::Renderer3D::_RenderFullScreenCube()
 *	Render3D lowleve API : RenderBoundingBox
 *
 **************************************************************/
-void AAAAgames::Renderer3D::RenderBoundingBox(const Mat4& transform)
+void longmarch::Renderer3D::RenderBoundingBox(const Mat4& transform)
 {
 	LOCK_GUARD_NI();
 	if (s_Data.enable_drawingBoundingVolume)
@@ -2591,7 +2591,7 @@ void AAAAgames::Renderer3D::RenderBoundingBox(const Mat4& transform)
 *   This Draw function is for custom render pass to involve in
 *   the multidraw pipeline
 **************************************************************/
-void AAAAgames::Renderer3D::Draw(const RenderData_CPU& data)
+void longmarch::Renderer3D::Draw(const RenderData_CPU& data)
 {
 	switch (Renderer3D::s_Data.RENDER_MODE)
 	{
@@ -2610,7 +2610,7 @@ void AAAAgames::Renderer3D::Draw(const RenderData_CPU& data)
 *   This Draw function is for mesh drawing with/without
 *   the multidraw pipeline
 **************************************************************/
-void AAAAgames::Renderer3D::Draw(Entity entity, MeshData* Mesh, Material* Mat, const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName)
+void longmarch::Renderer3D::Draw(Entity entity, MeshData* Mesh, Material* Mat, const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName)
 {
 	LOCK_GUARD_NI();	// Lock the drawing or pushing draw commends
 	if (auto it = s_Data.ShaderMap.find(shaderName); it == s_Data.ShaderMap.end()) [[unlikely]]
@@ -2659,7 +2659,7 @@ void AAAAgames::Renderer3D::Draw(Entity entity, MeshData* Mesh, Material* Mat, c
 		{
 			auto& _multiDrawBuffer = s_Data.multiDrawBuffer;
 			auto& textureIds = _multiDrawBuffer.MultiDraw_TextureId;
-			auto scene_limit = s_Data.MAX_SCENE_BATCH - A4GAMES_ToUnderlying(Material::MAT_TEXTURE_TYPE::NUM); // The scene pass batch limit is set by the fixed array of texture lists, we need to substract a few number to make sure never hit that hard limit
+			auto scene_limit = s_Data.MAX_SCENE_BATCH - LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::NUM); // The scene pass batch limit is set by the fixed array of texture lists, we need to substract a few number to make sure never hit that hard limit
 			if (textureIds.size() >= scene_limit || _multiDrawBuffer.MultiDraw_ModelBuffer.size() >= TWO_11)
 			{
 				_RenderBatch();
@@ -2667,7 +2667,7 @@ void AAAAgames::Renderer3D::Draw(Entity entity, MeshData* Mesh, Material* Mat, c
 			uint32_t texture_offset = textureIds.size();
 			ASSERT(texture_offset != 0, "MultiDraw_TextureId should have at least size of 1 (sudo empty texture) on rendering!");
 			auto& uniqueTextureLut = _multiDrawBuffer.MultiDraw_UniqueTextureLUT;
-			A4GAMES_Vector<std::pair<uint32_t, Material::MAT_TEXTURE_TYPE>> textures_to_bind;
+			LongMarch_Vector<std::pair<uint32_t, Material::MAT_TEXTURE_TYPE>> textures_to_bind;
 			if (Mat->textures.has_albedo())
 			{
 				auto& offset = uniqueTextureLut[Mat->textures.albedo_texture->Get().get()];
@@ -2738,11 +2738,11 @@ void AAAAgames::Renderer3D::Draw(Entity entity, MeshData* Mesh, Material* Mat, c
 			{
 				// bind all texture
 				Mat->BindAllTexture({
-				{s_Data.fragTexture_empty_slot + A4GAMES_ToUnderlying(Material::MAT_TEXTURE_TYPE::ALBEDO),Material::MAT_TEXTURE_TYPE::ALBEDO},
-				{s_Data.fragTexture_empty_slot + A4GAMES_ToUnderlying(Material::MAT_TEXTURE_TYPE::NORMAL),Material::MAT_TEXTURE_TYPE::NORMAL},
-				{s_Data.fragTexture_empty_slot + A4GAMES_ToUnderlying(Material::MAT_TEXTURE_TYPE::AO),Material::MAT_TEXTURE_TYPE::AO},
-				{s_Data.fragTexture_empty_slot + A4GAMES_ToUnderlying(Material::MAT_TEXTURE_TYPE::METALLIC),Material::MAT_TEXTURE_TYPE::METALLIC},
-				{s_Data.fragTexture_empty_slot + A4GAMES_ToUnderlying(Material::MAT_TEXTURE_TYPE::ROUGHNESS),Material::MAT_TEXTURE_TYPE::ROUGHNESS},
+				{s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::ALBEDO),Material::MAT_TEXTURE_TYPE::ALBEDO},
+				{s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::NORMAL),Material::MAT_TEXTURE_TYPE::NORMAL},
+				{s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::AO),Material::MAT_TEXTURE_TYPE::AO},
+				{s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::METALLIC),Material::MAT_TEXTURE_TYPE::METALLIC},
+				{s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::ROUGHNESS),Material::MAT_TEXTURE_TYPE::ROUGHNESS},
 					});
 			}
 			auto& gpubuffer = s_Data.gpuBuffer;
@@ -2772,7 +2772,7 @@ void AAAAgames::Renderer3D::Draw(Entity entity, MeshData* Mesh, Material* Mat, c
 	}
 }
 
-void AAAAgames::Renderer3D::Draw(Entity entity, Scene3DNode* sceneNode, const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName)
+void longmarch::Renderer3D::Draw(Entity entity, Scene3DNode* sceneNode, const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName)
 {
 	const auto& _sceneData = *sceneNode;
 	const auto& boneTransform = _sceneData.GetInverseFinalBoneTransform();
@@ -2827,7 +2827,7 @@ void AAAAgames::Renderer3D::Draw(Entity entity, Scene3DNode* sceneNode, const Ma
 *	Render3D lowleve API : DrawMesh
 *
 **************************************************************/
-void AAAAgames::Renderer3D::DrawMesh(const std::shared_ptr<VertexArray>& MeshVertexArray)
+void longmarch::Renderer3D::DrawMesh(const std::shared_ptr<VertexArray>& MeshVertexArray)
 {
 	// Canoical rendering method that allow each mesh to store its own VAO
 	MeshVertexArray->Bind();
@@ -2838,7 +2838,7 @@ void AAAAgames::Renderer3D::DrawMesh(const std::shared_ptr<VertexArray>& MeshVer
 *	Render3D private method : Render batch
 *
 **************************************************************/
-void AAAAgames::Renderer3D::_RenderBatch()
+void longmarch::Renderer3D::_RenderBatch()
 {
 	bool shouldDraw;
 	{
@@ -2860,7 +2860,7 @@ void AAAAgames::Renderer3D::_RenderBatch()
 *	Render3D private API : Begin batch
 *
 **************************************************************/
-bool AAAAgames::Renderer3D::_BeginRenderBatch()
+bool longmarch::Renderer3D::_BeginRenderBatch()
 {
 	auto& _multiDrawBuffer = s_Data.multiDrawBuffer;
 	if (auto num_instances = _multiDrawBuffer.MultiDraw_MeshDataToDrawIndexCounter;
@@ -2871,7 +2871,7 @@ bool AAAAgames::Renderer3D::_BeginRenderBatch()
 	}
 	auto& cmd_map = _multiDrawBuffer.MeshData_CmdBuffer_Map;
 	auto& mesh_list = _multiDrawBuffer.MultiDraw_MeshDataToDraw;
-	static A4GAMES_Vector<uint32_t> instance_indices;
+	static LongMarch_Vector<uint32_t> instance_indices;
 	instance_indices.clear();
 	instance_indices.reserve(TWO_11);
 	uint32_t instance_count = 0;
@@ -3005,7 +3005,7 @@ bool AAAAgames::Renderer3D::_BeginRenderBatch()
 *	Render3D private API : End batch
 *
 **************************************************************/
-void AAAAgames::Renderer3D::_EndRenderBatch()
+void longmarch::Renderer3D::_EndRenderBatch()
 {
 	auto& _multiDrawBuffer = s_Data.multiDrawBuffer;
 	// Reset
@@ -3037,14 +3037,14 @@ void AAAAgames::Renderer3D::_EndRenderBatch()
 	_multiDrawBuffer.MultiDraw_MeshDataToDrawIndexCounter = 0u;
 }
 
-void AAAAgames::Renderer3D::_RestBatchTextureList()
+void longmarch::Renderer3D::_RestBatchTextureList()
 {
 	s_Data.multiDrawBuffer.MultiDraw_TextureId.clear();
 	s_Data.multiDrawBuffer.MultiDraw_TextureId.emplace_back(s_Data.fragTexture_empty_slot); //! Always emplace an emppty slot for an empty texture
 	s_Data.multiDrawBuffer.MultiDraw_UniqueTextureLUT.clear();
 }
 
-void AAAAgames::Renderer3D::_RenderParticles(float* data, const int& instanceCount, const std::shared_ptr<FrameBuffer>& framebuffer_out)
+void longmarch::Renderer3D::_RenderParticles(float* data, const int& instanceCount, const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
 	s_Data.gpuBuffer.particleInstBO->UpdateBufferData(data, instanceCount * PARTICLE_INSTANCED_DATA_LENGTH * sizeof(GLfloat));
 	s_Data.gpuBuffer.particleVAO->Bind();
@@ -3062,14 +3062,14 @@ void AAAAgames::Renderer3D::_RenderParticles(float* data, const int& instanceCou
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
-void AAAAgames::Renderer3D::BuildAllMesh()
+void longmarch::Renderer3D::BuildAllMesh()
 {
 	switch (s_Data.RENDER_MODE)
 	{
 	case RENDER_MODE::MULTIDRAW:
 	{
 		const auto& allnodes = ResourceManager<Scene3DNode>::GetInstance()->GetAllResources();
-		A4GAMES_Vector<MeshData*> allMeshData;
+		LongMarch_Vector<MeshData*> allMeshData;
 		allMeshData.reserve(allnodes.size() * 2);
 		for (const auto& node : allnodes)
 		{
@@ -3087,11 +3087,11 @@ void AAAAgames::Renderer3D::BuildAllMesh()
 	}
 }
 
-void AAAAgames::Renderer3D::BuildAllMaterial()
+void longmarch::Renderer3D::BuildAllMaterial()
 {
 }
 
-void AAAAgames::Renderer3D::BuildAllTexture()
+void longmarch::Renderer3D::BuildAllTexture()
 {
 	// Environment cubemaps and their irradiance maps
 	{
@@ -3240,7 +3240,7 @@ void AAAAgames::Renderer3D::BuildAllTexture()
 							diffuse_irradiance_equirectangle_image->WriteToHDR(path);
 						};
 						// Running in a background thread.
-						A4GAMES_NOGET(ThreadPool::GetInstance()->enqueue_task(cmd));
+						LongMarch_NOGET(ThreadPool::GetInstance()->enqueue_task(cmd));
 					}
 				}
 				if (!has_diffuse1)
@@ -3550,10 +3550,10 @@ void AAAAgames::Renderer3D::BuildAllTexture()
 	}
 }
 
-void AAAAgames::Renderer3D::UpdateMeshToMultiDraw(const A4GAMES_Vector<MeshData*>& Meshs)
+void longmarch::Renderer3D::UpdateMeshToMultiDraw(const LongMarch_Vector<MeshData*>& Meshs)
 {
 	// Prevent uploading the same mesh data sequences
-	static A4GAMES_Vector<MeshData*> _Mesh_duplicat_guard;
+	static LongMarch_Vector<MeshData*> _Mesh_duplicat_guard;
 	if (_Mesh_duplicat_guard == Meshs)
 	{
 		return;
@@ -3587,11 +3587,11 @@ void AAAAgames::Renderer3D::UpdateMeshToMultiDraw(const A4GAMES_Vector<MeshData*
 	}
 }
 
-void AAAAgames::Renderer3D::AppendMeshToMultiDraw(MeshData* Mesh)
+void longmarch::Renderer3D::AppendMeshToMultiDraw(MeshData* Mesh)
 {
 	auto& _multiDrawBuffer = s_Data.multiDrawBuffer;
 	auto& cmd_map = _multiDrawBuffer.MeshData_CmdBuffer_Map;
-	if (A4GAMES_contains(cmd_map, Mesh))
+	if (LongMarch_contains(cmd_map, Mesh))
 	{
 		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Appending an already stored MeshData to the universal buffer! This should be avoided!");
 	}
@@ -3625,7 +3625,7 @@ void AAAAgames::Renderer3D::AppendMeshToMultiDraw(MeshData* Mesh)
 // @param H Hue in the range [0, 360)
 // @param S Saturation in the range [0, 1]
 // @param V Value in the range [0, 1]
-glm::vec3 AAAAgames::Renderer3D::HSVtoRGB(float H, float S, float V)
+glm::vec3 longmarch::Renderer3D::HSVtoRGB(float H, float S, float V)
 {
 	float C = V * S;
 	float m = V - C;

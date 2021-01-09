@@ -2,7 +2,7 @@
 #include "OOBB.h"
 #include "engine/renderer/Renderer3D.h"
 
-AAAAgames::OOBB::OOBB()
+longmarch::OOBB::OOBB()
 	:
 	Shape(SHAPE_TYPE::OOBB)
 {
@@ -10,7 +10,7 @@ AAAAgames::OOBB::OOBB()
 	Reset();
 }
 
-AAAAgames::OOBB::OOBB(const Vec3f& min, const Vec3f& max)
+longmarch::OOBB::OOBB(const Vec3f& min, const Vec3f& max)
 	:
 	Shape(SHAPE_TYPE::OOBB)
 {
@@ -18,7 +18,7 @@ AAAAgames::OOBB::OOBB(const Vec3f& min, const Vec3f& max)
 	o_max = Max = max;
 }
 
-AAAAgames::OOBB::OOBB(MeshData* mesh)
+longmarch::OOBB::OOBB(MeshData* mesh)
 	:
 	Shape(SHAPE_TYPE::OOBB)
 {
@@ -26,7 +26,7 @@ AAAAgames::OOBB::OOBB(MeshData* mesh)
 	InitWithMeshData(mesh->vertices, mesh->indices);
 }
 
-AAAAgames::OOBB::OOBB(const A4GAMES_Vector<MeshData*>& meshs)
+longmarch::OOBB::OOBB(const LongMarch_Vector<MeshData*>& meshs)
 	:
 	Shape(SHAPE_TYPE::OOBB)
 {
@@ -37,7 +37,7 @@ AAAAgames::OOBB::OOBB(const A4GAMES_Vector<MeshData*>& meshs)
 	}
 }
 
-void AAAAgames::OOBB::InitWithMeshData(const MeshData::VertexList& vertex_data, const MeshData::IndexList& index_data)
+void longmarch::OOBB::InitWithMeshData(const MeshData::VertexList& vertex_data, const MeshData::IndexList& index_data)
 {
 	LOCK_GUARD_NC();
 	if (vertex_data.empty())
@@ -79,22 +79,22 @@ void AAAAgames::OOBB::InitWithMeshData(const MeshData::VertexList& vertex_data, 
 	}
 }
 
-void AAAAgames::OOBB::ResetOriginal()
+void longmarch::OOBB::ResetOriginal()
 {
 	o_min = Vec3f((std::numeric_limits<float>::max)());
 	o_max = Vec3f((std::numeric_limits<float>::lowest)());;
 }
 
-void AAAAgames::OOBB::UpdateOriginal(const Vec3f& point)
+void longmarch::OOBB::UpdateOriginal(const Vec3f& point)
 {
 	o_min = (glm::min)(o_min, point);
 	o_max = (glm::max)(o_max, point);
 }
 
-const A4GAMES_Vector<Vec3f> AAAAgames::OOBB::GetAllVertex()
+const LongMarch_Vector<Vec3f> longmarch::OOBB::GetAllVertex()
 {
 	LOCK_GUARD_NC();
-	A4GAMES_Vector<Vec3f> ret = GetAllVertexOriginal();
+	LongMarch_Vector<Vec3f> ret = GetAllVertexOriginal();
 	for (auto& v : ret)
 	{
 		v = Geommath::ToVec3(m_ObjectTr * Geommath::ToVec4(v));
@@ -102,9 +102,9 @@ const A4GAMES_Vector<Vec3f> AAAAgames::OOBB::GetAllVertex()
 	return ret;
 }
 
-const A4GAMES_Vector<Vec3f> AAAAgames::OOBB::GetAllVertexOriginal()
+const LongMarch_Vector<Vec3f> longmarch::OOBB::GetAllVertexOriginal()
 {
-	A4GAMES_Vector<Vec3f> ret(8);
+	LongMarch_Vector<Vec3f> ret(8);
 	{
 		Vec3f _min = o_min, _max = o_max;
 		Vec4f abc = Vec4f(_max - _min, 0);
@@ -121,22 +121,22 @@ const A4GAMES_Vector<Vec3f> AAAAgames::OOBB::GetAllVertexOriginal()
 	return ret;
 }
 
-Vec3f AAAAgames::OOBB::GetDiag()
+Vec3f longmarch::OOBB::GetDiag()
 {
 	return Max - Min;
 }
 
-inline float AAAAgames::OOBB::GetRadius()
+inline float longmarch::OOBB::GetRadius()
 {
 	return glm::length(GetDiag() * 0.5f);
 }
 
-Vec3f AAAAgames::OOBB::GetCenter()
+Vec3f longmarch::OOBB::GetCenter()
 {
 	return (Max + Min) * 0.5f;
 }
 
-void AAAAgames::OOBB::SetModelTrAndUpdate(const Mat4& transform)
+void longmarch::OOBB::SetModelTrAndUpdate(const Mat4& transform)
 {
 	LOCK_GUARD_NC();
 	m_ObjectTr = transform;
@@ -144,7 +144,7 @@ void AAAAgames::OOBB::SetModelTrAndUpdate(const Mat4& transform)
 	Max = std::move(Geommath::Mat4ProdVec3(transform, o_max));
 }
 
-bool AAAAgames::OOBB::VFCTest(const ViewFrustum& VF, const Mat4& worldSpaceToViewFrustumSpace)
+bool longmarch::OOBB::VFCTest(const ViewFrustum& VF, const Mat4& worldSpaceToViewFrustumSpace)
 {
 	LOCK_GUARD_NC();
 	/*
@@ -177,7 +177,7 @@ bool AAAAgames::OOBB::VFCTest(const ViewFrustum& VF, const Mat4& worldSpaceToVie
 	return m_isCulled;
 }
 
-bool AAAAgames::OOBB::DistanceTest(const Vec3f& center, float Near, float Far)
+bool longmarch::OOBB::DistanceTest(const Vec3f& center, float Near, float Far)
 {
 	LOCK_GUARD_NC();
 	auto r = GetRadius();
@@ -189,40 +189,40 @@ bool AAAAgames::OOBB::DistanceTest(const Vec3f& center, float Near, float Far)
 	}
 }
 
-void AAAAgames::OOBB::RenderShape()
+void longmarch::OOBB::RenderShape()
 {
 	LOCK_GUARD_NC();
 	Mat4 local_tr = Geommath::ToTranslateMatrix(GetOriginalCenter()) * Geommath::ToScaleMatrix(GetOriginalDiag());
 	Renderer3D::RenderBoundingBox(m_ObjectTr * local_tr);
 }
 
-const Vec3f& AAAAgames::OOBB::GetMin() const
+const Vec3f& longmarch::OOBB::GetMin() const
 {
 	return Min;
 }
 
-const Vec3f& AAAAgames::OOBB::GetMax() const
+const Vec3f& longmarch::OOBB::GetMax() const
 {
 	return Max;
 }
 
-Vec3f AAAAgames::OOBB::GetOriginalCenter() const
+Vec3f longmarch::OOBB::GetOriginalCenter() const
 {
 	return (o_max + o_min) * 0.5f;
 }
 
-Vec3f AAAAgames::OOBB::GetOriginalDiag() const
+Vec3f longmarch::OOBB::GetOriginalDiag() const
 {
 	return o_max - o_min;
 }
 
-void AAAAgames::OOBB::Reset()
+void longmarch::OOBB::Reset()
 {
 	Min = Vec3f((std::numeric_limits<float>::max)());
 	Max = Vec3f((std::numeric_limits<float>::lowest)());
 }
 
-void AAAAgames::OOBB::Update(const Vec3f& point)
+void longmarch::OOBB::Update(const Vec3f& point)
 {
 	Min = (glm::min)(Min, point);
 	Max = (glm::max)(Max, point);

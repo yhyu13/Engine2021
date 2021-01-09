@@ -1,7 +1,7 @@
 #pragma once
 #include "engine/ui/BaseWidget.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/**
 	 * @brief Manages all wigets winthin
@@ -30,6 +30,6 @@ namespace AAAAgames
 		bool GetVisible(const std::string& name);
 
 	protected:
-		A4GAMES_Map<std::string, std::shared_ptr<BaseWidget>> m_WidgetLUT;
+		LongMarch_Map<std::string, std::shared_ptr<BaseWidget>> m_WidgetLUT;
 	};
 }

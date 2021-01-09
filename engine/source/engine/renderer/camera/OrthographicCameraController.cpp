@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "OrthographicCameraController.h"
 
-namespace AAAAgames {
+namespace longmarch {
 
 	OrthographicCameraController::OrthographicCameraController(float aspectRatio, bool rotation)
 		:m_AspectRatio(aspectRatio), m_Camera(-m_AspectRatio * m_ZoomLevel, m_AspectRatio* m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel), m_Rotation(rotation)

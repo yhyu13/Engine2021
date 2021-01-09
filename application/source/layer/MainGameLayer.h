@@ -1,7 +1,7 @@
 #pragma once
 #include "Import.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/**
 	 * @brief Main editor layer

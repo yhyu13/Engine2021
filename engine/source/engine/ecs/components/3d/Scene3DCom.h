@@ -6,7 +6,7 @@
 #include "engine/scene-graph/Scene3DNode.h"
 
 
-namespace AAAAgames
+namespace longmarch
 {
 	struct Transform3DCom;
 	struct Animation3DCom;

@@ -3,7 +3,7 @@
 #include "../../Buffer.h"
 #include "OpenGLUtil.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	class OpenGLIndexedIndirectCommandBuffer :public IndexedIndirectCommandBuffer
 	{
 	public:

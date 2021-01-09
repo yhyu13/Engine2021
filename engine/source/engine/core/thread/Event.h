@@ -7,7 +7,7 @@
 #include <condition_variable>
 #include <chrono>
 
-namespace AAAAgames
+namespace longmarch
 {
 	class manual_event
 	{

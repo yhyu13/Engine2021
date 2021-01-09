@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "AssimpSceneObject.h"
 
-AAAAgames::AssimpSceneObject::AssimpSceneObject(const fs::path& path)
+longmarch::AssimpSceneObject::AssimpSceneObject(const fs::path& path)
 {
 	// Reference: http://assimp.sourceforge.net/lib_html/threading.html
 	// The C-API is thread safe.
@@ -12,17 +12,17 @@ AAAAgames::AssimpSceneObject::AssimpSceneObject(const fs::path& path)
 	ENGINE_EXCEPT_IF(!m_aiscene, L"Failed to load assimp file: " + path.wstring() + L" with Error: " + erro);
 }
 
-AAAAgames::AssimpSceneObject::~AssimpSceneObject()
+longmarch::AssimpSceneObject::~AssimpSceneObject()
 {
 	aiReleaseImport(m_aiscene);
 }
 
-const aiScene* AAAAgames::AssimpSceneObject::GetScene() const noexcept
+const aiScene* longmarch::AssimpSceneObject::GetScene() const noexcept
 {
 	return m_aiscene;
 }
 
-const aiNode* AAAAgames::AssimpSceneObject::GetRoot() const noexcept
+const aiNode* longmarch::AssimpSceneObject::GetRoot() const noexcept
 {
 	return m_aiscene->mRootNode;
 }

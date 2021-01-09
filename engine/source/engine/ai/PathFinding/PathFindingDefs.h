@@ -5,7 +5,7 @@
 #include "engine/core/utility/TypeHelper.h"
 #include "engine/math/Geommath.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	namespace pathfinding
 	{
@@ -31,7 +31,7 @@ namespace AAAAgames
 			ROY_FLOYD_WARSHALL
 		};
 
-		using WaypointList = A4GAMES_Vector<Vec3f>;
+		using WaypointList = LongMarch_Vector<Vec3f>;
 
 		struct PathRequest
 		{

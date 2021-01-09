@@ -2,12 +2,12 @@
 #include "PerspectiveCamera.h"
 #include "engine/window/Window.h"
 
-AAAAgames::PerspectiveCamera::PerspectiveCamera(float fovy_rad, float aspectRatioWbyH, float nearZ, float farZ)
+longmarch::PerspectiveCamera::PerspectiveCamera(float fovy_rad, float aspectRatioWbyH, float nearZ, float farZ)
 {
 	SetProjection(fovy_rad, aspectRatioWbyH, nearZ, farZ);
 }
 
-void AAAAgames::PerspectiveCamera::OnUpdate()
+void longmarch::PerspectiveCamera::OnUpdate()
 {
 	SetProjection(cameraSettings.fovy_rad, (Window::Resizable) ? float(Window::width) / float(Window::height) : cameraSettings.aspectRatioWbyH, cameraSettings.nearZ, cameraSettings.farZ);
 	RecalculateProjectionMatrix();
@@ -15,7 +15,7 @@ void AAAAgames::PerspectiveCamera::OnUpdate()
 	RecalculateViewFrustum();
 }
 
-void AAAAgames::PerspectiveCamera::SetProjection(float fovy_rad, float aspectRatioWbyH, float nearZ, float farZ)
+void longmarch::PerspectiveCamera::SetProjection(float fovy_rad, float aspectRatioWbyH, float nearZ, float farZ)
 {
 	cameraSettings.fovy_rad = fovy_rad;
 	cameraSettings.aspectRatioWbyH = aspectRatioWbyH;
@@ -23,7 +23,7 @@ void AAAAgames::PerspectiveCamera::SetProjection(float fovy_rad, float aspectRat
 	cameraSettings.farZ = farZ;
 }
 
-void AAAAgames::PerspectiveCamera::RecalculateProjectionMatrix()
+void longmarch::PerspectiveCamera::RecalculateProjectionMatrix()
 {
 	m_PrevProjectionMatrix = m_ProjectionMatrix;
 	m_ProjectionMatrix = Geommath::ProjectionMatrixZeroOne(cameraSettings.fovy_rad, cameraSettings.aspectRatioWbyH, cameraSettings.nearZ, cameraSettings.farZ);
@@ -33,19 +33,19 @@ void AAAAgames::PerspectiveCamera::RecalculateProjectionMatrix()
 	m_ReverseZProjectionMatrix = Geommath::ReverseZProjectionMatrixZeroOne(cameraSettings.fovy_rad, cameraSettings.aspectRatioWbyH, cameraSettings.nearZ, cameraSettings.farZ, true);
 }
 
-void AAAAgames::PerspectiveCamera::RecalculateViewMatrix()
+void longmarch::PerspectiveCamera::RecalculateViewMatrix()
 {
 	m_PrevViewMatrix = m_ViewMatrix;
 	switch (type)
 	{
-	case AAAAgames::PerspectiveCameraType::LOOK_AT:
+	case longmarch::PerspectiveCameraType::LOOK_AT:
 	{
 		// m_ViewMatrix = Geommath::LookAtWorld(worldPosition, worldPosition + globalRotation * Geommath::WorldFront, Vec3f(0, 0, localZoom)); // Bad at looking right up or right down using lookat matrix due to gimbal lock
 		// Using quaternion
 		m_ViewMatrix = Geommath::ToTranslateMatrix(Vec3f(0, 0, -localZoom)) * Geommath::ViewMatrix(worldPosition, globalRotation);
 	}
 	break;
-	case AAAAgames::PerspectiveCameraType::FIRST_PERSON:
+	case longmarch::PerspectiveCameraType::FIRST_PERSON:
 	{
 		// m_ViewMatrix = Geommath::LookAtWorld(worldPosition, worldPosition + globalRotation * Geommath::WorldFront); // Bad at looking right up or right down using lookat matrix due to gimbal lock
 		m_ViewMatrix = Geommath::ViewMatrix(worldPosition, globalRotation);
@@ -54,19 +54,19 @@ void AAAAgames::PerspectiveCamera::RecalculateViewMatrix()
 	}
 }
 
-void AAAAgames::PerspectiveCamera::RecalculateViewFrustum()
+void longmarch::PerspectiveCamera::RecalculateViewFrustum()
 {
 	// Since the reverse Z projection has the same fruistum plane as the normal porjection, we calculate one
 	m_frustumPlane = Geommath::Frustum::FromProjection(m_ProjectionMatrix);
 }
 
-void AAAAgames::PerspectiveCamera::SetViewPort(const Vec2u& origin, const Vec2u& size)
+void longmarch::PerspectiveCamera::SetViewPort(const Vec2u& origin, const Vec2u& size)
 {
 	cameraSettings.viewportOrigin = origin;
 	cameraSettings.viewportSize = size;
 }
 
-bool AAAAgames::PerspectiveCamera::ScreenSpaceToWorldSpace(const Vec2u& in_ss_pos, bool clip_viewport, bool invert_y, const Vec4f& in_plane, Vec3f& out_world_pos) const
+bool longmarch::PerspectiveCamera::ScreenSpaceToWorldSpace(const Vec2u& in_ss_pos, bool clip_viewport, bool invert_y, const Vec4f& in_plane, Vec3f& out_world_pos) const
 {
 	Vec3f pick_ray_dir;
 	Vec3f pick_ray_origin;
@@ -109,7 +109,7 @@ bool AAAAgames::PerspectiveCamera::ScreenSpaceToWorldSpace(const Vec2u& in_ss_po
 	return true;
 }
 
-bool AAAAgames::PerspectiveCamera::GenerateRayFromScreenSpace(const Vec2u& in_ss_pos, bool clip_viewport, bool invert_y, Vec3f& out_ray_origin, Vec3f& out_ray_dir) const
+bool longmarch::PerspectiveCamera::GenerateRayFromScreenSpace(const Vec2u& in_ss_pos, bool clip_viewport, bool invert_y, Vec3f& out_ray_origin, Vec3f& out_ray_dir) const
 {
 	if (clip_viewport && (glm::any(glm::lessThanEqual(in_ss_pos, cameraSettings.viewportOrigin))
 		|| glm::any(glm::greaterThanEqual(in_ss_pos, cameraSettings.viewportOrigin + cameraSettings.viewportSize))))
@@ -138,7 +138,7 @@ bool AAAAgames::PerspectiveCamera::GenerateRayFromScreenSpace(const Vec2u& in_ss
 	return true;
 }
 
-bool AAAAgames::PerspectiveCamera::WorldSpaceToScreenSpace(const Vec3f& in_world_pos, Vec2u& out_ss_pos, bool invert_y) const
+bool longmarch::PerspectiveCamera::WorldSpaceToScreenSpace(const Vec3f& in_world_pos, Vec2u& out_ss_pos, bool invert_y) const
 {
 	const auto& pv = GetViewProjectionMatrix();
 	auto ss = Geommath::Mat4ProdVec3(pv, in_world_pos);
@@ -151,7 +151,7 @@ bool AAAAgames::PerspectiveCamera::WorldSpaceToScreenSpace(const Vec3f& in_world
 	return true;
 }
 
-const ViewFrustum AAAAgames::PerspectiveCamera::GetViewFrustumInWorldSpace() const
+const ViewFrustum longmarch::PerspectiveCamera::GetViewFrustumInWorldSpace() const
 {
 	ViewFrustum ret = GetViewFrustumInViewSpace();
 	const auto& worldSpaceToViewFrustumSpace = GetViewMatrix();

@@ -3,7 +3,7 @@
 #include "GridF32.h"
 #include "engine/renderer/Image2D.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class SphericalHarmonics
 	{

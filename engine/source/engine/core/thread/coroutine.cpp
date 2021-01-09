@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <thread>
 
-namespace AAAAgames
+namespace longmarch
 {
 	namespace emilib
 	{

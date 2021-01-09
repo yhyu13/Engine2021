@@ -1,6 +1,6 @@
 #pragma once
 
-namespace AAAAgames
+namespace longmarch
 {
 	struct BaseEvent
 	{
@@ -22,7 +22,7 @@ namespace AAAAgames
 }
 
 template <typename EventType>
-std::ostream& operator<<(std::ostream& os, const AAAAgames::Event<EventType>& dt)
+std::ostream& operator<<(std::ostream& os, const longmarch::Event<EventType>& dt)
 {
 	os << '(' << dt.m_type << ") ";
 	return os;

@@ -3,7 +3,7 @@
 #include "../../Texture.h"
 #include "OpenGLUtil.h"
 
-namespace AAAAgames {
+namespace longmarch {
 
 	class OpenGLPostProcessing
 	{

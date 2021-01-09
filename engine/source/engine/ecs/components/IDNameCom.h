@@ -2,7 +2,7 @@
 #include "engine/ecs/BaseComponent.h"
 #include "engine/ecs/EntityDecorator.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/*
 	Data class that stores references to children entities

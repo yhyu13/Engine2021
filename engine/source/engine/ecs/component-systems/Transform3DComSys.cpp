@@ -8,7 +8,7 @@
 #include "engine/events/engineEvents/EngineCustomEvent.h"
 
 #ifdef DEBUG_DRAW
-void AAAAgames::Transform3DComSys::DebugDraw(EntityDecorator e)
+void longmarch::Transform3DComSys::DebugDraw(EntityDecorator e)
 {
 	auto trans = e.GetComponent<Transform3DCom>();
 	if (trans->debug.showRotation)

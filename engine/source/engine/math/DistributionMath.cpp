@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "DistributionMath.h"
 
-ArrayF32 AAAAgames::DistributionMath::Gaussian1D(int sampleNum, float mean, float std)
+ArrayF32 longmarch::DistributionMath::Gaussian1D(int sampleNum, float mean, float std)
 {
 	float totalSum = 0;
 	ArrayF32 weightValueVec(sampleNum);
@@ -24,7 +24,7 @@ ArrayF32 AAAAgames::DistributionMath::Gaussian1D(int sampleNum, float mean, floa
 	return weightValueVec;
 }
 
-std::pair<ArrayF32, ArrayF32> AAAAgames::DistributionMath::Gaussian1DHalf(int sampleNum, float mean, float std)
+std::pair<ArrayF32, ArrayF32> longmarch::DistributionMath::Gaussian1DHalf(int sampleNum, float mean, float std)
 {
 	float totalSum = 0;
 	int half = (sampleNum / 2);
@@ -50,7 +50,7 @@ std::pair<ArrayF32, ArrayF32> AAAAgames::DistributionMath::Gaussian1DHalf(int sa
 	return std::pair<ArrayF32, ArrayF32>(offsets, weightValueVec);
 }
 
-std::pair<ArrayF32, ArrayF32> AAAAgames::DistributionMath::Gaussian1DHalfBilinear(int sampleNum, float mean, float std)
+std::pair<ArrayF32, ArrayF32> longmarch::DistributionMath::Gaussian1DHalfBilinear(int sampleNum, float mean, float std)
 {
 	auto [offsets, weights] = Gaussian1DHalf(sampleNum, mean, std);
 	int new_size = (weights.X()-1) / 2 + 1;

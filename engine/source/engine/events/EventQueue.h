@@ -5,7 +5,7 @@
 #include "engine/core/thread/StealThreadPool.h"
 #include "EventHandler.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 #define THROW_ON_DUPLICATED_EVENT_CALLBACk 1
 	/**
@@ -48,14 +48,14 @@ namespace AAAAgames
 		}
 
 		using BaseEventPtr = std::shared_ptr<BaseEventHandler>;
-		using EventHandlersMap = A4GAMES_UnorderedMap<size_t, BaseEventPtr>;
+		using EventHandlersMap = LongMarch_UnorderedMap<size_t, BaseEventPtr>;
 		struct EventHandlers final : public BaseAtomicClass2
 		{
 			auto begin() const { return handlersMap.begin(); }
 			auto end() const { return handlersMap.end(); }
 			EventHandlersMap handlersMap;
 		};
-		using EventSubsriberLUT = A4GAMES_UnorderedMap_Par<EventType, EventHandlers>;
+		using EventSubsriberLUT = LongMarch_UnorderedMap_Par<EventType, EventHandlers>;
 
 		//! Internal type that convert a regular event into a delayed event
 		struct DelayedEvent : Event<EventType> {
@@ -112,11 +112,11 @@ namespace AAAAgames
 		{
 			LOCK_GUARD_NC();
 			size_t mask = 0;
-			A4GAMES_HashCombine(mask, reinterpret_cast<uintptr_t>(&Function));
-			A4GAMES_HashCombine(mask, reinterpret_cast<uintptr_t>(instance));
+			LongMarch_HashCombine(mask, reinterpret_cast<uintptr_t>(&Function));
+			LongMarch_HashCombine(mask, reinterpret_cast<uintptr_t>(instance));
 			auto& subs = m_subscribers[eventType];
 			subs.Lock2();
-			if (!A4GAMES_contains(subs.handlersMap, mask))
+			if (!LongMarch_contains(subs.handlersMap, mask))
 			{
 				subs.handlersMap.emplace(mask, MemoryManager::Make_shared<InstanceEventHandler<T, EventType>>(instance, Function));
 				subs.Unlock2();
@@ -140,7 +140,7 @@ namespace AAAAgames
 			size_t mask = reinterpret_cast<size_t>(&Function);
 			auto& subs = m_subscribers[eventType];
 			subs.Lock2();
-			if (!A4GAMES_contains(subs.handlersMap, mask))
+			if (!LongMarch_contains(subs.handlersMap, mask))
 			{
 				subs.handlersMap.emplace(mask, MemoryManager::Make_shared<GlobalEventHandler<EventType>>(Function));
 				subs.Unlock2();
@@ -180,7 +180,7 @@ namespace AAAAgames
 		//! Instanct execution of an async event in a background thread
 		inline void PublishAsync(EventPtr e)
 		{
-			A4GAMES_NOGET(std::async(std::launch::async, [this, e]()
+			LongMarch_NOGET(std::async(std::launch::async, [this, e]()
 			{
 				auto& _e = std::static_pointer_cast<BaseEvent>(e);
 				LockNC();
@@ -342,7 +342,7 @@ namespace AAAAgames
 				*/
 				if ((delayedEvent->m_triggerTime -= frameTime) <= 0)
 				{
-					A4GAMES_NOGET(std::async(std::launch::async, [this, delayedEvent]() { Publish(delayedEvent->m_event); }));
+					LongMarch_NOGET(std::async(std::launch::async, [this, delayedEvent]() { Publish(delayedEvent->m_event); }));
 				}
 				else
 				{
@@ -416,7 +416,7 @@ namespace AAAAgames
 		}
 
 	private:
-		A4GAMES_Set<std::shared_ptr<BaseEventSubHandle>> m_subHandles;
+		LongMarch_Set<std::shared_ptr<BaseEventSubHandle>> m_subHandles;
 	};
 #undef THROW_ON_DUPLICATED_EVENT_CALLBACk
 }

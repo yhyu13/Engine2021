@@ -6,13 +6,13 @@
 // Reference : https://stackoverflow.com/questions/1204553/are-there-any-good-libraries-for-solving-cubic-splines-in-c
 // Reference : http://www.cemyuksel.com/research/interpolating_splines/
 
-namespace AAAAgames
+namespace longmarch
 {
 	/* A Spline base class. */
 	class SplineBase
 	{
 	private:
-		A4GAMES_Vector<Vec2f> _points;
+		LongMarch_Vector<Vec2f> _points;
 		bool _elimColinearPoints;
 
 	protected:
@@ -34,7 +34,7 @@ namespace AAAAgames
 			_elimColinearPoints = true;
 		}
 
-		const A4GAMES_Vector<Vec2f>& GetPoints() { return _points; }
+		const LongMarch_Vector<Vec2f>& GetPoints() { return _points; }
 		bool GetElimColinearPoints() { return _elimColinearPoints; }
 		void SetElimColinearPoints(bool elim) { _elimColinearPoints = elim; }
 
@@ -128,10 +128,10 @@ namespace AAAAgames
 		 *  in Robert Sedgewick's "Algorithms in C++".
 		 *
 		 */
-		A4GAMES_Vector<double> _xCol;
-		A4GAMES_Vector<double> _bCol;
-		A4GAMES_Vector<double> _diagElems;
-		A4GAMES_Vector<double> _offDiagElems;
+		LongMarch_Vector<double> _xCol;
+		LongMarch_Vector<double> _bCol;
+		LongMarch_Vector<double> _diagElems;
+		LongMarch_Vector<double> _offDiagElems;
 	public:
 		ClassicSpline()
 		{
@@ -147,7 +147,7 @@ namespace AAAAgames
 		 */
 		inline virtual Vec2f Eval(int seg, double t)
 		{
-			const A4GAMES_Vector<Vec2f>& points = GetPoints();
+			const LongMarch_Vector<Vec2f>& points = GetPoints();
 
 			assert(t >= 0);
 			assert(t <= 1.0);
@@ -178,7 +178,7 @@ namespace AAAAgames
 
 		virtual bool ComputeSpline()
 		{
-			const A4GAMES_Vector<Vec2f>& p = GetPoints();
+			const LongMarch_Vector<Vec2f>& p = GetPoints();
 
 			_bCol.resize(p.size());
 			_xCol.resize(p.size());
@@ -219,8 +219,8 @@ namespace AAAAgames
 	class BezierSpine : public SplineBase
 	{
 	private:
-		A4GAMES_Vector<Vec2f> _p1Points;
-		A4GAMES_Vector<Vec2f> _p2Points;
+		LongMarch_Vector<Vec2f> _p1Points;
+		LongMarch_Vector<Vec2f> _p2Points;
 	public:
 		BezierSpine()
 		{
@@ -259,7 +259,7 @@ namespace AAAAgames
 
 		virtual bool ComputeSpline()
 		{
-			const A4GAMES_Vector<Vec2f>& p = GetPoints();
+			const LongMarch_Vector<Vec2f>& p = GetPoints();
 
 			int N = (int)p.size() - 1;
 			_p1Points.resize(N);
@@ -276,11 +276,11 @@ namespace AAAAgames
 				return true;
 			}
 
-			/*rhs A4GAMES_Vector*/
-			A4GAMES_Vector<Vec2f> a(N);
-			A4GAMES_Vector<Vec2f> b(N);
-			A4GAMES_Vector<Vec2f> c(N);
-			A4GAMES_Vector<Vec2f> r(N);
+			/*rhs LongMarch_Vector*/
+			LongMarch_Vector<Vec2f> a(N);
+			LongMarch_Vector<Vec2f> b(N);
+			LongMarch_Vector<Vec2f> c(N);
+			LongMarch_Vector<Vec2f> r(N);
 
 			/*left most segment*/
 			a[0].x = 0;
@@ -372,7 +372,7 @@ namespace AAAAgames
  * points.  Most of the time, the full path will not
  * be executed anyway...why waste cycles.
  */
-	void SmoothPath(A4GAMES_Vector<Vec2f>& path, int divisions)
+	void SmoothPath(LongMarch_Vector<Vec2f>& path, int divisions)
 	{
 		const int SMOOTH_POINTS = 6;
 

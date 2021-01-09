@@ -1,7 +1,7 @@
 #pragma once
 #include "engine/EngineEssential.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	struct ENGINE_API KeyFrame2D
 	{
@@ -34,7 +34,7 @@ namespace AAAAgames
 	private:
 		[[nodiscard]] bool IncrementFrame();
 
-		A4GAMES_Vector<KeyFrame2D> keyFrames;
+		LongMarch_Vector<KeyFrame2D> keyFrames;
 
 		int currentFrameIndex{ 0 };
 		double currentFrameTime{ 0 };

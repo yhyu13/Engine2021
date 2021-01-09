@@ -3,7 +3,7 @@
 
 //! Copy a scene3DNode is preferred with new copies of all materials
 
-std::shared_ptr<Scene3DNode> AAAAgames::Scene3DNode::Copy() const
+std::shared_ptr<Scene3DNode> longmarch::Scene3DNode::Copy() const
 {
 	auto ret = MemoryManager::Make_shared<Scene3DNode>(*this);
 	ret->meshTree.clear();
@@ -14,21 +14,21 @@ std::shared_ptr<Scene3DNode> AAAAgames::Scene3DNode::Copy() const
 	return ret;
 }
 
-const A4GAMES_Vector<MeshData*> AAAAgames::Scene3DNode::GetAllMesh() const
+const LongMarch_Vector<MeshData*> longmarch::Scene3DNode::GetAllMesh() const
 {
-	A4GAMES_Vector<MeshData*> ret;
+	LongMarch_Vector<MeshData*> ret;
 	std::transform(meshTree.begin(), meshTree.end(), std::back_inserter(ret), [](const auto& item) {return item.second->meshData.get(); });
 	return ret;
 }
 
-const A4GAMES_Vector<Material*> AAAAgames::Scene3DNode::GetAllMaterial() const
+const LongMarch_Vector<Material*> longmarch::Scene3DNode::GetAllMaterial() const
 {
-	A4GAMES_Vector<Material*> ret;
+	LongMarch_Vector<Material*> ret;
 	std::transform(meshTree.begin(), meshTree.end(), std::back_inserter(ret), [](const auto& item) {return item.second->material.get(); });
 	return ret;
 }
 
-void AAAAgames::Scene3DNode::ModifyAllMaterial(const std::function<void(Material*)>& callback) const
+void longmarch::Scene3DNode::ModifyAllMaterial(const std::function<void(Material*)>& callback) const
 {
 	for (auto& [level, data] : meshTree)
 	{
@@ -36,12 +36,12 @@ void AAAAgames::Scene3DNode::ModifyAllMaterial(const std::function<void(Material
 	}
 }
 
-void AAAAgames::Scene3DNode::SetInverseFinalBoneTransform(const Skeleton::Bone_Transform_LUT& inverseFinal)
+void longmarch::Scene3DNode::SetInverseFinalBoneTransform(const Skeleton::Bone_Transform_LUT& inverseFinal)
 {
 	animationData.bone_inverseFinalTransform_LUT = inverseFinal;
 }
 
-const Skeleton::Bone_Transform_LUT& AAAAgames::Scene3DNode::GetInverseFinalBoneTransform() const
+const Skeleton::Bone_Transform_LUT& longmarch::Scene3DNode::GetInverseFinalBoneTransform() const
 {
 	return animationData.bone_inverseFinalTransform_LUT;
 }

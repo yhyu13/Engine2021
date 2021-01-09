@@ -5,7 +5,7 @@
 #include "engine/core/utility/TypeHelper.h"
 #include "OpenGLUtil.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	class OpenGLShader : public Shader
 	{
 	public:
@@ -44,7 +44,7 @@ namespace AAAAgames {
 		GLint GetUniformLocationCached(const std::string& name);
 		std::string GetShaderString(const fs::path& shaderSourcePath);
 	private:
-		A4GAMES_UnorderedMap<std::string, GLint> m_uniformLocationMap;
+		LongMarch_UnorderedMap<std::string, GLint> m_uniformLocationMap;
 		uint32_t m_RendererID;
 	};
 }

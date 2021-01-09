@@ -14,7 +14,7 @@
 #include "ThreadUtil.h"
 #include "../EngineCore.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class ThreadPool {
 	public:

@@ -2,7 +2,7 @@
 #include "Shape.h"
 #include "engine/renderer/mesh/Mesh.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class CACHE_ALIGN32 OOBB final: public Shape
 	{
@@ -11,9 +11,9 @@ namespace AAAAgames
 		OOBB();
 		explicit OOBB(const Vec3f& min, const Vec3f& max);
 		explicit OOBB(MeshData* mesh);
-		explicit OOBB(const A4GAMES_Vector<MeshData*>& meshs);
+		explicit OOBB(const LongMarch_Vector<MeshData*>& meshs);
 		void InitWithMeshData(const MeshData::VertexList& vertex_data, const MeshData::IndexList& index_data);
-		const A4GAMES_Vector<Vec3f> GetAllVertex();
+		const LongMarch_Vector<Vec3f> GetAllVertex();
 		Vec3f GetDiag();
 		virtual float GetRadius() override;
 		virtual Vec3f GetCenter() override;
@@ -31,7 +31,7 @@ namespace AAAAgames
 		Vec3f GetOriginalCenter() const;
 		void Update(const Vec3f& point);
 		void UpdateOriginal(const Vec3f& point);
-		const A4GAMES_Vector<Vec3f> GetAllVertexOriginal();
+		const LongMarch_Vector<Vec3f> GetAllVertexOriginal();
 	private:
 		Vec3f Min, Max; // These two variables are not the same as for AABB, they are here just to get diag and center.
 		Vec3f o_min, o_max;

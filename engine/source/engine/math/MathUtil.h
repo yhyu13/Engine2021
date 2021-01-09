@@ -41,12 +41,12 @@
 */
 #define Z_ORDER(x) static_cast<float>(x)*0.0001f
 
-namespace AAAAgames
+namespace longmarch
 {
-	uint32_t A4GAMES_NearestPowerOfTwo(uint32_t n);
-	uint32_t A4GAMES_NextPowerOfTwo(uint32_t n);
-	float A4GAMES_Lerp(float a, float b, float ratio);
+	uint32_t LongMarch_NearestPowerOfTwo(uint32_t n);
+	uint32_t LongMarch_NextPowerOfTwo(uint32_t n);
+	float LongMarch_Lerp(float a, float b, float ratio);
 }
 
-#define NEAREST_POW2(x) A4GAMES_NearestPowerOfTwo(x)
-#define NEXT_POW2(x) A4GAMES_NextPowerOfTwo(x)
+#define NEAREST_POW2(x) LongMarch_NearestPowerOfTwo(x)
+#define NEXT_POW2(x) LongMarch_NextPowerOfTwo(x)

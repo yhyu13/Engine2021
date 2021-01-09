@@ -2,7 +2,7 @@
 #include "InstumentingTimer.h"
 #include "Instrumentor.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	InstrumentingTimer::InstrumentingTimer(const char* name, Instrumentor* instrumentor) :m_name(name), m_stopped(false), m_instumentor(instrumentor) {
 		m_timeBegin = std::chrono::high_resolution_clock::now();
 	}

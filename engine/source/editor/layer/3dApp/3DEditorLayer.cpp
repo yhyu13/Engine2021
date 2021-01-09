@@ -4,13 +4,13 @@
 #include "editor/ui/header/header.h"
 #include "editor/events/EditorCustomEvent.h"
 
-AAAAgames::_3DEditorLayer::_3DEditorLayer()
+longmarch::_3DEditorLayer::_3DEditorLayer()
 	: Layer("_3DEditorLayer")
 {
 	Renderer3D::Init();
 }
 
-void AAAAgames::_3DEditorLayer::Init()
+void longmarch::_3DEditorLayer::Init()
 {
 	BuildRenderPipeline();
 	{
@@ -34,7 +34,7 @@ void AAAAgames::_3DEditorLayer::Init()
 	}
 }
 
-void AAAAgames::_3DEditorLayer::BuildRenderPipeline()
+void longmarch::_3DEditorLayer::BuildRenderPipeline()
 {
 	Renderer3D::BuildAllMesh();
 	Renderer3D::BuildAllMaterial();
@@ -106,7 +106,7 @@ void AAAAgames::_3DEditorLayer::BuildRenderPipeline()
 	};
 }
 
-void AAAAgames::_3DEditorLayer::OnUpdate(double ts)
+void longmarch::_3DEditorLayer::OnUpdate(double ts)
 {
 	double dt = GameWorld::GetCurrent()->IsPaused() ? 0.0 : ts;
 	{
@@ -136,15 +136,15 @@ void AAAAgames::_3DEditorLayer::OnUpdate(double ts)
 	}
 }
 
-void AAAAgames::_3DEditorLayer::OnAttach()
+void longmarch::_3DEditorLayer::OnAttach()
 {
 }
 
-void AAAAgames::_3DEditorLayer::OnDetach()
+void longmarch::_3DEditorLayer::OnDetach()
 {
 }
 
-void AAAAgames::_3DEditorLayer::OnImGuiRender()
+void longmarch::_3DEditorLayer::OnImGuiRender()
 {
 	ENG_TIME("Engine ImGUI Render");
 	ImGui::PushFont(m_font);
@@ -156,7 +156,7 @@ void AAAAgames::_3DEditorLayer::OnImGuiRender()
 	ImGui::PopFont();
 }
 
-void AAAAgames::_3DEditorLayer::PreUpdate(double ts)
+void longmarch::_3DEditorLayer::PreUpdate(double ts)
 {
 	{
 		auto queue = EventQueue<EngineEventType>::GetInstance();
@@ -176,7 +176,7 @@ void AAAAgames::_3DEditorLayer::PreUpdate(double ts)
 	}
 }
 
-void AAAAgames::_3DEditorLayer::Update(double ts)
+void longmarch::_3DEditorLayer::Update(double ts)
 {
 #ifdef MULTITHREAD_UPDATE
 	GameWorld::GetCurrent()->MultiThreadUpdate(ts);
@@ -185,31 +185,31 @@ void AAAAgames::_3DEditorLayer::Update(double ts)
 #endif // MULTITHREAD_UPDATE
 }
 
-void AAAAgames::_3DEditorLayer::JoinAll()
+void longmarch::_3DEditorLayer::JoinAll()
 {
 #ifdef MULTITHREAD_UPDATE
 	GameWorld::GetCurrent()->MultiThreadJoin();
 #endif // MULTITHREAD_UPDATE
 }
 
-void AAAAgames::_3DEditorLayer::PreRenderUpdate(double ts)
+void longmarch::_3DEditorLayer::PreRenderUpdate(double ts)
 {
 	GameWorld::GetCurrent()->PreRenderUpdate(ts);
 }
 
-void AAAAgames::_3DEditorLayer::Render(double ts)
+void longmarch::_3DEditorLayer::Render(double ts)
 {
 	GameWorld::GetCurrent()->Render(ts);
 	GameWorld::GetCurrent()->Render2(ts);
 	m_Data.mainRenderPipeline(ts);
 }
 
-void AAAAgames::_3DEditorLayer::PostRenderUpdate(double ts)
+void longmarch::_3DEditorLayer::PostRenderUpdate(double ts)
 {
 	GameWorld::GetCurrent()->PostRenderUpdate(ts);
 }
 
-void AAAAgames::_3DEditorLayer::_ON_LOAD_SCENE_BEGIN(EventQueue<EngineIOEventType>::EventPtr e)
+void longmarch::_3DEditorLayer::_ON_LOAD_SCENE_BEGIN(EventQueue<EngineIOEventType>::EventPtr e)
 {
 	// CLear event queue if you for sure that older game world is removed and no other engine modules needs to re-register after clear
 	//{
@@ -218,14 +218,14 @@ void AAAAgames::_3DEditorLayer::_ON_LOAD_SCENE_BEGIN(EventQueue<EngineIOEventTyp
 	//}
 }
 
-void AAAAgames::_3DEditorLayer::_ON_LOAD_SCENE_END(EventQueue<EngineIOEventType>::EventPtr e)
+void longmarch::_3DEditorLayer::_ON_LOAD_SCENE_END(EventQueue<EngineIOEventType>::EventPtr e)
 {
 	Renderer3D::BuildAllMesh();
 	Renderer3D::BuildAllMaterial();
 	Renderer3D::BuildAllTexture();
 }
 
-void AAAAgames::_3DEditorLayer::_ON_EDITOR_SWITCH_TO_GAME_MODE(EventQueue<EditorEventType>::EventPtr e)
+void longmarch::_3DEditorLayer::_ON_EDITOR_SWITCH_TO_GAME_MODE(EventQueue<EditorEventType>::EventPtr e)
 {
 	if (auto event = std::dynamic_pointer_cast<EditorSwitchToGameModeEvent>(e); event)
 	{
@@ -241,7 +241,7 @@ void AAAAgames::_3DEditorLayer::_ON_EDITOR_SWITCH_TO_GAME_MODE(EventQueue<Editor
 	}
 }
 
-void AAAAgames::_3DEditorLayer::_ON_EDITOR_SWITCH_TO_EDITING_MODE(EventQueue<EditorEventType>::EventPtr e)
+void longmarch::_3DEditorLayer::_ON_EDITOR_SWITCH_TO_EDITING_MODE(EventQueue<EditorEventType>::EventPtr e)
 {
 	if (auto event = std::dynamic_pointer_cast<EditorSwitchToEditingModeEvent>(e); event)
 	{

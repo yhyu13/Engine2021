@@ -2,7 +2,7 @@
 #include "engine/ecs/BaseComponent.h"
 #include "engine/ecs/EntityDecorator.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	struct ChildrenCom;
 	/*

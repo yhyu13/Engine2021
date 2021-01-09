@@ -4,7 +4,7 @@
 #include "engine/events/engineEvents/EngineEventType.h"
 #include "editor/events/EditorEventType.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/**
 	 * @brief 3D engine update/render pipeline

@@ -6,7 +6,7 @@
 #include "GameWorld.h"
 #include "engine/events/engineEvents/EngineCustomEvent.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 #ifndef EARLY_RETURN
 #define  EARLY_RETURN(dt) {if (!dt) return; }
@@ -27,14 +27,14 @@ namespace AAAAgames
 		Usage example:
 
 		// declaring a component
-		struct Position : AAAAgames::BaseComponent<Position> {
+		struct Position : longmarch::BaseComponent<Position> {
 			Position() = default;
 			Position(float x) : x(x) {};
 			float x;
 		};
 
 		// declaring a system
-		class Wind : public AAAAgames::BaseComponentSystem {
+		class Wind : public longmarch::BaseComponentSystem {
 		public:
 			Wind() {
 				// wind system wants to pay attention to the Position component, thus creating the
@@ -119,7 +119,7 @@ namespace AAAAgames
 		}
 
 		//! Dispatcher to parent world
-		__A4GAMES_TRVIAL_TEMPLATE__
+		__LongMarch_TRVIAL_TEMPLATE__
 			inline void ForEach(typename Identity<std::function<void(EntityDecorator e)>>::Type func)
 		{
 			if (this == nullptr)
@@ -129,21 +129,21 @@ namespace AAAAgames
 			m_parentWorld->ForEach(GetRegisteredEntities(), func);
 		}
 		//! Dispatcher to parent world
-		__A4GAMES_TRVIAL_TEMPLATE__
+		__LongMarch_TRVIAL_TEMPLATE__
 			[[nodiscard]] inline std::future<void> BackEach(typename Identity<std::function<void(EntityDecorator e)>>::Type func)
 		{
 			return m_parentWorld->BackEach(GetRegisteredEntities(), func);
 		}
 
 		//! Dispatcher to parent world
-		__A4GAMES_TRVIAL_TEMPLATE__
+		__LongMarch_TRVIAL_TEMPLATE__
 			[[nodiscard]] inline std::future<void> ParEach(typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split = -1)
 		{
 			return m_parentWorld->ParEach(GetRegisteredEntities(), func, min_split);
 		}
 
 		//! Get a copy of all registered engities because registered entities are subjected to change
-		inline const A4GAMES_Vector<Entity> GetRegisteredEntities() const
+		inline const LongMarch_Vector<Entity> GetRegisteredEntities() const
 		{
 			LOCK_GUARD_NC();
 			return m_bufferedRegisteredEntities;
@@ -173,7 +173,7 @@ namespace AAAAgames
 		}
 
 	protected:
-		A4GAMES_Vector<Entity> m_bufferedRegisteredEntities;
+		LongMarch_Vector<Entity> m_bufferedRegisteredEntities;
 		BitMaskSignature m_systemSignature;
 		mutable GameWorld* m_parentWorld{ nullptr };
 	};

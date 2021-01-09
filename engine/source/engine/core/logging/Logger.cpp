@@ -7,7 +7,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 
-namespace AAAAgames {
+namespace longmarch {
 	void Logger::Init() {
 		if (!init)
 		{

@@ -2,7 +2,7 @@
 
 #include "engine/core/EngineCore.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	class ENGINE_API Texture
 	{
 	public:

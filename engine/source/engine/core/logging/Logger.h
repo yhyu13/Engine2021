@@ -5,7 +5,7 @@
 #include <functional>
 #include <spdlog/spdlog.h>
 
-namespace AAAAgames {
+namespace longmarch {
 	class Logger {
 	public:
 

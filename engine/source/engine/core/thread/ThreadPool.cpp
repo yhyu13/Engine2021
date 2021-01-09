@@ -3,7 +3,7 @@
 
 // the constructor just launches some amount of workers
 
-AAAAgames::ThreadPool::ThreadPool(unsigned int threads)
+longmarch::ThreadPool::ThreadPool(unsigned int threads)
 	:
 	threads(threads),
 	stop(false)
@@ -39,7 +39,7 @@ AAAAgames::ThreadPool::ThreadPool(unsigned int threads)
 
 // the destructor joins all threads
 
-AAAAgames::ThreadPool::~ThreadPool()
+longmarch::ThreadPool::~ThreadPool()
 {
 	{
 		std::unique_lock<std::mutex> lock(queue_mutex);

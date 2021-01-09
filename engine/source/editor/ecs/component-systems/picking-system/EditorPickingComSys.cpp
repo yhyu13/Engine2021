@@ -9,13 +9,13 @@
 
 #include <imgui/addons/ImGuizmo/ImGuizmo.h>
 
-void AAAAgames::EditorPickingComSys::Init()
+void longmarch::EditorPickingComSys::Init()
 {
 	m_renderPass.SetParentWorld(m_parentWorld);
 	m_renderPass.Init();
 }
 
-void AAAAgames::EditorPickingComSys::RenderUI()
+void longmarch::EditorPickingComSys::RenderUI()
 {
 	switch (Engine::GetEngineMode())
 	{
@@ -48,7 +48,7 @@ void AAAAgames::EditorPickingComSys::RenderUI()
 	}
 }
 
-void AAAAgames::EditorPickingComSys::ManipulatePickedEntityGizmos(const Entity& e)
+void longmarch::EditorPickingComSys::ManipulatePickedEntityGizmos(const Entity& e)
 {
 	static ImGuizmo::OPERATION operation; // shared for all game worlds in editing
 	static ImGuizmo::MODE mode; // shared for all game worlds in editing

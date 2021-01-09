@@ -3,7 +3,7 @@
 #include "../FABRIKResolver.h"
 #include "engine/core/exception/EngineException.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class Animation3DComSys;
 
@@ -29,20 +29,20 @@ namespace AAAAgames
 
 		struct SkeletalKeyFrames
 		{
-			A4GAMES_Vector<VKeyValue> VKeys;
-			A4GAMES_Vector<QKeyValue> QKeys;
-			A4GAMES_Vector<SKeyValue> SKeys;
+			LongMarch_Vector<VKeyValue> VKeys;
+			LongMarch_Vector<QKeyValue> QKeys;
+			LongMarch_Vector<SKeyValue> SKeys;
 		};
 
 		struct SkeletalAnimation
 		{
 			float Duration; //!< Total ticks
 			float TicksPerSecond{ 30 }; //!< Ticks per second default as 30 fps
-			A4GAMES_UnorderedMap_flat<std::string, SkeletalKeyFrames> Channels; //!< Bone name->animation key frames LUT
+			LongMarch_UnorderedMap_flat<std::string, SkeletalKeyFrames> Channels; //!< Bone name->animation key frames LUT
 		};
 
 		//! The name of the animation -> bone name -> all key frames for this bone for this animation
-		using AnimationCollection = A4GAMES_UnorderedMap_flat<std::string, SkeletalAnimation>;
+		using AnimationCollection = LongMarch_UnorderedMap_flat<std::string, SkeletalAnimation>;
 
 	public:
 		Animation3D() = default;
@@ -61,7 +61,7 @@ namespace AAAAgames
 		const SkeletalAnimation& GetAnimation(const std::string& name) const;
 
 		//! Get names of animations
-		A4GAMES_Vector<std::string> GetAllAnimationNames() const;
+		LongMarch_Vector<std::string> GetAllAnimationNames() const;
 
 		//! Load animation from assimp scene
 		static std::shared_ptr<Animation3D> LoadAnimation(const aiScene* aiscene, const std::string& id);

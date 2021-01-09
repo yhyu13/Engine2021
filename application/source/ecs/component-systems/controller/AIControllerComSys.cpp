@@ -1,13 +1,13 @@
 #include "application-precompiled-header.h"
 #include "AIControllerComSys.h"
 
-AAAAgames::AIControllerComSys::AIControllerComSys()
+longmarch::AIControllerComSys::AIControllerComSys()
 {
 	m_systemSignature.AddComponent<AIControllerCom>();
 	m_bb = MemoryManager::Make_shared<Blackboard>();
 }
 
-void AAAAgames::AIControllerComSys::PostRenderUpdate(double dt)
+void longmarch::AIControllerComSys::PostRenderUpdate(double dt)
 {
 	EARLY_RETURN(dt);
 	ForEach(
@@ -23,7 +23,7 @@ void AAAAgames::AIControllerComSys::PostRenderUpdate(double dt)
 	);
 }
 
-std::shared_ptr<BaseComponentSystem> AAAAgames::AIControllerComSys::Copy() const
+std::shared_ptr<BaseComponentSystem> longmarch::AIControllerComSys::Copy() const
 {
 	LOCK_GUARD_NC();
 	auto ret = MemoryManager::Make_shared<AIControllerComSys>();

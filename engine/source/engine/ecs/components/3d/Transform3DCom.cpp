@@ -1,14 +1,14 @@
 #include "engine-precompiled-header.h"
 #include "Transform3DCom.h"
 
-AAAAgames::Transform3DCom::Transform3DCom(const EntityDecorator& _this)
+longmarch::Transform3DCom::Transform3DCom(const EntityDecorator& _this)
 	:
 	BaseComponent(_this.GetWorld()),
 	m_this(_this.GetEntity())
 {
 }
 
-void AAAAgames::Transform3DCom::Update(double ts)
+void longmarch::Transform3DCom::Update(double ts)
 {
 	if (!ts)
 	{
@@ -32,7 +32,7 @@ void AAAAgames::Transform3DCom::Update(double ts)
 	}
 }
 
-void AAAAgames::Transform3DCom::SetModelTr(const Mat4& m)
+void longmarch::Transform3DCom::SetModelTr(const Mat4& m)
 {
 	const auto rtp_trans = Geommath::SmartInverse(parentTr) * m;
 	rtp_pos = Geommath::GetTranslation(rtp_trans);
@@ -40,20 +40,20 @@ void AAAAgames::Transform3DCom::SetModelTr(const Mat4& m)
 	rtp_rotation = Geommath::GetRotation(rtp_trans);
 }
 
-Mat4 AAAAgames::Transform3DCom::GetModelTr() const
+Mat4 longmarch::Transform3DCom::GetModelTr() const
 {
 	LOCK_GUARD2();
 	return parentTr * Geommath::ToTransformMatrix(rtp_pos, rtp_rotation, l_scale);
 }
 
-Mat4 AAAAgames::Transform3DCom::GetSuccessionModelTr(const Transform3DCom& childCom)  const
+Mat4 longmarch::Transform3DCom::GetSuccessionModelTr(const Transform3DCom& childCom)  const
 {
 	return GetSuccessionModelTr(childCom.m_apply_parent_trans,
 		childCom.m_apply_parent_rot,
 		childCom.m_apply_parent_scale);
 }
 
-Mat4 AAAAgames::Transform3DCom::GetSuccessionModelTr(bool apply_trans, bool apply_rot, bool apply_scale) const
+Mat4 longmarch::Transform3DCom::GetSuccessionModelTr(bool apply_trans, bool apply_rot, bool apply_scale) const
 {
 	LOCK_GUARD2();
 	auto _pos = (apply_trans) ? rtp_pos : Vec3f(0.0f);
@@ -62,20 +62,20 @@ Mat4 AAAAgames::Transform3DCom::GetSuccessionModelTr(bool apply_trans, bool appl
 	return parentTr * Geommath::ToTransformMatrix(_pos, _rot, _scale);
 }
 
-Mat4 AAAAgames::Transform3DCom::GetPrevModelTr() const
+Mat4 longmarch::Transform3DCom::GetPrevModelTr() const
 {
 	LOCK_GUARD2();
 	return prev_parentTr * Geommath::ToTransformMatrix(prev_rtp_pos, prev_rtp_rotation, l_scale);
 }
 
-Mat4 AAAAgames::Transform3DCom::GetPrevSuccessionModelTr(const Transform3DCom& childCom) const
+Mat4 longmarch::Transform3DCom::GetPrevSuccessionModelTr(const Transform3DCom& childCom) const
 {
 	return GetPrevSuccessionModelTr(childCom.m_apply_parent_trans,
 		childCom.m_apply_parent_rot,
 		childCom.m_apply_parent_scale);
 }
 
-Mat4 AAAAgames::Transform3DCom::GetPrevSuccessionModelTr(bool apply_trans, bool apply_rot, bool apply_scale) const
+Mat4 longmarch::Transform3DCom::GetPrevSuccessionModelTr(bool apply_trans, bool apply_rot, bool apply_scale) const
 {
 	LOCK_GUARD2();
 	auto _pos = (apply_trans) ? prev_rtp_pos : Vec3f(0.0f);
@@ -84,284 +84,284 @@ Mat4 AAAAgames::Transform3DCom::GetPrevSuccessionModelTr(bool apply_trans, bool 
 	return prev_parentTr * Geommath::ToTransformMatrix(_pos, _rot, _scale);
 }
 
-void AAAAgames::Transform3DCom::SetParentModelTr(const Mat4& m)
+void longmarch::Transform3DCom::SetParentModelTr(const Mat4& m)
 {
 	LOCK_GUARD2();
 	parentTr = m;
 }
 
-void AAAAgames::Transform3DCom::ResetParentModelTr()
+void longmarch::Transform3DCom::ResetParentModelTr()
 {
 	LOCK_GUARD2();
 	parentTr = Mat4(1.0f);
 }
 
-void AAAAgames::Transform3DCom::AddGlobalScale(const Vec3f& v)
+void longmarch::Transform3DCom::AddGlobalScale(const Vec3f& v)
 {
 	LOCK_GUARD2();
 	const auto& parent_scale = Geommath::GetScale(parentTr);
 	rtp_scale = (parent_scale * rtp_scale + v) / parent_scale;
 }
 
-void AAAAgames::Transform3DCom::SetGlobalScale(const Vec3f& v)
+void longmarch::Transform3DCom::SetGlobalScale(const Vec3f& v)
 {
 	LOCK_GUARD2();
 	rtp_scale = v / Geommath::GetScale(parentTr);
 }
 
-Vec3f AAAAgames::Transform3DCom::GetGlobalScale()
+Vec3f longmarch::Transform3DCom::GetGlobalScale()
 {
 	LOCK_GUARD2();
 	return Geommath::GetScale(parentTr) * rtp_scale;
 }
 
-void AAAAgames::Transform3DCom::AddRelativeToParentScale(const Vec3f& v)
+void longmarch::Transform3DCom::AddRelativeToParentScale(const Vec3f& v)
 {
 	LOCK_GUARD2();
 	rtp_scale += v;
 }
 
-void AAAAgames::Transform3DCom::SetRelativeToParentScale(const Vec3f& v)
+void longmarch::Transform3DCom::SetRelativeToParentScale(const Vec3f& v)
 {
 	LOCK_GUARD2();
 	rtp_scale = v;
 }
 
-Vec3f AAAAgames::Transform3DCom::GetRelativeToParentScale()
+Vec3f longmarch::Transform3DCom::GetRelativeToParentScale()
 {
 	LOCK_GUARD2();
 	return rtp_scale;
 }
 
-void AAAAgames::Transform3DCom::AddLocalScale(const Vec3f& v)
+void longmarch::Transform3DCom::AddLocalScale(const Vec3f& v)
 {
 	LOCK_GUARD2();
 	l_scale += v;
 }
 
-void AAAAgames::Transform3DCom::SetLocalScale(const Vec3f& v)
+void longmarch::Transform3DCom::SetLocalScale(const Vec3f& v)
 {
 	LOCK_GUARD2();
 	l_scale = v;
 }
 
-Vec3f AAAAgames::Transform3DCom::GetLocalScale()
+Vec3f longmarch::Transform3DCom::GetLocalScale()
 {
 	LOCK_GUARD2();
 	return l_scale;
 }
 
-void AAAAgames::Transform3DCom::AddGlobalPos(const Vec3f& v)
+void longmarch::Transform3DCom::AddGlobalPos(const Vec3f& v)
 {
 	LOCK_GUARD2();
 	rtp_pos += Geommath::GetRotation(parentTr) * Geommath::GetScale(parentTr) * v;
 }
 
-void AAAAgames::Transform3DCom::SetGlobalPos(const Vec3f& v)
+void longmarch::Transform3DCom::SetGlobalPos(const Vec3f& v)
 {
 	LOCK_GUARD2();
 	rtp_pos = Geommath::GetRotation(parentTr) * Geommath::GetScale(parentTr) * (v - Geommath::GetTranslation(parentTr));
 }
 
-Vec3f AAAAgames::Transform3DCom::GetGlobalPos()
+Vec3f longmarch::Transform3DCom::GetGlobalPos()
 {
 	LOCK_GUARD2();
 	return Geommath::GetTranslation(parentTr) + Geommath::GetRotation(parentTr) * Geommath::GetScale(parentTr) * rtp_pos;
 }
 
-Vec3f AAAAgames::Transform3DCom::GetPrevGlobalPos()
+Vec3f longmarch::Transform3DCom::GetPrevGlobalPos()
 {
 	LOCK_GUARD2();
 	return Geommath::GetTranslation(prev_parentTr) + Geommath::GetRotation(prev_parentTr) * Geommath::GetScale(parentTr) * prev_rtp_pos;
 }
 
-void AAAAgames::Transform3DCom::AddRelativeToParentPos(const Vec3f& v)
+void longmarch::Transform3DCom::AddRelativeToParentPos(const Vec3f& v)
 {
 	LOCK_GUARD2();
 	rtp_pos += v;
 }
 
-void AAAAgames::Transform3DCom::SetRelativeToParentPos(const Vec3f& v)
+void longmarch::Transform3DCom::SetRelativeToParentPos(const Vec3f& v)
 {
 	LOCK_GUARD2();
 	rtp_pos = v;
 }
 
-Vec3f AAAAgames::Transform3DCom::GetRelativeToParentPos()
+Vec3f longmarch::Transform3DCom::GetRelativeToParentPos()
 {
 	LOCK_GUARD2();
 	return rtp_pos;
 }
 
-Vec3f AAAAgames::Transform3DCom::GetPrevRelativeToParentPos()
+Vec3f longmarch::Transform3DCom::GetPrevRelativeToParentPos()
 {
 	LOCK_GUARD2();
 	return prev_rtp_pos;
 }
 
-void AAAAgames::Transform3DCom::AddLocalPos(const Vec3f& v)
+void longmarch::Transform3DCom::AddLocalPos(const Vec3f& v)
 {
 	LOCK_GUARD2();
 	rtp_pos += rtp_rotation * v;
 }
 
-void AAAAgames::Transform3DCom::AddGlobalVel(const Vec3f& v)
+void longmarch::Transform3DCom::AddGlobalVel(const Vec3f& v)
 {
 	LOCK_GUARD2();
 	rtp_velocity += v * Geommath::GetRotation(parentTr);
 }
 
-void AAAAgames::Transform3DCom::SetGlobalVel(const Vec3f& v)
+void longmarch::Transform3DCom::SetGlobalVel(const Vec3f& v)
 {
 	LOCK_GUARD2();
 	rtp_velocity = (v - parent_g_total_velocity) * Geommath::GetRotation(parentTr);
 }
 
-Vec3f AAAAgames::Transform3DCom::GetGlobalVel()
+Vec3f longmarch::Transform3DCom::GetGlobalVel()
 {
 	LOCK_GUARD2();
 	return parent_g_total_velocity + Geommath::GetRotation(parentTr) * rtp_velocity;
 }
 
-void AAAAgames::Transform3DCom::AddRelativeToParentVel(const Vec3f& v)
+void longmarch::Transform3DCom::AddRelativeToParentVel(const Vec3f& v)
 {
 	rtp_velocity += v;
 }
 
-void AAAAgames::Transform3DCom::SetRelativeToParentVel(const Vec3f& v)
+void longmarch::Transform3DCom::SetRelativeToParentVel(const Vec3f& v)
 {
 	LOCK_GUARD2();
 	rtp_velocity = v;
 }
 
-Vec3f AAAAgames::Transform3DCom::GetRelativeToParentVel()
+Vec3f longmarch::Transform3DCom::GetRelativeToParentVel()
 {
 	LOCK_GUARD2();
 	return rtp_velocity;
 }
 
-void AAAAgames::Transform3DCom::AddLocalVel(const Vec3f& v)
+void longmarch::Transform3DCom::AddLocalVel(const Vec3f& v)
 {
 	LOCK_GUARD2();
 	l_velocity += v;
 }
 
-void AAAAgames::Transform3DCom::SetLocalVel(const Vec3f& v)
+void longmarch::Transform3DCom::SetLocalVel(const Vec3f& v)
 {
 	LOCK_GUARD2();
 	l_velocity = v;
 }
 
-Vec3f AAAAgames::Transform3DCom::GetLocalVel()
+Vec3f longmarch::Transform3DCom::GetLocalVel()
 {
 	LOCK_GUARD2();
 	return l_velocity;
 }
 
-void AAAAgames::Transform3DCom::AddGlobalRot(const Quaternion& r)
+void longmarch::Transform3DCom::AddGlobalRot(const Quaternion& r)
 {
 	LOCK_GUARD2();
 	const auto& _q = Geommath::QuatProd(r, Geommath::QuatProd(Geommath::GetRotation(parentTr), rtp_rotation));
 	rtp_rotation = Geommath::QuatProd(Geommath::Conjugate(Geommath::GetRotation(parentTr)), _q);
 }
 
-void AAAAgames::Transform3DCom::SetGlobalRot(const Quaternion& r)
+void longmarch::Transform3DCom::SetGlobalRot(const Quaternion& r)
 {
 	LOCK_GUARD2();
 	rtp_rotation = Geommath::QuatProd(Geommath::Conjugate(Geommath::GetRotation(parentTr)), r);
 }
 
-Quaternion AAAAgames::Transform3DCom::GetGlobalRot()
+Quaternion longmarch::Transform3DCom::GetGlobalRot()
 {
 	LOCK_GUARD2();
 	return Geommath::QuatProd(Geommath::GetRotation(parentTr), rtp_rotation);
 }
 
-Quaternion AAAAgames::Transform3DCom::GetPrevGlobalRot()
+Quaternion longmarch::Transform3DCom::GetPrevGlobalRot()
 {
 	LOCK_GUARD2();
 	return Geommath::QuatProd(Geommath::GetRotation(prev_parentTr), prev_rtp_rotation);
 }
 
-void AAAAgames::Transform3DCom::AddRelativeToParentRot(const Quaternion& v)
+void longmarch::Transform3DCom::AddRelativeToParentRot(const Quaternion& v)
 {
 	LOCK_GUARD2();
 	rtp_rotation = Geommath::QuatProd(v, rtp_rotation);
 }
 
-void AAAAgames::Transform3DCom::SetRelativeToParentRot(const Quaternion& v)
+void longmarch::Transform3DCom::SetRelativeToParentRot(const Quaternion& v)
 {
 	LOCK_GUARD2();
 	rtp_rotation = v;
 }
 
-Quaternion AAAAgames::Transform3DCom::GetRelativeToParentRot()
+Quaternion longmarch::Transform3DCom::GetRelativeToParentRot()
 {
 	LOCK_GUARD2();
 	return rtp_rotation;
 }
 
-void AAAAgames::Transform3DCom::AddLocalRot(const Quaternion& r)
+void longmarch::Transform3DCom::AddLocalRot(const Quaternion& r)
 {
 	LOCK_GUARD2();
 	rtp_rotation = Geommath::QuatProd(rtp_rotation, (r));
 }
 
-void AAAAgames::Transform3DCom::AddLocalRotVel(const Vec3f& r)
+void longmarch::Transform3DCom::AddLocalRotVel(const Vec3f& r)
 {
 	LOCK_GUARD2();
 	l_rotational_velocity += r;
 }
 
-void AAAAgames::Transform3DCom::SetLocalRotVel(const Vec3f& r)
+void longmarch::Transform3DCom::SetLocalRotVel(const Vec3f& r)
 {
 	LOCK_GUARD2();
 	l_rotational_velocity = r;
 }
 
-Vec3f AAAAgames::Transform3DCom::GetLocalRotVel()
+Vec3f longmarch::Transform3DCom::GetLocalRotVel()
 {
 	LOCK_GUARD2();
 	return l_rotational_velocity;
 }
 
-void AAAAgames::Transform3DCom::AddGlobalRotVel(const Vec3f& r)
+void longmarch::Transform3DCom::AddGlobalRotVel(const Vec3f& r)
 {
 	LOCK_GUARD2();
 	rtp_rotational_velocity += r * Geommath::GetRotation(parentTr);
 }
 
-void AAAAgames::Transform3DCom::SetGlobalRotVel(const Vec3f& r)
+void longmarch::Transform3DCom::SetGlobalRotVel(const Vec3f& r)
 {
 	LOCK_GUARD2();
 	rtp_rotational_velocity = (r - parent_g_rotational_velocity) * Geommath::GetRotation(parentTr);
 }
 
-Vec3f AAAAgames::Transform3DCom::GetGlobalRotVel()
+Vec3f longmarch::Transform3DCom::GetGlobalRotVel()
 {
 	LOCK_GUARD2();
 	return Geommath::GetRotation(parentTr) * rtp_rotational_velocity;
 }
 
-void AAAAgames::Transform3DCom::AddRelativeToParentRotVel(const Vec3f& v)
+void longmarch::Transform3DCom::AddRelativeToParentRotVel(const Vec3f& v)
 {
 	LOCK_GUARD2();
 	rtp_rotational_velocity += v;
 }
 
-void AAAAgames::Transform3DCom::SetRelativeToParentRotVel(const Vec3f& v)
+void longmarch::Transform3DCom::SetRelativeToParentRotVel(const Vec3f& v)
 {
 	LOCK_GUARD2();
 	rtp_rotational_velocity = v;
 }
 
-Vec3f AAAAgames::Transform3DCom::GetRelativeToParentRotVel()
+Vec3f longmarch::Transform3DCom::GetRelativeToParentRotVel()
 {
 	LOCK_GUARD2();
 	return rtp_rotational_velocity;
 }
 
-void AAAAgames::Transform3DCom::JsonSerialize(Json::Value& value)
+void longmarch::Transform3DCom::JsonSerialize(Json::Value& value)
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
 	LOCK_GUARD2();
@@ -373,38 +373,38 @@ void AAAAgames::Transform3DCom::JsonSerialize(Json::Value& value)
 
 		if (l_scale != _default.l_scale)
 		{
-			val["l_scale"] = A4GAMES_ArrayToJsonValue(l_scale, 3);
+			val["l_scale"] = LongMarch_ArrayToJsonValue(l_scale, 3);
 		}
 		if (rtp_scale != _default.rtp_scale)
 		{
-			val["rtp_scale"] = A4GAMES_ArrayToJsonValue(rtp_scale, 3);
+			val["rtp_scale"] = LongMarch_ArrayToJsonValue(rtp_scale, 3);
 		}
 		if (rtp_pos != _default.rtp_pos)
 		{
-			val["rtp_trans"] = A4GAMES_ArrayToJsonValue(rtp_pos, 3);
+			val["rtp_trans"] = LongMarch_ArrayToJsonValue(rtp_pos, 3);
 		}
 		if (l_velocity != _default.l_velocity)
 		{
-			val["l_trans_v"] = A4GAMES_ArrayToJsonValue(l_velocity, 3);
+			val["l_trans_v"] = LongMarch_ArrayToJsonValue(l_velocity, 3);
 		}
 		if (rtp_velocity != _default.rtp_velocity)
 		{
-			val["rtp_trans_v"] = A4GAMES_ArrayToJsonValue(rtp_velocity, 3);
+			val["rtp_trans_v"] = LongMarch_ArrayToJsonValue(rtp_velocity, 3);
 		}
 		if (rtp_rotation != _default.rtp_rotation)
 		{
 			auto rot = Geommath::ToEulerAngles(rtp_rotation) * RAD2DEG;
-			val["rtp_rot"] = A4GAMES_ArrayToJsonValue(rot, 3);
+			val["rtp_rot"] = LongMarch_ArrayToJsonValue(rot, 3);
 		}
 		if (l_rotational_velocity != _default.l_rotational_velocity)
 		{
 			auto rot = l_rotational_velocity * RAD2DEG;
-			val["l_rot_v"] = A4GAMES_ArrayToJsonValue(rot, 3);
+			val["l_rot_v"] = LongMarch_ArrayToJsonValue(rot, 3);
 		}
 		if (rtp_rotational_velocity != _default.rtp_rotational_velocity)
 		{
 			auto rot = rtp_rotational_velocity * RAD2DEG;
-			val["rtp_rot_v"] = A4GAMES_ArrayToJsonValue(rot, 3);
+			val["rtp_rot_v"] = LongMarch_ArrayToJsonValue(rot, 3);
 		}
 		{
 			value.append(std::move(output));
@@ -412,7 +412,7 @@ void AAAAgames::Transform3DCom::JsonSerialize(Json::Value& value)
 	}
 }
 
-void AAAAgames::Transform3DCom::JsonDeserialize(const Json::Value& value)
+void longmarch::Transform3DCom::JsonDeserialize(const Json::Value& value)
 {
 	if (value.isNull())
 	{
@@ -484,7 +484,7 @@ void AAAAgames::Transform3DCom::JsonDeserialize(const Json::Value& value)
 	}
 }
 
-void AAAAgames::Transform3DCom::ImGuiRender()
+void longmarch::Transform3DCom::ImGuiRender()
 {
 	if (ImGui::TreeNode("Transform"))
 	{
@@ -639,7 +639,7 @@ void AAAAgames::Transform3DCom::ImGuiRender()
 	}
 }
 
-void AAAAgames::Transform3DCom::Copy(BaseComponentInterface* other)
+void longmarch::Transform3DCom::Copy(BaseComponentInterface* other)
 {
 	LOCK_GUARD2();
 	auto com = static_cast<Transform3DCom*>(other);

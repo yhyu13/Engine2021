@@ -16,7 +16,7 @@
 #include <vector>
 #include "../EngineCore.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	namespace emilib
 	{

@@ -4,13 +4,13 @@
 #include "engine/core/utility/TypeHelper.h"
 #include "engine/math/Geommath.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	//! Entity agnostic skeleton class. Store bone info : transform matrices, name-index LUT, and skeleton hierarchy
 	struct Skeleton
 	{
-		using Bone_Transform_LUT = A4GAMES_Vector<Mat4>; //!< the inverse transform matrix at bind pose (from bone space to model space), calculated once.
-		using Bone_nameIndex_LUT = A4GAMES_UnorderedMap_flat<std::string, uint32_t>; //!< look up table to retrive a bone index by bone name
+		using Bone_Transform_LUT = LongMarch_Vector<Mat4>; //!< the inverse transform matrix at bind pose (from bone space to model space), calculated once.
+		using Bone_nameIndex_LUT = LongMarch_UnorderedMap_flat<std::string, uint32_t>; //!< look up table to retrive a bone index by bone name
 
 		//! Node struct for the whole scene (a node might be bone or not for assimp)
 		struct Node
@@ -18,7 +18,7 @@ namespace AAAAgames
 			Mat4 nodeTransform; //!< relative to parent transform
 			std::string parent_name; //!< name of the parent node
 			std::string name; //!< name of the node
-			A4GAMES_Vector<Node> children; //!< node's children nodes
+			LongMarch_Vector<Node> children; //!< node's children nodes
 		};
 
 	public:
@@ -38,10 +38,10 @@ namespace AAAAgames
 		const Node& GetBoneNode(const std::string& bone_name) const;
 
 		//! Helper method for get all parents of a bone, from leaf to root
-		A4GAMES_Vector<std::string> GetBoneAllParentsName(const std::string& bone_name) const;
+		LongMarch_Vector<std::string> GetBoneAllParentsName(const std::string& bone_name) const;
 
 		//! Get names of bones
-		A4GAMES_Vector<std::string> GetAllBoneNames() const;
+		LongMarch_Vector<std::string> GetAllBoneNames() const;
 
 		//! Load one and only one skeleton from an assimp scene
 		static std::shared_ptr<Skeleton> LoadSkeleton(const aiScene* aiscene, const std::string& id);

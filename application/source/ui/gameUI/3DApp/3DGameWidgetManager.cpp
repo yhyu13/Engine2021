@@ -5,7 +5,7 @@
 #include "ui/gameUI/widgets/GameProfilerPage.h"
 #include "ui/gameUI/3DApp/widgets/PathMoverDemoMenu.h"
 
-AAAAgames::_3DGameWidgetManager::_3DGameWidgetManager()
+longmarch::_3DGameWidgetManager::_3DGameWidgetManager()
 {
 	{
 		auto widget = MemoryManager::Make_shared<GameHUD>();

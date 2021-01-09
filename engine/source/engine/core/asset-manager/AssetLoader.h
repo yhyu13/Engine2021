@@ -4,7 +4,7 @@
 #include "../utility/TypeHelper.h"
 #include "../thread/ThreadUtil.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/**
 	 * @brief Custom AssetManager that features async loading
@@ -238,7 +238,7 @@ namespace AAAAgames
 		}
 
 		//! Wait for all job to finish
-		inline static void WaitForAll(A4GAMES_Vector<LoaderRef>& waitList)
+		inline static void WaitForAll(LongMarch_Vector<LoaderRef>& waitList)
 		{
 			while (!waitList.empty())
 			{
@@ -289,7 +289,7 @@ namespace AAAAgames
 		}
 	private:
 		inline static Timer s_watcherTimer{ 2.0 }; //!< timer for periodically checking watched files
-		inline static A4GAMES_UnorderedMap_flat<std::string, bool> s_pathInLoadingLUT;
+		inline static LongMarch_UnorderedMap_flat<std::string, bool> s_pathInLoadingLUT;
 		inline static AtomicQueue<LoaderRef> s_watcherQueue;
 		inline static AtomicQueue<LoaderRef> s_asyncLoaderQueue;
 	};

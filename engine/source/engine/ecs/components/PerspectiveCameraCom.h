@@ -2,7 +2,7 @@
 #include "engine/ecs/BaseComponent.h"
 #include "engine/renderer/camera/PerspectiveCamera.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/* Data class of mesh, material */
 	struct CACHE_ALIGN32 PerspectiveCameraCom final: BaseComponent<PerspectiveCameraCom>{

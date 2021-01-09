@@ -3,7 +3,7 @@
 #include "engine/renderer/Texture.h"
 #include "engine/math/MathUtil.h"
 
-void AAAAgames::ImGuiUtil::SetupEngineImGuiStyle()
+void longmarch::ImGuiUtil::SetupEngineImGuiStyle()
 {
 	static bool _bStyleDark_ = !bStyleDark;
 	static float _alpha_ = 1.0f - alpha;
@@ -33,7 +33,7 @@ void AAAAgames::ImGuiUtil::SetupEngineImGuiStyle()
 	}
 }
 
-void AAAAgames::ImGuiUtil::InlineHelpMarker(const char* desc)
+void longmarch::ImGuiUtil::InlineHelpMarker(const char* desc)
 {
 	ImGui::SameLine();
 	ImGui::TextDisabled("(?)");
@@ -47,7 +47,7 @@ void AAAAgames::ImGuiUtil::InlineHelpMarker(const char* desc)
 	}
 }
 
-void AAAAgames::ImGuiUtil::TextureViewerWithZoom(const std::shared_ptr<void>& texture)
+void longmarch::ImGuiUtil::TextureViewerWithZoom(const std::shared_ptr<void>& texture)
 {
 	if (!texture)
 	{

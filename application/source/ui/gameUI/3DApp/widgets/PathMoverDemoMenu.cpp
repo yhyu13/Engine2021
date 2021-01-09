@@ -6,7 +6,7 @@
 
 #include <imgui/addons/implot/implot.h>
 
-void AAAAgames::PathMoverDemoMenu::Render()
+void longmarch::PathMoverDemoMenu::Render()
 {
 	auto manager = ServiceLocator::GetSingleton<BaseGameWidgetManager>(APP_WIG_MAN_NAME);
 	manager->PushWidgetStyle();
@@ -31,7 +31,7 @@ void AAAAgames::PathMoverDemoMenu::Render()
 	ImGui::End();
 }
 
-void AAAAgames::PathMoverDemoMenu::RenderPathMotionMenu()
+void longmarch::PathMoverDemoMenu::RenderPathMotionMenu()
 {
 	constexpr int yoffset_item = 2;
 	constexpr int width_item = 100;

@@ -7,7 +7,7 @@
 
 struct GLFWwindow;
 
-namespace AAAAgames {
+namespace longmarch {
 	typedef std::function<void(const int& isFocussed)> InterruptHandler;
 
 	struct ENGINE_API WindowProperties {

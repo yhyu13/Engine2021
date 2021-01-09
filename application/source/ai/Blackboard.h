@@ -5,7 +5,7 @@
 #include "engine/core/EngineCore.h"
 #include "engine/core/utility/TypeHelper.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class Blackboard
 	{
@@ -23,7 +23,7 @@ namespace AAAAgames
 		}
 
 	private:
-		A4GAMES_UnorderedMap_Par_flat<std::string, std::any> data;
+		LongMarch_UnorderedMap_Par_flat<std::string, std::any> data;
 	};
 
 	template<typename T>

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace AAAAgames
+namespace longmarch
 {
 	class GraphicsContext
 	{

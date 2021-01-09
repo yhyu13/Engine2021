@@ -10,9 +10,9 @@
 #include "engine/ecs/components/3d/Body3DCom.h"
 #include "engine/ecs/object-factory/ObjectFactory.h"
 
-AAAAgames::GameWorld::GameWorld(bool setCurrent, const std::string& name, const fs::path& filePath)
+longmarch::GameWorld::GameWorld(bool setCurrent, const std::string& name, const fs::path& filePath)
 	:
-	m_entityManager(std::move(MemoryManager::Make_shared<AAAAgames::EntityManager>())),
+	m_entityManager(std::move(MemoryManager::Make_shared<longmarch::EntityManager>())),
 	m_name((name.empty()) ? filePath.filename().string() : name)
 {
 	if (setCurrent)
@@ -22,10 +22,10 @@ AAAAgames::GameWorld::GameWorld(bool setCurrent, const std::string& name, const 
 	InitSystemAndScene(FileSystem::ResolveProtocol(filePath));
 }
 
-GameWorld* AAAAgames::GameWorld::GetInstance(bool setCurrent, const std::string& name, const fs::path& filePath)
+GameWorld* longmarch::GameWorld::GetInstance(bool setCurrent, const std::string& name, const fs::path& filePath)
 {
 	auto worldName = (name.empty()) ? filePath.filename().string() : name;
-	auto ptr = A4GAMES_Unique_ptr<GameWorld>(new GameWorld(setCurrent, worldName, filePath));
+	auto ptr = LongMarch_Unique_ptr<GameWorld>(new GameWorld(setCurrent, worldName, filePath));
 	{
 		LOCK_GUARD_S();
 		auto& world = allManagedWorlds[worldName];
@@ -34,26 +34,26 @@ GameWorld* AAAAgames::GameWorld::GetInstance(bool setCurrent, const std::string&
 	}
 }
 
-[[nodiscard]] std::future<GameWorld*> AAAAgames::GameWorld::GetInstanceAsync(bool setCurrent, const std::string& name, const fs::path& filePath)
+[[nodiscard]] std::future<GameWorld*> longmarch::GameWorld::GetInstanceAsync(bool setCurrent, const std::string& name, const fs::path& filePath)
 {
 	return StealThreadPool::GetInstance()->enqueue_task(
 		[setCurrent, name, filePath]()->GameWorld* { return GetInstance(setCurrent, name, filePath); }
 	);
 }
 
-void AAAAgames::GameWorld::SetCurrent(GameWorld* world)
+void longmarch::GameWorld::SetCurrent(GameWorld* world)
 {
 	LOCK_GUARD_S();
 	currentWorld = world;
 }
 
-GameWorld* AAAAgames::GameWorld::GetCurrent()
+GameWorld* longmarch::GameWorld::GetCurrent()
 {
 	LOCK_GUARD_S();
 	return currentWorld;
 }
 
-GameWorld* AAAAgames::GameWorld::GetManagedWorldByName(const std::string& name)
+GameWorld* longmarch::GameWorld::GetManagedWorldByName(const std::string& name)
 {
 	LOCK_GUARD_S();
 	if (auto it = allManagedWorlds.find(name); it != allManagedWorlds.end())
@@ -67,15 +67,15 @@ GameWorld* AAAAgames::GameWorld::GetManagedWorldByName(const std::string& name)
 	}
 }
 
-const A4GAMES_Vector<std::string> AAAAgames::GameWorld::GetAllManagedWorldNames()
+const LongMarch_Vector<std::string> longmarch::GameWorld::GetAllManagedWorldNames()
 {
 	LOCK_GUARD_S();
-	A4GAMES_Vector<std::string> ret;
-	A4GAMES_MapKeyToVec(allManagedWorlds, ret);
+	LongMarch_Vector<std::string> ret;
+	LongMarch_MapKeyToVec(allManagedWorlds, ret);
 	return ret;
 }
 
-void AAAAgames::GameWorld::RemoveManagedWorld(const std::string& name)
+void longmarch::GameWorld::RemoveManagedWorld(const std::string& name)
 {
 	LOCK_GUARD_S();
 	if (auto it = allManagedWorlds.find(name); it != allManagedWorlds.end())
@@ -92,7 +92,7 @@ void AAAAgames::GameWorld::RemoveManagedWorld(const std::string& name)
 	}
 }
 
-void AAAAgames::GameWorld::RemoveManagedWorld(GameWorld* world)
+void longmarch::GameWorld::RemoveManagedWorld(GameWorld* world)
 {
 	LOCK_GUARD_S();
 	bool found = false;
@@ -114,7 +114,7 @@ void AAAAgames::GameWorld::RemoveManagedWorld(GameWorld* world)
 	}
 }
 
-GameWorld* AAAAgames::GameWorld::Clone(const std::string& newName, const std::string& name)
+GameWorld* longmarch::GameWorld::Clone(const std::string& newName, const std::string& name)
 {
 	ASSERT(newName != name, "Clone world must have a different name!");
 	auto newWorld = GetInstance(false, newName, "");
@@ -162,7 +162,7 @@ GameWorld* AAAAgames::GameWorld::Clone(const std::string& newName, const std::st
 	return newWorld;
 }
 
-GameWorld* AAAAgames::GameWorld::Clone(const std::string& newName, GameWorld* from)
+GameWorld* longmarch::GameWorld::Clone(const std::string& newName, GameWorld* from)
 {
 	ASSERT(newName != from->GetName(), "Clone world must have a different name!");
 	auto newWorld = GetInstance(false, newName, "");
@@ -210,13 +210,13 @@ GameWorld* AAAAgames::GameWorld::Clone(const std::string& newName, GameWorld* fr
 	return newWorld;
 }
 
-void AAAAgames::GameWorld::InitSystem(const fs::path& system_file)
+void longmarch::GameWorld::InitSystem(const fs::path& system_file)
 {
 	ASSERT(m_systems.empty(), "GameWorld component system is not empty before init!");
 	ObjectFactory::s_instance->LoadSystems(system_file, this);
 }
 
-void AAAAgames::GameWorld::InitScene(const fs::path& scene_file)
+void longmarch::GameWorld::InitScene(const fs::path& scene_file)
 {
 	ASSERT(!m_systems.empty(), "GameWorld component system is empty after init!");
 	ObjectFactory::s_instance->LoadGameWorldScene(scene_file, this);
@@ -224,7 +224,7 @@ void AAAAgames::GameWorld::InitScene(const fs::path& scene_file)
 
 //! Helper function for adding/removing entity from component system
 
-void AAAAgames::GameWorld::_UpdateEntityForAllComponentSystems(const Entity& entity, BitMaskSignature& oldMask)
+void longmarch::GameWorld::_UpdateEntityForAllComponentSystems(const Entity& entity, BitMaskSignature& oldMask)
 {
 	// Do not place thread lock here!
 	BitMaskSignature updatedMask = m_entityMasks[entity];
@@ -241,7 +241,7 @@ void AAAAgames::GameWorld::_UpdateEntityForAllComponentSystems(const Entity& ent
 	}
 }
 
-void AAAAgames::GameWorld::InitSystemAndScene(const fs::path& _file)
+void longmarch::GameWorld::InitSystemAndScene(const fs::path& _file)
 {
 	if (fs::exists(_file))
 	{
@@ -251,7 +251,7 @@ void AAAAgames::GameWorld::InitSystemAndScene(const fs::path& _file)
 	}
 }
 
-void AAAAgames::GameWorld::Init() {
+void longmarch::GameWorld::Init() {
 	ENGINE_EXCEPT_IF(m_systems.empty(), L"Calling Init() on an empty GameWorld!");
 	for (auto&& system : m_systems)
 	{
@@ -260,7 +260,7 @@ void AAAAgames::GameWorld::Init() {
 	}
 }
 
-void AAAAgames::GameWorld::Update(double frameTime)
+void longmarch::GameWorld::Update(double frameTime)
 {
 	if (m_paused) frameTime = 0.0;
 	for (auto&& system : m_systems)
@@ -269,7 +269,7 @@ void AAAAgames::GameWorld::Update(double frameTime)
 	}
 }
 
-void AAAAgames::GameWorld::Update2(double frameTime)
+void longmarch::GameWorld::Update2(double frameTime)
 {
 	if (m_paused) frameTime = 0.0;
 	for (auto&& system : m_systems)
@@ -278,7 +278,7 @@ void AAAAgames::GameWorld::Update2(double frameTime)
 	}
 }
 
-void AAAAgames::GameWorld::Update3(double frameTime)
+void longmarch::GameWorld::Update3(double frameTime)
 {
 	if (m_paused) frameTime = 0.0;
 	for (auto&& system : m_systems)
@@ -287,7 +287,7 @@ void AAAAgames::GameWorld::Update3(double frameTime)
 	}
 }
 
-void AAAAgames::GameWorld::MultiThreadUpdate(double frameTime)
+void longmarch::GameWorld::MultiThreadUpdate(double frameTime)
 {
 	m_jobs.emplace_back(
 		std::move(StealThreadPool::GetInstance()->enqueue_task([frameTime, this]()
@@ -302,7 +302,7 @@ void AAAAgames::GameWorld::MultiThreadUpdate(double frameTime)
 		));
 }
 
-void AAAAgames::GameWorld::MultiThreadJoin()
+void longmarch::GameWorld::MultiThreadJoin()
 {
 	while (!m_jobs.empty())
 	{
@@ -311,7 +311,7 @@ void AAAAgames::GameWorld::MultiThreadJoin()
 	}
 }
 
-void AAAAgames::GameWorld::PreRenderUpdate(double frameTime)
+void longmarch::GameWorld::PreRenderUpdate(double frameTime)
 {
 	if (m_paused) frameTime = 0.0;
 	for (auto&& system : m_systems)
@@ -320,7 +320,7 @@ void AAAAgames::GameWorld::PreRenderUpdate(double frameTime)
 	}
 }
 
-void AAAAgames::GameWorld::Render(double frameTime)
+void longmarch::GameWorld::Render(double frameTime)
 {
 	for (auto&& system : m_systems)
 	{
@@ -328,7 +328,7 @@ void AAAAgames::GameWorld::Render(double frameTime)
 	}
 }
 
-void AAAAgames::GameWorld::Render2(double frameTime)
+void longmarch::GameWorld::Render2(double frameTime)
 {
 	for (auto&& system : m_systems)
 	{
@@ -336,7 +336,7 @@ void AAAAgames::GameWorld::Render2(double frameTime)
 	}
 }
 
-void AAAAgames::GameWorld::PostRenderUpdate(double frameTime)
+void longmarch::GameWorld::PostRenderUpdate(double frameTime)
 {
 	if (m_paused) frameTime = 0.0;
 	for (auto&& system : m_systems)
@@ -345,7 +345,7 @@ void AAAAgames::GameWorld::PostRenderUpdate(double frameTime)
 	}
 }
 
-void AAAAgames::GameWorld::RenderUI()
+void longmarch::GameWorld::RenderUI()
 {
 	for (auto&& system : m_systems)
 	{
@@ -357,7 +357,7 @@ void AAAAgames::GameWorld::RenderUI()
 *	Remover
 **************************************************************/
 
-void AAAAgames::GameWorld::InactivateHelper(Entity e)
+void longmarch::GameWorld::InactivateHelper(Entity e)
 {
 	if (auto com = GetComponent<ActiveCom>(e); com.Valid())
 	{
@@ -365,7 +365,7 @@ void AAAAgames::GameWorld::InactivateHelper(Entity e)
 	}
 }
 
-void AAAAgames::GameWorld::RemoveFromParentHelper(Entity e)
+void longmarch::GameWorld::RemoveFromParentHelper(Entity e)
 {
 	if (auto parentCom = GetComponent<ParentCom>(e); parentCom.Valid())
 	{
@@ -376,7 +376,7 @@ void AAAAgames::GameWorld::RemoveFromParentHelper(Entity e)
 	}
 }
 
-void AAAAgames::GameWorld::RemoveAllEntities()
+void longmarch::GameWorld::RemoveAllEntities()
 {
 	for (auto&& system : m_systems)
 	{
@@ -385,14 +385,14 @@ void AAAAgames::GameWorld::RemoveAllEntities()
 	m_entityMasks.clear();
 }
 
-void AAAAgames::GameWorld::RemoveAllComponentSystems()
+void longmarch::GameWorld::RemoveAllComponentSystems()
 {
 	m_systems.clear();
 	m_systemsName.clear();
 	m_systemsMap.clear();
 }
 
-EntityDecorator AAAAgames::GameWorld::GenerateEntity(EntityType type, bool active, bool add_to_root)
+EntityDecorator longmarch::GameWorld::GenerateEntity(EntityType type, bool active, bool add_to_root)
 {
 	auto entity = EntityDecorator{ m_entityManager->Create(type), this };
 	entity.AddComponent(ActiveCom(active));
@@ -407,7 +407,7 @@ EntityDecorator AAAAgames::GameWorld::GenerateEntity(EntityType type, bool activ
 	return entity;
 }
 
-EntityDecorator AAAAgames::GameWorld::GenerateEntity3D(EntityType type, bool active, bool add_to_root)
+EntityDecorator longmarch::GameWorld::GenerateEntity3D(EntityType type, bool active, bool add_to_root)
 {
 	auto entity = GenerateEntity(type, active, add_to_root);
 	entity.AddComponent(Transform3DCom(entity));
@@ -416,7 +416,7 @@ EntityDecorator AAAAgames::GameWorld::GenerateEntity3D(EntityType type, bool act
 	return entity;
 }
 
-EntityDecorator AAAAgames::GameWorld::GenerateEntity3DNoCollision(EntityType type, bool active, bool add_to_root)
+EntityDecorator longmarch::GameWorld::GenerateEntity3DNoCollision(EntityType type, bool active, bool add_to_root)
 {
 	auto entity = GenerateEntity(type, active, add_to_root);
 	entity.AddComponent(Transform3DCom(entity));
@@ -424,7 +424,7 @@ EntityDecorator AAAAgames::GameWorld::GenerateEntity3DNoCollision(EntityType typ
 	return entity;
 }
 
-void AAAAgames::GameWorld::AddChildHelper(Entity parent, Entity child)
+void longmarch::GameWorld::AddChildHelper(Entity parent, Entity child)
 {
 	RemoveFromParentHelper(child);
 	if (auto com = GetComponent<ChildrenCom>(parent); com.Valid())
@@ -433,7 +433,7 @@ void AAAAgames::GameWorld::AddChildHelper(Entity parent, Entity child)
 	}
 }
 
-void AAAAgames::GameWorld::RegisterSystem(const std::shared_ptr<BaseComponentSystem>& system, const std::string& name) {
+void longmarch::GameWorld::RegisterSystem(const std::shared_ptr<BaseComponentSystem>& system, const std::string& name) {
 	LOCK_GUARD_NC();
 	system->SetWorld(this);
 	m_systems.emplace_back(system);
@@ -441,7 +441,7 @@ void AAAAgames::GameWorld::RegisterSystem(const std::shared_ptr<BaseComponentSys
 	m_systemsMap[name] = system;
 }
 
-BaseComponentSystem* AAAAgames::GameWorld::GetComponentSystem(const std::string& name)
+BaseComponentSystem* longmarch::GameWorld::GetComponentSystem(const std::string& name)
 {
 	if (auto it = m_systemsMap.find(name); it != m_systemsMap.end())
 	{
@@ -453,20 +453,20 @@ BaseComponentSystem* AAAAgames::GameWorld::GetComponentSystem(const std::string&
 	}
 }
 
-const A4GAMES_Vector<std::string> AAAAgames::GameWorld::GetAllComponentSystemName()
+const LongMarch_Vector<std::string> longmarch::GameWorld::GetAllComponentSystemName()
 {
 	return m_systemsName;
 }
 
-const A4GAMES_Vector<std::shared_ptr<BaseComponentSystem>> AAAAgames::GameWorld::GetAllComponentSystem()
+const LongMarch_Vector<std::shared_ptr<BaseComponentSystem>> longmarch::GameWorld::GetAllComponentSystem()
 {
 	return m_systems;
 }
 
-const A4GAMES_Vector<std::pair<std::string, std::shared_ptr<BaseComponentSystem>>> AAAAgames::GameWorld::GetAllComponentSystemNamePair()
+const LongMarch_Vector<std::pair<std::string, std::shared_ptr<BaseComponentSystem>>> longmarch::GameWorld::GetAllComponentSystemNamePair()
 {
 	ASSERT(m_systemsName.size() == m_systems.size(), "Component system sizes do not match!");
-	A4GAMES_Vector<std::pair<std::string, std::shared_ptr<BaseComponentSystem>>> ret;
+	LongMarch_Vector<std::pair<std::string, std::shared_ptr<BaseComponentSystem>>> ret;
 	for (int i(0); i < m_systemsName.size(); ++i)
 	{
 		ret.emplace_back(m_systemsName[i], m_systems[i]);
@@ -474,18 +474,18 @@ const A4GAMES_Vector<std::pair<std::string, std::shared_ptr<BaseComponentSystem>
 	return ret;
 }
 
-void AAAAgames::GameWorld::RemoveEntity(const Entity& entity)
+void longmarch::GameWorld::RemoveEntity(const Entity& entity)
 {
 	m_entityManager->Destroy(entity);
 }
 
-void AAAAgames::GameWorld::RemoveEntityAndComponents(const Entity& entity)
+void longmarch::GameWorld::RemoveEntityAndComponents(const Entity& entity)
 {
 	RemoveAllComponent(entity);
 	RemoveEntity(entity);
 }
 
-const Entity AAAAgames::GameWorld::GetTheOnlyEntityWithType(EntityType type)
+const Entity longmarch::GameWorld::GetTheOnlyEntityWithType(EntityType type)
 {
 	auto es = GetAllEntityWithType(type);
 	if (es.size() == 1)
@@ -498,20 +498,20 @@ const Entity AAAAgames::GameWorld::GetTheOnlyEntityWithType(EntityType type)
 	}
 }
 
-const A4GAMES_Vector<Entity> AAAAgames::GameWorld::GetAllEntityWithType(EntityType type)
+const LongMarch_Vector<Entity> longmarch::GameWorld::GetAllEntityWithType(EntityType type)
 {
-	return GetAllEntityWithType(A4GAMES_Vector<EntityType>({ type }));
+	return GetAllEntityWithType(LongMarch_Vector<EntityType>({ type }));
 }
 
-const A4GAMES_Vector<Entity> AAAAgames::GameWorld::GetAllEntityWithType(const std::initializer_list<EntityType>& types)
+const LongMarch_Vector<Entity> longmarch::GameWorld::GetAllEntityWithType(const std::initializer_list<EntityType>& types)
 {
-	return GetAllEntityWithType(A4GAMES_Vector<EntityType>(types));
+	return GetAllEntityWithType(LongMarch_Vector<EntityType>(types));
 }
 
-const A4GAMES_Vector<Entity> AAAAgames::GameWorld::GetAllEntityWithType(const A4GAMES_Vector<EntityType>& types)
+const LongMarch_Vector<Entity> longmarch::GameWorld::GetAllEntityWithType(const LongMarch_Vector<EntityType>& types)
 {
 	LOCK_GUARD_NC();
-	A4GAMES_Vector<Entity> result;
+	LongMarch_Vector<Entity> result;
 	for (auto& type : types)
 	{
 		for (auto& id : m_entityManager->GetAllEntityIDWithType(type))
@@ -522,15 +522,15 @@ const A4GAMES_Vector<Entity> AAAAgames::GameWorld::GetAllEntityWithType(const A4
 	return result;
 }
 
-const Entity AAAAgames::GameWorld::GetEntityFromID(EntityID ID)
+const Entity longmarch::GameWorld::GetEntityFromID(EntityID ID)
 {
 	return m_entityManager->GetEntityFromID(ID);
 }
 
-const A4GAMES_Vector<BaseComponentInterface*> AAAAgames::GameWorld::GetAllComponent(const Entity& entity)
+const LongMarch_Vector<BaseComponentInterface*> longmarch::GameWorld::GetAllComponent(const Entity& entity)
 {
 	LOCK_GUARD_NC();
-	A4GAMES_Vector<BaseComponentInterface*> ret;
+	LongMarch_Vector<BaseComponentInterface*> ret;
 	for (auto& family : m_entityMasks[entity].GetAllComponentIndex())
 	{
 		ENGINE_EXCEPT_IF(family >= m_componentManagers.size(), L"Entity " + str2wstr(Str(entity)) + L"is requesting all components before some component managers are initilaized!");
@@ -539,7 +539,7 @@ const A4GAMES_Vector<BaseComponentInterface*> AAAAgames::GameWorld::GetAllCompon
 	return ret;
 }
 
-void AAAAgames::GameWorld::RemoveAllComponent(const Entity& entity)
+void longmarch::GameWorld::RemoveAllComponent(const Entity& entity)
 {
 	LOCK_GUARD_NC();
 	BitMaskSignature oldMask = m_entityMasks[entity];
@@ -553,7 +553,7 @@ void AAAAgames::GameWorld::RemoveAllComponent(const Entity& entity)
 	_UpdateEntityForAllComponentSystems(entity, oldMask);
 }
 
-void AAAAgames::GameWorld::ForEach(const A4GAMES_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func)
+void longmarch::GameWorld::ForEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func)
 {
 	for (const auto& e : es)
 	{
@@ -562,7 +562,7 @@ void AAAAgames::GameWorld::ForEach(const A4GAMES_Vector<Entity>& es, typename Id
 }
 
 [[nodiscard]]
-std::future<void> AAAAgames::GameWorld::BackEach(const A4GAMES_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func)
+std::future<void> longmarch::GameWorld::BackEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func)
 {
 	return StealThreadPool::GetInstance()->enqueue_task([this, func = std::move(func), es]() {
 		_MultiThreadExceptionCatcher(
@@ -576,12 +576,12 @@ std::future<void> AAAAgames::GameWorld::BackEach(const A4GAMES_Vector<Entity>& e
 }
 
 [[nodiscard]]
-std::future<void> AAAAgames::GameWorld::ParEach(const A4GAMES_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split)
+std::future<void> longmarch::GameWorld::ParEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split)
 {
 	return StealThreadPool::GetInstance()->enqueue_task([this, es, min_split, func = std::move(func)]() { _ParEach2(es, func, min_split); });
 }
 
-void AAAAgames::GameWorld::_ParEach2(const A4GAMES_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split)
+void longmarch::GameWorld::_ParEach2(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split)
 {
 	try {
 		if (es.empty())
@@ -602,11 +602,11 @@ void AAAAgames::GameWorld::_ParEach2(const A4GAMES_Vector<Entity>& es, typename 
 			++split_size;
 		}
 		int num_e_left = num_e;
-		A4GAMES_Vector<std::future<void>> _jobs;
+		LongMarch_Vector<std::future<void>> _jobs;
 
 		while ((num_e_left -= split_size) > 0)
 		{
-			const A4GAMES_Vector<Entity> split_es(_begin, _begin + split_size);
+			const LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
 			_begin += split_size;
 			_jobs.emplace_back(std::move(pool.enqueue_task([this, func, split_es = std::move(split_es)]() {
 				_MultiThreadExceptionCatcher(
@@ -622,7 +622,7 @@ void AAAAgames::GameWorld::_ParEach2(const A4GAMES_Vector<Entity>& es, typename 
 		if (num_e_left <= 0)
 		{
 			split_size += num_e_left;
-			const A4GAMES_Vector<Entity> split_es(_begin, _begin + split_size);
+			const LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
 			_begin += split_size;
 			ENGINE_EXCEPT_IF(_begin != _end, L"Reach end condition does not meet!");
 			_jobs.emplace_back(std::move(pool.enqueue_task([this, func, split_es = std::move(split_es)]() {

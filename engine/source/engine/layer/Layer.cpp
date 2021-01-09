@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "Layer.h"
 
-namespace AAAAgames {
+namespace longmarch {
 
 	Layer::Layer(const std::string& debugName)
 		:m_DebugName(debugName)

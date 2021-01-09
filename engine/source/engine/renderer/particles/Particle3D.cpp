@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "Particle3D.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	Particle3D::Particle3D(const Vec3f& t_position, const Vec3f& t_velocity, float t_gravity, float t_lifeLength, float t_rotation, float t_scale, int t_textureRows)
 		: m_position(t_position),

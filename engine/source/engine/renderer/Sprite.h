@@ -4,7 +4,7 @@
 #include "VertexArray.h"
 #include "engine/math/Geommath.h"
 
-namespace AAAAgames {
+namespace longmarch {
 
 	class ENGINE_API Sprite
 	{

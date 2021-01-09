@@ -2,7 +2,7 @@
 #include <imgui/addons/imterm/terminal.hpp>
 #include "TerminalCommands.h"
 
-namespace AAAAgames {
+namespace longmarch {
 
 	/**
 	 * @brief Display all logging info

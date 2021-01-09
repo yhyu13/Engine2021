@@ -7,9 +7,9 @@
 #include <iostream>
 #include "engine/core/file-system/FileSystem.h"
 
-namespace AAAAgames
+namespace longmarch
 {
-	class A4GAMES_ShaderInclude
+	class LongMarch_ShaderInclude
 	{
 	public:
 		inline static std::string includeIndentifier{ "#include " };

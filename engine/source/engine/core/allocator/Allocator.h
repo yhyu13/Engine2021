@@ -4,15 +4,15 @@
 #include <vector>
 #include "../thread/Lock.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	typedef uint16_t blockSize_t;
 
 	//! Reference : https://stackoverflow.com/questions/16198700/using-the-extra-16-bits-in-64-bit-pointers
 	template<typename T>
-	struct __declspec(align(8)) A4GAMES_64Ptr
+	struct __declspec(align(8)) LongMarch_64Ptr
 	{
-		NONINSTANTIABLE(A4GAMES_64Ptr);
+		NONINSTANTIABLE(LongMarch_64Ptr);
 		signed long long ptr : 48; // as per phuclv's comment, we need the type to be signed to be sign extended
 		unsigned long long size : 15; // ...and, what's more, as Peter Cordes pointed out, it's better to mark signedness of bit field explicitly (before C++14)
 		unsigned long long free : 1; // Additionally, as Peter found out, types can differ by sign and it doesn't mean the beginning of another bit field (MSVC is particularly strict about it: other type == new bit field)
@@ -34,7 +34,7 @@ namespace AAAAgames
 	{
 		NONINSTANTIABLE(BlockHeader);
 		//! pNext stores upper 16 bits for the current node
-		A4GAMES_64Ptr<BlockHeader> pNext;
+		LongMarch_64Ptr<BlockHeader> pNext;
 		inline static bool GetFree(void* ptr) noexcept
 		{
 			return GetBlock(ptr)->pNext.free;

@@ -3,13 +3,13 @@
 #include "engine/math/Geommath.h"
 #include "events/EventType.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	struct PathMoverData
 	{
-		A4GAMES_Vector<Vec3f> original_pathLUT;
-		A4GAMES_Vector<Vec3f> smooth_pathLUT;
-		A4GAMES_Vector<float> smooth_path_arc_lengthLUT;
+		LongMarch_Vector<Vec3f> original_pathLUT;
+		LongMarch_Vector<Vec3f> smooth_pathLUT;
+		LongMarch_Vector<float> smooth_path_arc_lengthLUT;
 
 		EntityDecorator path_agent;
 		EntityDecorator debug_path_root_node;
@@ -46,7 +46,7 @@ namespace AAAAgames
 		void _ON_SET_PATHER_SMOOTH_SETTING(EventQueue<CS560EventType>::EventPtr e);
 
 	private:
-		A4GAMES_UnorderedMap_flat<Entity, PathMoverData> m_PatherLUT;
+		LongMarch_UnorderedMap_flat<Entity, PathMoverData> m_PatherLUT;
 
 	private:
 		inline static Vec3f Points[] = { Vec3f(RAND_I(-30,30), RAND_I(-30,30), -10), Vec3f(RAND_I(-30,30), RAND_I(-30,30), -10), Vec3f(RAND_I(-30,30), RAND_I(-30,30), -10),

@@ -3,7 +3,7 @@
 #include "engine/core/EngineCore.h"
 #include "engine/core/utility/Timer.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	class ENGINE_API FramerateController {
 	public:
 		static FramerateController* GetInstance();

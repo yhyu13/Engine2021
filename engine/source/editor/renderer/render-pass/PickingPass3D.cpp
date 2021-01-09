@@ -4,7 +4,7 @@
 #include "editor/ui/BaseEngineWidgetManager.h"
 #include "editor/ui/widgets/SceneHierarchyDock.h"
 
-void AAAAgames::PickingPass::Init()
+void longmarch::PickingPass::Init()
 {
 	// Create picking texture and framebuffer
 	{
@@ -32,7 +32,7 @@ void AAAAgames::PickingPass::Init()
 	}
 }
 
-void AAAAgames::PickingPass::BeginRenderPass()
+void longmarch::PickingPass::BeginRenderPass()
 {
 	// Read the result of the picking request in beginning of the next frame
 	if (m_shouldRead)
@@ -105,19 +105,19 @@ void AAAAgames::PickingPass::BeginRenderPass()
 	}
 }
 
-void AAAAgames::PickingPass::EndRenderPass()
+void longmarch::PickingPass::EndRenderPass()
 {
 	m_renderTarget->Unbind();
 	Renderer3D::s_Data.multiDrawBuffer.multiDrawRenderPassCallback.submitCallback = nullptr;
 	Renderer3D::s_Data.multiDrawBuffer.multiDrawRenderPassCallback.clearCallback = nullptr;
 }
 
-Entity AAAAgames::PickingPass::GetPickedEntity() const
+Entity longmarch::PickingPass::GetPickedEntity() const
 {
 	return m_pickedEntity;
 }
 
-bool AAAAgames::PickingPass::GetPickedResult(uint32_t* id) const
+bool longmarch::PickingPass::GetPickedResult(uint32_t* id) const
 {
 	if (uint32_t result = *(uint32_t*)m_blitData;
 		result != 0u && result != ~0u)
@@ -131,7 +131,7 @@ bool AAAAgames::PickingPass::GetPickedResult(uint32_t* id) const
 	}
 }
 
-void AAAAgames::PickingPass::Render()
+void longmarch::PickingPass::Render()
 {
 	// Config render settings
 	Renderer3D::s_Data.RENDER_PASS = Renderer3D::RENDER_PASS::EMPTY;
@@ -161,7 +161,7 @@ void AAAAgames::PickingPass::Render()
 	Renderer3D::CommitBatchRendering();
 }
 
-void AAAAgames::PickingPass::UpdateShader()
+void longmarch::PickingPass::UpdateShader()
 {
 	if (!m_shader)
 	{
@@ -188,7 +188,7 @@ void AAAAgames::PickingPass::UpdateShader()
 	}
 }
 
-void AAAAgames::PickingPass::SubmitBatch()
+void longmarch::PickingPass::SubmitBatch()
 {
 	{
 		auto ptr = &(m_multiDraw_PickingTr[0]);
@@ -204,19 +204,19 @@ void AAAAgames::PickingPass::SubmitBatch()
 	}
 }
 
-void AAAAgames::PickingPass::ClearBatch()
+void longmarch::PickingPass::ClearBatch()
 {
 	m_multiDraw_PickingEntityId.clear();
 	m_multiDraw_PickingTr.clear();
 }
 
-void AAAAgames::PickingPass::RenderOne(Renderer3D::RenderObj_CPU& renderObj)
+void longmarch::PickingPass::RenderOne(Renderer3D::RenderObj_CPU& renderObj)
 {
 	auto scene = renderObj.entity.GetComponent<Scene3DCom>();
 	scene->Draw(m_drawBind);
 }
 
-void AAAAgames::PickingPass::Draw(const Renderer3D::RenderData_CPU& data)
+void longmarch::PickingPass::Draw(const Renderer3D::RenderData_CPU& data)
 {
 	switch (Renderer3D::s_Data.RENDER_MODE)
 	{

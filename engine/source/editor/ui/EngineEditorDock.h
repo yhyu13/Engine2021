@@ -2,7 +2,7 @@
 #include "engine/ui/BaseWidget.h"
 #include <imgui/addons/imgui-filebrowser/imfilebrowser.h>
 
-namespace AAAAgames
+namespace longmarch
 {
 	/**
 	 * @brief Dock space for engine eidtor widgets

@@ -3,13 +3,13 @@
 #include "engine/EngineEssential.h"
 #include "Layer.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	
 	struct ENGINE_API LayerStack
 	{
 	public:
-		typedef A4GAMES_Vector<std::shared_ptr<Layer>> LayerType;
-		typedef A4GAMES_UnorderedMap<Layer::LAYER_TYPE, LayerType> LayerStackType;
+		typedef LongMarch_Vector<std::shared_ptr<Layer>> LayerType;
+		typedef LongMarch_UnorderedMap<Layer::LAYER_TYPE, LayerType> LayerStackType;
 		
 
 		void SwitchCurrentLayer(Layer::LAYER_TYPE layer);

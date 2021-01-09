@@ -3,7 +3,7 @@
 #include "Renderer2D.h"
 #include "platform/OpenGL/OpenGLShader.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	std::shared_ptr<Shader> Shader::Create(const std::string& vertexShaderPath, const std::string& fragmentShaderPath, const std::string& geomtryShaderPath)
 	{
 		auto vert = FileSystem::ResolveProtocol(vertexShaderPath);

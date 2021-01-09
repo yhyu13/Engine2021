@@ -1,7 +1,7 @@
 #include "application-precompiled-header.h"
 #include "BaseGameWidgetManager.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	void BaseGameWidgetManager::RenderUI()
 	{

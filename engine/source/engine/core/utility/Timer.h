@@ -2,7 +2,7 @@
 #include "../exception/EngineException.h"
 #include <chrono>
 
-namespace AAAAgames
+namespace longmarch
 {
 	/**
 	 * @brief Timer that set and return time point in sec

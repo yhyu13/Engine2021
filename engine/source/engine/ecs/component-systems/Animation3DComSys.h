@@ -6,7 +6,7 @@
 #include "engine/ecs/components/3d/Animation3DCom.h"
 #include "engine/ecs/components/3d/Scene3DCom.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class Animation3DComSys final : public BaseComponentSystem
 	{

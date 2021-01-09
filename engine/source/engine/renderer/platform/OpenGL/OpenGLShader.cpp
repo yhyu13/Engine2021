@@ -5,7 +5,7 @@
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
 
-namespace AAAAgames {
+namespace longmarch {
 	OpenGLShader::OpenGLShader(const fs::path& computeShaderPath)
 	{
 		GLint isCompiled = 0;
@@ -337,7 +337,7 @@ namespace AAAAgames {
 		std::string shaderCode;
 		try
 		{
-			shaderCode = A4GAMES_ShaderInclude::load(shaderSourcePath, 0);
+			shaderCode = LongMarch_ShaderInclude::load(shaderSourcePath, 0);
 		}
 		catch (std::ifstream::failure e)
 		{

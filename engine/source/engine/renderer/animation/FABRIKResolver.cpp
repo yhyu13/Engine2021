@@ -1,12 +1,12 @@
 #include "engine-precompiled-header.h"
 #include "FABRIKResolver.h"
 
-AAAAgames::FABRIKResolver::FABRIKResolver(const std::shared_ptr<Skeleton>& skeletonRef_)
+longmarch::FABRIKResolver::FABRIKResolver(const std::shared_ptr<Skeleton>& skeletonRef_)
 	:
 	skeletonRef(skeletonRef_)
 {}
 
-void AAAAgames::FABRIKResolver::AddIKData(const std::string& ee_name, FABRIKData& data)
+void longmarch::FABRIKResolver::AddIKData(const std::string& ee_name, FABRIKData& data)
 {
 	LOCK_GUARD_NC();
 	if (InitData(data))
@@ -15,7 +15,7 @@ void AAAAgames::FABRIKResolver::AddIKData(const std::string& ee_name, FABRIKData
 	}
 }
 
-bool AAAAgames::FABRIKResolver::InitData(FABRIKData& data)
+bool longmarch::FABRIKResolver::InitData(FABRIKData& data)
 {
 	data.reached = false;
 
@@ -49,13 +49,13 @@ bool AAAAgames::FABRIKResolver::InitData(FABRIKData& data)
 	return true;
 }
 
-void AAAAgames::FABRIKResolver::RemoveIKData(const std::string& ee_name)
+void longmarch::FABRIKResolver::RemoveIKData(const std::string& ee_name)
 {
 	LOCK_GUARD_NC();
 	m_data.erase(ee_name);
 }
 
-void AAAAgames::FABRIKResolver::UpdateIKTarget(const std::string& ee_name, const Mat4& ee_target)
+void longmarch::FABRIKResolver::UpdateIKTarget(const std::string& ee_name, const Mat4& ee_target)
 {
 	LOCK_GUARD_NC();
 	if (auto it = m_data.find(ee_name); it != m_data.end())
@@ -73,7 +73,7 @@ void AAAAgames::FABRIKResolver::UpdateIKTarget(const std::string& ee_name, const
 	}
 }
 
-void AAAAgames::FABRIKResolver::UpdateIKPole(const std::string& ee_name, const Mat4& ee_pole)
+void longmarch::FABRIKResolver::UpdateIKPole(const std::string& ee_name, const Mat4& ee_pole)
 {
 	LOCK_GUARD_NC();
 	if (auto it = m_data.find(ee_name); it != m_data.end())
@@ -91,7 +91,7 @@ void AAAAgames::FABRIKResolver::UpdateIKPole(const std::string& ee_name, const M
 	}
 }
 
-void AAAAgames::FABRIKResolver::ResolveIK()
+void longmarch::FABRIKResolver::ResolveIK()
 {
 	LOCK_GUARD_NC();
 	for (auto& [ee_name, data] : m_data)
@@ -192,7 +192,7 @@ void AAAAgames::FABRIKResolver::ResolveIK()
 	}
 }
 
-void AAAAgames::FABRIKResolver::UpdateBoneTransform(const FABRIKData& data)
+void longmarch::FABRIKResolver::UpdateBoneTransform(const FABRIKData& data)
 {
 	static std::function<void(FABRIKResolver*, const FABRIKData&, const std::string&)> update_children_node = [](FABRIKResolver* res, const FABRIKData& data, const std::string& parent_bone_name)
 	{
@@ -203,7 +203,7 @@ void AAAAgames::FABRIKResolver::UpdateBoneTransform(const FABRIKData& data)
 			for (const auto& child : node.children)
 			{
 				auto bone_name = child.name;
-				if (!A4GAMES_Contains(data.eachBoneName, bone_name))
+				if (!LongMarch_Contains(data.eachBoneName, bone_name))
 				{
 					if (auto index = res->skeletonRef->GetBoneIndex(bone_name); index != -1)
 					{

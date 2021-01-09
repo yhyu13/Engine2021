@@ -14,7 +14,7 @@
 #include "ComponentManager.h"
 #include "ComponentDecorator.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class BaseComponentSystem;
 	/**
@@ -45,7 +45,7 @@ namespace AAAAgames
 		static void SetCurrent(GameWorld* world);
 		static GameWorld* GetCurrent();
 		static GameWorld* GetManagedWorldByName(const std::string& name);
-		static const A4GAMES_Vector<std::string> GetAllManagedWorldNames();
+		static const LongMarch_Vector<std::string> GetAllManagedWorldNames();
 
 		/**
 		 * @brief	Remove a managed world, throw exception if the world does not exist
@@ -152,9 +152,9 @@ namespace AAAAgames
 
 		//! Type must have one entity, if that entity does not exist, throw an exception
 		const Entity GetTheOnlyEntityWithType(EntityType type);
-		const A4GAMES_Vector<Entity> GetAllEntityWithType(EntityType type);
-		const A4GAMES_Vector<Entity> GetAllEntityWithType(const std::initializer_list<EntityType>& types);
-		const A4GAMES_Vector<Entity> GetAllEntityWithType(const A4GAMES_Vector<EntityType>& types);
+		const LongMarch_Vector<Entity> GetAllEntityWithType(EntityType type);
+		const LongMarch_Vector<Entity> GetAllEntityWithType(const std::initializer_list<EntityType>& types);
+		const LongMarch_Vector<Entity> GetAllEntityWithType(const LongMarch_Vector<EntityType>& types);
 		const Entity GetEntityFromID(EntityID ID);
 		/**************************************************************
 		*	Component System
@@ -166,20 +166,20 @@ namespace AAAAgames
 		BaseComponentSystem* GetComponentSystem(const std::string& name);
 
 		//! In the order of execution of component systems
-		const A4GAMES_Vector<std::string> GetAllComponentSystemName();
+		const LongMarch_Vector<std::string> GetAllComponentSystemName();
 
 		//! In the order of execution of component systems
-		const A4GAMES_Vector<std::shared_ptr<BaseComponentSystem>> GetAllComponentSystem();
+		const LongMarch_Vector<std::shared_ptr<BaseComponentSystem>> GetAllComponentSystem();
 
 		//! In the order of execution of component systems
-		const A4GAMES_Vector<std::pair<std::string, std::shared_ptr<BaseComponentSystem>>> GetAllComponentSystemNamePair();
+		const LongMarch_Vector<std::pair<std::string, std::shared_ptr<BaseComponentSystem>>> GetAllComponentSystemNamePair();
 
 		/**************************************************************
 		*	Component
 		**************************************************************/
 
 		//! Use this method to get all components for an entity.
-		const A4GAMES_Vector<BaseComponentInterface*> GetAllComponent(const Entity& entity);
+		const LongMarch_Vector<BaseComponentInterface*> GetAllComponent(const Entity& entity);
 
 		//! Use this method to remove all components for an entity.
 		void RemoveAllComponent(const Entity& entity);
@@ -197,7 +197,7 @@ namespace AAAAgames
 		ComponentDecorator<ComponentType> GetComponent(const Entity& entity);
 
 		template<class... Components>
-		const A4GAMES_Vector<Entity> EntityView();
+		const LongMarch_Vector<Entity> EntityView();
 
 		//! Unity ECS like for each function
 		template<class... Components>
@@ -215,13 +215,13 @@ namespace AAAAgames
 		}
 
 		//! Unity ECS like for each function
-		void ForEach(const A4GAMES_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func);
+		void ForEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func);
 
 		//! Unity ECS like for each function (single worker thread), func is moved
-		[[nodiscard]] std::future<void> BackEach(const A4GAMES_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func);
+		[[nodiscard]] std::future<void> BackEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func);
 
 		//! Unity ECS like for each function (multi worker thread), func is moved
-		[[nodiscard]] std::future<void> ParEach(const A4GAMES_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split = -1);
+		[[nodiscard]] std::future<void> ParEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split = -1);
 
 	private:
 		//! Init both system and scene from a single file
@@ -235,7 +235,7 @@ namespace AAAAgames
 		void _UpdateEntityForAllComponentSystems(const Entity& entity, BitMaskSignature& oldMask);
 
 		//! Helper method for pareach
-		void _ParEach2(const A4GAMES_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split = -1);
+		void _ParEach2(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split = -1);
 
 		//! Helper method that wraps exception handling for thread job
 		inline void _MultiThreadExceptionCatcher(typename Identity<std::function<void()>>::Type func)
@@ -254,21 +254,21 @@ namespace AAAAgames
 	private:
 		// E
 		std::shared_ptr<EntityManager> m_entityManager; //!< Contains all entities and their compoenent bit masks
-		A4GAMES_UnorderedMap_Par<Entity, BitMaskSignature> m_entityMasks; //!< Contains all entities and their compoenent bit masks
+		LongMarch_UnorderedMap_Par<Entity, BitMaskSignature> m_entityMasks; //!< Contains all entities and their compoenent bit masks
 		// C
-		A4GAMES_Vector<std::shared_ptr<BaseComponentManager>> m_componentManagers; //!< Contains all component managers which are indexed by component indices
+		LongMarch_Vector<std::shared_ptr<BaseComponentManager>> m_componentManagers; //!< Contains all component managers which are indexed by component indices
 		// S
-		A4GAMES_Vector<std::shared_ptr<BaseComponentSystem>> m_systems; //!< In order array of all systems
-		A4GAMES_Vector<std::string> m_systemsName; //!< In order array of all names of systems
-		A4GAMES_UnorderedMap<std::string, std::shared_ptr<BaseComponentSystem>> m_systemsMap; //!< System LUT based on names, iterating over this container does not gaurantee in orderness
+		LongMarch_Vector<std::shared_ptr<BaseComponentSystem>> m_systems; //!< In order array of all systems
+		LongMarch_Vector<std::string> m_systemsName; //!< In order array of all names of systems
+		LongMarch_UnorderedMap<std::string, std::shared_ptr<BaseComponentSystem>> m_systemsMap; //!< System LUT based on names, iterating over this container does not gaurantee in orderness
 		// Misc
 		std::string m_name;
 		bool m_paused = { false };
 
-		A4GAMES_Vector<std::future<void>> m_jobs;
+		LongMarch_Vector<std::future<void>> m_jobs;
 	private:
 		// Async load/remove game worlds
-		inline static A4GAMES_UnorderedMap<std::string, A4GAMES_Unique_ptr<GameWorld>> allManagedWorlds;
+		inline static LongMarch_UnorderedMap<std::string, LongMarch_Unique_ptr<GameWorld>> allManagedWorlds;
 		inline static GameWorld* currentWorld = { nullptr };
 
 		// Multithreaded update

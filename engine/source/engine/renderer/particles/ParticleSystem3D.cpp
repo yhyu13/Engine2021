@@ -3,7 +3,7 @@
 #include "ParticleSystem3D.h"
 #include "../../core/asset-manager/ResourceManager.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	ParticleSystem3D::ParticleSystem3D()
 		: m_particlePerSecond(0.0f),

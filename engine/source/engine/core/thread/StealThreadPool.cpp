@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "StealThreadPool.h"
 
-AAAAgames::StealThreadPool::StealThreadPool(unsigned int threads)
+longmarch::StealThreadPool::StealThreadPool(unsigned int threads)
 	:
 	threads(threads),
 	m_queues(threads),
@@ -38,7 +38,7 @@ AAAAgames::StealThreadPool::StealThreadPool(unsigned int threads)
 	}
 }
 
-AAAAgames::StealThreadPool::~StealThreadPool()
+longmarch::StealThreadPool::~StealThreadPool()
 {
 	m_done.test_and_set();
 	for (auto& queue : m_queues)

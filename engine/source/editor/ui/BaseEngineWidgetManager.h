@@ -1,7 +1,7 @@
 #pragma once
 #include "engine/ui/BaseWidgetManager.h"
 
-namespace AAAAgames {
+namespace longmarch {
 #define ENG_WIG_MAN_NAME "eng_wig_man"
 
 	class EditorPickingComSys; //!< Component system side of picking system
@@ -25,7 +25,7 @@ namespace AAAAgames {
 		void CaptureMouseAndKeyboardOnMenu();	//<! Capture Mouse and Kyeboard on menu being clicked
 
 		void PushBackSelectedEntity(const Entity& e); //!< UI side of picking system
-		const A4GAMES_Vector<Entity> GetAllSelectedEntity(); //!< UI side of picking system
+		const LongMarch_Vector<Entity> GetAllSelectedEntity(); //!< UI side of picking system
 
 		void AddNewGameWorldLevel(const std::string& name);	//!< Game world level tab system
 
@@ -33,14 +33,14 @@ namespace AAAAgames {
 		void UpdateGameWorldTabs();	//!< Game world level tab system
 		void UpdateSelectedEntity();	//!< UI side of picking system
 
-		const A4GAMES_Vector<Entity> GetAllSelectedEntityBuffered(); // UI side of picking system
+		const LongMarch_Vector<Entity> GetAllSelectedEntityBuffered(); // UI side of picking system
 
 		friend EditorPickingComSys;
 		friend EngineEditorDock;
 	protected:
-		A4GAMES_Vector<Entity> m_SelectedEntity;
-		A4GAMES_Vector<Entity> m_SelectedEntityBuffer;
+		LongMarch_Vector<Entity> m_SelectedEntity;
+		LongMarch_Vector<Entity> m_SelectedEntityBuffer;
 		//! name, isSelected, isVisible, shouldRemove
-		A4GAMES_Vector<std::tuple<std::string, bool, bool, bool>> m_gameWorldLevels;
+		LongMarch_Vector<std::tuple<std::string, bool, bool, bool>> m_gameWorldLevels;
 	};
 }

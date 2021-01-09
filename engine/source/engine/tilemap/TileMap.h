@@ -5,8 +5,8 @@
 #include "engine/ai/PathFinding/PathFinder2DGrid.h"
 #include <Tileson.h>
 
-namespace AAAAgames {
-	extern float A4GAMES_GetPixel2WorldNumerator();
+namespace longmarch {
+	extern float LongMarch_GetPixel2WorldNumerator();
 
 	/*
 	Use case:

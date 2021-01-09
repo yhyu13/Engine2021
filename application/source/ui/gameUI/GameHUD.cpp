@@ -1,7 +1,7 @@
 #include "application-precompiled-header.h"
 #include "GameHUD.h"
 
-void AAAAgames::GameHUD::Render()
+void longmarch::GameHUD::Render()
 {
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
 	ImGui::SetNextWindowSize(viewport->Size);
@@ -43,7 +43,7 @@ void AAAAgames::GameHUD::Render()
 	ImGui::End();
 }
 
-void AAAAgames::GameHUD::ShowEngineFPS()
+void longmarch::GameHUD::ShowEngineFPS()
 {
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
 	float frameTime = FramerateController::GetInstance()->GetFrameTime();

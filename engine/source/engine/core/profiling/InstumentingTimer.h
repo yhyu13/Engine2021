@@ -4,7 +4,7 @@
 
 //#include "Instrumentor.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	class Instrumentor;
 
 	/*

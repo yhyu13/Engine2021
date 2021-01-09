@@ -8,7 +8,7 @@
 #include "engine/events/EventQueue.h"
 #include "engine/events/engineEvents/EngineCustomEvent.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	struct ConnectableUpdater : public BaseAtomicClassNC
 	{

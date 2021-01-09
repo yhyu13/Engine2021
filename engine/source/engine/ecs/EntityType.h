@@ -4,10 +4,10 @@
 #include <string>
 #include <map>
 
-namespace AAAAgames
+namespace longmarch
 {
-	typedef A4GAMES_UnorderedMap<std::string, EntityType> EntityNameToType;
-	typedef A4GAMES_UnorderedMap<EntityType, std::string> EntityTypeToName;
+	typedef LongMarch_UnorderedMap<std::string, EntityType> EntityNameToType;
+	typedef LongMarch_UnorderedMap<EntityType, std::string> EntityTypeToName;
 
 	enum class EngineEntityType : EntityType
 	{
@@ -50,83 +50,83 @@ namespace AAAAgames
 	{
 		inline static EntityNameToType TypeNameMap =
 		{
-			{"SCENE_ROOT", A4GAMES_ToUnderlying(EngineEntityType::SCENE_ROOT)},
-			{"STATIC_OBJ", A4GAMES_ToUnderlying(EngineEntityType::STATIC_OBJ)},
-			{"DYNAMIC_OBJ", A4GAMES_ToUnderlying(EngineEntityType::DYNAMIC_OBJ)},
+			{"SCENE_ROOT", LongMarch_ToUnderlying(EngineEntityType::SCENE_ROOT)},
+			{"STATIC_OBJ", LongMarch_ToUnderlying(EngineEntityType::STATIC_OBJ)},
+			{"DYNAMIC_OBJ", LongMarch_ToUnderlying(EngineEntityType::DYNAMIC_OBJ)},
 
-			{"SKYSPHERE_OBJ", A4GAMES_ToUnderlying(EngineEntityType::SKYSPHERE_OBJ)},
-			{"SKYSBOX_OBJ", A4GAMES_ToUnderlying(EngineEntityType::SKYSBOX_OBJ)},
+			{"SKYSPHERE_OBJ", LongMarch_ToUnderlying(EngineEntityType::SKYSPHERE_OBJ)},
+			{"SKYSBOX_OBJ", LongMarch_ToUnderlying(EngineEntityType::SKYSBOX_OBJ)},
 
-			{"DIRECTIONAL_LIGHT", A4GAMES_ToUnderlying(EngineEntityType::DIRECTIONAL_LIGHT)},
-			{"POINT_LIGHT", A4GAMES_ToUnderlying(EngineEntityType::POINT_LIGHT)},
-			{"SPOT_LIGHT", A4GAMES_ToUnderlying(EngineEntityType::SPOT_LIGHT)},
+			{"DIRECTIONAL_LIGHT", LongMarch_ToUnderlying(EngineEntityType::DIRECTIONAL_LIGHT)},
+			{"POINT_LIGHT", LongMarch_ToUnderlying(EngineEntityType::POINT_LIGHT)},
+			{"SPOT_LIGHT", LongMarch_ToUnderlying(EngineEntityType::SPOT_LIGHT)},
 
-			{"EDITOR_CAMERA", A4GAMES_ToUnderlying(EngineEntityType::EDITOR_CAMERA)},
-			{"FREEROAM_CAMERA", A4GAMES_ToUnderlying(EngineEntityType::FREEROAM_CAMERA)},
-			{"PLAYER_CAMERA", A4GAMES_ToUnderlying(EngineEntityType::PLAYER_CAMERA)},
+			{"EDITOR_CAMERA", LongMarch_ToUnderlying(EngineEntityType::EDITOR_CAMERA)},
+			{"FREEROAM_CAMERA", LongMarch_ToUnderlying(EngineEntityType::FREEROAM_CAMERA)},
+			{"PLAYER_CAMERA", LongMarch_ToUnderlying(EngineEntityType::PLAYER_CAMERA)},
 
-			{"PLAYER_PROJECTILE", A4GAMES_ToUnderlying(EngineEntityType::PLAYER_PROJECTILE)},
-			{"ENEMY_PROJECTILE", A4GAMES_ToUnderlying(EngineEntityType::ENEMY_PROJECTILE)},
+			{"PLAYER_PROJECTILE", LongMarch_ToUnderlying(EngineEntityType::PLAYER_PROJECTILE)},
+			{"ENEMY_PROJECTILE", LongMarch_ToUnderlying(EngineEntityType::ENEMY_PROJECTILE)},
 
-			{"PLAYER_SHIP", A4GAMES_ToUnderlying(EngineEntityType::PLAYER_SHIP)},
-			{"ASTEROID", A4GAMES_ToUnderlying(EngineEntityType::ASTEROID)},
-			{"ENEMY_SHIP", A4GAMES_ToUnderlying(EngineEntityType::ENEMY_SHIP)},
-			{"METEOR", A4GAMES_ToUnderlying(EngineEntityType::METEOR)},
-			{"MOON_METEOR", A4GAMES_ToUnderlying(EngineEntityType::MOON_METEOR)},
-			{"SENTINEL_ENEMY_ROBOT", A4GAMES_ToUnderlying(EngineEntityType::SENTINEL_ENEMY_ROBOT)},
+			{"PLAYER_SHIP", LongMarch_ToUnderlying(EngineEntityType::PLAYER_SHIP)},
+			{"ASTEROID", LongMarch_ToUnderlying(EngineEntityType::ASTEROID)},
+			{"ENEMY_SHIP", LongMarch_ToUnderlying(EngineEntityType::ENEMY_SHIP)},
+			{"METEOR", LongMarch_ToUnderlying(EngineEntityType::METEOR)},
+			{"MOON_METEOR", LongMarch_ToUnderlying(EngineEntityType::MOON_METEOR)},
+			{"SENTINEL_ENEMY_ROBOT", LongMarch_ToUnderlying(EngineEntityType::SENTINEL_ENEMY_ROBOT)},
 
-			{"PLAYER_SHIP_EXHAUST", A4GAMES_ToUnderlying(EngineEntityType::PLAYER_SHIP_EXHAUST)}
+			{"PLAYER_SHIP_EXHAUST", LongMarch_ToUnderlying(EngineEntityType::PLAYER_SHIP_EXHAUST)}
 		};
 		inline static EntityTypeToName TypeNameMapInv =
 		{
-			{A4GAMES_ToUnderlying(EngineEntityType::SCENE_ROOT), "SCENE_ROOT"},
-			{A4GAMES_ToUnderlying(EngineEntityType::STATIC_OBJ), "STATIC_OBJ"},
-			{A4GAMES_ToUnderlying(EngineEntityType::DYNAMIC_OBJ), "DYNAMIC_OBJ"},
+			{LongMarch_ToUnderlying(EngineEntityType::SCENE_ROOT), "SCENE_ROOT"},
+			{LongMarch_ToUnderlying(EngineEntityType::STATIC_OBJ), "STATIC_OBJ"},
+			{LongMarch_ToUnderlying(EngineEntityType::DYNAMIC_OBJ), "DYNAMIC_OBJ"},
 
-			{A4GAMES_ToUnderlying(EngineEntityType::SKYSPHERE_OBJ), "SKYSPHERE_OBJ"},
-			{A4GAMES_ToUnderlying(EngineEntityType::SKYSBOX_OBJ), "SKYSBOX_OBJ"},
+			{LongMarch_ToUnderlying(EngineEntityType::SKYSPHERE_OBJ), "SKYSPHERE_OBJ"},
+			{LongMarch_ToUnderlying(EngineEntityType::SKYSBOX_OBJ), "SKYSBOX_OBJ"},
 
-			{A4GAMES_ToUnderlying(EngineEntityType::DIRECTIONAL_LIGHT), "DIRECTIONAL_LIGHT"},
-			{A4GAMES_ToUnderlying(EngineEntityType::POINT_LIGHT), "POINT_LIGHT"},
-			{A4GAMES_ToUnderlying(EngineEntityType::SPOT_LIGHT), "SPOT_LIGHT"},
+			{LongMarch_ToUnderlying(EngineEntityType::DIRECTIONAL_LIGHT), "DIRECTIONAL_LIGHT"},
+			{LongMarch_ToUnderlying(EngineEntityType::POINT_LIGHT), "POINT_LIGHT"},
+			{LongMarch_ToUnderlying(EngineEntityType::SPOT_LIGHT), "SPOT_LIGHT"},
 
-			{A4GAMES_ToUnderlying(EngineEntityType::EDITOR_CAMERA), "EDITOR_CAMERA"},
-			{A4GAMES_ToUnderlying(EngineEntityType::FREEROAM_CAMERA), "FREEROAM_CAMERA"},
-			{A4GAMES_ToUnderlying(EngineEntityType::PLAYER_CAMERA), "PLAYER_CAMERA"},
+			{LongMarch_ToUnderlying(EngineEntityType::EDITOR_CAMERA), "EDITOR_CAMERA"},
+			{LongMarch_ToUnderlying(EngineEntityType::FREEROAM_CAMERA), "FREEROAM_CAMERA"},
+			{LongMarch_ToUnderlying(EngineEntityType::PLAYER_CAMERA), "PLAYER_CAMERA"},
 
-			{A4GAMES_ToUnderlying(EngineEntityType::PLAYER_PROJECTILE), "PLAYER_PROJECTILE"},
-			{A4GAMES_ToUnderlying(EngineEntityType::ENEMY_PROJECTILE), "ENEMY_PROJECTILE"},
+			{LongMarch_ToUnderlying(EngineEntityType::PLAYER_PROJECTILE), "PLAYER_PROJECTILE"},
+			{LongMarch_ToUnderlying(EngineEntityType::ENEMY_PROJECTILE), "ENEMY_PROJECTILE"},
 
-			{A4GAMES_ToUnderlying(EngineEntityType::PLAYER_SHIP),"PLAYER_SHIP"},
-			{A4GAMES_ToUnderlying(EngineEntityType::ASTEROID),"ASTEROID"},
-			{A4GAMES_ToUnderlying(EngineEntityType::ENEMY_SHIP),"ENEMY_SHIP"},
-			{A4GAMES_ToUnderlying(EngineEntityType::METEOR),"METEOR"},
-			{A4GAMES_ToUnderlying(EngineEntityType::MOON_METEOR),"MOON_METEOR"},
-			{A4GAMES_ToUnderlying(EngineEntityType::SENTINEL_ENEMY_ROBOT),"SENTINEL_ENEMY_ROBOT"},
+			{LongMarch_ToUnderlying(EngineEntityType::PLAYER_SHIP),"PLAYER_SHIP"},
+			{LongMarch_ToUnderlying(EngineEntityType::ASTEROID),"ASTEROID"},
+			{LongMarch_ToUnderlying(EngineEntityType::ENEMY_SHIP),"ENEMY_SHIP"},
+			{LongMarch_ToUnderlying(EngineEntityType::METEOR),"METEOR"},
+			{LongMarch_ToUnderlying(EngineEntityType::MOON_METEOR),"MOON_METEOR"},
+			{LongMarch_ToUnderlying(EngineEntityType::SENTINEL_ENEMY_ROBOT),"SENTINEL_ENEMY_ROBOT"},
 
-			{A4GAMES_ToUnderlying(EngineEntityType::PLAYER_SHIP_EXHAUST),"PLAYER_SHIP_EXHAUST"}
+			{LongMarch_ToUnderlying(EngineEntityType::PLAYER_SHIP_EXHAUST),"PLAYER_SHIP_EXHAUST"}
 		};
 	};
 }
 
-__A4GAMES_TRVIAL_TEMPLATE__
-std::ostream& operator<<(std::ostream& o, const AAAAgames::EngineEntityType& n)
+__LongMarch_TRVIAL_TEMPLATE__
+std::ostream& operator<<(std::ostream& o, const longmarch::EngineEntityType& n)
 {
 	const char* s = 0;
 #define PROCESS_VAL(p) case(p): s = #p; break;
 	switch (n) {
-		PROCESS_VAL(AAAAgames::EngineEntityType::EMPTY);
-		PROCESS_VAL(AAAAgames::EngineEntityType::SCENE_ROOT);
-		PROCESS_VAL(AAAAgames::EngineEntityType::STATIC_OBJ);
-		PROCESS_VAL(AAAAgames::EngineEntityType::DYNAMIC_OBJ);
-		PROCESS_VAL(AAAAgames::EngineEntityType::SKYSPHERE_OBJ);
-		PROCESS_VAL(AAAAgames::EngineEntityType::SKYSBOX_OBJ);
-		PROCESS_VAL(AAAAgames::EngineEntityType::DIRECTIONAL_LIGHT);
-		PROCESS_VAL(AAAAgames::EngineEntityType::POINT_LIGHT);
-		PROCESS_VAL(AAAAgames::EngineEntityType::SPOT_LIGHT);
-		PROCESS_VAL(AAAAgames::EngineEntityType::EDITOR_CAMERA);
+		PROCESS_VAL(longmarch::EngineEntityType::EMPTY);
+		PROCESS_VAL(longmarch::EngineEntityType::SCENE_ROOT);
+		PROCESS_VAL(longmarch::EngineEntityType::STATIC_OBJ);
+		PROCESS_VAL(longmarch::EngineEntityType::DYNAMIC_OBJ);
+		PROCESS_VAL(longmarch::EngineEntityType::SKYSPHERE_OBJ);
+		PROCESS_VAL(longmarch::EngineEntityType::SKYSBOX_OBJ);
+		PROCESS_VAL(longmarch::EngineEntityType::DIRECTIONAL_LIGHT);
+		PROCESS_VAL(longmarch::EngineEntityType::POINT_LIGHT);
+		PROCESS_VAL(longmarch::EngineEntityType::SPOT_LIGHT);
+		PROCESS_VAL(longmarch::EngineEntityType::EDITOR_CAMERA);
 
-		PROCESS_VAL(AAAAgames::EngineEntityType::DEBUG_OBJ);
+		PROCESS_VAL(longmarch::EngineEntityType::DEBUG_OBJ);
 	default: s = "(invalid value)"; break;
 	}
 #undef PROCESS_VAL

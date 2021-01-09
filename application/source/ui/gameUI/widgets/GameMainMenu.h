@@ -12,7 +12,7 @@ Creation date: 07/28/2020
 #pragma once
 #include "engine/ui/BaseWidget.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	class GameMainMenu final : public BaseWidget
 	{
 	public:

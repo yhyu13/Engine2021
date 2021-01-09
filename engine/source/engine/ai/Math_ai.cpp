@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "Math_ai.h"
 
-GridF32 AAAAgames::GetLU(const GridF32& matrix, int n)
+GridF32 longmarch::GetLU(const GridF32& matrix, int n)
 {
 	// decomposition of matrix
 	GridF32 lu(n, n);
@@ -26,7 +26,7 @@ GridF32 AAAAgames::GetLU(const GridF32& matrix, int n)
 	return lu;
 }
 
-ArrayF32 AAAAgames::SolveLU(const GridF32& lu, const ArrayF32& b, int n)
+ArrayF32 longmarch::SolveLU(const GridF32& lu, const ArrayF32& b, int n)
 {
 	// lu = L+U-I
 	// find solution of Ly = b
@@ -54,7 +54,7 @@ ArrayF32 AAAAgames::SolveLU(const GridF32& lu, const ArrayF32& b, int n)
 /*
 LU decomposition for squared matrix of size NxN
 */
-ArrayF32 AAAAgames::SolveUsingLU(const GridF32& matrix, const ArrayF32& b, int n)
+ArrayF32 longmarch::SolveUsingLU(const GridF32& matrix, const ArrayF32& b, int n)
 {
 	// decomposition of matrix
 	GridF32 lu(n, n);
@@ -102,7 +102,7 @@ ArrayF32 AAAAgames::SolveUsingLU(const GridF32& matrix, const ArrayF32& b, int n
 /*
 Get the coefficients of cubic spline interporlated curve
 */
-std::vector<Vec2f> AAAAgames::GetCubicSplineCoeff(const std::vector<Vec2f>& pts)
+std::vector<Vec2f> longmarch::GetCubicSplineCoeff(const std::vector<Vec2f>& pts)
 {
 	std::vector<Vec2f> result;
 
@@ -181,7 +181,7 @@ std::vector<Vec2f> AAAAgames::GetCubicSplineCoeff(const std::vector<Vec2f>& pts)
 	return result;
 }
 
-Vec2f AAAAgames::CubicSplineInterpolate(float t, const std::vector<Vec2f>& coeff)
+Vec2f longmarch::CubicSplineInterpolate(float t, const std::vector<Vec2f>& coeff)
 {
 	int N = coeff.size();
 	Vec2f result(0, 0);
@@ -212,7 +212,7 @@ Return :
 (argument alpha represent the step size for the paramerteric value t which is used internally,
 the smaller the smoother the curve, default is 0.05)
 */
-std::vector<Vec2f> AAAAgames::GetCubicSpline(const std::vector<Vec2f>& pts, float alpha)
+std::vector<Vec2f> longmarch::GetCubicSpline(const std::vector<Vec2f>& pts, float alpha)
 {
 	int K = pts.size() - 1;
 	std::vector<Vec2f> result;

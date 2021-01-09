@@ -3,7 +3,7 @@
 #include "MeshData.h"
 #include "../material/Material.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	struct Mesh
 	{

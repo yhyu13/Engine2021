@@ -2,7 +2,7 @@
 #include "Shape.h"
 #include "engine/renderer/mesh/Mesh.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class CACHE_ALIGN16 AABB : public Shape
 	{
@@ -11,7 +11,7 @@ namespace AAAAgames
 		AABB();
 		explicit AABB(const Vec3f& min, const Vec3f& max);
 		explicit AABB(MeshData* mesh);
-		explicit AABB(const A4GAMES_Vector<MeshData*>& meshs);
+		explicit AABB(const LongMarch_Vector<MeshData*>& meshs);
 		void InitWithMeshData(const MeshData::VertexList& vertex_data, const MeshData::IndexList& index_data);
 
 		const std::vector<Vec3f> GetAllVertex();

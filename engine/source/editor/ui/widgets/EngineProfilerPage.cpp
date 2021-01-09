@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "EngineProfilerPage.h"
 
-void AAAAgames::EngineProfilerPage::Render()
+void longmarch::EngineProfilerPage::Render()
 {
 	auto instrumentor = Instrumentor::GetEngineInstance();
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);

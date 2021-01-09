@@ -9,7 +9,7 @@
 #include "dynamics/Island.h"
 #include "collision/DynamicTree.h"
 
-namespace AAAAgames
+namespace longmarch
 {
     class Scene : BaseAtomicClass2
     {
@@ -18,8 +18,8 @@ namespace AAAAgames
         explicit Scene(const Vec3f& gravity);
         ~Scene();
 
-        void BroadPhase(A4GAMES_Vector<Manifold>& contacts);
-        A4GAMES_Vector<Manifold> NarrowPhase(A4GAMES_Vector<Manifold>& contacts, f32 dt);
+        void BroadPhase(LongMarch_Vector<Manifold>& contacts);
+        LongMarch_Vector<Manifold> NarrowPhase(LongMarch_Vector<Manifold>& contacts, f32 dt);
 
         void Solve(f32 dt);
         // move simulation of Scene forward by given timestep
@@ -39,8 +39,8 @@ namespace AAAAgames
 		void RenderDebug();
 
     private:
-        A4GAMES_Vector<std::shared_ptr<RigidBody>> m_rbList;
-        A4GAMES_UnorderedMap_flat<size_t, Manifold> m_contactPairs;
+        LongMarch_Vector<std::shared_ptr<RigidBody>> m_rbList;
+        LongMarch_UnorderedMap_flat<size_t, Manifold> m_contactPairs;
         DynamicAABBTree m_aabbTree;
 
         GameWorld* m_parentWorld{ nullptr };

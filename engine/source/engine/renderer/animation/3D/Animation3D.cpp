@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "Animation3D.h"
 
-std::shared_ptr<Animation3D> AAAAgames::Animation3D::LoadAnimation(const aiScene* aiscene, const std::string& id)
+std::shared_ptr<Animation3D> longmarch::Animation3D::LoadAnimation(const aiScene* aiscene, const std::string& id)
 {
 	auto ret = MemoryManager::Make_shared<Animation3D>();
 	ret->id = id;
@@ -81,17 +81,17 @@ std::shared_ptr<Animation3D> AAAAgames::Animation3D::LoadAnimation(const aiScene
 }
 
 
-AAAAgames::Animation3D::Animation3D(const std::shared_ptr<Skeleton>& SkeltonRef_)
+longmarch::Animation3D::Animation3D(const std::shared_ptr<Skeleton>& SkeltonRef_)
 	:
 	skeletonRef(SkeltonRef_)
 {}
 
-void AAAAgames::Animation3D::SetSkeleton(const std::shared_ptr<Skeleton>& SkeltonRef_)
+void longmarch::Animation3D::SetSkeleton(const std::shared_ptr<Skeleton>& SkeltonRef_)
 {
 	skeletonRef = SkeltonRef_;
 }
 
-void AAAAgames::Animation3D::CalculateBoneTransform(const std::string& animationName, const float animationTicks, const Mat4& parentTr,
+void longmarch::Animation3D::CalculateBoneTransform(const std::string& animationName, const float animationTicks, const Mat4& parentTr,
 	Skeleton::Bone_Transform_LUT* bone_localSpaceTransform_LUT_OUT,
 	Skeleton::Bone_Transform_LUT* bone_gobalSpaceTransform_LUT_OUT,
 	Skeleton::Bone_Transform_LUT* bone_inverseFinalTransform_LUT_OUT) const
@@ -121,12 +121,12 @@ void AAAAgames::Animation3D::CalculateBoneTransform(const std::string& animation
 	}
 }
 
-bool AAAAgames::Animation3D::HasAnimation(const std::string& name) const
+bool longmarch::Animation3D::HasAnimation(const std::string& name) const
 {
 	return animationCollection.find(name) != animationCollection.end();
 }
 
-const Animation3D::SkeletalAnimation& AAAAgames::Animation3D::GetAnimation(const std::string& name) const
+const Animation3D::SkeletalAnimation& longmarch::Animation3D::GetAnimation(const std::string& name) const
 {
 	if (auto it = animationCollection.find(name); it != animationCollection.end())
 	{
@@ -138,15 +138,15 @@ const Animation3D::SkeletalAnimation& AAAAgames::Animation3D::GetAnimation(const
 	}
 }
 
-A4GAMES_Vector<std::string> AAAAgames::Animation3D::GetAllAnimationNames() const
+LongMarch_Vector<std::string> longmarch::Animation3D::GetAllAnimationNames() const
 {
-	A4GAMES_Vector<std::string> ret;
-	A4GAMES_MapKeyToVec(animationCollection, ret);
+	LongMarch_Vector<std::string> ret;
+	LongMarch_MapKeyToVec(animationCollection, ret);
 	return ret;
 }
 
 //! Using the node hierachy to calculating all bone's final inverse transform at the current animation tick
-void AAAAgames::Animation3D::CalculateBoneTransformRecursive(const SkeletalAnimation& animation, const float animationTicks, const Skeleton::Node& node, const Mat4& parentTr, 
+void longmarch::Animation3D::CalculateBoneTransformRecursive(const SkeletalAnimation& animation, const float animationTicks, const Skeleton::Node& node, const Mat4& parentTr, 
 	Skeleton::Bone_Transform_LUT* bone_localSpaceTransform_LUT_OUT,
 	Skeleton::Bone_Transform_LUT* bone_gobalSpaceTransform_LUT_OUT,
 	Skeleton::Bone_Transform_LUT* bone_inverseFinalTransform_LUT_OUT) const
@@ -215,7 +215,7 @@ void AAAAgames::Animation3D::CalculateBoneTransformRecursive(const SkeletalAnima
 	}
 }
 
-const Animation3D::SkeletalKeyFrames* AAAAgames::Animation3D::FindBoneAnima(const SkeletalAnimation& animation, const std::string& nodeName)
+const Animation3D::SkeletalKeyFrames* longmarch::Animation3D::FindBoneAnima(const SkeletalAnimation& animation, const std::string& nodeName)
 {
 	if (auto it = animation.Channels.find(nodeName); it != animation.Channels.end())
 	{
@@ -227,7 +227,7 @@ const Animation3D::SkeletalKeyFrames* AAAAgames::Animation3D::FindBoneAnima(cons
 	}
 }
 
-const Vec3f AAAAgames::Animation3D::VInterpolate(float animationTicks, const SkeletalKeyFrames* anim)
+const Vec3f longmarch::Animation3D::VInterpolate(float animationTicks, const SkeletalKeyFrames* anim)
 {
 	const auto& keys = anim->VKeys;
 	if (keys.size() > 1)
@@ -263,7 +263,7 @@ const Vec3f AAAAgames::Animation3D::VInterpolate(float animationTicks, const Ske
 	}
 }
 
-const Quaternion AAAAgames::Animation3D::QInterpolate(float animationTicks, const SkeletalKeyFrames* anim)
+const Quaternion longmarch::Animation3D::QInterpolate(float animationTicks, const SkeletalKeyFrames* anim)
 {
 	const auto& keys = anim->QKeys;
 	if (keys.size() > 1)
@@ -299,7 +299,7 @@ const Quaternion AAAAgames::Animation3D::QInterpolate(float animationTicks, cons
 	}
 }
 
-const Vec3f AAAAgames::Animation3D::SInterpolate(float animationTicks, const SkeletalKeyFrames* anim)
+const Vec3f longmarch::Animation3D::SInterpolate(float animationTicks, const SkeletalKeyFrames* anim)
 {
 	const auto& keys = anim->SKeys;
 	if (keys.size() > 1)

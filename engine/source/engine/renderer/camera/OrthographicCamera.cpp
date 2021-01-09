@@ -4,7 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 
-namespace AAAAgames {
+namespace longmarch {
 	
 	OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top)
 		: 

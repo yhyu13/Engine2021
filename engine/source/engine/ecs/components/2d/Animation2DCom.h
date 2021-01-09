@@ -6,7 +6,7 @@
 #include "engine/core/exception/EngineException.h"
 #include "engine/core/allocator/MemoryManager.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/*
 	Data class that stores references to the current animation and maintain an animation state map
@@ -63,6 +63,6 @@ namespace AAAAgames
 	private:
 		std::weak_ptr<Animation2D> m_animation;
 		std::string m_animationState;
-		A4GAMES_UnorderedMap<std::string, std::shared_ptr<Animation2D>> m_animationStateMap;
+		LongMarch_UnorderedMap<std::string, std::shared_ptr<Animation2D>> m_animationStateMap;
 	};
 }

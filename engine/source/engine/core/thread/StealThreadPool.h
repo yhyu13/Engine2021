@@ -14,7 +14,7 @@
 #include "Lock.h"
 #include "Queue.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class StealThreadPool
 	{

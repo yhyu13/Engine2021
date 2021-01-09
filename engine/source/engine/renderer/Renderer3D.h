@@ -11,11 +11,11 @@
 #include "engine/events/engineEvents/EngineEventType.h"
 #include "engine/events/EventQueue.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	// TODO Serialize these macros in engine configuration json for more dynamic changes
-#ifndef A4GAMES_MAX_LIGHT
-#define A4GAMES_MAX_LIGHT 1024 // Must match "./asset/shader/include/LighStruch.h"
+#ifndef LongMarch_MAX_LIGHT
+#define LongMarch_MAX_LIGHT 1024 // Must match "./asset/shader/include/LighStruch.h"
 #endif
 
 #ifndef MAX_SPOT_LIGHT_SHADOWS
@@ -26,20 +26,20 @@ namespace AAAAgames
 #define MAX_POINT_LIGHT_SHADOWS 16 // Must match "./asset/shader/include/LighStruch.h"
 #endif
 
-#ifndef A4GAMES_MAX_NUM_DIRECTIONAL_SHADOW
-#define A4GAMES_MAX_NUM_DIRECTIONAL_SHADOW 1 // Must match "./asset/shader/include/LighStruch.h"
+#ifndef LongMarch_MAX_NUM_DIRECTIONAL_SHADOW
+#define LongMarch_MAX_NUM_DIRECTIONAL_SHADOW 1 // Must match "./asset/shader/include/LighStruch.h"
 #endif
 
-#ifndef A4GAMES_MAX_SHADOW_PASS_BATCH
-#define A4GAMES_MAX_SHADOW_PASS_BATCH 1024 // Max number objects to drawn in a single batch for shadowing
+#ifndef LongMarch_MAX_SHADOW_PASS_BATCH
+#define LongMarch_MAX_SHADOW_PASS_BATCH 1024 // Max number objects to drawn in a single batch for shadowing
 #endif
 
-#ifndef A4GAMES_MAX_SCENE_PASS_BATCH
-#define A4GAMES_MAX_SCENE_PASS_BATCH 64 // After this number of textures are to be drawn, the batch buffer is flushed to render because this is the max number of textures that gpu shader has registerd
+#ifndef LongMarch_MAX_SCENE_PASS_BATCH
+#define LongMarch_MAX_SCENE_PASS_BATCH 64 // After this number of textures are to be drawn, the batch buffer is flushed to render because this is the max number of textures that gpu shader has registerd
 #endif
 
-#ifndef A4GAMES_INPLACE_SHADOW_GUASSIAN_PASS
-#define A4GAMES_INPLACE_SHADOW_GUASSIAN_PASS 1 // Doing guassian blur for shadow maps inplace if 1
+#ifndef LongMarch_INPLACE_SHADOW_GUASSIAN_PASS
+#define LongMarch_INPLACE_SHADOW_GUASSIAN_PASS 1 // Doing guassian blur for shadow maps inplace if 1
 #endif
 
 	class Scene3DNode;
@@ -85,9 +85,9 @@ namespace AAAAgames
 		static const int PARTICLE_INSTANCED_DATA_LENGTH = 21;
 		struct ParticleInstanceData
 		{
-			A4GAMES_Vector<Mat4> models; // model matrix for each particle in the particle-system
-			A4GAMES_Vector<Vec4f> textureOffsets; // texture offsets for each particle in the particle-system
-			A4GAMES_Vector<float> blendFactors; // blend factor for each particle in the particle-system
+			LongMarch_Vector<Mat4> models; // model matrix for each particle in the particle-system
+			LongMarch_Vector<Vec4f> textureOffsets; // texture offsets for each particle in the particle-system
+			LongMarch_Vector<float> blendFactors; // blend factor for each particle in the particle-system
 
 			float textureRows; // common for all particles of a particle-system
 
@@ -222,18 +222,18 @@ namespace AAAAgames
 
 		struct CACHE_ALIGN32 GPUBuffer
 		{
-			A4GAMES_Vector<std::shared_ptr<ShadowBuffer>> DirectionalLightShadowBuffer;
-			A4GAMES_Vector<std::shared_ptr<ShadowBuffer>> PointLightShadowBuffer;
-			A4GAMES_Vector<std::shared_ptr<ShadowBuffer>> SpotLightShadowBuffer;
+			LongMarch_Vector<std::shared_ptr<ShadowBuffer>> DirectionalLightShadowBuffer;
+			LongMarch_Vector<std::shared_ptr<ShadowBuffer>> PointLightShadowBuffer;
+			LongMarch_Vector<std::shared_ptr<ShadowBuffer>> SpotLightShadowBuffer;
 
 			// Gaussian kernel are samples from Gaussian distribution with mean = 0 and std = width / 2
-			A4GAMES_UnorderedMap<uint32_t, std::tuple<int, std::shared_ptr<ShaderStorageBuffer>, std::shared_ptr<ShaderStorageBuffer>>> GuassinKernelHalf;
+			LongMarch_UnorderedMap<uint32_t, std::tuple<int, std::shared_ptr<ShaderStorageBuffer>, std::shared_ptr<ShaderStorageBuffer>>> GuassinKernelHalf;
 			// Gaussian kernel are samples from Gaussian distribution with mean = 0 and std = width / 2 (This version should only apply to 2D bilinear filtered texture/textureArray (cubemap would not work))
-			A4GAMES_UnorderedMap<uint32_t, std::tuple<int, std::shared_ptr<ShaderStorageBuffer>, std::shared_ptr<ShaderStorageBuffer>>> GuassinKernelHalfBilinear;
+			LongMarch_UnorderedMap<uint32_t, std::tuple<int, std::shared_ptr<ShaderStorageBuffer>, std::shared_ptr<ShaderStorageBuffer>>> GuassinKernelHalfBilinear;
 
-			A4GAMES_UnorderedMap<std::string, A4GAMES_UnorderedMap<std::string, std::shared_ptr<SkyBoxBuffer>>> EnvCubeMaps;
-			A4GAMES_UnorderedMap<std::string, std::shared_ptr<Texture2D>> EnvMaps;
-			inline static A4GAMES_Vector<Mat4> s_default_bone_transform{ Mat4(1.0f) };
+			LongMarch_UnorderedMap<std::string, LongMarch_UnorderedMap<std::string, std::shared_ptr<SkyBoxBuffer>>> EnvCubeMaps;
+			LongMarch_UnorderedMap<std::string, std::shared_ptr<Texture2D>> EnvMaps;
+			inline static LongMarch_Vector<Mat4> s_default_bone_transform{ Mat4(1.0f) };
 
 			std::shared_ptr<FrameBuffer> PrevWindowFrameBuffer;
 			std::shared_ptr<FrameBuffer> CurrentWindowFrameBuffer;
@@ -287,19 +287,19 @@ namespace AAAAgames
 			};
 
 			// CPU buffers
-			A4GAMES_Vector<Mat4> MultiDraw_ShadowModelTr; // Shadow
+			LongMarch_Vector<Mat4> MultiDraw_ShadowModelTr; // Shadow
 
-			A4GAMES_Vector<ModelBuffer_GPU> MultiDraw_ModelBuffer; // scene
-			A4GAMES_Vector<MaterialBuffer_GPU> MultiDraw_MaterialBuffer; // scene
-			A4GAMES_Vector<int> MultiDraw_TextureId; // scene
-			A4GAMES_UnorderedMap_flat<Texture2D*, uint32_t> MultiDraw_UniqueTextureLUT; // scene
-			A4GAMES_Vector<std::pair<Material*, A4GAMES_Vector<std::pair<uint32_t, Material::MAT_TEXTURE_TYPE>>>> MultiDraw_MaterialTexToBind; // scene
+			LongMarch_Vector<ModelBuffer_GPU> MultiDraw_ModelBuffer; // scene
+			LongMarch_Vector<MaterialBuffer_GPU> MultiDraw_MaterialBuffer; // scene
+			LongMarch_Vector<int> MultiDraw_TextureId; // scene
+			LongMarch_UnorderedMap_flat<Texture2D*, uint32_t> MultiDraw_UniqueTextureLUT; // scene
+			LongMarch_Vector<std::pair<Material*, LongMarch_Vector<std::pair<uint32_t, Material::MAT_TEXTURE_TYPE>>>> MultiDraw_MaterialTexToBind; // scene
 
-			A4GAMES_Vector<Mat4> MultiDraw_BoneTransformMatrix; // animation
-			A4GAMES_Vector<uint32_t> MultiDraw_BoneBaseOffset; // animation
-			A4GAMES_Vector<DrawIndexedIndirectCommand> MultiDraw_CmdBuffer; // Multidraw shared
-			A4GAMES_UnorderedMap_Par_flat<MeshData*, A4GAMES_Vector<uint32_t>> MultiDraw_MeshDataToDraw; // Multidraw shared
-			A4GAMES_UnorderedMap_Par_flat<MeshData*, CmdBufferSimplified> MeshData_CmdBuffer_Map; // Multidraw shared
+			LongMarch_Vector<Mat4> MultiDraw_BoneTransformMatrix; // animation
+			LongMarch_Vector<uint32_t> MultiDraw_BoneBaseOffset; // animation
+			LongMarch_Vector<DrawIndexedIndirectCommand> MultiDraw_CmdBuffer; // Multidraw shared
+			LongMarch_UnorderedMap_Par_flat<MeshData*, LongMarch_Vector<uint32_t>> MultiDraw_MeshDataToDraw; // Multidraw shared
+			LongMarch_UnorderedMap_Par_flat<MeshData*, CmdBufferSimplified> MeshData_CmdBuffer_Map; // Multidraw shared
 
 			// GPU buffers
 			std::shared_ptr<ShaderStorageBuffer> MultiDraw_ssbo_ShadowModelTrsBuffer; // Shadow
@@ -325,16 +325,16 @@ namespace AAAAgames
 		{
 			friend Renderer3D;
 		public:
-			A4GAMES_Vector<LightBuffer_CPU> LIGHTS_BUFFERED;
-			A4GAMES_Vector<RenderObj_CPU> RENDERABLE_OBJ_BUFFERED;
+			LongMarch_Vector<LightBuffer_CPU> LIGHTS_BUFFERED;
+			LongMarch_Vector<RenderObj_CPU> RENDERABLE_OBJ_BUFFERED;
 		private:
 			// Lighting data
-			A4GAMES_Vector<DirectionalLightBuffer_GPU> DIRECTIONAL_LIGHT_PROCESSED;
-			A4GAMES_Vector<PointLightBuffer_GPU> POINT_LIGHT_PROCESSED;
-			A4GAMES_Vector<SpotLightBuffer_GPU> SPOT_LIGHT_PROCESSED;
-			A4GAMES_Vector<ShadowData_GPU> SHADOW_DATA_PROCESSED;
+			LongMarch_Vector<DirectionalLightBuffer_GPU> DIRECTIONAL_LIGHT_PROCESSED;
+			LongMarch_Vector<PointLightBuffer_GPU> POINT_LIGHT_PROCESSED;
+			LongMarch_Vector<SpotLightBuffer_GPU> SPOT_LIGHT_PROCESSED;
+			LongMarch_Vector<ShadowData_GPU> SHADOW_DATA_PROCESSED;
 			// BBox data
-			A4GAMES_Vector<Mat4> InstancedDraw_BVModelTr;
+			LongMarch_Vector<Mat4> InstancedDraw_BVModelTr;
 
 			// TODO add particle related properties
 		};
@@ -351,7 +351,7 @@ namespace AAAAgames
 			// GPU buffer
 			GPUBuffer gpuBuffer;
 			// Shaders
-			A4GAMES_UnorderedMap_node<std::string, std::shared_ptr<Shader>> ShaderMap;
+			LongMarch_UnorderedMap_node<std::string, std::shared_ptr<Shader>> ShaderMap;
 			std::shared_ptr<Shader> CurrentShader;
 
 			Vec4f cube_directions[6];
@@ -443,7 +443,7 @@ namespace AAAAgames
 				const unsigned int gridSizeZ = 24;
 				const unsigned int numClusters = gridSizeX * gridSizeY * gridSizeZ;
 				unsigned int maxLightsPerCluster = 50;
-				A4GAMES_Vector<Vec4f> clusterColors;
+				LongMarch_Vector<Vec4f> clusterColors;
 			}ClusterData;
 		};
 
@@ -519,7 +519,7 @@ namespace AAAAgames
 		static void BuildAllMaterial();
 		static void BuildAllTexture();
 
-		static void UpdateMeshToMultiDraw(const A4GAMES_Vector<MeshData*>& Meshs);
+		static void UpdateMeshToMultiDraw(const LongMarch_Vector<MeshData*>& Meshs);
 		static void AppendMeshToMultiDraw(MeshData* Mesh);
 		/**************************************************************
 		*	Render3D inline API
@@ -545,7 +545,7 @@ namespace AAAAgames
 			_RenderFullScreenCube();
 		}
 
-		static void RenderParticles(const A4GAMES_Vector<std::pair<int, ParticleInstanceData>> particleData, const PerspectiveCamera* camera);
+		static void RenderParticles(const LongMarch_Vector<std::pair<int, ParticleInstanceData>> particleData, const PerspectiveCamera* camera);
 
 		inline static void CommitBatchRendering()
 		{

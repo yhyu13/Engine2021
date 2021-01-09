@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "LayerStack.h"
 
-namespace AAAAgames {
+namespace longmarch {
 
 	void LayerStack::SwitchCurrentLayer(Layer::LAYER_TYPE layer)
 	{

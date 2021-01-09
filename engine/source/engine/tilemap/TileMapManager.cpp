@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "TileMapManager.h"
 
-void AAAAgames::TileMapManager::SetCurrentMapName(const std::string& name)
+void longmarch::TileMapManager::SetCurrentMapName(const std::string& name)
 {
 	if (m_tileMaps.find(name) != m_tileMaps.end())
 	{
@@ -13,12 +13,12 @@ void AAAAgames::TileMapManager::SetCurrentMapName(const std::string& name)
 	}
 }
 
-const std::string& AAAAgames::TileMapManager::GetCurrentMapName()
+const std::string& longmarch::TileMapManager::GetCurrentMapName()
 {
 	return m_currentMapName;
 }
 
-std::shared_ptr<TileMap> AAAAgames::TileMapManager::GetCurrentMap()
+std::shared_ptr<TileMap> longmarch::TileMapManager::GetCurrentMap()
 {
 	auto it = m_tileMaps.find(m_currentMapName);
 	if (it != m_tileMaps.end())
@@ -31,7 +31,7 @@ std::shared_ptr<TileMap> AAAAgames::TileMapManager::GetCurrentMap()
 	}
 }
 
-void AAAAgames::TileMapManager::AddTileMap(const std::string& name)
+void longmarch::TileMapManager::AddTileMap(const std::string& name)
 {
 	m_tileMaps[name] = ResourceManager<TileMap>::GetInstance()->TryGet(name)->Get();
 }

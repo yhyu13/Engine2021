@@ -8,13 +8,13 @@
 void Move_to_player(EntityDecorator agent, float dt);
 void Spaceship_attack_asteriod(EntityDecorator agent, float dt);
 
-AAAAgames::BehaviorTree::BehaviorTree()
+longmarch::BehaviorTree::BehaviorTree()
 	: rootnode(), depth(0), funcname1(), funcname2(), cfnode()
 {
 
 }
 
-void AAAAgames::BehaviorTree::RunBT(EntityDecorator agent, float dt)
+void longmarch::BehaviorTree::RunBT(EntityDecorator agent, float dt)
 {
 	//TODO: while () Tree does not say end
 	{
@@ -41,7 +41,7 @@ void AAAAgames::BehaviorTree::RunBT(EntityDecorator agent, float dt)
 	}
 }
 
-void AAAAgames::BehaviorTree::BTDeserialize(const fs::path& filepath)
+void longmarch::BehaviorTree::BTDeserialize(const fs::path& filepath)
 {
 	const auto& Filename = FileSystem::GetCachedJsonCPP(filepath);
 	if (Filename.isNull())
@@ -87,7 +87,7 @@ void Spaceship_attack_asteriod(EntityDecorator agent, float dt)
 		}
 		{
 			auto target = bb->get_value<Entity>(_target_key);
-			if (!A4GAMES_Contains(entities, target))
+			if (!LongMarch_Contains(entities, target))
 			{
 				// Simply choose the first entity if older entity is expired
 				auto _target = entities[RAND_I(0, entities.size()) % entities.size()];

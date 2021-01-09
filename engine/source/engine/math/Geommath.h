@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/packing.hpp>
 
-namespace AAAAgames
+namespace longmarch
 {
 	typedef glm::u16vec3 Vec3u16;
 	typedef glm::u32vec3 Vec3u;

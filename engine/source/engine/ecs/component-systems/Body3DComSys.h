@@ -8,7 +8,7 @@
 #include "engine/physics/PhysicsManager.h"
 #include "engine/events/engineEvents/EngineEventType.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class Body3DComSys final : public BaseComponentSystem
 	{

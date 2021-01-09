@@ -2,7 +2,7 @@
 
 #include "Logger.h"
 
-using namespace AAAAgames;
+using namespace longmarch;
 
 //////// ENGINE LOGGING ////////
 #define ENGINE_TRACE(...)			Logger::GetEngineLogger()->trace(__VA_ARGS__)

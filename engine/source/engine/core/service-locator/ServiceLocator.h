@@ -2,7 +2,7 @@
 #include "../exception/EngineException.h"
 #include "../thread/Lock.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/**
 	 * @brief Service Locator Pattern for easy instantiate derived classes
@@ -182,6 +182,6 @@ namespace AAAAgames
 			}
 		}
 	private:
-		inline static A4GAMES_UnorderedMap_Par<std::string, A4GAMES_Unique_ptr<service_locator_base>> s_nameLocator;
+		inline static LongMarch_UnorderedMap_Par<std::string, LongMarch_Unique_ptr<service_locator_base>> s_nameLocator;
 	};
 }

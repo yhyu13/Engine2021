@@ -8,7 +8,7 @@
 #include "../widgets/EngineConsoleDock.h"
 #include "../EngineEditorDock.h"
 
-AAAAgames::_3DEngineWidgetManager::_3DEngineWidgetManager()
+longmarch::_3DEngineWidgetManager::_3DEngineWidgetManager()
 {
 	{
 		// mark with "0_" to place it at the front of std::map fpr rendering

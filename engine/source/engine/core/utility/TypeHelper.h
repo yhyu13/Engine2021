@@ -8,74 +8,74 @@
 #include <phmap/phmap.h>
 #include <phmap/btree.h>
 
-namespace AAAAgames
+namespace longmarch
 {
 	template <typename Key, typename T>
-	using A4GAMES_Map = phmap::btree_map<Key, T>; // std::map<Key, T>
+	using LongMarch_Map = phmap::btree_map<Key, T>; // std::map<Key, T>
 
 	template <typename T>
-	using A4GAMES_Set = phmap::btree_set<T>; // std::set<T>
+	using LongMarch_Set = phmap::btree_set<T>; // std::set<T>
 
 	// For small set of data <= 64
 	template <typename T>
-	using A4GAMES_UnorderedSet = phmap::flat_hash_set<T>;
+	using LongMarch_UnorderedSet = phmap::flat_hash_set<T>;
 
 	// For large set of data <= 64, all data are stable upon insertion, and use this if move is expensive or not allowed
 	template <typename T>
-	using A4GAMES_UnorderedSet_node = phmap::node_hash_set<T>;
+	using LongMarch_UnorderedSet_node = phmap::node_hash_set<T>;
 
 	// For large set of data <= 64, might move all data on insertion
 	template <typename T>
-	using A4GAMES_UnorderedSet_flat = phmap::flat_hash_set<T>;
+	using LongMarch_UnorderedSet_flat = phmap::flat_hash_set<T>;
 
 	// For large set of data > 64
 	template <typename T>
-	using A4GAMES_UnorderedSet_Par = phmap::parallel_flat_hash_set<T>;
+	using LongMarch_UnorderedSet_Par = phmap::parallel_flat_hash_set<T>;
 
 	// For large set of data > 64, all data are stable upon insertion, and use this if move is expensive or not allowed
 	template <typename T>
-	using A4GAMES_UnorderedSet_Par_node = phmap::parallel_node_hash_set<T>;
+	using LongMarch_UnorderedSet_Par_node = phmap::parallel_node_hash_set<T>;
 
 	// For large set of data > 64, might move all data on insertion
 	template <typename T>
-	using A4GAMES_UnorderedSet_Par_flat = phmap::parallel_flat_hash_set<T>;
+	using LongMarch_UnorderedSet_Par_flat = phmap::parallel_flat_hash_set<T>;
 
-	struct A4GAMES_EnumClassHash
+	struct LongMarch_EnumClassHash
 	{
 		template <typename T> std::size_t operator()(T t) const { return static_cast<std::size_t>(t); }
 	};
 	template <typename Key>
-	using A4GAMES_HashType = typename std::conditional<std::is_enum<Key>::value, A4GAMES_EnumClassHash, std::hash<Key>>::type;
+	using LongMarch_HashType = typename std::conditional<std::is_enum<Key>::value, LongMarch_EnumClassHash, std::hash<Key>>::type;
 
 	// For small set of data <= 64
 	template <typename Key, typename T>
-	using A4GAMES_UnorderedMap = phmap::flat_hash_map<Key, T, A4GAMES_HashType<Key>>;
+	using LongMarch_UnorderedMap = phmap::flat_hash_map<Key, T, LongMarch_HashType<Key>>;
 
 	// For large set of data <= 64, all data are stable upon insertion, and use this if move is expensive or not allowed
 	template <typename Key, typename T>
-	using A4GAMES_UnorderedMap_node = phmap::node_hash_map<Key, T, A4GAMES_HashType<Key>>;
+	using LongMarch_UnorderedMap_node = phmap::node_hash_map<Key, T, LongMarch_HashType<Key>>;
 
 	// For large set of data <= 64, might move all data on insertion
 	template <typename Key, typename T>
-	using A4GAMES_UnorderedMap_flat = phmap::flat_hash_map<Key, T, A4GAMES_HashType<Key>>;
+	using LongMarch_UnorderedMap_flat = phmap::flat_hash_map<Key, T, LongMarch_HashType<Key>>;
 
 	// For large set of data > 64
 	template <typename Key, typename T>
-	using A4GAMES_UnorderedMap_Par = phmap::parallel_flat_hash_map<Key, T, A4GAMES_HashType<Key>>;
+	using LongMarch_UnorderedMap_Par = phmap::parallel_flat_hash_map<Key, T, LongMarch_HashType<Key>>;
 
 	// For large set of data > 64, all inputs are stable upon insertion, and use this if move is expensive or not allowed
 	template <typename Key, typename T>
-	using A4GAMES_UnorderedMap_Par_node = phmap::parallel_node_hash_map<Key, T, A4GAMES_HashType<Key>>;
+	using LongMarch_UnorderedMap_Par_node = phmap::parallel_node_hash_map<Key, T, LongMarch_HashType<Key>>;
 
 	// For large set of data > 64, might move all data on insertion
 	template <typename Key, typename T>
-	using A4GAMES_UnorderedMap_Par_flat = phmap::parallel_flat_hash_map<Key, T, A4GAMES_HashType<Key>>;
+	using LongMarch_UnorderedMap_Par_flat = phmap::parallel_flat_hash_map<Key, T, LongMarch_HashType<Key>>;
 
 	template<typename T>
-	struct A4GAMES_ContainerView
+	struct LongMarch_ContainerView
 	{
 		using _iter = typename T::const_iterator;
-		explicit constexpr A4GAMES_ContainerView(const _iter& _begin, const _iter& _end)
+		explicit constexpr LongMarch_ContainerView(const _iter& _begin, const _iter& _end)
 			:
 			m_begin(_begin), m_end(_end)
 		{}
@@ -96,8 +96,8 @@ namespace AAAAgames
 		Use this method to get all components for an entity.
 		(_TRIVIAL_ template resolves undefined class at compile time)
 	 */
-#ifndef __A4GAMES_TRVIAL_TEMPLATE__
-#define __A4GAMES_TRVIAL_TEMPLATE__ template<typename ...__TRIVIAL__>
+#ifndef __LongMarch_TRVIAL_TEMPLATE__
+#define __LongMarch_TRVIAL_TEMPLATE__ template<typename ...__TRIVIAL__>
 #endif
 
 	template <typename T>
@@ -106,33 +106,33 @@ namespace AAAAgames
 		using Type = T;
 	};
 
-	template <typename T> int A4GAMES_sgn(T val) 
+	template <typename T> int LongMarch_sgn(T val) 
 	{
 		return (T(0) < val) - (val < T(0));
 	}
 
 	template<typename T1, typename T2, typename... Ts>
-	void A4GAMES_HashCombine(std::size_t& s, const T1& v1, const T2& v2, const Ts&... vs) noexcept
+	void LongMarch_HashCombine(std::size_t& s, const T1& v1, const T2& v2, const Ts&... vs) noexcept
 	{
-		A4GAMES_HashCombine(s, v1);
-		A4GAMES_HashCombine(s, v2, vs...);
+		LongMarch_HashCombine(s, v1);
+		LongMarch_HashCombine(s, v2, vs...);
 	}
 
 	template <class T>
-	void A4GAMES_HashCombine(std::size_t& s, const T& v) noexcept
+	void LongMarch_HashCombine(std::size_t& s, const T& v) noexcept
 	{
 		std::hash<T> h;
 		s ^= h(v) + 0x9e3779b9 + (s << 6) + (s >> 2);
 	}
 
 	template <typename E>
-	constexpr auto A4GAMES_ToUnderlying(E e) noexcept
+	constexpr auto LongMarch_ToUnderlying(E e) noexcept
 	{
 		return static_cast<std::underlying_type_t<E>>(e);
 	}
 
 	template<typename T, typename C>
-	void A4GAMES_Range(C& c, T value_low, T value_high, T stride)
+	void LongMarch_Range(C& c, T value_low, T value_high, T stride)
 	{
 		while (value_low <= value_high)
 		{
@@ -142,21 +142,21 @@ namespace AAAAgames
 	}
 
 	template <typename M, typename V>
-	constexpr void A4GAMES_MapInv(const  M& m, V& v) {
+	constexpr void LongMarch_MapInv(const  M& m, V& v) {
 		for (typename M::const_iterator it = m.begin(); it != m.end(); ++it) {
 			v.emplace(it->second, it->first);
 		}
 	}
 
 	template <typename M, typename V>
-	constexpr void A4GAMES_MapValueToVec(const  M& m, V& v) {
+	constexpr void LongMarch_MapValueToVec(const  M& m, V& v) {
 		for (typename M::const_iterator it = m.begin(); it != m.end(); ++it) {
 			v.push_back(it->second);
 		}
 	}
 
 	template <typename M, typename V>
-	constexpr void A4GAMES_MapKeyToVec(const  M& m, V& v) {
+	constexpr void LongMarch_MapKeyToVec(const  M& m, V& v) {
 		for (typename M::const_iterator it = m.begin(); it != m.end(); ++it) {
 			v.push_back(it->first);
 		}
@@ -165,18 +165,18 @@ namespace AAAAgames
 	/*
 		c++ 20 has unified element find method by calling contains for all containers
 	*/
-#ifndef A4GAMES_contains
-#define A4GAMES_contains(c, x) (c.contains(x))
+#ifndef LongMarch_contains
+#define LongMarch_contains(c, x) (c.contains(x))
 #endif
 
 	template <typename TValue>
-	constexpr bool A4GAMES_Contains(const std::vector<TValue>& c, const TValue& x)
+	constexpr bool LongMarch_Contains(const std::vector<TValue>& c, const TValue& x)
 	{
 		return std::find(c.begin(), c.end(), x) != c.end();
 	}
 
 	template <typename TValue>
-	constexpr int A4GAMES_findFristIndex(const std::vector<TValue>& c, const TValue& x)
+	constexpr int LongMarch_findFristIndex(const std::vector<TValue>& c, const TValue& x)
 	{
 		int index = -1;
 		auto it = std::find(c.begin(), c.end(), x);
@@ -188,7 +188,7 @@ namespace AAAAgames
 	}
 
 	template <typename TValue>
-	constexpr const std::vector<uint32_t> A4GAMES_findAllIndices(const std::vector<TValue>& c, const TValue& x, size_t _estimate_reserve = 64)
+	constexpr const std::vector<uint32_t> LongMarch_findAllIndices(const std::vector<TValue>& c, const TValue& x, size_t _estimate_reserve = 64)
 	{
 		std::vector<uint32_t> indices;
 		indices.reserve(_estimate_reserve);
@@ -205,7 +205,7 @@ namespace AAAAgames
 
 	//! Find the first index i such that x<=v[i]
 	template <typename TValue>
-	constexpr int A4GAMES_lowerBoundFindIndex(std::vector<TValue> v, const TValue& x) 
+	constexpr int LongMarch_lowerBoundFindIndex(std::vector<TValue> v, const TValue& x) 
 	{
 		auto it = std::lower_bound(v.begin(), v.end(), x);
 		if (it == v.end() || !(x <= (*it)))
@@ -219,8 +219,8 @@ namespace AAAAgames
 		}
 	}
 
-	__A4GAMES_TRVIAL_TEMPLATE__
-		constexpr const std::vector<const char*> A4GAMES_StrVec2ConstChar(const std::vector<std::string>& vs)
+	__LongMarch_TRVIAL_TEMPLATE__
+		constexpr const std::vector<const char*> LongMarch_StrVec2ConstChar(const std::vector<std::string>& vs)
 	{
 		std::vector<const char*> vc;
 		std::transform(vs.begin(), vs.end(), std::back_inserter(vc), [](const std::string& s)->const char* {return s.c_str(); });
@@ -230,20 +230,20 @@ namespace AAAAgames
 
 #include "../allocator/MemoryManager.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 #if CUSTOM_ALLOCATOR == 1
 	template<class T>
-	using A4GAMES_Vector = std::vector<T, AAAAgames::Mallocator<T>>;
+	using LongMarch_Vector = std::vector<T, longmarch::Mallocator<T>>;
 
 	template <typename TValue>
-	constexpr bool A4GAMES_Contains(const A4GAMES_Vector<TValue>& c, const TValue& x)
+	constexpr bool LongMarch_Contains(const LongMarch_Vector<TValue>& c, const TValue& x)
 	{
 		return std::find(c.begin(), c.end(), x) != c.end();
 	}
 
 	template <typename TValue>
-	inline int A4GAMES_findFristIndex(const A4GAMES_Vector<TValue>& c, const TValue& x)
+	inline int LongMarch_findFristIndex(const LongMarch_Vector<TValue>& c, const TValue& x)
 	{
 		int index = -1;
 		auto it = std::find(c.begin(), c.end(), x);
@@ -255,9 +255,9 @@ namespace AAAAgames
 	}
 
 	template <typename TValue>
-	inline const A4GAMES_Vector<uint32_t> A4GAMES_findAllIndices(const A4GAMES_Vector<TValue>& c, const TValue& x, size_t _estimate_reserve = 64)
+	inline const LongMarch_Vector<uint32_t> LongMarch_findAllIndices(const LongMarch_Vector<TValue>& c, const TValue& x, size_t _estimate_reserve = 64)
 	{
-		A4GAMES_Vector<uint32_t> indices;
+		LongMarch_Vector<uint32_t> indices;
 		indices.reserve(_estimate_reserve);
 		auto it = c.begin();
 		auto& _begin = c.begin();
@@ -272,7 +272,7 @@ namespace AAAAgames
 
 	//! Find the first index i such that x<=v[i]
 	template <typename TValue>
-	constexpr int A4GAMES_lowerBoundFindIndex(A4GAMES_Vector<TValue> v, const TValue& x) 
+	constexpr int LongMarch_lowerBoundFindIndex(LongMarch_Vector<TValue> v, const TValue& x) 
 	{
 		auto it = std::lower_bound(v.begin(), v.end(), x);
 		if (it == v.end() || !(x<=(*it))) 
@@ -286,16 +286,16 @@ namespace AAAAgames
 		}
 	}
 
-	__A4GAMES_TRVIAL_TEMPLATE__
-		inline const A4GAMES_Vector<const char*> A4GAMES_StrVec2ConstChar(const A4GAMES_Vector<std::string>& vs)
+	__LongMarch_TRVIAL_TEMPLATE__
+		inline const LongMarch_Vector<const char*> LongMarch_StrVec2ConstChar(const LongMarch_Vector<std::string>& vs)
 	{
-		A4GAMES_Vector<const char*> vc;
+		LongMarch_Vector<const char*> vc;
 		std::transform(vs.begin(), vs.end(), std::back_inserter(vc), [](const std::string& s)->const char* {return s.c_str(); });
 		return vc;
 	}
 #else
 	template<class T>
-	using A4GAMES_Vector = std::vector<T>;
+	using LongMarch_Vector = std::vector<T>;
 #endif // CUSTOM_ALLOCATOR
 }
 

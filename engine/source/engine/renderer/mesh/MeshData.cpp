@@ -2,7 +2,7 @@
 #include "MeshData.h"
 #include "../Renderer3D.h"
 
-bool AAAAgames::MeshData::Init()
+bool longmarch::MeshData::Init()
 {
 	if (m_init)
 	{
@@ -63,7 +63,7 @@ bool AAAAgames::MeshData::Init()
 	}
 }
 
-void AAAAgames::MeshData::Draw()
+void longmarch::MeshData::Draw()
 {
 	if (Init())
 	{

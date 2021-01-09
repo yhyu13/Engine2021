@@ -2,7 +2,7 @@
 #include "Sprite.h"
 #include "Renderer2D.h"
 
-namespace AAAAgames {
+namespace longmarch {
 
 	Sprite::Sprite()
 	{

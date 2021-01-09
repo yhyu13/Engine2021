@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 
-namespace AAAAgames
+namespace longmarch
 {
 	enum class GameEventType : int32_t
 	{
@@ -52,8 +52,8 @@ namespace AAAAgames
 }
 
 
-std::ostream& operator<<(std::ostream& o, AAAAgames::Prototype2EventType n);
-std::ostream& operator<<(std::ostream& o, AAAAgames::CS560EventType n);
-std::ostream& operator<<(std::ostream& o, AAAAgames::GameEventType n);
-std::ostream& operator<<(std::ostream& o, AAAAgames::GameDebugEventType n);
-std::ostream& operator<<(std::ostream& o, AAAAgames::GameSettingEventType n);
+std::ostream& operator<<(std::ostream& o, longmarch::Prototype2EventType n);
+std::ostream& operator<<(std::ostream& o, longmarch::CS560EventType n);
+std::ostream& operator<<(std::ostream& o, longmarch::GameEventType n);
+std::ostream& operator<<(std::ostream& o, longmarch::GameDebugEventType n);
+std::ostream& operator<<(std::ostream& o, longmarch::GameSettingEventType n);

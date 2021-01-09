@@ -5,7 +5,7 @@
 #include "engine/core/thread/Lock.h"
 #include "engine/core/utility/TypeHelper.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 #define RESERVE_SIZE 8
 
@@ -18,7 +18,7 @@ namespace AAAAgames
 		{
 			m_data.reserve(RESERVE_SIZE);
 		}
-		A4GAMES_Vector<ComponentType> m_data;
+		LongMarch_Vector<ComponentType> m_data;
 	};
 
 	struct EntityData
@@ -27,7 +27,7 @@ namespace AAAAgames
 		{
 			m_data.reserve(RESERVE_SIZE);
 		}
-		A4GAMES_Vector<Entity> m_data;
+		LongMarch_Vector<Entity> m_data;
 	};
 
 	class BaseComponentManager : public BaseAtomicClassNC
@@ -156,7 +156,7 @@ namespace AAAAgames
 		// Stores all entities indexed by the index of the component instance in m_components
 		EntityData m_entities;
 		// Maps the entity to the index of the component instance in the m_components
-		A4GAMES_UnorderedMap_Par_flat<Entity, uint32_t> m_entitiesAndComponentIndexes;
+		LongMarch_UnorderedMap_Par_flat<Entity, uint32_t> m_entitiesAndComponentIndexes;
 	};
 #undef RESERVE_SIZE
 }

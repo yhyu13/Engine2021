@@ -5,7 +5,7 @@
 #include <glad/glad.h>
 #include <gl/GL.h>
 
-namespace AAAAgames {
+namespace longmarch {
 	OpenGLContext::OpenGLContext(GLFWwindow* windowHandle)
 		: m_WindowHandle(windowHandle)
 	{

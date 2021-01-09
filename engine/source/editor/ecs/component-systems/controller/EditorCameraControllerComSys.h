@@ -6,7 +6,7 @@
 #include "engine/events/EventQueue.h"
 #include "editor/events/EditorEventType.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/**
 	 * @brief Editor's camera controller

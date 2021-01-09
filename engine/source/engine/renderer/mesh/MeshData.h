@@ -3,7 +3,7 @@
 #include "engine/math/Geommath.h"
 #include "../VertexArray.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 #define MESH_TRI_DATA_FORMAT 1
 #define MESH_VERTEX_DATA_FORMAT 4
@@ -119,8 +119,8 @@ namespace AAAAgames
 		using TriData = Vec3u;
 #endif
 
-		using VertexList = A4GAMES_Vector<VertexData>;
-		using IndexList = A4GAMES_Vector<TriData>;
+		using VertexList = LongMarch_Vector<VertexData>;
+		using IndexList = LongMarch_Vector<TriData>;
 
 	public:
 		bool Init();

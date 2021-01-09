@@ -4,7 +4,7 @@
 #include "engine/core/exception/EngineException.h"
 #include <set>
 
-namespace AAAAgames {
+namespace longmarch {
 	/**
 	 * @brief This class holds bit-masking functionality.
 	 *

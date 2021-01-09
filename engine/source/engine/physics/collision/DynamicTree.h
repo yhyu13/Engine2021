@@ -17,7 +17,7 @@
 #include "engine/physics/AABB.h"
 #include "engine/physics/dynamics/RigidBody.h"
 
-namespace AAAAgames
+namespace longmarch
 {
     const int NULL_NODE = -1;
 

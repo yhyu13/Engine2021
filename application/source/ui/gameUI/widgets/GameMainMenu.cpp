@@ -2,7 +2,7 @@
 #include "GameMainMenu.h"
 #include "ui/gameUI/BaseGameWidgetManager.h"
 
-void AAAAgames::GameMainMenu::Render()
+void longmarch::GameMainMenu::Render()
 {
 	auto manager = ServiceLocator::GetSingleton<BaseGameWidgetManager>(APP_WIG_MAN_NAME);
 	manager->PushWidgetStyle();
@@ -52,7 +52,7 @@ void AAAAgames::GameMainMenu::Render()
 	ImGui::End();
 }
 
-void AAAAgames::GameMainMenu::RenderGameSettingMenu()
+void longmarch::GameMainMenu::RenderGameSettingMenu()
 {
 	if (ImGui::TreeNode("Game Settings"))
 	{

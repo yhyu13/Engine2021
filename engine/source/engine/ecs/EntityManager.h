@@ -4,7 +4,7 @@
 #include "engine/core/thread/Lock.h"
 #include "engine/core/utility/TypeHelper.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/**
 	 * @brief Entity managers takes care of assigning entity-ids to entities during their creations.
@@ -74,7 +74,7 @@ namespace AAAAgames
 		}
 
 	private:
-		A4GAMES_UnorderedMap_Par_node<EntityType, std::vector<EntityID>> m_typeToEntity;
+		LongMarch_UnorderedMap_Par_node<EntityType, std::vector<EntityID>> m_typeToEntity;
 		EntityID m_entityID;
 	};
 }

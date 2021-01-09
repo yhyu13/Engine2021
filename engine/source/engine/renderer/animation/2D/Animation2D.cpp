@@ -1,13 +1,13 @@
 #include "engine-precompiled-header.h"
 #include "Animation2D.h"
 
-std::shared_ptr<Animation2D> AAAAgames::Animation2D::LoadFromFile(const fs::path& path)
+std::shared_ptr<Animation2D> longmarch::Animation2D::LoadFromFile(const fs::path& path)
 {
 	// TODO : implement Animation 2D load from file function
 	return MemoryManager::Make_shared<Animation2D>();
 }
 
-AAAAgames::Animation2D::Animation2D()
+longmarch::Animation2D::Animation2D()
 	:
 	keyFrames(0),
 	currentFrameIndex(0),
@@ -17,7 +17,7 @@ AAAAgames::Animation2D::Animation2D()
 {
 }
 
-void AAAAgames::Animation2D::AddFrame(std::string textureName, int x, int y, int width, int height, double frameTime)
+void longmarch::Animation2D::AddFrame(std::string textureName, int x, int y, int width, int height, double frameTime)
 {
 	KeyFrame2D data;
 	data.textureName = textureName;
@@ -31,7 +31,7 @@ void AAAAgames::Animation2D::AddFrame(std::string textureName, int x, int y, int
 }
 
 [[nodiscard]]
-bool AAAAgames::Animation2D::UpdateFrame(double deltaTime)
+bool longmarch::Animation2D::UpdateFrame(double deltaTime)
 {
 	if (m_IsPaused || Empty())
 	{
@@ -45,7 +45,7 @@ bool AAAAgames::Animation2D::UpdateFrame(double deltaTime)
 }
 
 [[nodiscard]]
-bool AAAAgames::Animation2D::IncrementFrame()
+bool longmarch::Animation2D::IncrementFrame()
 {
 	// check if we reached the last frame
 	if (auto lastIndex = (keyFrames.size() - 1); currentFrameIndex++ >= lastIndex)
@@ -63,7 +63,7 @@ bool AAAAgames::Animation2D::IncrementFrame()
 	return true;
 }
 
-void AAAAgames::Animation2D::Reset()
+void longmarch::Animation2D::Reset()
 {
 	currentFrameTime = 0.0;
 	currentFrameIndex = 0;

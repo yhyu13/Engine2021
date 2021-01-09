@@ -3,9 +3,9 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
 
-namespace AAAAgames
+namespace longmarch
 {
-#define A4GAMES_ImGuiHashTagName(name, hastagName, ...) ((std::string(name) + "###" + std::string(hastagName)).c_str())
+#define LongMarch_ImGuiHashTagName(name, hastagName, ...) ((std::string(name) + "###" + std::string(hastagName)).c_str())
 	class ImGuiUtil
 	{
 	public:

@@ -1,7 +1,7 @@
 #pragma once
 #include <random>
 
-namespace AAAAgames
+namespace longmarch
 {
 	class Random
 	{

@@ -3,7 +3,7 @@
 #include "engine/core/EngineCore.h"
 #include "engine/math/MathUtil.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	namespace BlazeCustom
 	{

@@ -11,7 +11,7 @@
 #include <imgui/examples/imgui_impl_opengl3.h>
 #include <imgui/addons/implot/implot.h>
 
-namespace AAAAgames {
+namespace longmarch {
 	void ImGuiDriver::Init()
 	{
 		IMGUI_CHECKVERSION();

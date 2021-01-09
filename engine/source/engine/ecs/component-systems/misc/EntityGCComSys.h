@@ -6,7 +6,7 @@
 #include "engine/ecs/EntityType.h"
 #include "engine/core/utility/TypeHelper.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/**
 	 * @brief The Garbage collection component system for GC events
@@ -46,6 +46,6 @@ namespace AAAAgames
 		void GCRecursive(EntityDecorator e);
 
 	private:
-		A4GAMES_Vector<Entity> m_GCList;
+		LongMarch_Vector<Entity> m_GCList;
 	};
 }

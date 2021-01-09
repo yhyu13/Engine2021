@@ -1,10 +1,10 @@
 #pragma once
 #include <json/json.h>
 
-namespace AAAAgames
+namespace longmarch
 {
 	template <typename T>
-	Json::Value A4GAMES_ArrayToJsonValue(const T& arr)
+	Json::Value LongMarch_ArrayToJsonValue(const T& arr)
 	{
 		Json::Value vec(Json::arrayValue);
 		for (auto&& item : arr)
@@ -15,7 +15,7 @@ namespace AAAAgames
 	}
 
 	template <typename T>
-	Json::Value A4GAMES_ArrayToJsonValue(const T& arr, int length)
+	Json::Value LongMarch_ArrayToJsonValue(const T& arr, int length)
 	{
 		Json::Value vec(Json::arrayValue);
 		for (int i(0); i < length; ++i)
@@ -26,7 +26,7 @@ namespace AAAAgames
 	}
 
 	template <typename T>
-	Json::Value A4GAMES_ToJsonValue(const T& item)
+	Json::Value LongMarch_ToJsonValue(const T& item)
 	{
 		return Json::Value(item);
 	}

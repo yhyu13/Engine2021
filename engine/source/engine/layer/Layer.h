@@ -3,7 +3,7 @@
 #include "engine/events/EventQueue.h"
 #include <imgui/imgui.h>
 
-namespace AAAAgames {
+namespace longmarch {
 	/**
 	 * @brief Base layer class to drive engine/game update
 	 *

@@ -3,7 +3,7 @@
 #include "engine/ecs/BaseComponent.h"
 #include "engine/renderer/ParticleSystem.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/* Data class of sprite */
 	struct CACHE_ALIGN32 ParticleCom : BaseComponent<ParticleCom> {

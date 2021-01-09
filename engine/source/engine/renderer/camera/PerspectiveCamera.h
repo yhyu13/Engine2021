@@ -2,7 +2,7 @@
 
 #include "engine/Math/Geommath.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	enum class PerspectiveCameraType
 	{

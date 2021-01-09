@@ -3,7 +3,7 @@
 #include "engine/Engine.h"
 #include "engine/EngineEssential.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/**
 	 * @brief Base widget class

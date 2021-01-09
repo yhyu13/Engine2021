@@ -2,7 +2,7 @@
 #include "Image2D.h"
 #include <stb_image.h>
 
-AAAAgames::Image2D::Image2D()
+longmarch::Image2D::Image2D()
 	:
 	m_Width(0),
 	m_Height(0),
@@ -12,7 +12,7 @@ AAAAgames::Image2D::Image2D()
 {
 }
 
-AAAAgames::Image2D::~Image2D()
+longmarch::Image2D::~Image2D()
 {
 	if (m_data)
 	{
@@ -20,7 +20,7 @@ AAAAgames::Image2D::~Image2D()
 	}
 }
 
-AAAAgames::Image2D::Image2D(Image2D::Setting data)
+longmarch::Image2D::Image2D(Image2D::Setting data)
 	:
 	m_Width(data.width),
 	m_Height(data.height),
@@ -44,7 +44,7 @@ AAAAgames::Image2D::Image2D(Image2D::Setting data)
 	}
 }
 
-AAAAgames::Image2D::Image2D(const Image2D& other)
+longmarch::Image2D::Image2D(const Image2D& other)
 {
 	ASSERT(this != &other, "Copy construtor the same object is not allowed!");
 	{
@@ -61,9 +61,9 @@ AAAAgames::Image2D::Image2D(const Image2D& other)
 	}
 }
 
-std::shared_ptr<AAAAgames::Image2D> AAAAgames::Image2D::LoadFromFile(const fs::path& path)
+std::shared_ptr<longmarch::Image2D> longmarch::Image2D::LoadFromFile(const fs::path& path)
 {
-	std::shared_ptr<AAAAgames::Image2D> img = MemoryManager::Make_shared<AAAAgames::Image2D>();
+	std::shared_ptr<longmarch::Image2D> img = MemoryManager::Make_shared<longmarch::Image2D>();
 	int width, height, channels;
 	stbi_set_flip_vertically_on_load_thread(1);
 	auto file_extension = path.extension();
@@ -95,32 +95,32 @@ std::shared_ptr<AAAAgames::Image2D> AAAAgames::Image2D::LoadFromFile(const fs::p
 	return img;
 }
 
-uint32_t AAAAgames::Image2D::GetWidth() const
+uint32_t longmarch::Image2D::GetWidth() const
 {
 	return m_Width;
 }
 
-uint32_t AAAAgames::Image2D::GetHeight() const
+uint32_t longmarch::Image2D::GetHeight() const
 {
 	return m_Height;
 }
 
-uint32_t AAAAgames::Image2D::GetChannels() const
+uint32_t longmarch::Image2D::GetChannels() const
 {
 	return m_Channels;
 }
 
-bool AAAAgames::Image2D::IsFloatType() const
+bool longmarch::Image2D::IsFloatType() const
 {
 	return m_float_type;
 }
 
-void* AAAAgames::Image2D::GetData() const
+void* longmarch::Image2D::GetData() const
 {
 	return m_data;
 }
 
-Vec4f AAAAgames::Image2D::GetPixel(uint32_t row, uint32_t col) const
+Vec4f longmarch::Image2D::GetPixel(uint32_t row, uint32_t col) const
 {
 	ASSERT(row < m_Width, Str(row) + " is out of range of size " + Str(m_Width) + "!");
 	ASSERT(col < m_Height, Str(col) + " is out of range of size " + Str(m_Height) + "!");
@@ -147,7 +147,7 @@ Vec4f AAAAgames::Image2D::GetPixel(uint32_t row, uint32_t col) const
 	return rgba;
 }
 
-void AAAAgames::Image2D::WritePixel(uint32_t row, uint32_t col, const Vec4f& rgba)
+void longmarch::Image2D::WritePixel(uint32_t row, uint32_t col, const Vec4f& rgba)
 {
 	ASSERT(row < m_Width, Str(row) + " is out of range of size " + Str(m_Width) + "!");
 	ASSERT(col < m_Height, Str(col) + " is out of range of size " + Str(m_Height) + "!");
@@ -178,7 +178,7 @@ void AAAAgames::Image2D::WritePixel(uint32_t row, uint32_t col, const Vec4f& rgb
 	}
 }
 
-void AAAAgames::Image2D::WriteToPNG(const fs::path& _path) const
+void longmarch::Image2D::WriteToPNG(const fs::path& _path) const
 {
 	auto path = _path.string();
 	if (IsFloatType())
@@ -214,7 +214,7 @@ void AAAAgames::Image2D::WriteToPNG(const fs::path& _path) const
 	}
 }
 
-void AAAAgames::Image2D::WriteToHDR(const fs::path& _path) const
+void longmarch::Image2D::WriteToHDR(const fs::path& _path) const
 {
 	auto path = _path.string();
 	if (!IsFloatType())

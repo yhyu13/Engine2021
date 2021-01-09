@@ -1,7 +1,7 @@
 #pragma once
 #include "Shape.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class CACHE_ALIGN32 Circle final : public Shape
 	{

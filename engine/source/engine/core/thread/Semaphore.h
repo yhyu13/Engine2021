@@ -10,7 +10,7 @@
 #include <atomic>
 #include <condition_variable>
 
-namespace AAAAgames
+namespace longmarch
 {
 	class semaphore
 	{

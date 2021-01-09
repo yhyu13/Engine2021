@@ -4,7 +4,7 @@
 #include "Circle.h"
 
 
-void AAAAgames::Shape::Copy(Shape* shape1, Shape* shape2)
+void longmarch::Shape::Copy(Shape* shape1, Shape* shape2)
 {
 	throw NotImplementedException();
 }

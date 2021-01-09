@@ -5,7 +5,7 @@
 #include "engine/math/Geommath.h"
 #include "engine/core/exception/EngineException.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	//! FABRIK IK resolver for skeleton
 	class FABRIKResolver : BaseAtomicClassNC
@@ -18,8 +18,8 @@ namespace AAAAgames
 			float snapBackStrength{ .1f };
 			uint32_t numBones{ 2u };
 
-			A4GAMES_Vector<Mat4> eachBoneTransform; //!< Start at root, end at ee. Size equal to numBones + 1.
-			A4GAMES_Vector<std::string> eachBoneName; //!< Start at root, end at ee. Size equal to numBones + 1.
+			LongMarch_Vector<Mat4> eachBoneTransform; //!< Start at root, end at ee. Size equal to numBones + 1.
+			LongMarch_Vector<std::string> eachBoneName; //!< Start at root, end at ee. Size equal to numBones + 1.
 
 			Mat4 target; //!< end-effector's target
 			Mat4 pole; //!< end-effector's parent's target
@@ -28,10 +28,10 @@ namespace AAAAgames
 		private:
 			friend FABRIKResolver;
 
-			A4GAMES_Vector<float> eachBoneLength; //!< Start at root, end at parent of ee. Size equal to numBones.
-			A4GAMES_Vector<Vec3f> eachBonePosition; //!< Start at root, end at ee. Size equal to numBones + 1.
-			A4GAMES_Vector<Vec3f> startBoneDirectionUnnormalized; //!< Start at root, end at ee. Size equal to numBones + 1.
-			A4GAMES_Vector<Quaternion> startBoneRotation; //!< Start at root, end at ee. Size equal to numBones + 1.
+			LongMarch_Vector<float> eachBoneLength; //!< Start at root, end at parent of ee. Size equal to numBones.
+			LongMarch_Vector<Vec3f> eachBonePosition; //!< Start at root, end at ee. Size equal to numBones + 1.
+			LongMarch_Vector<Vec3f> startBoneDirectionUnnormalized; //!< Start at root, end at ee. Size equal to numBones + 1.
+			LongMarch_Vector<Quaternion> startBoneRotation; //!< Start at root, end at ee. Size equal to numBones + 1.
 			Quaternion startTargetRotation;
 
 			float totalBoneLength{ 0.f };
@@ -66,6 +66,6 @@ namespace AAAAgames
 		std::shared_ptr<Skeleton> skeletonRef;
 
 	private:
-		A4GAMES_UnorderedMap_flat<std::string, FABRIKData> m_data;
+		LongMarch_UnorderedMap_flat<std::string, FABRIKData> m_data;
 	};
 }

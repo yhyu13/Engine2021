@@ -2,7 +2,7 @@
 
 #include "engine/ecs/BaseComponent.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/* Data class of LIfe Time */
 	struct ActiveCom final : BaseComponent<ActiveCom>

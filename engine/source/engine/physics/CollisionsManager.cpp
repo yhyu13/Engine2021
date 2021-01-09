@@ -3,7 +3,7 @@
 
 #include "dynamics/RigidBody.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	//TODO: Recheck this works for A->B and not B->A
 	glm::vec2 CheckDirection(glm::vec2 diff)
@@ -37,7 +37,7 @@ namespace AAAAgames
 		return direction[best];
 	}
 
-	bool AAAAgames::CircleCollisions(Shape* Circle1, float PosX1, float PosY1,
+	bool longmarch::CircleCollisions(Shape* Circle1, float PosX1, float PosY1,
 		Shape* Circle2, float PosX2, float PosY2)
 	{
 		throw NotImplementedException();
@@ -94,7 +94,7 @@ namespace AAAAgames
 		//}
 	}
 
-	bool AAAAgames::AABBCollisions(Shape* AABB1, float PosX1, float PosY1,
+	bool longmarch::AABBCollisions(Shape* AABB1, float PosX1, float PosY1,
 		Shape* AABB2, float PosX2, float PosY2)
 	{
 		throw NotImplementedException();
@@ -185,7 +185,7 @@ namespace AAAAgames
 		//}
 	}
 
-	bool AAAAgames::CircleAABBCollisions(Shape* Circle1, float PosX1, float PosY1,
+	bool longmarch::CircleAABBCollisions(Shape* Circle1, float PosX1, float PosY1,
 		Shape* AABB2, float PosX2, float PosY2)
 	{
 		throw NotImplementedException();
@@ -244,10 +244,10 @@ namespace AAAAgames
 		//}
 	}
 
-	bool AAAAgames::AABBCircleCollisions(Shape* AABB1, float PosX1, float PosY1,
+	bool longmarch::AABBCircleCollisions(Shape* AABB1, float PosX1, float PosY1,
 		Shape* Circle2, float PosX2, float PosY2)
 	{
-		return AAAAgames::CircleAABBCollisions(Circle2, PosX2, PosY2, AABB1, PosX1, PosY1);
+		return longmarch::CircleAABBCollisions(Circle2, PosX2, PosY2, AABB1, PosX1, PosY1);
 		////Collision Math And Logic
 		//float Radius2;
 		//Radius2 = Circle2->Radius;
@@ -273,11 +273,11 @@ namespace AAAAgames
 		//return false;
 	}
 
-	bool AAAAgames::CircleReflection(Shape* Circle1, float PosX1, float PosY1,
+	bool longmarch::CircleReflection(Shape* Circle1, float PosX1, float PosY1,
 		Shape* Circle2, float PosX2, float PosY2)
 	{
 		throw NotImplementedException();
-		//if (AAAAgames::CircleCollisions(Circle1, PosX1, PosY1, Circle2, PosX2, PosY2))
+		//if (longmarch::CircleCollisions(Circle1, PosX1, PosY1, Circle2, PosX2, PosY2))
 		//{
 		//	glm::vec2 Circle1_Center(PosX1, PosY1);
 		//	glm::vec2 Circle2_Center(PosX2, PosY2);
@@ -294,10 +294,10 @@ namespace AAAAgames
 		//return false;
 	}
 
-	bool AAAAgames::ResolveCollision(Shape* AABB1, float PosX1, float PosY1,
+	bool longmarch::ResolveCollision(Shape* AABB1, float PosX1, float PosY1,
 		Shape* AABB2, float PosX2, float PosY2)
 	{
-		if (AAAAgames::AABBCollisions(AABB1, PosX1, PosY1, AABB2, PosX2, PosY2) == true)
+		if (longmarch::AABBCollisions(AABB1, PosX1, PosY1, AABB2, PosX2, PosY2) == true)
 		{
 			//Calculate Relative Velocity
 			//glm::vec2 RelV = AABB2->mp_OwnerBody->GetVelocity() - AABB1->mp_OwnerBody->GetVelocity();
@@ -343,7 +343,7 @@ namespace AAAAgames
 		return false;
 	}
 
-	bool AAAAgames::StaticCirclevsCircle(const std::shared_ptr<Circle>& circle1, const std::shared_ptr<Circle>& circle2)
+	bool longmarch::StaticCirclevsCircle(const std::shared_ptr<Circle>& circle1, const std::shared_ptr<Circle>& circle2)
 	{
 		// if squared distance between both circles is less than the squared combined radius of both circles, there is collision
 		if (glm::length2(circle2->GetCenter() - circle1->GetCenter()) <
@@ -353,7 +353,7 @@ namespace AAAAgames
 		return false;
 	}
 
-	bool AAAAgames::DynamicCirclevsCircle(const std::shared_ptr<Circle>& circle1, const Vec3f& Vel1,
+	bool longmarch::DynamicCirclevsCircle(const std::shared_ptr<Circle>& circle1, const Vec3f& Vel1,
 		const std::shared_ptr<Circle>& circle2, const Vec3f& Vel2,
 		float dt, Manifold& manifold)
 	{
@@ -425,7 +425,7 @@ namespace AAAAgames
 		return true;
 	}
 
-	bool AAAAgames::StaticAABBvsAABB(const std::shared_ptr<AABB>& AABB1, const std::shared_ptr<AABB>& AABB2)
+	bool longmarch::StaticAABBvsAABB(const std::shared_ptr<AABB>& AABB1, const std::shared_ptr<AABB>& AABB2)
 	{
 		Vec3f min1 = AABB1->GetMin(), min2 = AABB2->GetMin();
 		Vec3f max1 = AABB1->GetMax(), max2 = AABB2->GetMax();
@@ -440,7 +440,7 @@ namespace AAAAgames
 		return true;
 	}
 
-	bool AAAAgames::DynamicAABBvsAABB(const std::shared_ptr<AABB>& AABB1, const Vec3f& Vel1,
+	bool longmarch::DynamicAABBvsAABB(const std::shared_ptr<AABB>& AABB1, const Vec3f& Vel1,
 		const std::shared_ptr<AABB>& AABB2, const Vec3f& Vel2,
 		float dt, Manifold& manifold)
 	{

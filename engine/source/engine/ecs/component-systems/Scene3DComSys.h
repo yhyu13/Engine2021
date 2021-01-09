@@ -5,7 +5,7 @@
 #include "engine/ecs/components/3d/Body3DCom.h"
 #include "engine/ecs/components/ChildrenCom.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 #define MULTITHREAD_PRE_RENDER_UPDATE 1
 

@@ -10,7 +10,7 @@
 #include <condition_variable>
 #include "Semaphore.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	template<typename T>
 	class blocking_queue

@@ -3,7 +3,7 @@
 #include "VertexArray.h"
 #include "Shader.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	struct Particle
 	{

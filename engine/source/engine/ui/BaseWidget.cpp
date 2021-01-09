@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "BaseWidget.h"
 
-ImVec2 AAAAgames::BaseWidget::PosScaleBySize(const ImVec2& vec, const ImVec2& windowSize)
+ImVec2 longmarch::BaseWidget::PosScaleBySize(const ImVec2& vec, const ImVec2& windowSize)
 {
 	auto engine = Engine::GetInstance();
 	const auto& prop = engine->GetWindow()->GetWindowProperties();
@@ -10,7 +10,7 @@ ImVec2 AAAAgames::BaseWidget::PosScaleBySize(const ImVec2& vec, const ImVec2& wi
 	return ImVec2(vec.x / width * windowSize.x, vec.y / height * windowSize.y);
 }
 
-ImVec2 AAAAgames::BaseWidget::ScaleSize(const ImVec2& itemSize) {
+ImVec2 longmarch::BaseWidget::ScaleSize(const ImVec2& itemSize) {
 	auto engine = Engine::GetInstance();
 	const auto& prop = engine->GetWindow()->GetWindowProperties();
 	auto monitorWidth = prop.m_monitorWidth;
@@ -20,13 +20,13 @@ ImVec2 AAAAgames::BaseWidget::ScaleSize(const ImVec2& itemSize) {
 	return ImVec2(itemSize.x * winWidth / monitorWidth, itemSize.y * winHeight / monitorHeight);
 }
 
-unsigned int AAAAgames::BaseWidget::GetWindowSize_X()
+unsigned int longmarch::BaseWidget::GetWindowSize_X()
 {
 	auto engine = Engine::GetInstance();
 	return engine->GetWindow()->GetWidth();
 }
 
-unsigned int AAAAgames::BaseWidget::GetWindowSize_Y()
+unsigned int longmarch::BaseWidget::GetWindowSize_Y()
 {
 	auto engine = Engine::GetInstance();
 	return engine->GetWindow()->GetHeight();

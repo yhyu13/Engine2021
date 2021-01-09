@@ -3,7 +3,7 @@
 #include "engine/ecs/EntityDecorator.h"
 #include "engine/ecs/components/3d/Scene3DCom.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/**
 	 * @brief Manges scene file loading and intializing Scene3DCom

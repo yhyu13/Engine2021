@@ -5,7 +5,7 @@
 
 #include "Particle3D.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class ParticleSystem3D
 	{

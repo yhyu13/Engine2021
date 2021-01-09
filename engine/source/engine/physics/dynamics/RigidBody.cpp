@@ -5,7 +5,7 @@
 #include "engine/physics/OOBB.h"
 #include "engine/core/allocator/MemoryManager.h"
 
-namespace AAAAgames
+namespace longmarch
 {
     RigidBody::RigidBody()
         : m_rbType(RBType::staticBody),

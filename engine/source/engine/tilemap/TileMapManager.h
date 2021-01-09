@@ -1,7 +1,7 @@
 #pragma once
 #include "TileMap.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	/*
 		Use example
 		TileMapManager::GetInstance()->Init;

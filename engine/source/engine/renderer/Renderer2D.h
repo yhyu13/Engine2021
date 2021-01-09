@@ -5,7 +5,7 @@
 #include "Texture.h"
 #include "engine/EngineEssential.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	struct Vertex2D
 	{

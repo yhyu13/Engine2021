@@ -2,7 +2,7 @@
 #include "engine/math/Geommath.h"
 #include "engine/core/exception/EngineException.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	enum class ShaderDataType
 	{

@@ -83,7 +83,7 @@
 // Fast BVH
 #include <FastBVH.h>
 
-namespace AAAAgames
+namespace longmarch
 {
 	namespace fs = std::filesystem;
 }

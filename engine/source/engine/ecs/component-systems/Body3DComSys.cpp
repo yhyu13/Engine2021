@@ -3,18 +3,18 @@
 #include "Scene3DComSys.h"
 #include "engine/events/engineEvents/EngineCustomEvent.h"
 
-AAAAgames::Body3DComSys::Body3DComSys() 
+longmarch::Body3DComSys::Body3DComSys() 
 {
 	m_systemSignature.AddComponent<Transform3DCom>();
 	m_systemSignature.AddComponent<Body3DCom>();
 }
 
-AAAAgames::Body3DComSys::~Body3DComSys()
+longmarch::Body3DComSys::~Body3DComSys()
 {
 	PhysicsManager::GetInstance()->DeleteScene(m_scene);
 }
 
-void AAAAgames::Body3DComSys::Init()
+void longmarch::Body3DComSys::Init()
 {
 	{
 		auto queue = EventQueue<EngineEventType>::GetInstance();
@@ -42,7 +42,7 @@ void AAAAgames::Body3DComSys::Init()
 	m_scene->SetGameWorld(m_parentWorld);
 }
 
-void AAAAgames::Body3DComSys::PreRenderUpdate(double dt)
+void longmarch::Body3DComSys::PreRenderUpdate(double dt)
 {
 	EARLY_RETURN(dt);
 	/**************************************************************
@@ -134,7 +134,7 @@ void AAAAgames::Body3DComSys::PreRenderUpdate(double dt)
 	}
 }
 
-void AAAAgames::Body3DComSys::Update(double dt)
+void longmarch::Body3DComSys::Update(double dt)
 {
 	EARLY_RETURN(dt);
 	// Update physical scene here instead from PhysicsManager
@@ -160,7 +160,7 @@ void AAAAgames::Body3DComSys::Update(double dt)
 	).wait();
 }
 
-std::shared_ptr<BaseComponentSystem> AAAAgames::Body3DComSys::Copy() const
+std::shared_ptr<BaseComponentSystem> longmarch::Body3DComSys::Copy() const
 {
 	LOCK_GUARD_NC();
 	auto ret = MemoryManager::Make_shared<Body3DComSys>();
@@ -170,7 +170,7 @@ std::shared_ptr<BaseComponentSystem> AAAAgames::Body3DComSys::Copy() const
 	return ret;
 }
 
-void AAAAgames::Body3DComSys::_ON_GC(EventQueue<EngineEventType>::EventPtr e)
+void longmarch::Body3DComSys::_ON_GC(EventQueue<EngineEventType>::EventPtr e)
 {
 	LOCK_GUARD_NC();
 	auto event = std::static_pointer_cast<EngineGCEvent>(e);
@@ -183,7 +183,7 @@ void AAAAgames::Body3DComSys::_ON_GC(EventQueue<EngineEventType>::EventPtr e)
 	}
 }
 
-void AAAAgames::Body3DComSys::_ON_GC_RECURSIVE(EventQueue<EngineEventType>::EventPtr e)
+void longmarch::Body3DComSys::_ON_GC_RECURSIVE(EventQueue<EngineEventType>::EventPtr e)
 {
 	LOCK_GUARD_NC();
 	auto event = std::static_pointer_cast<EngineGCRecursiveEvent>(e);
@@ -193,7 +193,7 @@ void AAAAgames::Body3DComSys::_ON_GC_RECURSIVE(EventQueue<EngineEventType>::Even
 	}
 }
 
-void AAAAgames::Body3DComSys::GCRecursive(EntityDecorator e)
+void longmarch::Body3DComSys::GCRecursive(EntityDecorator e)
 {
 	if (auto body = e.GetComponent<Body3DCom>(); body.Valid())
 	{

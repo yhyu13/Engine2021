@@ -4,7 +4,7 @@
 #include "OOBB.h"
 #include "dynamics/Contact.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	bool AABBCollisions(Shape* AABB1, float PosX1, float PosY1,
 		Shape* AABB2, float PosX2, float PosY2);

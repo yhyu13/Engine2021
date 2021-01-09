@@ -1,7 +1,7 @@
 #pragma once
 #include "engine/ui/BaseWidgetManager.h"
 
-namespace AAAAgames {
+namespace longmarch {
 #define APP_WIG_MAN_NAME "app_wig_man"
 
 	class BaseGameWidgetManager : public BaseWidgetManager

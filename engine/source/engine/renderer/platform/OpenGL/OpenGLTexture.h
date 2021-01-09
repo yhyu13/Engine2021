@@ -2,7 +2,7 @@
 #include "../../Texture.h"
 #include "OpenGLUtil.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	class OpenGLTexture2D : public Texture2D
 	{
 	public:

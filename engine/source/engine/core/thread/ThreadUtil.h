@@ -6,13 +6,13 @@
 #include <functional>
 #include "engine/core/EngineCore.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	//https://stackoverflow.com/questions/21531096/can-i-use-stdasync-without-waiting-for-the-future-limitation
 	//http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3451.pdf
 	// Creating a deamon thread job
 	template<typename T>
-	void A4GAMES_NOGET(T&& in)
+	void LongMarch_NOGET(T&& in)
 	{
 		static std::mutex vmut;
 		static std::vector<T> vec;
@@ -34,7 +34,7 @@ namespace AAAAgames
 							T target = std::move(vec[size - 1]);
 							vec.pop_back();
 							vmut.unlock();
-							DEBUG_PRINT("A4GAMES_NOGET getting!");
+							DEBUG_PRINT("LongMarch_NOGET getting!");
 							if (target.valid())
 							{
 								target.wait();

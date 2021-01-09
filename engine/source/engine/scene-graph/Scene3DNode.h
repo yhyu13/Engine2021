@@ -3,7 +3,7 @@
 #include "engine/renderer/mesh/Mesh.h"
 #include "engine/scene-graph/assimp/AssimpHelper.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class Scene3DManager;
 	struct Animation3DCom;
@@ -19,7 +19,7 @@ namespace AAAAgames
 		friend Animation3DCom;
 
 	private:
-		using MeshHierarchy = A4GAMES_Vector<std::pair<uint32_t, std::shared_ptr<Mesh>>>; //!< In-order hierarchy tree of all mesh in a scene node, stands for a mesh and its height in the tree
+		using MeshHierarchy = LongMarch_Vector<std::pair<uint32_t, std::shared_ptr<Mesh>>>; //!< In-order hierarchy tree of all mesh in a scene node, stands for a mesh and its height in the tree
 
 	public:
 		Scene3DNode() = default;
@@ -31,9 +31,9 @@ namespace AAAAgames
 		//! Copy a scene3DNode is preferred with new copies of all materials
 		std::shared_ptr<Scene3DNode> Copy() const;
 
-		const A4GAMES_Vector<MeshData*> GetAllMesh() const;
+		const LongMarch_Vector<MeshData*> GetAllMesh() const;
 
-		const A4GAMES_Vector<Material*> GetAllMaterial() const;
+		const LongMarch_Vector<Material*> GetAllMaterial() const;
 
 		void ModifyAllMaterial(const std::function<void(Material*)>& callback) const;
 

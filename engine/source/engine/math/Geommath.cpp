@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "Geommath.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	Mat4 Geommath::World2OpenGLTr = Mat4(
 		1, 0, 0, 0,
@@ -105,19 +105,19 @@ namespace AAAAgames
 		float s = sinf(angle_rad);
 		switch (axis)
 		{
-		case AAAAgames::Geommath::ROT_AXIS::PITCH:
+		case longmarch::Geommath::ROT_AXIS::PITCH:
 			M[1][1] = c;
 			M[2][1] = -s;
 			M[1][2] = s;
 			M[2][2] = c;
 			break;
-		case AAAAgames::Geommath::ROT_AXIS::ROLL:
+		case longmarch::Geommath::ROT_AXIS::ROLL:
 			M[0][0] = c;
 			M[2][2] = s;
 			M[0][2] = -s;
 			M[2][2] = c;
 			break;
-		case AAAAgames::Geommath::ROT_AXIS::YAW:
+		case longmarch::Geommath::ROT_AXIS::YAW:
 			M[0][0] = c;
 			M[1][0] = -s;
 			M[0][1] = s;

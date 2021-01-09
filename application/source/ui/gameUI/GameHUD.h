@@ -1,7 +1,7 @@
 #pragma once
 #include "engine/ui/BaseWidget.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	class GameHUD final : public BaseWidget
 	{
 	public:

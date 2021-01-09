@@ -5,7 +5,7 @@
 
 #include <imgui/addons/implot/implot.h>
 
-AAAAgames::EngineEditorDock::EngineEditorDock()
+longmarch::EngineEditorDock::EngineEditorDock()
 {
 	m_IsVisible = true;
 	m_aboutEditorPopup = []() {};
@@ -21,7 +21,7 @@ AAAAgames::EngineEditorDock::EngineEditorDock()
 	m_JsonLoadSceneFileDialog.SetPwd(FileSystem::ResolveProtocol("$asset:archetype/"));
 }
 
-void AAAAgames::EngineEditorDock::Render()
+void longmarch::EngineEditorDock::Render()
 {
 	// Setup Dear ImGui style
 	ImGuiUtil::SetupEngineImGuiStyle();
@@ -68,7 +68,7 @@ void AAAAgames::EngineEditorDock::Render()
 	ImGui::End();
 }
 
-void AAAAgames::EngineEditorDock::ShowEngineFPS()
+void longmarch::EngineEditorDock::ShowEngineFPS()
 {
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
 	float frameTime = FramerateController::GetInstance()->GetFrameTime();
@@ -88,7 +88,7 @@ void AAAAgames::EngineEditorDock::ShowEngineFPS()
 	ImGui::PopStyleVar(2);
 }
 
-void AAAAgames::EngineEditorDock::ShowEngineMainMenuBar()
+void longmarch::EngineEditorDock::ShowEngineMainMenuBar()
 {
 	if (ImGui::BeginMainMenuBar())
 	{
@@ -116,7 +116,7 @@ void AAAAgames::EngineEditorDock::ShowEngineMainMenuBar()
 	}
 }
 
-void AAAAgames::EngineEditorDock::ShowEngineMenuFile()
+void longmarch::EngineEditorDock::ShowEngineMenuFile()
 {
 	ImGui::MenuItem("Load & Save", NULL, false, false);
 	if (ImGui::MenuItem("New")) {}
@@ -169,7 +169,7 @@ void AAAAgames::EngineEditorDock::ShowEngineMenuFile()
 	}
 }
 
-void AAAAgames::EngineEditorDock::ShowEngineMenuEdit()
+void longmarch::EngineEditorDock::ShowEngineMenuEdit()
 {
 	ImGui::MenuItem("History", NULL, false, false);
 	if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
@@ -181,14 +181,14 @@ void AAAAgames::EngineEditorDock::ShowEngineMenuEdit()
 	if (ImGui::MenuItem("Paste", "CTRL+V")) {}
 }
 
-void AAAAgames::EngineEditorDock::ShowEngineMenuWindow()
+void longmarch::EngineEditorDock::ShowEngineMenuWindow()
 {
 	ImGui::MenuItem("Level Editor", NULL, false, false);
 	ImGui::Separator();
 	ImGui::MenuItem("General", NULL, false, false);
 }
 
-void AAAAgames::EngineEditorDock::ShowEngineMenuHelp()
+void longmarch::EngineEditorDock::ShowEngineMenuHelp()
 {
 	ImGui::MenuItem("Application", NULL, false, false);
 	if (ImGui::MenuItem("About GSWY Engine Editor"))
@@ -214,7 +214,7 @@ void AAAAgames::EngineEditorDock::ShowEngineMenuHelp()
 	}
 }
 
-void AAAAgames::EngineEditorDock::ShowGameWorldLevelTab()
+void longmarch::EngineEditorDock::ShowGameWorldLevelTab()
 {
 	ImGui::Begin("Game World Level", nullptr, ImGuiWindowFlags_NoDecoration);
 	ImGui::BeginTabBar("Level", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoTooltip | ImGuiTabBarFlags_FittingPolicyMask_);
@@ -265,14 +265,14 @@ void AAAAgames::EngineEditorDock::ShowGameWorldLevelTab()
 	ImGui::End();
 }
 
-void AAAAgames::EngineEditorDock::ShowPopUps()
+void longmarch::EngineEditorDock::ShowPopUps()
 {
 	m_aboutEditorPopup();
 	m_saveBeforeLoadPopup();
 	m_saveBeforeQuitPopup();
 }
 
-void AAAAgames::EngineEditorDock::HandleFileDialog()
+void longmarch::EngineEditorDock::HandleFileDialog()
 {
 	{
 		m_JsonSaveSceneFileDialog.Display();
@@ -328,7 +328,7 @@ void AAAAgames::EngineEditorDock::HandleFileDialog()
 	}
 }
 
-void AAAAgames::EngineEditorDock::ShowEnginePerformanceMonitor()
+void longmarch::EngineEditorDock::ShowEnginePerformanceMonitor()
 {
 	// this is rendered in a table format
 	//      col#1                         col#2

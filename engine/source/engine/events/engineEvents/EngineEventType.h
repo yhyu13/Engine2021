@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 
-namespace AAAAgames
+namespace longmarch
 {
 	enum class EngineEventType : int32_t
 	{
@@ -65,8 +65,8 @@ namespace AAAAgames
 	};
 }
 
-std::ostream& operator<<(std::ostream& o, AAAAgames::EngineEventType n);
-std::ostream& operator<<(std::ostream& o, AAAAgames::EngineIOEventType n);
-std::ostream& operator<<(std::ostream& o, AAAAgames::EngineGraphicsEventType n);
-std::ostream& operator<<(std::ostream& o, AAAAgames::EngineGraphicsDebugEventType n);
-std::ostream& operator<<(std::ostream& o, AAAAgames::EngineSettingEventType n);
+std::ostream& operator<<(std::ostream& o, longmarch::EngineEventType n);
+std::ostream& operator<<(std::ostream& o, longmarch::EngineIOEventType n);
+std::ostream& operator<<(std::ostream& o, longmarch::EngineGraphicsEventType n);
+std::ostream& operator<<(std::ostream& o, longmarch::EngineGraphicsDebugEventType n);
+std::ostream& operator<<(std::ostream& o, longmarch::EngineSettingEventType n);

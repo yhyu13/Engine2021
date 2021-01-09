@@ -5,7 +5,7 @@
 
 struct GLFWwindow;
 
-namespace AAAAgames {
+namespace longmarch {
 
 	class OpenGLContext : public GraphicsContext
 	{

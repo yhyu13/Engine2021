@@ -4,7 +4,7 @@
 #include "engine/ecs/GameWorld.h"
 #include "engine/ecs/EntityType.h"
 
-AAAAgames::ParentCom::ParentCom(const EntityDecorator& _this)
+longmarch::ParentCom::ParentCom(const EntityDecorator& _this)
 	:
 	BaseComponent(_this.GetWorld()),
 	m_this(_this.GetEntity()),
@@ -12,7 +12,7 @@ AAAAgames::ParentCom::ParentCom(const EntityDecorator& _this)
 {
 }
 
-void AAAAgames::ParentCom::SetParent(const Entity& parent)
+void longmarch::ParentCom::SetParent(const Entity& parent)
 {
 	LOCK_GUARD2();
 	auto world = m_world;
@@ -27,7 +27,7 @@ void AAAAgames::ParentCom::SetParent(const Entity& parent)
 	world->GetComponent<ChildrenCom>(parent)->AddEntityWOR(m_this);
 }
 
-void AAAAgames::ParentCom::SetParentWOR(const Entity& parent)
+void longmarch::ParentCom::SetParentWOR(const Entity& parent)
 {
 	LOCK_GUARD2();
 	auto world = m_world;
@@ -41,18 +41,18 @@ void AAAAgames::ParentCom::SetParentWOR(const Entity& parent)
 	}
 }
 
-const Entity AAAAgames::ParentCom::GetParent() {
+const Entity longmarch::ParentCom::GetParent() {
 	LOCK_GUARD2();
 	return m_Parent;
 }
 
-bool AAAAgames::ParentCom::IsRoot()
+bool longmarch::ParentCom::IsRoot()
 {
 	LOCK_GUARD2();
 	return m_Parent == Entity();
 }
 
-bool AAAAgames::ParentCom::IsSceneRoot()
+bool longmarch::ParentCom::IsSceneRoot()
 {
 	LOCK_GUARD2();
 	return m_Parent.m_type == (EntityType)EngineEntityType::SCENE_ROOT;

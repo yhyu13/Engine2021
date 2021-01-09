@@ -4,7 +4,7 @@
 #include "engine/renderer/material/Material.h"
 #include "engine/core/utility/Random.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	Engine::Engine()
 	{
@@ -113,7 +113,7 @@ namespace AAAAgames
 		s_instance->m_enable_pause_on_unfocused = event->m_enable;
 	}
 
-	void AAAAgames::Engine::_ON_TOGGLE_VSYNC(EventQueue<EngineGraphicsEventType>::EventPtr e)
+	void longmarch::Engine::_ON_TOGGLE_VSYNC(EventQueue<EngineGraphicsEventType>::EventPtr e)
 	{
 		auto event = std::static_pointer_cast<ToggleVSyncEvent>(e);
 		s_instance->GetWindow()->SetVSync(event->m_enable);
@@ -124,7 +124,7 @@ namespace AAAAgames
 		// Nothing
 	}
 
-	void AAAAgames::Engine::_ON_TOGGLE_GPUSYNC(EventQueue<EngineGraphicsEventType>::EventPtr e)
+	void longmarch::Engine::_ON_TOGGLE_GPUSYNC(EventQueue<EngineGraphicsEventType>::EventPtr e)
 	{
 		auto event = std::static_pointer_cast<ToggleGPUSyncEvent>(e);
 		s_instance->GetWindow()->SetGPUSync(event->m_enable);
@@ -189,7 +189,7 @@ namespace AAAAgames
 		queue->Publish(e);
 	}
 
-	void AAAAgames::Engine::ShowMessageBox(const std::wstring& title, const std::wstring& message)
+	void longmarch::Engine::ShowMessageBox(const std::wstring& title, const std::wstring& message)
 	{
 		if (s_instance && s_instance->m_engineWindow)
 		{
@@ -197,7 +197,7 @@ namespace AAAAgames
 		}
 	}
 
-	void AAAAgames::Engine::OnInterruption(const int& isFocussed)
+	void longmarch::Engine::OnInterruption(const int& isFocussed)
 	{
 		if (s_instance->m_enable_pause_on_unfocused)
 		{

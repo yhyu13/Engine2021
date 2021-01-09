@@ -3,7 +3,7 @@
 #include "EntityGCComSys.h"
 #include "engine/ecs/components/ChildrenCom.h"
 
-void AAAAgames::EntityGCComSys::RemoveAllEntities()
+void longmarch::EntityGCComSys::RemoveAllEntities()
 {
 	BaseComponentSystem::RemoveAllEntities();
 	{
@@ -17,12 +17,12 @@ void AAAAgames::EntityGCComSys::RemoveAllEntities()
 	GC();
 }
 
-void AAAAgames::EntityGCComSys::PostRenderUpdate(double dt)
+void longmarch::EntityGCComSys::PostRenderUpdate(double dt)
 {
 	GC();
 }
 
-void AAAAgames::EntityGCComSys::GC()
+void longmarch::EntityGCComSys::GC()
 {
 	LOCK_GUARD_NC();
 	for (auto& entity : m_GCList)
@@ -33,7 +33,7 @@ void AAAAgames::EntityGCComSys::GC()
 	m_GCList.clear();
 }
 
-void AAAAgames::EntityGCComSys::_ON_GC(EventQueue<EngineEventType>::EventPtr e)
+void longmarch::EntityGCComSys::_ON_GC(EventQueue<EngineEventType>::EventPtr e)
 {
 	LOCK_GUARD_NC();
 	auto event = std::static_pointer_cast<EngineGCEvent>(e);
@@ -45,7 +45,7 @@ void AAAAgames::EntityGCComSys::_ON_GC(EventQueue<EngineEventType>::EventPtr e)
 	}
 }
 
-void AAAAgames::EntityGCComSys::_ON_GC_RECURSIVE(EventQueue<EngineEventType>::EventPtr e)
+void longmarch::EntityGCComSys::_ON_GC_RECURSIVE(EventQueue<EngineEventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<EngineGCEvent>(e);
 	if (event->m_entity.Valid() && m_parentWorld == event->m_entity.GetWorld())
@@ -55,7 +55,7 @@ void AAAAgames::EntityGCComSys::_ON_GC_RECURSIVE(EventQueue<EngineEventType>::Ev
 	}
 }
 
-void AAAAgames::EntityGCComSys::GCRecursive(EntityDecorator e)
+void longmarch::EntityGCComSys::GCRecursive(EntityDecorator e)
 {
 	LockNC();
 	m_GCList.push_back(e);

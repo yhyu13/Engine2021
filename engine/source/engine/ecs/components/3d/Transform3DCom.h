@@ -4,7 +4,7 @@
 #include "engine/math/Geommath.h"
 #include "engine/ecs/EntityDecorator.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	struct CACHE_ALIGN32 Transform3DCom final : BaseComponent<Transform3DCom>
 	{

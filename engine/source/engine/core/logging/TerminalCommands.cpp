@@ -6,7 +6,7 @@
 #include <optional>
 #include <charconv>
 
-namespace AAAAgames
+namespace longmarch
 {
 	constexpr std::array local_command_list{
 			TerminalCommands::command_type{"clear", "clears the terminal screen", TerminalCommands::clear, TerminalCommands::no_completion},

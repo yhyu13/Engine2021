@@ -1,21 +1,21 @@
 #include "engine-precompiled-header.h"
 #include "GridF32.h"
 
-AAAAgames::GridF32Proxy::GridF32Proxy(float* array, size_t size)
+longmarch::GridF32Proxy::GridF32Proxy(float* array, size_t size)
 	:
 	m_size(size)
 {
 	m_array = array;
 }
 
-AAAAgames::GridF32::GridF32()
+longmarch::GridF32::GridF32()
 	:
 	m_x(0),
 	m_y(0),
 	m_grid(nullptr)
 {}
 
-AAAAgames::GridF32::GridF32(size_t x, size_t y)
+longmarch::GridF32::GridF32(size_t x, size_t y)
 	:
 	m_x(x),
 	m_y(y)
@@ -31,7 +31,7 @@ AAAAgames::GridF32::GridF32(size_t x, size_t y)
 	}
 }
 
-AAAAgames::GridF32::GridF32(const GridF32& rhs)
+longmarch::GridF32::GridF32(const GridF32& rhs)
 {
 	auto x = rhs.m_x;
 	auto y = rhs.m_y;
@@ -48,7 +48,7 @@ AAAAgames::GridF32::GridF32(const GridF32& rhs)
 	}
 }
 
-AAAAgames::GridF32::GridF32(GridF32&& other)
+longmarch::GridF32::GridF32(GridF32&& other)
 {
 	m_x = other.m_x;
 	m_y = other.m_y;
@@ -56,7 +56,7 @@ AAAAgames::GridF32::GridF32(GridF32&& other)
 	other.m_grid = nullptr;
 }
 
-AAAAgames::GridF32::~GridF32()
+longmarch::GridF32::~GridF32()
 {
 	if (m_grid)
 	{
@@ -68,24 +68,24 @@ AAAAgames::GridF32::~GridF32()
 	}
 }
 
-size_t AAAAgames::GridF32::X()
+size_t longmarch::GridF32::X()
 {
 	return m_x;
 }
 
-size_t AAAAgames::GridF32::Y()
+size_t longmarch::GridF32::Y()
 {
 	return m_y;
 }
 
-AAAAgames::ArrayF32::ArrayF32()
+longmarch::ArrayF32::ArrayF32()
 	:
 	m_x(0),
 	m_grid(nullptr)
 {
 }
 
-AAAAgames::ArrayF32::ArrayF32(size_t x)
+longmarch::ArrayF32::ArrayF32(size_t x)
 {
 	m_x = x;
 	m_grid = (float*)MemoryManager::Allocate(x * sizeof(float));
@@ -95,7 +95,7 @@ AAAAgames::ArrayF32::ArrayF32(size_t x)
 	}
 }
 
-AAAAgames::ArrayF32::ArrayF32(const std::initializer_list<float>& elements)
+longmarch::ArrayF32::ArrayF32(const std::initializer_list<float>& elements)
 {
 	m_x = elements.size();
 	m_grid = (float*)MemoryManager::Allocate(m_x * sizeof(float));
@@ -106,7 +106,7 @@ AAAAgames::ArrayF32::ArrayF32(const std::initializer_list<float>& elements)
 	}
 }
 
-AAAAgames::ArrayF32::ArrayF32(const ArrayF32& rhs)
+longmarch::ArrayF32::ArrayF32(const ArrayF32& rhs)
 {
 	m_x = rhs.m_x;
 	m_grid = (float*)MemoryManager::Allocate(m_x * sizeof(float));
@@ -116,14 +116,14 @@ AAAAgames::ArrayF32::ArrayF32(const ArrayF32& rhs)
 	}
 }
 
-AAAAgames::ArrayF32::ArrayF32(ArrayF32&& rhs)
+longmarch::ArrayF32::ArrayF32(ArrayF32&& rhs)
 {
 	m_x = rhs.m_x;
 	m_grid = rhs.m_grid;
 	rhs.m_grid = nullptr;
 }
 
-AAAAgames::ArrayF32::~ArrayF32()
+longmarch::ArrayF32::~ArrayF32()
 {
 	if (m_grid)
 	{
@@ -132,12 +132,12 @@ AAAAgames::ArrayF32::~ArrayF32()
 	m_grid = nullptr;
 }
 
-size_t AAAAgames::ArrayF32::X() const
+size_t longmarch::ArrayF32::X() const
 {
 	return m_x;
 }
 
-ArrayF32 AAAAgames::ArrayF32::Inv() const
+ArrayF32 longmarch::ArrayF32::Inv() const
 {
 	ArrayF32 ret(*this);
 	for (size_t i(0); i < ret.X(); ++i)

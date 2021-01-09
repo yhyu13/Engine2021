@@ -4,13 +4,13 @@
 #include "engine/core/asset-manager/AssetLoader.h"
 #include "engine/renderer/Image2D.h"
 
-std::shared_ptr<Material> AAAAgames::Material::LoadFromFile(const fs::path& path)
+std::shared_ptr<Material> longmarch::Material::LoadFromFile(const fs::path& path)
 {
 	// TODO : implement material load from file function
 	return nullptr;
 }
 
-bool AAAAgames::Material::IsTextureValid(const std::shared_ptr<Texture2D>& tex)
+bool longmarch::Material::IsTextureValid(const std::shared_ptr<Texture2D>& tex)
 {
 	if (tex)
 	{
@@ -22,12 +22,12 @@ bool AAAAgames::Material::IsTextureValid(const std::shared_ptr<Texture2D>& tex)
 	}
 }
 
-void AAAAgames::Material::BindAllTexture(std::initializer_list<std::pair<uint32_t, Material::MAT_TEXTURE_TYPE>> textures_to_bind)
+void longmarch::Material::BindAllTexture(std::initializer_list<std::pair<uint32_t, Material::MAT_TEXTURE_TYPE>> textures_to_bind)
 {
-	BindAllTexture(A4GAMES_Vector<std::pair<uint32_t, Material::MAT_TEXTURE_TYPE>>(textures_to_bind));
+	BindAllTexture(LongMarch_Vector<std::pair<uint32_t, Material::MAT_TEXTURE_TYPE>>(textures_to_bind));
 }
 
-void AAAAgames::Material::BindAllTexture(const A4GAMES_Vector<std::pair<uint32_t, Material::MAT_TEXTURE_TYPE>>& textures_to_bind)
+void longmarch::Material::BindAllTexture(const LongMarch_Vector<std::pair<uint32_t, Material::MAT_TEXTURE_TYPE>>& textures_to_bind)
 {
 	static auto _resolveTexture = [](ResourceManager<Texture2D>::ResourceHandle& handle) -> std::shared_ptr<Texture2D>
 	{
@@ -65,7 +65,7 @@ void AAAAgames::Material::BindAllTexture(const A4GAMES_Vector<std::pair<uint32_t
 	}
 }
 
-void AAAAgames::Material::SetTexture(const std::string& name, const fs::path& filepath, Material::MAT_TEXTURE_TYPE type)
+void longmarch::Material::SetTexture(const std::string& name, const fs::path& filepath, Material::MAT_TEXTURE_TYPE type)
 {
 #define ASYNC_LOAD
 	auto resourceManager = ResourceManager<Texture2D>::GetInstance();
@@ -169,7 +169,7 @@ void AAAAgames::Material::SetTexture(const std::string& name, const fs::path& fi
 #endif
 }
 
-void AAAAgames::Material::UnsetTexture(Material::MAT_TEXTURE_TYPE type)
+void longmarch::Material::UnsetTexture(Material::MAT_TEXTURE_TYPE type)
 {
 	switch (type)
 	{

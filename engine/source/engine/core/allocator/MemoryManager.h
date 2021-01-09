@@ -8,18 +8,18 @@
 #define CUSTOM_ALLOCATOR 1
 #endif // _DEBUG
 
-namespace AAAAgames
+namespace longmarch
 {
 	template<class T>
-	using A4GAMES_Shared_ptr = std::shared_ptr<T>;
+	using LongMarch_Shared_ptr = std::shared_ptr<T>;
 	template<class T>
 	struct A4Games_Deleter;
 	template<class T>
-	using A4GAMES_Unique_ptr = std::unique_ptr<T>;
+	using LongMarch_Unique_ptr = std::unique_ptr<T>;
 
 	// Hard to work with custom deleter struct
 	//template<class T>
-	//using A4GAMES_Unique_ptr = std::unique_ptr<T, A4Games_Deleter<T>>;
+	//using LongMarch_Unique_ptr = std::unique_ptr<T, A4Games_Deleter<T>>;
 
 	/**
 	 * @brief Custom MemoryManager that uses a segregated memory list for 8 , 32, 64 alignments
@@ -45,7 +45,7 @@ namespace AAAAgames
 
 		// Replacement for make_shared
 		template<class T, typename... Arguments>
-		[[nodiscard]] inline constexpr static A4GAMES_Shared_ptr<T> Make_shared(Arguments&&... args) noexcept
+		[[nodiscard]] inline constexpr static LongMarch_Shared_ptr<T> Make_shared(Arguments&&... args) noexcept
 		{
 #if CUSTOM_ALLOCATOR == 1
 			return std::shared_ptr<T>(New<T>(std::forward<Arguments>(args)...), Delete<T>);
@@ -56,7 +56,7 @@ namespace AAAAgames
 
 		// Replacement for make_unique
 		template<class T, typename... Arguments>
-		[[nodiscard]] inline constexpr static A4GAMES_Unique_ptr<T> Make_unique(Arguments&&... args) noexcept
+		[[nodiscard]] inline constexpr static LongMarch_Unique_ptr<T> Make_unique(Arguments&&... args) noexcept
 		{
 			return std::make_unique<T>(std::forward<Arguments>(args)...);
 		}
@@ -191,6 +191,6 @@ namespace AAAAgames
 }
 
 template <class W, class U>
-inline bool operator==(const AAAAgames::Mallocator <W>&, const AAAAgames::Mallocator <U>&) { return true; }
+inline bool operator==(const longmarch::Mallocator <W>&, const longmarch::Mallocator <U>&) { return true; }
 template <class W, class U>
-inline bool operator!=(const AAAAgames::Mallocator <W>&, const AAAAgames::Mallocator <U>&) { return false; }
+inline bool operator!=(const longmarch::Mallocator <W>&, const longmarch::Mallocator <U>&) { return false; }

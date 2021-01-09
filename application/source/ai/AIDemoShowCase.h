@@ -5,7 +5,7 @@
 #include "engine/ecs/header/header.h"
 #include "ecs/header/header.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	void AIDemoShowCase() //Runs prefectly with taksh_scene-game & game2
 	{

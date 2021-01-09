@@ -10,12 +10,12 @@
 
 #ifdef DEBUG_DRAW
 
-namespace AAAAgames
+namespace longmarch
 {
 	Mat4 Animation3DComSys::BoneDebugRot{ Geommath::RotationMat(Geommath::ROT_AXIS::X, PI * 0.5f) };
 }
 
-void AAAAgames::Animation3DComSys::DebugDraw(EntityDecorator e)
+void longmarch::Animation3DComSys::DebugDraw(EntityDecorator e)
 {
 	auto anima = e.GetComponent<Animation3DCom>();
 	if (anima->debug.showBone)
@@ -178,7 +178,7 @@ void AAAAgames::Animation3DComSys::DebugDraw(EntityDecorator e)
 	}
 }
 
-EntityDecorator AAAAgames::Animation3DComSys::InitDebugSkeletonRecursive(EntityDecorator parent, const Skeleton::Node& node, int debug_bone_type)
+EntityDecorator longmarch::Animation3DComSys::InitDebugSkeletonRecursive(EntityDecorator parent, const Skeleton::Node& node, int debug_bone_type)
 {
 	auto world = parent.GetWorld();
 
@@ -224,7 +224,7 @@ EntityDecorator AAAAgames::Animation3DComSys::InitDebugSkeletonRecursive(EntityD
 	return node_;
 }
 
-EntityDecorator AAAAgames::Animation3DComSys::InitDebugEETarget(EntityDecorator parent)
+EntityDecorator longmarch::Animation3DComSys::InitDebugEETarget(EntityDecorator parent)
 {
 	auto world = parent.GetWorld();
 
@@ -252,7 +252,7 @@ EntityDecorator AAAAgames::Animation3DComSys::InitDebugEETarget(EntityDecorator 
 	return node_;
 }
 
-void AAAAgames::Animation3DComSys::DrawDebugSkeletonRecursive(const std::shared_ptr<Animation3D>& anima, const Animation3D::SkeletalAnimation& animation, const float animationTicks, EntityDecorator e, const Skeleton::Node& node)
+void longmarch::Animation3DComSys::DrawDebugSkeletonRecursive(const std::shared_ptr<Animation3D>& anima, const Animation3D::SkeletalAnimation& animation, const float animationTicks, EntityDecorator e, const Skeleton::Node& node)
 {
 	auto world = e.GetWorld();
 	if (const auto& anim = Animation3D::FindBoneAnima(animation, node.name); anim)

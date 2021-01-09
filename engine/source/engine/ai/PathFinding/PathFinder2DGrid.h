@@ -7,7 +7,7 @@
 #include <algorithm>
 #include "PathFindingDefs.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	namespace pathfinding
 	{
@@ -91,10 +91,10 @@ namespace AAAAgames
 				std::size_t operator()(const pPair& s) const noexcept
 				{
 					std::size_t res{ 0 };
-					A4GAMES_HashCombine(res, s.f);
-					A4GAMES_HashCombine(res, s.g);
-					A4GAMES_HashCombine(res, s.i);
-					A4GAMES_HashCombine(res, s.j);
+					LongMarch_HashCombine(res, s.f);
+					LongMarch_HashCombine(res, s.g);
+					LongMarch_HashCombine(res, s.i);
+					LongMarch_HashCombine(res, s.j);
 					return res;
 				}
 			};

@@ -4,7 +4,7 @@
 #include "engine/core/exception/EngineException.h"
 #include "engine/core/utility/TypeHelper.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class GameWorld;
 
@@ -41,8 +41,8 @@ namespace AAAAgames
 		template<typename ComponentType>
 		bool HasComponent();
 
-		__A4GAMES_TRVIAL_TEMPLATE__
-		A4GAMES_Vector<BaseComponentInterface*> GetAllComponent();
+		__LongMarch_TRVIAL_TEMPLATE__
+		LongMarch_Vector<BaseComponentInterface*> GetAllComponent();
 
 		inline bool Valid() const
 		{
@@ -97,16 +97,16 @@ namespace AAAAgames
 	};
 }
 
-__A4GAMES_TRVIAL_TEMPLATE__
-std::ostream& operator<<(std::ostream& os, const AAAAgames::EntityDecorator& ed);
+__LongMarch_TRVIAL_TEMPLATE__
+std::ostream& operator<<(std::ostream& os, const longmarch::EntityDecorator& ed);
 
-__A4GAMES_TRVIAL_TEMPLATE__
+__LongMarch_TRVIAL_TEMPLATE__
 bool operator==(const EntityDecorator& lhs, const EntityDecorator& rhs);
 
-__A4GAMES_TRVIAL_TEMPLATE__
+__LongMarch_TRVIAL_TEMPLATE__
 bool operator!=(const EntityDecorator& lhs, const EntityDecorator& rhs);
 
-__A4GAMES_TRVIAL_TEMPLATE__
+__LongMarch_TRVIAL_TEMPLATE__
 bool operator<(const EntityDecorator& lhs, const EntityDecorator& rhs);
 
 /*
@@ -115,11 +115,11 @@ bool operator<(const EntityDecorator& lhs, const EntityDecorator& rhs);
 namespace std
 {
 	template <>
-	struct hash<AAAAgames::EntityDecorator>
+	struct hash<longmarch::EntityDecorator>
 	{
-		std::size_t operator()(const AAAAgames::EntityDecorator& e) const
+		std::size_t operator()(const longmarch::EntityDecorator& e) const
 		{
-			return hash<AAAAgames::EntityID>()(e.GetID());
+			return hash<longmarch::EntityID>()(e.GetID());
 		}
 	};
 }

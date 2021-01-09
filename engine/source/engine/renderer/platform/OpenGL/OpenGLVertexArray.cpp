@@ -2,26 +2,26 @@
 #include "OpenGLVertexArray.h"
 #include <glad/glad.h>
 
-namespace AAAAgames {
+namespace longmarch {
 
 	static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
 	{
 		switch (type)
 		{
-		case AAAAgames::ShaderDataType::Float:    return GL_FLOAT;
-		case AAAAgames::ShaderDataType::Float2:   return GL_FLOAT;
-		case AAAAgames::ShaderDataType::Float3:   return GL_FLOAT;
-		case AAAAgames::ShaderDataType::Float4:   return GL_FLOAT;
-		case AAAAgames::ShaderDataType::HFloat:    return GL_HALF_FLOAT;
-		case AAAAgames::ShaderDataType::HFloat2:   return GL_HALF_FLOAT;
-		case AAAAgames::ShaderDataType::HFloat3:   return GL_HALF_FLOAT;
-		case AAAAgames::ShaderDataType::HFloat4:   return GL_HALF_FLOAT;
-		case AAAAgames::ShaderDataType::Int:      return GL_INT;
-		case AAAAgames::ShaderDataType::Int2:     return GL_INT;
-		case AAAAgames::ShaderDataType::Int3:     return GL_INT;
-		case AAAAgames::ShaderDataType::Int4:     return GL_INT;
-		case AAAAgames::ShaderDataType::uInt:	 return GL_UNSIGNED_INT;
-		case AAAAgames::ShaderDataType::Bool:     return GL_BOOL;
+		case longmarch::ShaderDataType::Float:    return GL_FLOAT;
+		case longmarch::ShaderDataType::Float2:   return GL_FLOAT;
+		case longmarch::ShaderDataType::Float3:   return GL_FLOAT;
+		case longmarch::ShaderDataType::Float4:   return GL_FLOAT;
+		case longmarch::ShaderDataType::HFloat:    return GL_HALF_FLOAT;
+		case longmarch::ShaderDataType::HFloat2:   return GL_HALF_FLOAT;
+		case longmarch::ShaderDataType::HFloat3:   return GL_HALF_FLOAT;
+		case longmarch::ShaderDataType::HFloat4:   return GL_HALF_FLOAT;
+		case longmarch::ShaderDataType::Int:      return GL_INT;
+		case longmarch::ShaderDataType::Int2:     return GL_INT;
+		case longmarch::ShaderDataType::Int3:     return GL_INT;
+		case longmarch::ShaderDataType::Int4:     return GL_INT;
+		case longmarch::ShaderDataType::uInt:	 return GL_UNSIGNED_INT;
+		case longmarch::ShaderDataType::Bool:     return GL_BOOL;
 		}
 
 		ASSERT(false, "Unknown ShaderDataType!");

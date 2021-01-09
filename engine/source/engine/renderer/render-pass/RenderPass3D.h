@@ -6,7 +6,7 @@
 #include "engine/ecs/components/3d/Scene3DCom.h"
 #include "engine/physics/Shape.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/**
 	 * @brief Base class of render pass

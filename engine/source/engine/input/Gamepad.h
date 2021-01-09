@@ -3,7 +3,7 @@
 #include "GamepadButtonsAndAxes.h"
 #include <functional>
 
-namespace AAAAgames
+namespace longmarch
 {
 	struct XY_Pair
 	{

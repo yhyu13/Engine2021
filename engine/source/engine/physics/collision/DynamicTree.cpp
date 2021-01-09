@@ -2,7 +2,7 @@
 
 #include "DynamicTree.h"
 
-namespace AAAAgames
+namespace longmarch
 {
     DynamicTreeNode::DynamicTreeNode()
         : m_parent(NULL_NODE),

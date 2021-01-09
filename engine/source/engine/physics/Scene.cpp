@@ -5,7 +5,7 @@
 
 #define MAX_ITERATIONS 3
 
-namespace AAAAgames
+namespace longmarch
 {
     Scene::Scene(const Vec3f& gravity)
         : m_gravity(gravity),
@@ -21,7 +21,7 @@ namespace AAAAgames
         RemoveAllBodies();
     }
 
-    void Scene::BroadPhase(A4GAMES_Vector<Manifold>& contacts)
+    void Scene::BroadPhase(LongMarch_Vector<Manifold>& contacts)
     {
         //contacts.clear();
 
@@ -32,13 +32,13 @@ namespace AAAAgames
         //}
     }
 
-    A4GAMES_Vector<Manifold> Scene::NarrowPhase(A4GAMES_Vector<Manifold>& contacts, f32 dt)
+    LongMarch_Vector<Manifold> Scene::NarrowPhase(LongMarch_Vector<Manifold>& contacts, f32 dt)
     {
         ///////////////////////////////////////////////////////////////////////////////////////////
         // TODO: use BVH to optimize
         ///////////////////////////////////////////////////////////////////////////////////////////
 
-        A4GAMES_Vector<Manifold> manifold;
+        LongMarch_Vector<Manifold> manifold;
 
         for (auto iter = m_rbList.begin(); iter != m_rbList.end(); ++iter)
         {
@@ -174,7 +174,7 @@ namespace AAAAgames
         }
 
         // do broadphase collision check
-        A4GAMES_Vector<Manifold> contacts;
+        LongMarch_Vector<Manifold> contacts;
         
         // loop collision check and resolution until either max. iterations achieved or no collisions detected
         for (unsigned int i = 0; i < MAX_ITERATIONS; ++i)
@@ -183,7 +183,7 @@ namespace AAAAgames
             //BroadPhase(contacts);
 
             // NarrowPhase
-            A4GAMES_Vector<Manifold> manifold = NarrowPhase(contacts, dt);
+            LongMarch_Vector<Manifold> manifold = NarrowPhase(contacts, dt);
 
             if (manifold.empty())
                 break;
@@ -197,7 +197,7 @@ namespace AAAAgames
                 // resolve each contact in the list
                 ResolveCollision(elem, dt, m_enableFriction);
                 size_t hash;
-                A4GAMES_HashCombine(hash, elem.m_A->GetEntity(), elem.m_B->GetEntity());
+                LongMarch_HashCombine(hash, elem.m_A->GetEntity(), elem.m_B->GetEntity());
                 m_contactPairs[hash] = elem;
             }
         }
@@ -208,14 +208,14 @@ namespace AAAAgames
         
         // addition collision check to push out anything with static collision so that objects don't "sink" into the ground
         {
-            A4GAMES_Vector<Manifold> manifold = NarrowPhase(contacts, dt);
+            LongMarch_Vector<Manifold> manifold = NarrowPhase(contacts, dt);
 
             for (auto& elem : manifold)
             {
                 // resolve each contact in the list
                 ResolveCollision(elem, dt, m_enableFriction);
                 size_t hash;
-                A4GAMES_HashCombine(hash, elem.m_A->GetEntity(), elem.m_B->GetEntity());
+                LongMarch_HashCombine(hash, elem.m_A->GetEntity(), elem.m_B->GetEntity());
                 m_contactPairs[hash] = elem;
             }
         }

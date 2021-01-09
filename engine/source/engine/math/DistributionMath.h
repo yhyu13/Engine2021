@@ -2,7 +2,7 @@
 #include "MathUtil.h"
 #include "GridF32.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class DistributionMath
 	{

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace AAAAgames {
+namespace longmarch {
 	struct InstrumentorResult {
 		const char* m_name;
 		double m_time;

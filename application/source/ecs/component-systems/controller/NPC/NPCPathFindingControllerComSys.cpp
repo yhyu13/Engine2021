@@ -8,7 +8,7 @@
 #include "engine/core/utility/Random.h"
 #include "engine/ai/PathFinding/PostProcessing.h"
 
-void AAAAgames::NPCPathFindingControllerComSys::Init()
+void longmarch::NPCPathFindingControllerComSys::Init()
 {
 	{
 		auto queue = EventQueue<CS560EventType>::GetInstance();
@@ -19,7 +19,7 @@ void AAAAgames::NPCPathFindingControllerComSys::Init()
 	}
 }
 
-void AAAAgames::NPCPathFindingControllerComSys::_ON_GEN_RND_PATH(EventQueue<CS560EventType>::EventPtr e)
+void longmarch::NPCPathFindingControllerComSys::_ON_GEN_RND_PATH(EventQueue<CS560EventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<CS560GenRndPathEvent>(e);
 	if (m_parentWorld == event->m_entity.GetWorld())
@@ -42,12 +42,12 @@ void AAAAgames::NPCPathFindingControllerComSys::_ON_GEN_RND_PATH(EventQueue<CS56
 		{
 			AddEntity(event->m_entity);
 
-			A4GAMES_Vector<int> indices;
-			A4GAMES_Range(indices, 0, NumPoints - 1, 1);
+			LongMarch_Vector<int> indices;
+			LongMarch_Range(indices, 0, NumPoints - 1, 1);
 			std::shuffle(indices.begin(), indices.end(), Random::s_RandomEngine);
 
 			int num_points = RAND_I(4, NumPoints);
-			A4GAMES_Vector<Vec3f> chosen_path;
+			LongMarch_Vector<Vec3f> chosen_path;
 			while (num_points > 0)
 			{
 				chosen_path.emplace_back(Points[indices[--num_points]]);
@@ -79,7 +79,7 @@ void AAAAgames::NPCPathFindingControllerComSys::_ON_GEN_RND_PATH(EventQueue<CS56
 	}
 }
 
-void AAAAgames::NPCPathFindingControllerComSys::_ON_SET_PATHER_CONTROL(EventQueue<CS560EventType>::EventPtr e)
+void longmarch::NPCPathFindingControllerComSys::_ON_SET_PATHER_CONTROL(EventQueue<CS560EventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<CS560PatherControlEvent>(e);
 	if (m_parentWorld == event->m_entity.GetWorld())
@@ -108,7 +108,7 @@ void AAAAgames::NPCPathFindingControllerComSys::_ON_SET_PATHER_CONTROL(EventQueu
 	}
 }
 
-void AAAAgames::NPCPathFindingControllerComSys::_ON_SET_PATHER_MISC(EventQueue<CS560EventType>::EventPtr e)
+void longmarch::NPCPathFindingControllerComSys::_ON_SET_PATHER_MISC(EventQueue<CS560EventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<CS560PatherMiscEvent>(e);
 	if (m_parentWorld == event->m_entity.GetWorld())
@@ -138,7 +138,7 @@ void AAAAgames::NPCPathFindingControllerComSys::_ON_SET_PATHER_MISC(EventQueue<C
 	}
 }
 
-void AAAAgames::NPCPathFindingControllerComSys::_ON_SET_PATHER_SMOOTH_SETTING(EventQueue<CS560EventType>::EventPtr e)
+void longmarch::NPCPathFindingControllerComSys::_ON_SET_PATHER_SMOOTH_SETTING(EventQueue<CS560EventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<CS560PatherSmoothSettingEvent>(e);
 	if (m_parentWorld == event->m_entity.GetWorld())
@@ -160,7 +160,7 @@ void AAAAgames::NPCPathFindingControllerComSys::_ON_SET_PATHER_SMOOTH_SETTING(Ev
 	}
 }
 
-void AAAAgames::NPCPathFindingControllerComSys::DebugDrawOriginalPath(PathMoverData& data)
+void longmarch::NPCPathFindingControllerComSys::DebugDrawOriginalPath(PathMoverData& data)
 {
 	// Remove previous debug
 	{
@@ -215,7 +215,7 @@ void AAAAgames::NPCPathFindingControllerComSys::DebugDrawOriginalPath(PathMoverD
 	}
 }
 
-void AAAAgames::NPCPathFindingControllerComSys::DebugDrawSmoothPath(PathMoverData& data)
+void longmarch::NPCPathFindingControllerComSys::DebugDrawSmoothPath(PathMoverData& data)
 {
 	// Remove previous debug
 	{
@@ -270,7 +270,7 @@ void AAAAgames::NPCPathFindingControllerComSys::DebugDrawSmoothPath(PathMoverDat
 	}
 }
 
-void AAAAgames::NPCPathFindingControllerComSys::Update(double dt)
+void longmarch::NPCPathFindingControllerComSys::Update(double dt)
 {
 	EntityType e_type;
 	switch (Engine::GetEngineMode())
@@ -344,7 +344,7 @@ void AAAAgames::NPCPathFindingControllerComSys::Update(double dt)
 			}
 
 			// Update transformation
-			if (auto t1 = A4GAMES_lowerBoundFindIndex(data.smooth_path_arc_lengthLUT, data.current_distance);
+			if (auto t1 = LongMarch_lowerBoundFindIndex(data.smooth_path_arc_lengthLUT, data.current_distance);
 				t1 != -1 && t1 != 0)
 			{
 				auto t0 = t1 - 1;

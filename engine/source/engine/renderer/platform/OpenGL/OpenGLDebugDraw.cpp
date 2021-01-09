@@ -8,7 +8,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-namespace AAAAgames {
+namespace longmarch {
 	struct DebugDrawProps
 	{
 		std::shared_ptr<Shader> DebugShader;

@@ -1,7 +1,7 @@
 #pragma once
 #include "GameWorld.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	template<typename ComponentType>
 	inline bool GameWorld::HasComponent(const Entity& entity) {
@@ -43,16 +43,16 @@ namespace AAAAgames
 	}
 
 	template<class ...Components>
-	inline const A4GAMES_Vector<Entity> GameWorld::EntityView()
+	inline const LongMarch_Vector<Entity> GameWorld::EntityView()
 	{
 		LOCK_GUARD_NC();
 		if constexpr (sizeof...(Components) == 0)
 		{
-			return A4GAMES_Vector<Entity>();
+			return LongMarch_Vector<Entity>();
 		}
 		else
 		{
-			A4GAMES_Vector<Entity> ret;
+			LongMarch_Vector<Entity> ret;
 			BitMaskSignature mask; mask.AddComponent<Components...>();
 			for (const auto& [entity, entity_mask] : m_entityMasks)
 			{
@@ -140,11 +140,11 @@ namespace AAAAgames
 				++split_size;
 			}
 			int num_e_left = num_e;
-			A4GAMES_Vector<std::future<void>> _jobs;
+			LongMarch_Vector<std::future<void>> _jobs;
 
 			while ((num_e_left -= split_size) > 0)
 			{
-				const A4GAMES_Vector<Entity> split_es(_begin, _begin + split_size);
+				const LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
 				_begin += split_size;
 				_jobs.emplace_back(std::move(pool.enqueue_task([this, func, split_es = std::move(split_es)]() {
 					_MultiThreadExceptionCatcher(
@@ -160,7 +160,7 @@ namespace AAAAgames
 			if (num_e_left <= 0)
 			{
 				split_size += num_e_left;
-				const A4GAMES_Vector<Entity> split_es(_begin, _begin + split_size);
+				const LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
 				_begin += split_size;
 				ENGINE_EXCEPT_IF(_begin != _end, L"Reach end condition does not meet!");
 				_jobs.emplace_back(std::move(pool.enqueue_task([this, func, split_es = std::move(split_es)]() {

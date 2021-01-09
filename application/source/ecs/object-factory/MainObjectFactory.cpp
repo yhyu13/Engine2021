@@ -7,17 +7,17 @@
 #include "editor/ecs/header/header.h"
 #include "ecs/header/header.h"
 
-AAAAgames::MainObjectFactory::MainObjectFactory()
+longmarch::MainObjectFactory::MainObjectFactory()
 {
 	s_instance = this;
 	m_EntityNameToTypeList.emplace_back(GameEntity::TypeNameMap);
 	m_EntityTypeToNameList.emplace_back(GameEntity::TypeNameMapInv);
 
-	const A4GAMES_Vector<std::string> components{
+	const LongMarch_Vector<std::string> components{
 	};
 	std::move(components.begin(), components.end(), std::back_inserter(m_ComponentNameList));
 
-	const A4GAMES_Vector<std::string> componentSys{
+	const LongMarch_Vector<std::string> componentSys{
 		"EditorCameraControllerComSys",
 		"PlayerControllerComSys",
 		"EditorPickingComSys",
@@ -28,7 +28,7 @@ AAAAgames::MainObjectFactory::MainObjectFactory()
 	std::move(componentSys.begin(), componentSys.end(), std::back_inserter(m_ComponentSystemNameList));
 }
 
-BaseComponentInterface* AAAAgames::MainObjectFactory::AddComponentByName(const std::string& com_type, EntityDecorator e) const
+BaseComponentInterface* longmarch::MainObjectFactory::AddComponentByName(const std::string& com_type, EntityDecorator e) const
 {
 	auto com = ObjectFactory::AddComponentByName(com_type, e);
 	if (!com)
@@ -75,7 +75,7 @@ BaseComponentInterface* AAAAgames::MainObjectFactory::AddComponentByName(const s
 	return com;
 }
 
-std::shared_ptr<BaseComponentSystem> AAAAgames::MainObjectFactory::AddComponentSystemByName(const std::string& comsys_type, GameWorld* world) const
+std::shared_ptr<BaseComponentSystem> longmarch::MainObjectFactory::AddComponentSystemByName(const std::string& comsys_type, GameWorld* world) const
 {
 	auto system = ObjectFactory::AddComponentSystemByName(comsys_type, world);
 	if (!system)
@@ -127,7 +127,7 @@ std::shared_ptr<BaseComponentSystem> AAAAgames::MainObjectFactory::AddComponentS
 	return system;
 }
 
-bool AAAAgames::MainObjectFactory::RemoveComponentByName(const std::string& com_type, EntityDecorator entity) const
+bool longmarch::MainObjectFactory::RemoveComponentByName(const std::string& com_type, EntityDecorator entity) const
 {
 	if (!ObjectFactory::RemoveComponentByName(com_type, entity))
 	{
@@ -137,7 +137,7 @@ bool AAAAgames::MainObjectFactory::RemoveComponentByName(const std::string& com_
 	return true;
 }
 
-bool AAAAgames::MainObjectFactory::RemoveComponentSystemByName(const std::string& comsys_type, GameWorld* world) const
+bool longmarch::MainObjectFactory::RemoveComponentSystemByName(const std::string& comsys_type, GameWorld* world) const
 {
 	if (!ObjectFactory::RemoveComponentSystemByName(comsys_type, world))
 	{
@@ -147,24 +147,24 @@ bool AAAAgames::MainObjectFactory::RemoveComponentSystemByName(const std::string
 	return true;
 }
 
-void AAAAgames::MainObjectFactory::LoadLevel(const fs::path& filepath, GameWorld* world) const
+void longmarch::MainObjectFactory::LoadLevel(const fs::path& filepath, GameWorld* world) const
 {
 	FileSystem::ExistCheck(filepath);
 	throw NotImplementedException();
 }
 
-void AAAAgames::MainObjectFactory::SaveLevel(const fs::path& filepath, GameWorld* world) const
+void longmarch::MainObjectFactory::SaveLevel(const fs::path& filepath, GameWorld* world) const
 {
 	throw NotImplementedException();
 }
 
-void AAAAgames::MainObjectFactory::LoadResources(const fs::path& filepath, GameWorld* world) const
+void longmarch::MainObjectFactory::LoadResources(const fs::path& filepath, GameWorld* world) const
 {
 	FileSystem::ExistCheck(filepath);
 	const auto& json = FileSystem::GetCachedJsonCPP(filepath);
 
 	// Multithread loading of resources (but still stall the calling thread to wait for all resources to be loaded)
-	A4GAMES_Vector<AssetLoader::LoaderRef> waitList;
+	LongMarch_Vector<AssetLoader::LoaderRef> waitList;
 	{
 		const auto& polys = json["model"];
 		ResourceManager<AssimpSceneObject>::GetInstance()->SetLoadFromFileFunc(AssimpSceneObject::LoadFromFile);
@@ -244,7 +244,7 @@ void AAAAgames::MainObjectFactory::LoadResources(const fs::path& filepath, GameW
 	AssetLoader::WaitForAll(waitList);
 }
 
-void AAAAgames::MainObjectFactory::LoadSystems(const fs::path& filepath, GameWorld* world) const
+void longmarch::MainObjectFactory::LoadSystems(const fs::path& filepath, GameWorld* world) const
 {
 	FileSystem::ExistCheck(filepath);
 	Json::Value systems = FileSystem::GetCachedJsonCPP(filepath)["system"];
@@ -260,7 +260,7 @@ void AAAAgames::MainObjectFactory::LoadSystems(const fs::path& filepath, GameWor
 	DEBUG_PRINT("Finish loading system.");
 }
 
-void AAAAgames::MainObjectFactory::LoadGameWorldScene(const fs::path& filepath, GameWorld* world) const
+void longmarch::MainObjectFactory::LoadGameWorldScene(const fs::path& filepath, GameWorld* world) const
 {
 	FileSystem::ExistCheck(filepath);
 	Json::Value doc;
@@ -279,7 +279,7 @@ void AAAAgames::MainObjectFactory::LoadGameWorldScene(const fs::path& filepath, 
 	}
 }
 
-void AAAAgames::MainObjectFactory::DeserializeEntity(EntityDecorator parentEntity, const Json::Value& object, GameWorld* world, int level) const
+void longmarch::MainObjectFactory::DeserializeEntity(EntityDecorator parentEntity, const Json::Value& object, GameWorld* world, int level) const
 {
 	const auto& type = object["0_type"];
 	if (type.isNull())
@@ -320,7 +320,7 @@ void AAAAgames::MainObjectFactory::DeserializeEntity(EntityDecorator parentEntit
 	}
 }
 
-void AAAAgames::MainObjectFactory::DeserializedCom(EntityDecorator entity, const Json::Value& id, const Json::Value& value) const
+void longmarch::MainObjectFactory::DeserializedCom(EntityDecorator entity, const Json::Value& id, const Json::Value& value) const
 {
 	if (id.isNull())
 	{
@@ -335,7 +335,7 @@ void AAAAgames::MainObjectFactory::DeserializedCom(EntityDecorator entity, const
 	com->JsonDeserialize(value);
 }
 
-void AAAAgames::MainObjectFactory::SaveGameWorldScene(const fs::path& filepath, GameWorld* world) const
+void longmarch::MainObjectFactory::SaveGameWorldScene(const fs::path& filepath, GameWorld* world) const
 {
 	FileSystem::ExistCheck(filepath);
 	Json::Value doc;
@@ -370,7 +370,7 @@ void AAAAgames::MainObjectFactory::SaveGameWorldScene(const fs::path& filepath, 
 	}
 }
 
-void AAAAgames::MainObjectFactory::SerializeEntity(EntityDecorator parentEntity, Json::Value& object, GameWorld* world, int level) const
+void longmarch::MainObjectFactory::SerializeEntity(EntityDecorator parentEntity, Json::Value& object, GameWorld* world, int level) const
 {
 	if (level == 0)
 	{
@@ -398,7 +398,7 @@ void AAAAgames::MainObjectFactory::SerializeEntity(EntityDecorator parentEntity,
 	}
 }
 
-Json::Value AAAAgames::MainObjectFactory::SerializedCom(EntityDecorator entity) const
+Json::Value longmarch::MainObjectFactory::SerializedCom(EntityDecorator entity) const
 {
 	Json::Value val;
 	{

@@ -3,7 +3,7 @@
 #include "engine/math/Geommath.h"
 #include "engine/core/EngineCore.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	class ENGINE_API Shader
 	{
 	public:

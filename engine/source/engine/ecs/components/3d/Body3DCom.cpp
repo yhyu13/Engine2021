@@ -2,42 +2,42 @@
 #include "Body3DCom.h"
 #include "engine/ecs/object-factory/ObjectFactory.h"
 
-AAAAgames::Body3DCom::Body3DCom(const Entity& e)
+longmarch::Body3DCom::Body3DCom(const Entity& e)
 	: m_this(e)
 {
 }
 
-std::shared_ptr<Shape> AAAAgames::Body3DCom::GetBV()
+std::shared_ptr<Shape> longmarch::Body3DCom::GetBV()
 {
 	LOCK_GUARD2();
 	return m_boundingVolume;
 }
 
-void AAAAgames::Body3DCom::ResetOtherEntity()
+void longmarch::Body3DCom::ResetOtherEntity()
 {
 	LOCK_GUARD2();
 	m_otherEntity = Entity();
 }
 
-void AAAAgames::Body3DCom::SetOtherEntity(const Entity& other)
+void longmarch::Body3DCom::SetOtherEntity(const Entity& other)
 {
 	LOCK_GUARD2();
 	m_otherEntity = other;
 }
 
-const Entity& AAAAgames::Body3DCom::GetOtherEntity()
+const Entity& longmarch::Body3DCom::GetOtherEntity()
 {
 	LOCK_GUARD2();
 	return m_otherEntity;
 }
 
-bool AAAAgames::Body3DCom::HasRigidBody() const
+bool longmarch::Body3DCom::HasRigidBody() const
 {
 	LOCK_GUARD2();
 	return m_body != nullptr;
 }
 
-RBType AAAAgames::Body3DCom::GetRigidBodyType() const
+RBType longmarch::Body3DCom::GetRigidBodyType() const
 {
 	LOCK_GUARD2();
 	if (m_body != nullptr)
@@ -46,19 +46,19 @@ RBType AAAAgames::Body3DCom::GetRigidBodyType() const
 	return RBType::EMPTY;
 }
 
-void AAAAgames::Body3DCom::AssignRigidBody(const std::shared_ptr<RigidBody>& rb)
+void longmarch::Body3DCom::AssignRigidBody(const std::shared_ptr<RigidBody>& rb)
 {
 	LOCK_GUARD2();
 	m_body = rb;
 }
 
-void AAAAgames::Body3DCom::UnassignRigidBody()
+void longmarch::Body3DCom::UnassignRigidBody()
 {
 	LOCK_GUARD2();
 	m_body = nullptr;
 }
 
-void AAAAgames::Body3DCom::UpdateRigidBody()
+void longmarch::Body3DCom::UpdateRigidBody()
 {
 	LOCK_GUARD2();
 	if (m_body)
@@ -68,7 +68,7 @@ void AAAAgames::Body3DCom::UpdateRigidBody()
 	}
 }
 
-void AAAAgames::Body3DCom::UpdateBody3DCom()
+void longmarch::Body3DCom::UpdateBody3DCom()
 {
 	LOCK_GUARD2();
 	if (m_body)
@@ -78,7 +78,7 @@ void AAAAgames::Body3DCom::UpdateBody3DCom()
 	}
 }
 
-const AAAAgames::RBTransform& AAAAgames::Body3DCom::GetRBTrans() const
+const longmarch::RBTransform& longmarch::Body3DCom::GetRBTrans() const
 {
 	LOCK_GUARD2();
 	ENGINE_EXCEPT_IF(m_body == nullptr, L"Trying to access Rigid Body Transform but Rigid Body does not exist!");
@@ -86,7 +86,7 @@ const AAAAgames::RBTransform& AAAAgames::Body3DCom::GetRBTrans() const
 	return m_body->GetRBTrans();
 }
 
-bool AAAAgames::Body3DCom::IsRBAwake() const
+bool longmarch::Body3DCom::IsRBAwake() const
 {
 	LOCK_GUARD2();
 	if (m_body == nullptr)
@@ -95,7 +95,7 @@ bool AAAAgames::Body3DCom::IsRBAwake() const
 	return m_body->IsAwake();
 }
 
-void AAAAgames::Body3DCom::JsonSerialize(Json::Value& value)
+void longmarch::Body3DCom::JsonSerialize(Json::Value& value)
 {
 	LOCK_GUARD2();
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
@@ -144,7 +144,7 @@ void AAAAgames::Body3DCom::JsonSerialize(Json::Value& value)
 				}
 				if (m_bodyInfo.linearVelocity != _default.m_bodyInfo.linearVelocity)
 				{
-					rigigBodyData["linear-velocity"] = A4GAMES_ArrayToJsonValue(m_bodyInfo.linearVelocity, 3);
+					rigigBodyData["linear-velocity"] = LongMarch_ArrayToJsonValue(m_bodyInfo.linearVelocity, 3);
 				}
 				if (m_bodyInfo.colliderDimensionExtent != _default.m_bodyInfo.colliderDimensionExtent)
 				{
@@ -152,12 +152,12 @@ void AAAAgames::Body3DCom::JsonSerialize(Json::Value& value)
 				}
 				if (m_bodyInfo.entityTypeIngoreSet != _default.m_bodyInfo.entityTypeIngoreSet)
 				{
-					A4GAMES_Vector<std::string> vec;
+					LongMarch_Vector<std::string> vec;
 					for (auto type : m_bodyInfo.entityTypeIngoreSet)
 					{
 						vec.push_back(ObjectFactory::s_instance->GetEntityNameFromType(type));
 					}
-					rigigBodyData["type-to-ingore"] = A4GAMES_ArrayToJsonValue(vec, vec.size());
+					rigigBodyData["type-to-ingore"] = LongMarch_ArrayToJsonValue(vec, vec.size());
 				}
 			}
 		}
@@ -168,7 +168,7 @@ void AAAAgames::Body3DCom::JsonSerialize(Json::Value& value)
 	}
 }
 
-void AAAAgames::Body3DCom::JsonDeserialize(const Json::Value& value)
+void longmarch::Body3DCom::JsonDeserialize(const Json::Value& value)
 {
 	if (value.isNull())
 	{

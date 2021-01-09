@@ -2,7 +2,7 @@
 #include "EntityDecorator.h"
 #include "ComponentManager.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	/**
 	 * @brief Component decorators are the wrapper constructs for components.
 		These decorators help in creating useful abstractions for

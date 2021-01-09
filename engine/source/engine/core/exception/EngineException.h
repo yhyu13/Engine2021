@@ -4,7 +4,7 @@
 #include <string>
 #include <exception>
 
-namespace AAAAgames
+namespace longmarch
 {
 #define ENGINE_EXCEPT(ARG) EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, ARG))
 #define ENGINE_EXCEPT_IF(COND, ARG) if (COND) EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, ARG))

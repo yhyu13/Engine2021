@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "BaseWidgetManager.h"
 
-void AAAAgames::BaseWidgetManager::RenderUI()
+void longmarch::BaseWidgetManager::RenderUI()
 {
 	// Render widgets
 	for (auto& [_, widget] : m_WidgetLUT)
@@ -13,12 +13,12 @@ void AAAAgames::BaseWidgetManager::RenderUI()
 	}
 }
 
-void AAAAgames::BaseWidgetManager::RegisterWidget(const std::string& name, const std::shared_ptr<BaseWidget>& w)
+void longmarch::BaseWidgetManager::RegisterWidget(const std::string& name, const std::shared_ptr<BaseWidget>& w)
 {
 	m_WidgetLUT.emplace(name, w);
 }
 
-BaseWidget* AAAAgames::BaseWidgetManager::GetWidget(const std::string& name)
+BaseWidget* longmarch::BaseWidgetManager::GetWidget(const std::string& name)
 {
 	if (auto it = m_WidgetLUT.find(name); it != m_WidgetLUT.end())
 	{
@@ -30,7 +30,7 @@ BaseWidget* AAAAgames::BaseWidgetManager::GetWidget(const std::string& name)
 	}
 }
 
-void AAAAgames::BaseWidgetManager::SetVisible(const std::string& name, bool visible)
+void longmarch::BaseWidgetManager::SetVisible(const std::string& name, bool visible)
 {
 	if (auto it = m_WidgetLUT.find(name); it != m_WidgetLUT.end())
 	{
@@ -42,7 +42,7 @@ void AAAAgames::BaseWidgetManager::SetVisible(const std::string& name, bool visi
 	}
 }
 
-bool AAAAgames::BaseWidgetManager::GetVisible(const std::string& name)
+bool longmarch::BaseWidgetManager::GetVisible(const std::string& name)
 {
 	if (auto it = m_WidgetLUT.find(name); it != m_WidgetLUT.end())
 	{

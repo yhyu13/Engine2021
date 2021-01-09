@@ -3,7 +3,7 @@
 
 #include <glad/glad.h>
 
-namespace AAAAgames {
+namespace longmarch {
 	void OpenGLRendererAPI::Init()
 	{
 		// Use [0,1] in NDC for depth values
@@ -320,23 +320,23 @@ namespace AAAAgames {
 		}
 	}
 
-	void OpenGLRendererAPI::DepthFunc(AAAAgames::RendererAPI::CompareEnum e)
+	void OpenGLRendererAPI::DepthFunc(longmarch::RendererAPI::CompareEnum e)
 	{
 		switch (e)
 		{
-		case AAAAgames::RendererAPI::CompareEnum::LESS:
+		case longmarch::RendererAPI::CompareEnum::LESS:
 			glDepthFunc(GL_LESS);
 			break;
-		case AAAAgames::RendererAPI::CompareEnum::LEQUAL:
+		case longmarch::RendererAPI::CompareEnum::LEQUAL:
 			glDepthFunc(GL_LEQUAL);
 			break;
-		case AAAAgames::RendererAPI::CompareEnum::EQUAL:
+		case longmarch::RendererAPI::CompareEnum::EQUAL:
 			glDepthFunc(GL_EQUAL);
 			break;
-		case AAAAgames::RendererAPI::CompareEnum::GEQUAL:
+		case longmarch::RendererAPI::CompareEnum::GEQUAL:
 			glDepthFunc(GL_GEQUAL);
 			break;
-		case AAAAgames::RendererAPI::CompareEnum::GREATER:
+		case longmarch::RendererAPI::CompareEnum::GREATER:
 			glDepthFunc(GL_GREATER);
 			break;
 		default:
@@ -419,21 +419,21 @@ namespace AAAAgames {
 			glDisable(GL_BLEND);
 		}
 	}
-	void OpenGLRendererAPI::BlendFunc(AAAAgames::RendererAPI::BlendFuncEnum e)
+	void OpenGLRendererAPI::BlendFunc(longmarch::RendererAPI::BlendFuncEnum e)
 	{
 		switch (e)
 		{
-		case AAAAgames::RendererAPI::BlendFuncEnum::ADDITION:
+		case longmarch::RendererAPI::BlendFuncEnum::ADDITION:
 			glBlendEquation(GL_FUNC_ADD);
 			glBlendFunc(GL_ONE, GL_ONE);
 			break;
-		case AAAAgames::RendererAPI::BlendFuncEnum::ALPHA_BLEND_1:
+		case longmarch::RendererAPI::BlendFuncEnum::ALPHA_BLEND_1:
 			glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
 			break;
-		case AAAAgames::RendererAPI::BlendFuncEnum::ALPHA_BLEND_2:
+		case longmarch::RendererAPI::BlendFuncEnum::ALPHA_BLEND_2:
 			glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 			break;
-		case AAAAgames::RendererAPI::BlendFuncEnum::ONE_MINUS_SRC_APLHA:
+		case longmarch::RendererAPI::BlendFuncEnum::ONE_MINUS_SRC_APLHA:
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			break;
 		default:

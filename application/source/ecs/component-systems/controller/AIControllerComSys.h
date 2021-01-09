@@ -5,7 +5,7 @@
 #include "engine/ecs/GameWorld.h"
 #include "../../components/AIControllerCom.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class AIControllerComSys final : public BaseComponentSystem
 	{

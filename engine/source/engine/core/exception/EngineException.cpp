@@ -1,32 +1,32 @@
 #include "engine-precompiled-header.h"
 #include "EngineException.h"
 
-namespace AAAAgames
+namespace longmarch
 {
     AtomicQueue<EngineException> EngineException::m_queue;
 }
 
-const std::wstring& AAAAgames::EngineException::GetNote() const
+const std::wstring& longmarch::EngineException::GetNote() const
 {
     return note;
 }
 
-const std::wstring& AAAAgames::EngineException::GetFile() const
+const std::wstring& longmarch::EngineException::GetFile() const
 {
     return file;
 }
 
-unsigned int AAAAgames::EngineException::GetLine() const
+unsigned int longmarch::EngineException::GetLine() const
 {
     return line;
 }
 
-std::wstring AAAAgames::EngineException::GetLocation() const
+std::wstring longmarch::EngineException::GetLocation() const
 {
     return std::wstring( L"Line [" ) + std::to_wstring( line ) + L"] in " + file;
 }
 
-std::wstring AAAAgames::EngineException::GetFullMessage() const
+std::wstring longmarch::EngineException::GetFullMessage() const
 {
 #if 1
     return GetNote() + L"\nAt: " + GetLocation();
@@ -35,18 +35,18 @@ std::wstring AAAAgames::EngineException::GetFullMessage() const
 #endif
 }
 
-std::wstring AAAAgames::EngineException::GetExceptionType() const
+std::wstring longmarch::EngineException::GetExceptionType() const
 {
     return exceptionType;
 }
 
-void AAAAgames::EngineException::Push(EngineException&& e)
+void longmarch::EngineException::Push(EngineException&& e)
 {
     m_queue.push(e);
 	throw e;
 }
 
-void AAAAgames::EngineException::Update()
+void longmarch::EngineException::Update()
 {
 	while (!m_queue.empty())
 	{
@@ -55,12 +55,12 @@ void AAAAgames::EngineException::Update()
 	}
 }
 
-std::wstring AAAAgames::str2wstr(const std::string& str)
+std::wstring longmarch::str2wstr(const std::string& str)
 {
 	return std::wstring(str.begin(), str.end());
 }
 
-std::string AAAAgames::wstr2str(const std::wstring& wstr)
+std::string longmarch::wstr2str(const std::wstring& wstr)
 {
 	return std::string(wstr.begin(), wstr.end());
 }

@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "Instrumentor.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	Instrumentor::Instrumentor() {
 	}
 

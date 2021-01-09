@@ -2,7 +2,7 @@
 #include "TerminalLogger.h"
 #include "TerminalCommands.cpp"
 
-ImTerm::terminal<AAAAgames::TerminalCommands>* AAAAgames::TerminalLogger::GetInstance()
+ImTerm::terminal<longmarch::TerminalCommands>* longmarch::TerminalLogger::GetInstance()
 {
 	static std::once_flag flag;
 	static CustomCommand cmd_struct;

@@ -1,7 +1,7 @@
 #pragma once
 #include "engine/ui/BaseWidget.h"
 
-namespace AAAAgames {
+namespace longmarch {
 
 	/**
 	 * @brief Display all ENG_TIME() timed code blcoks

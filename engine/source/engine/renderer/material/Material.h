@@ -3,7 +3,7 @@
 #include "engine/renderer/Texture.h"
 #include "engine/core/asset-manager/ResourceManager.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class Material
 	{
@@ -26,7 +26,7 @@ namespace AAAAgames
 		void SetTexture(const std::string& name, const fs::path& filepath, Material::MAT_TEXTURE_TYPE type);
 		void UnsetTexture(Material::MAT_TEXTURE_TYPE type);
 		void BindAllTexture(std::initializer_list<std::pair<uint32_t, Material::MAT_TEXTURE_TYPE>> textures_to_bind);
-		void BindAllTexture(const A4GAMES_Vector<std::pair<uint32_t, Material::MAT_TEXTURE_TYPE>>& textures_to_bind);
+		void BindAllTexture(const LongMarch_Vector<std::pair<uint32_t, Material::MAT_TEXTURE_TYPE>>& textures_to_bind);
 
 	public:
 		struct Textures

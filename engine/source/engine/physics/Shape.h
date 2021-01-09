@@ -3,7 +3,7 @@
 #include "engine/EngineEssential.h"
 #include "engine/ecs/Entity.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class Shape : public BaseAtomicClassNC
 	{

@@ -2,6 +2,6 @@
 #include "RenderCommand.h"
 #include "platform/OpenGL/OpenGLRendererAPI.h"
 
-namespace AAAAgames {
+namespace longmarch {
 	RendererAPI* RenderCommand::s_RendererAPI = OpenGLRendererAPI::GetInstance();
 }

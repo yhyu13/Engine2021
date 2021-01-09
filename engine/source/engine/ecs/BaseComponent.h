@@ -5,7 +5,7 @@
 #include "engine/core/thread/Lock.h"
 #include "engine/core/exception/EngineException.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class GameWorld;
 

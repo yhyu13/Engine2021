@@ -3,10 +3,10 @@
 #include "engine/core/exception/EngineException.h"
 #include "engine/core/utility/TypeHelper.h"
 
-namespace AAAAgames 
+namespace longmarch 
 {
 	template<typename T>
-	class CACHE_ALIGN32 A4GAMES_Bitset 
+	class CACHE_ALIGN32 LongMarch_Bitset 
 	{
 	public:
 
@@ -15,9 +15,9 @@ namespace AAAAgames
 			m_mask = m_mask2 = m_mask3 = m_mask4 = 0ull;
 		}
 
-		inline const A4GAMES_Set<T> GetAllIndices()
+		inline const LongMarch_Set<T> GetAllIndices()
 		{
-			A4GAMES_Set<T> ret;
+			LongMarch_Set<T> ret;
 			if (m_mask != 0ull)
 			{
 				for (uint32_t i(0u); i < 64u; ++i)
@@ -85,7 +85,7 @@ namespace AAAAgames
 			}
 		}
 
-		void AddIndex(const A4GAMES_Set<T>& sets) {
+		void AddIndex(const LongMarch_Set<T>& sets) {
 			for (auto& index : sets)
 			{
 				AddIndex(index);
@@ -116,7 +116,7 @@ namespace AAAAgames
 			}
 		}
 
-		void RemoveIndex(const A4GAMES_Set<T>& sets) {
+		void RemoveIndex(const LongMarch_Set<T>& sets) {
 			for (auto& index : sets)
 			{
 				RemoveComponent(index);
@@ -148,15 +148,15 @@ namespace AAAAgames
 			}
 		}
 
-		inline bool IsNewMatch(A4GAMES_Bitset& oldMask, A4GAMES_Bitset& target) const noexcept {
+		inline bool IsNewMatch(LongMarch_Bitset& oldMask, LongMarch_Bitset& target) const noexcept {
 			return !oldMask.IsAMatch(target) && this->IsAMatch(target);
 		}
 
-		inline bool IsNoLongerMatched(A4GAMES_Bitset& oldMask, A4GAMES_Bitset& target) const noexcept {
+		inline bool IsNoLongerMatched(LongMarch_Bitset& oldMask, LongMarch_Bitset& target) const noexcept {
 			return oldMask.IsAMatch(target) && !this->IsAMatch(target);
 		}
 
-		inline bool IsAMatch(A4GAMES_Bitset& target) const noexcept {
+		inline bool IsAMatch(LongMarch_Bitset& target) const noexcept {
 			return
 				((m_mask & target.m_mask) == target.m_mask)
 				&& ((m_mask2 & target.m_mask2) == target.m_mask2)

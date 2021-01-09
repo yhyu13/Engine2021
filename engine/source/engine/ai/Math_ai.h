@@ -2,7 +2,7 @@
 #include "engine/math/GridF32.h"
 #include "engine/math/Geommath.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/*
 	Get LU decomposition for a squared matrix of size NxN

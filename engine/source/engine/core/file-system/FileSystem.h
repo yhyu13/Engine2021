@@ -5,7 +5,7 @@
 #include <json/json.h>
 #include <filesystem>
 
-namespace AAAAgames
+namespace longmarch
 {
 	namespace fs = std::filesystem;
 
@@ -42,14 +42,14 @@ namespace AAAAgames
 		inline static  fs::path CWD(std::error_code& ec);
 	private:
 		inline static std::atomic_flag s_IfFlag;
-		inline static A4GAMES_UnorderedMap<std::string, std::ifstream> s_FileIStreamMap;
+		inline static LongMarch_UnorderedMap<std::string, std::ifstream> s_FileIStreamMap;
 
 		inline static std::atomic_flag s_OfFlag;
-		inline static A4GAMES_UnorderedMap<std::string, std::ofstream> s_FileOStreamMap;
+		inline static LongMarch_UnorderedMap<std::string, std::ofstream> s_FileOStreamMap;
 
 		inline static std::atomic_flag s_jsonFlag;
-		inline static A4GAMES_UnorderedMap<std::string, Json::Value> s_jsonCPPParserMap;
+		inline static LongMarch_UnorderedMap<std::string, Json::Value> s_jsonCPPParserMap;
 
-		inline static A4GAMES_UnorderedMap<std::string, fs::path> s_pathProtocol;
+		inline static LongMarch_UnorderedMap<std::string, fs::path> s_pathProtocol;
 	};
 }

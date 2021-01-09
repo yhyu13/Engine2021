@@ -4,7 +4,7 @@
 #include "engine/ecs/header/header.h"
 #include "editor/events/EditorCustomEvent.h"
 
-AAAAgames::SceneHierarchyDock::SceneHierarchyDock()
+longmarch::SceneHierarchyDock::SceneHierarchyDock()
 {
 	m_IsVisible = true;
 	m_Size = ScaleSize({ 300, 600 });
@@ -18,7 +18,7 @@ AAAAgames::SceneHierarchyDock::SceneHierarchyDock()
 	}
 }
 
-void AAAAgames::SceneHierarchyDock::Render()
+void longmarch::SceneHierarchyDock::Render()
 {
 	auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
 	manager->PushWidgetStyle();
@@ -57,7 +57,7 @@ void AAAAgames::SceneHierarchyDock::Render()
 						// Erase reserved options
 						std::erase(list_string, "SCENE_ROOT");
 						std::sort(list_string.begin(), list_string.end());
-						const auto list_char_ptr = A4GAMES_StrVec2ConstChar(list_string);
+						const auto list_char_ptr = LongMarch_StrVec2ConstChar(list_string);
 
 						static int selected_entity_type = 0;
 						if (ImGui::Combo("Entity Type", &selected_entity_type, &list_char_ptr[0], list_char_ptr.size()))
@@ -149,7 +149,7 @@ void AAAAgames::SceneHierarchyDock::Render()
 	ImGui::End();
 }
 
-void AAAAgames::SceneHierarchyDock::GenerateTreeNode(const Entity& e)
+void longmarch::SceneHierarchyDock::GenerateTreeNode(const Entity& e)
 {
 	auto world = GameWorld::GetCurrent();
 	auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
@@ -219,7 +219,7 @@ void AAAAgames::SceneHierarchyDock::GenerateTreeNode(const Entity& e)
 	}
 }
 
-void AAAAgames::SceneHierarchyDock::SetSelectionMaskExclusion(const Entity& e, bool mask, bool exclusive_set_others)
+void longmarch::SceneHierarchyDock::SetSelectionMaskExclusion(const Entity& e, bool mask, bool exclusive_set_others)
 {
 	// Set selected item to be same status as mask
 	{
@@ -238,7 +238,7 @@ void AAAAgames::SceneHierarchyDock::SetSelectionMaskExclusion(const Entity& e, b
 	}
 }
 
-void AAAAgames::SceneHierarchyDock::SetSelectionMaskExclusion(const std::set<Entity>& es, bool mask, bool exclusive_set_others)
+void longmarch::SceneHierarchyDock::SetSelectionMaskExclusion(const std::set<Entity>& es, bool mask, bool exclusive_set_others)
 {
 	// Set selected items to be same status as mask
 	for (auto& e : es)
@@ -258,7 +258,7 @@ void AAAAgames::SceneHierarchyDock::SetSelectionMaskExclusion(const std::set<Ent
 	}
 }
 
-void AAAAgames::SceneHierarchyDock::_ON_LOAD_SCENE_BEGIN(EventQueue<EngineIOEventType>::EventPtr e)
+void longmarch::SceneHierarchyDock::_ON_LOAD_SCENE_BEGIN(EventQueue<EngineIOEventType>::EventPtr e)
 {
 	m_PerEntitySelectionMask.clear();
 }

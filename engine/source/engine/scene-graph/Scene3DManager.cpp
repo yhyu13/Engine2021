@@ -3,7 +3,7 @@
 #include "engine/ecs/components/3d/Scene3DCom.h"
 #include "Scene3DManager.h"
 
-void AAAAgames::Scene3DManager::LoadSceneNodeFromAssimp(const std::string& sceneNodeName)
+void longmarch::Scene3DManager::LoadSceneNodeFromAssimp(const std::string& sceneNodeName)
 {
 	auto sceneNode = ResourceManager<AssimpSceneObject>::GetInstance()->TryGet(sceneNodeName)->Get();
 	auto path = ResourceManager<AssimpSceneObject>::GetInstance()->GetPath(sceneNode);
@@ -29,7 +29,7 @@ void AAAAgames::Scene3DManager::LoadSceneNodeFromAssimp(const std::string& scene
 	}
 }
 
-void AAAAgames::Scene3DManager::LoadSceneNodeToEntity(EntityDecorator rootEntity, const std::string& sceneNodeName)
+void longmarch::Scene3DManager::LoadSceneNodeToEntity(EntityDecorator rootEntity, const std::string& sceneNodeName)
 {
 	DEBUG_PRINT("Loading scene node: " + sceneNodeName);
 	if (auto scene = rootEntity.GetComponent<Scene3DCom>(); scene.Valid())
@@ -46,7 +46,7 @@ void AAAAgames::Scene3DManager::LoadSceneNodeToEntity(EntityDecorator rootEntity
 	}
 }
 
-void AAAAgames::Scene3DManager::RecurseLoad(Scene3DNode& sceneData, const std::string& sceneName, const fs::path& sceneDir, const aiScene* aiscene, const aiNode* node, const aiMatrix4x4& parentTr, unsigned int level)
+void longmarch::Scene3DManager::RecurseLoad(Scene3DNode& sceneData, const std::string& sceneName, const fs::path& sceneDir, const aiScene* aiscene, const aiNode* node, const aiMatrix4x4& parentTr, unsigned int level)
 {
 	// Partial Credit : Prof. Gary Herron @ CS541,CS460/560 DigiPen Institute of Technology 2020/2021
 	if (level == 0)

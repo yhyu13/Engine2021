@@ -2,7 +2,7 @@
 
 #include "StealThreadPool.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	/*
 		Unity like Job system

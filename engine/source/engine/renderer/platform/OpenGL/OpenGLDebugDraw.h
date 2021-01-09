@@ -2,7 +2,7 @@
 #include "engine/math/Geommath.h"
 #include "OpenGLUtil.h"
 
-namespace AAAAgames {
+namespace longmarch {
 
 	class OpenGLDebugDraw
 	{

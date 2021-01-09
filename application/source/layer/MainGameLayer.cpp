@@ -11,12 +11,12 @@
 // Specifically AIControllerCom
 #include "ai/AIDemoShowCase.h"
 
-AAAAgames::MainGameLayer::MainGameLayer()
+longmarch::MainGameLayer::MainGameLayer()
 	: Layer("MainGameLayer")
 {
 }
 
-void AAAAgames::MainGameLayer::Init()
+void longmarch::MainGameLayer::Init()
 {
 	APP_TIME("App Initialization");
 	InitFramework();
@@ -50,7 +50,7 @@ void AAAAgames::MainGameLayer::Init()
 void TEST_DS_Lights();
 void TEST_BRDF_Materials();
 void TEST_Skeletal_Animations();
-void AAAAgames::MainGameLayer::BuildTestScene()
+void longmarch::MainGameLayer::BuildTestScene()
 {
 	TEST_DS_Lights();
 	TEST_BRDF_Materials();
@@ -62,7 +62,7 @@ void AAAAgames::MainGameLayer::BuildTestScene()
 Load engine frameworks
 */
 
-void AAAAgames::MainGameLayer::InitFramework()
+void longmarch::MainGameLayer::InitFramework()
 {
 	ServiceLocator::Register<MainObjectFactory>("ObjectFactory");
 	{
@@ -75,7 +75,7 @@ void AAAAgames::MainGameLayer::InitFramework()
 Load all game resources
 */
 
-void AAAAgames::MainGameLayer::LoadResources()
+void longmarch::MainGameLayer::LoadResources()
 {
 	auto objectFactory = ServiceLocator::GetSingleton<ObjectFactory>("ObjectFactory");
 	objectFactory->LoadResources(FileSystem::ResolveProtocol("$asset:archetype/resource.json"), nullptr);
@@ -85,7 +85,7 @@ void AAAAgames::MainGameLayer::LoadResources()
 Load start up screen
 */
 
-void AAAAgames::MainGameLayer::InitGameWorld()
+void longmarch::MainGameLayer::InitGameWorld()
 {
 	// 2, Init game world.
 	// This step must happen after EventQueue clear as systems in mainGameWorld->Init() would register for event handler at that stage)
@@ -99,7 +99,7 @@ void AAAAgames::MainGameLayer::InitGameWorld()
 	//AudioManager::GetInstance()->PlaySoundByName("bgm0", AudioVector3{ 0,0,0 }, -10, 1);
 }
 
-void AAAAgames::MainGameLayer::OnUpdate(double ts)
+void longmarch::MainGameLayer::OnUpdate(double ts)
 {
 	{
 		auto queue = EventQueue<GameEventType>::GetInstance();
@@ -115,15 +115,15 @@ void AAAAgames::MainGameLayer::OnUpdate(double ts)
 	}
 }
 
-void AAAAgames::MainGameLayer::OnAttach()
+void longmarch::MainGameLayer::OnAttach()
 {
 }
 
-void AAAAgames::MainGameLayer::OnDetach()
+void longmarch::MainGameLayer::OnDetach()
 {
 }
 
-void AAAAgames::MainGameLayer::OnImGuiRender()
+void longmarch::MainGameLayer::OnImGuiRender()
 {
 	APP_TIME("ImGUI Render");
 	ImGui::PushFont(m_font);
@@ -135,11 +135,11 @@ void AAAAgames::MainGameLayer::OnImGuiRender()
 	ImGui::PopFont();
 }
 
-void AAAAgames::MainGameLayer::_ON_LOAD_SCENE_BEGIN(EventQueue<EngineIOEventType>::EventPtr e)
+void longmarch::MainGameLayer::_ON_LOAD_SCENE_BEGIN(EventQueue<EngineIOEventType>::EventPtr e)
 {
 }
 
-void AAAAgames::MainGameLayer::_ON_LOAD_SCENE(EventQueue<EngineIOEventType>::EventPtr e)
+void longmarch::MainGameLayer::_ON_LOAD_SCENE(EventQueue<EngineIOEventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<EngineLoadSceneEvent>(e);
 	auto& filepath = event->m_filepath;
@@ -147,16 +147,16 @@ void AAAAgames::MainGameLayer::_ON_LOAD_SCENE(EventQueue<EngineIOEventType>::Eve
 	GameWorld::GetInstance(event->m_makeCurrent, "", filepath);
 }
 
-void AAAAgames::MainGameLayer::_ON_LOAD_SCENE_END(EventQueue<EngineIOEventType>::EventPtr e)
+void longmarch::MainGameLayer::_ON_LOAD_SCENE_END(EventQueue<EngineIOEventType>::EventPtr e)
 {
 	//AudioManager::GetInstance()->PlaySoundByName("bgm0", AudioVector3{ 0,0,0 }, -10, 1);
 }
 
-void AAAAgames::MainGameLayer::_ON_SAVE_SCENE_BEGIN(EventQueue<EngineIOEventType>::EventPtr e)
+void longmarch::MainGameLayer::_ON_SAVE_SCENE_BEGIN(EventQueue<EngineIOEventType>::EventPtr e)
 {
 }
 
-void AAAAgames::MainGameLayer::_ON_SAVE_SCENE(EventQueue<EngineIOEventType>::EventPtr e)
+void longmarch::MainGameLayer::_ON_SAVE_SCENE(EventQueue<EngineIOEventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<EngineSaveSceneEvent>(e);
 	auto& filepath = event->m_filepath;
@@ -165,11 +165,11 @@ void AAAAgames::MainGameLayer::_ON_SAVE_SCENE(EventQueue<EngineIOEventType>::Eve
 	objectFactory->SaveGameWorldScene(filepath, world);
 }
 
-void AAAAgames::MainGameLayer::_ON_SAVE_SCENE_END(EventQueue<EngineIOEventType>::EventPtr e)
+void longmarch::MainGameLayer::_ON_SAVE_SCENE_END(EventQueue<EngineIOEventType>::EventPtr e)
 {
 }
 
-void AAAAgames::MainGameLayer::_ON_WINDOW_INTERRUPT(EventQueue<EngineEventType>::EventPtr e)
+void longmarch::MainGameLayer::_ON_WINDOW_INTERRUPT(EventQueue<EngineEventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<EngineWindowInterruptionEvent>(e);
 	GameWorld::GetCurrent()->SetPause(!event->m_isFocused);

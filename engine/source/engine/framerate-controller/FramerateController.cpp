@@ -4,7 +4,7 @@
 
 #include <GLFW/glfw3.h>
 
-namespace AAAAgames {
+namespace longmarch {
 	/*
 		FramerateController will always have only one instance throughout the execution of the application.
 		Default max frame rate is 60fps.
@@ -46,12 +46,12 @@ namespace AAAAgames {
 		return m_frameTime;
 	}
 
-	const double AAAAgames::FramerateController::GetTargetFrameTime() const
+	const double longmarch::FramerateController::GetTargetFrameTime() const
 	{
 		return m_ticksPerFrame * 1e-3;;
 	}
 
-	void AAAAgames::FramerateController::SetMaxFrameRate(unsigned int newMax)
+	void longmarch::FramerateController::SetMaxFrameRate(unsigned int newMax)
 	{
 		m_maxFramerate = newMax;
 		m_ticksPerFrame = 1000.0 / static_cast<double>(m_maxFramerate);

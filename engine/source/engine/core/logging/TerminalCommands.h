@@ -8,7 +8,7 @@
 #include <imgui/addons/imterm/terminal.hpp>
 #include <imgui/addons/imterm/terminal_helpers.hpp>
 
-namespace AAAAgames
+namespace longmarch
 {
 	struct CustomCommand {
 		bool should_close = false;

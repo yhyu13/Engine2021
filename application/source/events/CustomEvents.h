@@ -3,7 +3,7 @@
 #include "events/EventType.h"
 #include "engine/events/EventQueue.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	struct CS560GenRndPathEvent : public Event<CS560EventType> {
 		explicit CS560GenRndPathEvent(const EntityDecorator& entity)

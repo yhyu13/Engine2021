@@ -2,7 +2,7 @@
 #include "engine/input/InputManager.h"
 #include "engine/Engine.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	InputManager* InputManager::GetInstance()
 	{
@@ -241,8 +241,8 @@ namespace AAAAgames
 		float a = -m_cursorMaxPosition.x / m_cursorMaxPosition.y;
 		float b = -a;
 
-		float x = A4GAMES_Lerp(a, b, m_cursorPosition.x / m_cursorMaxPosition.x);
-		float y = A4GAMES_Lerp(1.0f, -1.0f, m_cursorPosition.y / m_cursorMaxPosition.y);
+		float x = LongMarch_Lerp(a, b, m_cursorPosition.x / m_cursorMaxPosition.x);
+		float y = LongMarch_Lerp(1.0f, -1.0f, m_cursorPosition.y / m_cursorMaxPosition.y);
 		return Vec2f(x, y);
 	}
 

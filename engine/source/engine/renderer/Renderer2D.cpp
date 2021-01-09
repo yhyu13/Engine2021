@@ -13,7 +13,7 @@ static const size_t MaxVertexCount = MaxBatchCount * 4;
 static const size_t MaxIndexCount = MaxBatchCount * 6;
 static const size_t MaxTextures = 32;
 
-namespace AAAAgames {
+namespace longmarch {
 	struct Renderer2DStorage
 	{
 		std::shared_ptr<VertexArray> FullScreenQuadVAO;

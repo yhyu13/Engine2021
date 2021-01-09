@@ -2,7 +2,7 @@
 #include "OrthographicCamera.h"
 #include "engine/core/EngineCore.h"
 
-namespace AAAAgames
+namespace longmarch
 {
 	class ENGINE_API OrthographicCameraController
 	{

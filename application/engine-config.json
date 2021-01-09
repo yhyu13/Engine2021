@@ -1,0 +1,99 @@
+{
+	"engine":
+	{
+		"Pause-on-unfocused" : true,
+		"Startup-mode" : 0, /* 0-editing mode, 1-game mode */
+	},
+	"physics":
+	{
+		"gravity":[0,0,-9.8]
+	},
+	"path":
+	{
+		"Root" : "",
+		"Asset" : "asset",
+		"Shader" : "asset/shaders",
+		"Scene" : "asset/scene",
+		"Texture" : "asset/texture",
+		"Sound" : "asset/sound",
+	},
+	"window": 
+	{
+		"Width": 1920,
+		"Height": 1080,
+		"Title": "Long-March-Engine",
+		"Hide-On-Creation": true,
+
+		"Full-screen": 2, /* 0-Full screen, 1- Borderless full screen 2- Windowed mode  */
+		"V-sync" : true,
+		"GPU-sync" : false,
+		"Resizable":true,
+		"Resolution1_X" : 1920, "Resolution1_Y" : 1080,
+		"Resolution2_X" : 1920, "Resolution2_Y" : 1200,
+		"Resolution3_X" : 1280, "Resolution3_Y" : 1024,
+		"Resolution4_X" : 1024, "Resolution4_Y" : 768,
+	},
+	"test":
+	{
+		// Lighting & material tests
+		"Reset-random-seed" : false,
+		"Test-material-number" : 0,
+		"Test-light-number" : 0,
+		"Test-skeletal-animation-number" : 0
+	},
+	"graphics": 
+	{
+		"Max-framerate" : 60,
+		"Resolution-ratio": 0.8, /* rendering at a resolution that is a portion of the targeted resolution, save G-buffer space and increase rendering performance*/
+		
+		// Render passes
+		"Multi-draw" : true,
+		"Deferred-shading": true,
+		"Clustered-shading": false,
+		"Debug_cluster_light" : false,
+		"Motion-blur":true, /* only take effects under deffered shading */
+		"TAA":true, /* only take effects under deffered shading */
+		"SMAA":false,
+		"FXAA":true,
+		"Motion-blur-shutter-speed": 45, /* higher this value, lower the motion blur effect */
+		
+		// Shadow
+		"Shadow" : true,
+		// IBL
+		"Sky-box":["shanghai_bund_2k"],
+		"BRDF-lut":"ggx_integrate_lut",
+
+		"AO":
+		{
+			"Enable": true,
+			"Gaussian-kernel":15,
+			"Num-samples":40,
+			"Res-down-scale":2,
+			"Radius":2.0,
+			"Scale":1.4,
+			"Power":1.4,
+			"Indirect-bounce":false
+		}
+		,
+	},
+	"shader":
+	{
+		"MAX":
+		{
+			"MAX_LIGHTS":1024,
+			"MAX_SPOT_LIGHT_SHADOWS":16,
+			"MAX_POINT_LIGHT_SHADOWS":16,
+			"MAX_DIRECTIONAL_LIGHT_SHADOWS":1,
+
+			"MAX_SHADOW_PASS_BATCH":1024,
+			"MAX_SCENE_PASS_BATCH":64
+		},
+		"bindings":
+		{
+			"DirectionalLights":10,
+			"PointLights":11,
+			"SpotLights":12,
+			"ShadowMatrices":13,
+		}
+	}
+}

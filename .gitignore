@@ -36,6 +36,5 @@
 
 /application/imgui.ini
 /application/*.txt
-/application/asset/scene
-/application/asset/sound
-/application/asset/texture
+/application/asset/
+/application/asset.zip

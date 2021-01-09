@@ -1,0 +1,19 @@
+#pragma once
+#include "engine/ecs/BaseComponent.h"
+#include "engine/renderer/camera/PerspectiveCamera.h"
+
+namespace AAAAgames
+{
+	/* Data class of mesh, material */
+	struct CACHE_ALIGN32 PerspectiveCameraCom final: BaseComponent<PerspectiveCameraCom>{
+		void SetCamera(const PerspectiveCamera & cam);
+		PerspectiveCamera* GetCamera();
+
+		virtual void JsonSerialize(Json::Value& value) override;
+		virtual void JsonDeserialize(const Json::Value& value) override;
+		virtual void ImGuiRender() override;
+
+	private:
+		PerspectiveCamera m_camera;
+	};
+}

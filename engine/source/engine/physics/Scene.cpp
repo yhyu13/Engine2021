@@ -21,28 +21,17 @@ namespace longmarch
         RemoveAllBodies();
     }
 
-    void Scene::BroadPhase(LongMarch_Vector<Manifold>& contacts)
+    void Scene::BroadPhase(LongMarch_Vector<LongMarch_Vector<RigidBody*>>& islands)
     {
-        //contacts.clear();
-
-        // naive implementation
-        //for (auto& rb : m_rbList)
-        //{
-
-        //}
     }
 
-    LongMarch_Vector<Manifold> Scene::NarrowPhase(LongMarch_Vector<Manifold>& contacts, f32 dt)
+    LongMarch_Vector<Manifold> Scene::NarrowPhase(LongMarch_Vector<RigidBody*>& island, float dt)
     {
-        ///////////////////////////////////////////////////////////////////////////////////////////
-        // TODO: use BVH to optimize
-        ///////////////////////////////////////////////////////////////////////////////////////////
-
         LongMarch_Vector<Manifold> manifold;
 
-        for (auto iter = m_rbList.begin(); iter != m_rbList.end(); ++iter)
+        for (auto iter = island.begin(); iter != island.end(); ++iter)
         {
-            for (auto iter2 = iter + 1; iter2 != m_rbList.end(); ++iter2)
+            for (auto iter2 = iter + 1; iter2 != island.end(); ++iter2)
             {
                 // get the type of body
                 auto& rb1 = *iter;
@@ -68,8 +57,8 @@ namespace longmarch
                 // if there is collision, store the manifold and move on to the next pair
                 if (DynamicShapevsShape(rb1->GetShape(), rb1->GetLinearVelocity(), rb2->GetShape(), rb2->GetLinearVelocity(), dt, contactManifold))
                 {
-                    contactManifold.m_A = rb1.get();
-                    contactManifold.m_B = rb2.get();
+                    contactManifold.m_A = rb1;
+                    contactManifold.m_B = rb2;
 
                     contactManifold.m_gravity = m_gravity;
                     contactManifold.m_friction = (rb1->GetFriction() + rb2->GetFriction()) * 0.5f;
@@ -82,7 +71,7 @@ namespace longmarch
         return manifold;
     }
 
-    void Scene::Solve(f32 dt)
+    void Scene::Solve(float dt)
     {
         std::shared_ptr<Shape> shapePtr = nullptr;
 
@@ -162,7 +151,7 @@ namespace longmarch
     }
 
     // move simulation of Scene forward by given timestep
-    void Scene::Step(f32 dt)
+    void Scene::Step(float dt)
     {
         LOCK_GUARD2();
         m_contactPairs.clear();
@@ -173,32 +162,32 @@ namespace longmarch
             elem->SetCollisionStatus(false, dt);
         }
 
-        // do broadphase collision check
-        LongMarch_Vector<Manifold> contacts;
-        
+        // TODO : do broadphase collision check
+        LongMarch_Vector<RigidBody*> island;
+        std::transform(m_rbList.begin(), m_rbList.end(), std::back_inserter(island), [](const auto& rb) {return rb.get(); });
+
         // loop collision check and resolution until either max. iterations achieved or no collisions detected
         for (unsigned int i = 0; i < MAX_ITERATIONS; ++i)
         {
-            contacts.clear();
-            //BroadPhase(contacts);
 
             // NarrowPhase
-            LongMarch_Vector<Manifold> manifold = NarrowPhase(contacts, dt);
+            LongMarch_Vector<Manifold> manifold = NarrowPhase(island, dt);
 
             if (manifold.empty())
-                break;
+            {
+                continue;
+            }
             
             // temporary solution
             // solve contacts first, then update positions etc.
-            
-            
             for (auto& elem : manifold)
             {
                 // resolve each contact in the list
                 ResolveCollision(elem, dt, m_enableFriction);
-                size_t hash;
+                m_contactPairs.emplace(elem);
+                /*size_t hash;
                 LongMarch_HashCombine(hash, elem.m_A->GetEntity(), elem.m_B->GetEntity());
-                m_contactPairs[hash] = elem;
+                m_contactPairs[hash] = elem;*/
             }
         }
 
@@ -208,22 +197,24 @@ namespace longmarch
         
         // addition collision check to push out anything with static collision so that objects don't "sink" into the ground
         {
-            LongMarch_Vector<Manifold> manifold = NarrowPhase(contacts, dt);
+            LongMarch_Vector<Manifold> manifold = NarrowPhase(island, dt);
 
             for (auto& elem : manifold)
             {
                 // resolve each contact in the list
                 ResolveCollision(elem, dt, m_enableFriction);
-                size_t hash;
+                m_contactPairs.emplace(elem);
+                /*size_t hash;
                 LongMarch_HashCombine(hash, elem.m_A->GetEntity(), elem.m_B->GetEntity());
-                m_contactPairs[hash] = elem;
+                m_contactPairs[hash] = elem;*/
             }
         }
 
         // add code for collision event here using pairs in m_contactPairs
         {
             auto queue = EventQueue<EngineEventType>::GetInstance();
-            for (const auto& [_, elem] : m_contactPairs)
+            for (const auto& elem : m_contactPairs)
+            //for (const auto& [_, elem] : m_contactPairs)
             {
                 auto e1 = EntityDecorator{ elem.m_A->GetEntity(), m_parentWorld };
                 auto e2 = EntityDecorator{ elem.m_B->GetEntity(), m_parentWorld };
@@ -231,9 +222,6 @@ namespace longmarch
                 queue->Publish(e);
             }
         }
-
-        // add code for collision event here using pairs in m_contactPairs
-
     }
 
     // by default give a AABB

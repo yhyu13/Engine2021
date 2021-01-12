@@ -2,15 +2,10 @@
 
 #include <vector>
 #include "engine/physics/dynamics/RigidBody.h"
-#include "engine/physics/dynamics/Contact.h"
-
-//#include "engine/ecs/"
+#include "engine/physics/dynamics/Contact.inl"
 
 namespace longmarch
 {
-    //class RigidBody;
-    //class Contact;
-
     struct Island
     {
         // Solve the constraints in the island

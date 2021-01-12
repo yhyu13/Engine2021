@@ -12,7 +12,7 @@ namespace longmarch
         Vec3f m_pos;
 
         // penetration depth
-        f32 m_penetration;
+        float m_penetration;
     };
 
     struct Manifold
@@ -32,5 +32,13 @@ namespace longmarch
 
         float m_friction;
         bool m_staticCollision;
+
+        friend inline bool operator==(const Manifold& lhs, const Manifold& rhs) {
+            return lhs.m_A == rhs.m_A && lhs.m_B == rhs.m_B;
+        }
+
+        friend inline bool operator!=(const Manifold& lhs, const Manifold& rhs) {
+            return !(lhs.m_A == rhs.m_A && lhs.m_B == rhs.m_B);
+        }
     };
 }

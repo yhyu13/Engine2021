@@ -18,12 +18,12 @@ namespace longmarch
         explicit Scene(const Vec3f& gravity);
         ~Scene();
 
-        void BroadPhase(LongMarch_Vector<Manifold>& contacts);
-        LongMarch_Vector<Manifold> NarrowPhase(LongMarch_Vector<Manifold>& contacts, f32 dt);
+        void BroadPhase(LongMarch_Vector<LongMarch_Vector<RigidBody*>>& islands);
+        LongMarch_Vector<Manifold> NarrowPhase(LongMarch_Vector<RigidBody*>& island, float dt);
 
-        void Solve(f32 dt);
+        void Solve(float dt);
         // move simulation of Scene forward by given timestep
-        void Step(f32 dt);
+        void Step(float dt);
 
         void SetGameWorld(GameWorld* world);
         void SetGravity(const Vec3f& g);
@@ -40,8 +40,9 @@ namespace longmarch
 
     private:
         LongMarch_Vector<std::shared_ptr<RigidBody>> m_rbList;
-        LongMarch_UnorderedMap_flat<size_t, Manifold> m_contactPairs;
-        DynamicAABBTree m_aabbTree;
+        LongMarch_UnorderedSet<Manifold> m_contactPairs;
+        //LongMarch_UnorderedMap_flat<size_t, Manifold> m_contactPairs;
+        //DynamicAABBTree m_aabbTree;
 
         GameWorld* m_parentWorld{ nullptr };
         Vec3f m_gravity{ Vec3f(0,0,-9.8) };

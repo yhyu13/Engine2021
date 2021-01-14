@@ -89,6 +89,7 @@ void longmarch::Material::SetTexture(const std::string& name, const fs::path& fi
 			catch (EngineException& e) { EngineException::Push(std::move(e)); }
 			catch (std::exception& e) { EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, wStr(e.what()), L"STL Exception")); }
 			catch (...) { EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Lib or dll exception", L"Non-STL Exception")); }
+			return nullptr;
 		}, [id](AssetLoader::DataSourceRef data) {
 			const auto& img = std::static_pointer_cast<Image2D>(data);
 			Texture::Setting setting;
@@ -99,7 +100,9 @@ void longmarch::Material::SetTexture(const std::string& name, const fs::path& fi
 			setting.input_data = img->GetData();
 			setting.has_mipmap = true;
 			setting.linear_filter = true;
+			// Add texture in the main thread
 			ResourceManager<Texture2D>::GetInstance()->AddResource(id, "", Texture2D::Create(setting)); //! Individual component should not have a path related to it
+			// Remove image 2d
 			ResourceManager<Image2D>::GetInstance()->Remove(id);
 		}, { true, false }, true);
 	};

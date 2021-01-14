@@ -1,3 +1,3 @@
-CALL premake5.exe --file=premake5.lua vs2019
+CALL premake5.exe --file=generate-project.lua vs2019
 
 PAUSE

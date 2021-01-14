@@ -42,6 +42,7 @@ fs::path longmarch::FileSystem::ResolveProtocol(const fs::path& _path)
 	else
 	{
 		ENGINE_EXCEPT(L"Path protocol is not registered : " + str2wstr(string_path));
+		return _path;
 	}
 }
 

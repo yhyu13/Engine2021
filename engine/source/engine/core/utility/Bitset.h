@@ -145,6 +145,7 @@ namespace longmarch
 			else
 			{
 				ENGINE_EXCEPT(L"Index out of range!");
+				return false;
 			}
 		}
 

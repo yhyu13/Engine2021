@@ -7,6 +7,7 @@
 
 #include <imgui/addons/imterm/terminal.hpp>
 #include <imgui/addons/imterm/terminal_helpers.hpp>
+#include <imgui/addons/imterm/misc.hpp>
 
 namespace longmarch
 {

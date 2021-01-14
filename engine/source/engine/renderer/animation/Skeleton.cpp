@@ -102,6 +102,7 @@ Mat4 longmarch::Skeleton::GetBoneTransform(const std::string& bone_name, const B
 	else
 	{
 		ENGINE_EXCEPT(L"Bone does not exists in this skeleton: " + str2wstr(bone_name));
+		return Mat4();
 	}
 }
 
@@ -138,6 +139,7 @@ const Skeleton::Node& longmarch::Skeleton::GetBoneNode(const std::string& bone_n
 	else
 	{
 		ENGINE_EXCEPT(L"Can't find bone: " + str2wstr(bone_name));
+		return Skeleton::Node();
 	}
 }
 

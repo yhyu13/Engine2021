@@ -182,9 +182,10 @@ void longmarch::MainObjectFactory::LoadResources(const fs::path& filepath, GameW
 				catch (EngineException& e) { EngineException::Push(std::move(e)); }
 				catch (std::exception& e) { EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, wStr(e.what()), L"STL Exception")); }
 				catch (...) { EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Lib or dll exception", L"Non-STL Exception")); }
-				}, [id](AssetLoader::DataSourceRef) {
+				return nullptr;
+			}, [id](AssetLoader::DataSourceRef) {
 					ResourceManager<AssimpSceneObject>::GetInstance()->Remove(id);
-				}, AssetLoader::Options{ true, false }, false);
+			}, AssetLoader::Options{ true, false }, false);
 			waitList.emplace_back(job);
 		}
 	}
@@ -203,6 +204,7 @@ void longmarch::MainObjectFactory::LoadResources(const fs::path& filepath, GameW
 				catch (EngineException& e) { EngineException::Push(std::move(e)); }
 				catch (std::exception& e) { EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, wStr(e.what()), L"STL Exception")); }
 				catch (...) { EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Lib or dll exception", L"Non-STL Exception")); }
+				return nullptr;
 				}, [_item, id](AssetLoader::DataSourceRef data) {
 					const auto& img = std::static_pointer_cast<Image2D>(data);
 					Texture::Setting setting;

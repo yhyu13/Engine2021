@@ -135,6 +135,7 @@ const Animation3D::SkeletalAnimation& longmarch::Animation3D::GetAnimation(const
 	else
 	{
 		ENGINE_EXCEPT(L"Is not a valid animation : " + str2wstr(name));
+		return SkeletalAnimation();
 	}
 }
 
@@ -259,7 +260,8 @@ const Vec3f longmarch::Animation3D::VInterpolate(float animationTicks, const Ske
 	}
 	else
 	{
-		ASSERT(keys.size() > 0, "V keys is empty!");
+		ENGINE_EXCEPT(L"V keys is empty!");
+		return Vec3f();
 	}
 }
 
@@ -295,7 +297,8 @@ const Quaternion longmarch::Animation3D::QInterpolate(float animationTicks, cons
 	}
 	else
 	{
-		ASSERT(keys.size() > 0, "Q keys is empty!");
+		ENGINE_EXCEPT(L"Q keys is empty!");
+		return Quaternion();
 	}
 }
 
@@ -331,6 +334,7 @@ const Vec3f longmarch::Animation3D::SInterpolate(float animationTicks, const Ske
 	}
 	else
 	{
-		ASSERT(keys.size() > 0, "S keys is empty!");
+		ENGINE_EXCEPT(L"S keys is empty!");
+		return Vec3f();
 	}
 }

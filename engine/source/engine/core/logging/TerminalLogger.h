@@ -1,5 +1,4 @@
 #pragma once
-#include <imgui/addons/imterm/terminal.hpp>
 #include "TerminalCommands.h"
 
 namespace longmarch {

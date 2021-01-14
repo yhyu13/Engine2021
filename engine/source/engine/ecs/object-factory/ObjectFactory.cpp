@@ -60,6 +60,8 @@ const EntityType longmarch::ObjectFactory::GetEntityTypeFromName(const std::stri
 		}
 	}
 	ENGINE_EXCEPT(L"Entity type " + str2wstr(s_type) + L" is not found!");
+	EntityType temp;
+	return temp;
 }
 
 const std::string longmarch::ObjectFactory::GetEntityNameFromType(EntityType e_type) const
@@ -72,6 +74,8 @@ const std::string longmarch::ObjectFactory::GetEntityNameFromType(EntityType e_t
 		}
 	}
 	ENGINE_EXCEPT(L"Entity type " + wStr(e_type) + L" is not found!");
+	std::string temp;
+	return temp;
 }
 
 BaseComponentInterface* longmarch::ObjectFactory::AddComponentByName(const std::string& com_type, EntityDecorator entity) const

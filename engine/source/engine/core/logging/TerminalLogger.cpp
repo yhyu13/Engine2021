@@ -1,6 +1,6 @@
 #include "engine-precompiled-header.h"
 #include "TerminalLogger.h"
-#include "TerminalCommands.cpp"
+#include "TerminalCommands.inl"
 
 ImTerm::terminal<longmarch::TerminalCommands>* longmarch::TerminalLogger::GetInstance()
 {

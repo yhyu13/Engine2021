@@ -1,4 +1,4 @@
-workspace "Long_March_Engine_Project"
+workspace "LongMarch"
 	architecture "x86_64"
 	startproject "application"
 

@@ -18,8 +18,8 @@ namespace longmarch
         explicit Scene(const Vec3f& gravity);
         ~Scene();
 
-        void BroadPhase(LongMarch_Vector<LongMarch_Vector<RigidBody*>>& islands);
-        LongMarch_Vector<Manifold> NarrowPhase(LongMarch_Vector<RigidBody*>& island, float dt);
+        LongMarch_Vector<LongMarch_Vector<RigidBody*>> BroadPhase(const LongMarch_Vector<RigidBody*>& rbs);
+        LongMarch_Vector<Manifold> NarrowPhase(const LongMarch_Vector<RigidBody*>& island, float dt);
 
         void Solve(float dt);
         // move simulation of Scene forward by given timestep

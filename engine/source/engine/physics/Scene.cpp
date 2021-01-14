@@ -13,7 +13,6 @@ namespace longmarch
         m_enableFriction(true),
         m_enableUpdate(true)
     {
-
     }
 
     Scene::~Scene()
@@ -21,11 +20,14 @@ namespace longmarch
         RemoveAllBodies();
     }
 
-    void Scene::BroadPhase(LongMarch_Vector<LongMarch_Vector<RigidBody*>>& islands)
+    LongMarch_Vector<LongMarch_Vector<RigidBody*>> Scene::BroadPhase(const LongMarch_Vector<RigidBody*>& rbs)
     {
+        LongMarch_Vector<LongMarch_Vector<RigidBody*>> ret;
+        ret.push_back(rbs);
+        return ret;
     }
 
-    LongMarch_Vector<Manifold> Scene::NarrowPhase(LongMarch_Vector<RigidBody*>& island, float dt)
+    LongMarch_Vector<Manifold> Scene::NarrowPhase(const LongMarch_Vector<RigidBody*>& island, float dt)
     {
         LongMarch_Vector<Manifold> manifold;
 
@@ -163,31 +165,35 @@ namespace longmarch
         }
 
         // TODO : do broadphase collision check
-        LongMarch_Vector<RigidBody*> island;
-        std::transform(m_rbList.begin(), m_rbList.end(), std::back_inserter(island), [](const auto& rb) {return rb.get(); });
+        LongMarch_Vector<RigidBody*> rbs;
+        std::transform(m_rbList.begin(), m_rbList.end(), std::back_inserter(rbs), [](const auto& rb) {return rb.get(); });
+
+        LongMarch_Vector<LongMarch_Vector<RigidBody*>> islands = BroadPhase(rbs);
 
         // loop collision check and resolution until either max. iterations achieved or no collisions detected
         for (unsigned int i = 0; i < MAX_ITERATIONS; ++i)
         {
-
-            // NarrowPhase
-            LongMarch_Vector<Manifold> manifold = NarrowPhase(island, dt);
-
-            if (manifold.empty())
+            for (auto& island : islands)
             {
-                continue;
-            }
-            
-            // temporary solution
-            // solve contacts first, then update positions etc.
-            for (auto& elem : manifold)
-            {
-                // resolve each contact in the list
-                ResolveCollision(elem, dt, m_enableFriction);
-                m_contactPairs.emplace(elem);
-                /*size_t hash;
-                LongMarch_HashCombine(hash, elem.m_A->GetEntity(), elem.m_B->GetEntity());
-                m_contactPairs[hash] = elem;*/
+                // NarrowPhase
+                LongMarch_Vector<Manifold> manifold = NarrowPhase(island, dt);
+
+                if (manifold.empty())
+                {
+                    continue;
+                }
+
+                // temporary solution
+                // solve contacts first, then update positions etc.
+                for (auto& elem : manifold)
+                {
+                    // resolve each contact in the list
+                    ResolveCollision(elem, dt, m_enableFriction);
+                    m_contactPairs.emplace(elem);
+                    /*size_t hash;
+                    LongMarch_HashCombine(hash, elem.m_A->GetEntity(), elem.m_B->GetEntity());
+                    m_contactPairs[hash] = elem;*/
+                }
             }
         }
 
@@ -197,16 +203,19 @@ namespace longmarch
         
         // addition collision check to push out anything with static collision so that objects don't "sink" into the ground
         {
-            LongMarch_Vector<Manifold> manifold = NarrowPhase(island, dt);
-
-            for (auto& elem : manifold)
+            for (auto& island : islands)
             {
-                // resolve each contact in the list
-                ResolveCollision(elem, dt, m_enableFriction);
-                m_contactPairs.emplace(elem);
-                /*size_t hash;
-                LongMarch_HashCombine(hash, elem.m_A->GetEntity(), elem.m_B->GetEntity());
-                m_contactPairs[hash] = elem;*/
+                LongMarch_Vector<Manifold> manifold = NarrowPhase(island, dt);
+
+                for (auto& elem : manifold)
+                {
+                    // resolve each contact in the list
+                    ResolveCollision(elem, dt, m_enableFriction);
+                    m_contactPairs.emplace(elem);
+                    /*size_t hash;
+                    LongMarch_HashCombine(hash, elem.m_A->GetEntity(), elem.m_B->GetEntity());
+                    m_contactPairs[hash] = elem;*/
+                }
             }
         }
 

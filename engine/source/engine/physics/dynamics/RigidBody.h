@@ -75,14 +75,14 @@ namespace longmarch
         void SetWorldScale(const Vec3f& scale);
         void SetWorldTransform(const Mat4& trans);
 
-        void UpdateAABBShape();        
-		std::shared_ptr<Shape>& GetShape();
+        void UpdateAABBShape();
 		void SetAABBShape(const Vec3f& aabbMin, const Vec3f& aabbMax);
-		const Vec3f GetAABBWidths() const;
+		const std::shared_ptr<Shape> GetShape() const;
+
+		Vec3f GetAABBWidths() const;
 
 		void SetColliderDisplacement(const Vec3f& displacement);
-		const Vec3f& GetColliderDisplacement() const;
-
+		Vec3f GetColliderDisplacement() const;
 
         void SetRBTrans(const Mat4& trans);
         const RBTransform& GetRBTrans() const;

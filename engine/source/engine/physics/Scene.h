@@ -39,6 +39,7 @@ namespace longmarch
 		void RenderDebug();
 
     private:
+
         LongMarch_Vector<std::shared_ptr<RigidBody>> m_rbList;
         LongMarch_UnorderedSet<Manifold> m_contactPairs;
         //LongMarch_UnorderedMap_flat<size_t, Manifold> m_contactPairs;

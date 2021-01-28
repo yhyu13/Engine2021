@@ -22,8 +22,34 @@ namespace longmarch
 
     LongMarch_Vector<LongMarch_Vector<RigidBody*>> Scene::BroadPhase(const LongMarch_Vector<RigidBody*>& rbs)
     {
+        // Convert custom vector to std vector
+        std::vector<RigidBody*> _rbs;
+        _rbs.reserve(rbs.size());
+        for (auto& rb : rbs) { _rbs.push_back(rb); }
+
+        // Build BVH
+        FastBVH_RigidBodyConverter<float> _bvhAABBConverter; //!< Convert our AABB to fastBVH's BBox
+        FastBVH::DefaultBuilder<float> _bvhBuilder; //!< FashBVH deafult BVH builder
+        FastBVH::BVH<float, RigidBody*> bvh = _bvhBuilder(_rbs, _bvhAABBConverter);
+        const auto nodes = bvh.getNodes();
+        auto build_prims = bvh.getPrimitives();
+
+        // Iterate over all leaves and treat them as islands
         LongMarch_Vector<LongMarch_Vector<RigidBody*>> ret;
-        ret.push_back(rbs);
+        for (const auto& node : nodes)
+        {
+            if (node.isLeaf())
+            {
+                LongMarch_Vector<RigidBody*> island;
+                for (uint32_t o = 0; o < node.primitive_count; ++o) 
+                {
+                    const auto& obj = build_prims[node.start + o];
+                    island.push_back(obj);
+                }
+                ret.push_back(island);
+            }
+        }
+
         return ret;
     }
 

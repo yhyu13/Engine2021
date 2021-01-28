@@ -129,12 +129,12 @@ namespace longmarch
         return m_friction;
     }
 
-    const Vec3f& RigidBody::GetColliderDisplacement() const
+    Vec3f RigidBody::GetColliderDisplacement() const
     {
         return m_colliderDisplacement;
     }
 
-    const Vec3f RigidBody::GetAABBWidths() const
+    Vec3f RigidBody::GetAABBWidths() const
     {
         if (m_shape == nullptr)
         {
@@ -268,7 +268,7 @@ namespace longmarch
         m_shape = tempPtr;
     }
 
-    std::shared_ptr<Shape>& RigidBody::GetShape()
+    const std::shared_ptr<Shape> RigidBody::GetShape() const
     {
         return m_shape;
     }

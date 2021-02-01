@@ -2,14 +2,14 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs
+**/.vs
 
 ################################################################################
 # Additional content to be ignored
 ################################################################################
 
-/bin/
-/bin-intermediate/
+**/bin/
+**/bin-intermediate/
 **.sln
 **.user
 **.filters
@@ -33,6 +33,6 @@
 /engine/external/tileson/bin/
 /engine/external/tileson/bin-int/
 
-/application/imgui.ini
-/application/*.txt
-/application/asset/
+samples/demo/application/imgui.ini
+samples/demo/application/*.txt
+samples/demo/application/asset/

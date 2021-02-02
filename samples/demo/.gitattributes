@@ -5,4 +5,4 @@
 *.bat eol=crlf
 
 # LFS file
-engine/vendors.zip filter=lfs diff=lfs merge=lfs -text
+samples/demo/application/asset.zip filter=lfs diff=lfs merge=lfs -text

@@ -14,8 +14,8 @@
 **.user
 **.filters
 **.vcxproj
-#**.exe
-/doxygen/
+**.exe
+**/doxygen/
 
 /engine/vendors/
 /engine/external/glad/bin/
@@ -32,7 +32,3 @@
 /engine/external/SOIL2/bin-int/
 /engine/external/tileson/bin/
 /engine/external/tileson/bin-int/
-
-samples/demo/application/imgui.ini
-samples/demo/application/*.txt
-samples/demo/application/asset/

@@ -2,6 +2,6 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-./application/imgui.ini
-./application/*.txt
-./application/asset/
+samples/demo/application/imgui.ini
+samples/demo/application/*.txt
+samples/demo/application/asset/

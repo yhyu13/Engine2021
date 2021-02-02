@@ -14,7 +14,7 @@
 **.user
 **.filters
 **.vcxproj
-**.exe
+#**.exe
 **/doxygen/
 
 /engine/vendors/

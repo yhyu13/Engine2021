@@ -440,7 +440,7 @@ namespace longmarch
 	}
 	Mat4 Geommath::ViewMatrix(const Vec3f& translation, const Quaternion& rotation)
 	{
-		const auto& transform = Geommath::ToTranslateMatrix(translation) * Geommath::ToMat4(rotation);
+		auto transform = Geommath::ToTranslateMatrix(translation) * Geommath::ToMat4(rotation);
 		return Geommath::World2OpenGLTr * Geommath::SmartInverse(transform);
 	}
 	Mat4 Geommath::LookAtWorld(const Vec3f& src, const Vec3f& dest, const Vec3f& tranlstion)

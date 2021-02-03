@@ -45,61 +45,61 @@
 #if 0
 void EditTransform(const Camera& camera, matrix_t& matrix)
 {
-	static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
-	static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
-	if (ImGui::IsKeyPressed(90))
-		mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-	if (ImGui::IsKeyPressed(69))
-		mCurrentGizmoOperation = ImGuizmo::ROTATE;
-	if (ImGui::IsKeyPressed(82)) // r Key
-		mCurrentGizmoOperation = ImGuizmo::SCALE;
-	if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
-		mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-	ImGui::SameLine();
-	if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
-		mCurrentGizmoOperation = ImGuizmo::ROTATE;
-	ImGui::SameLine();
-	if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
-		mCurrentGizmoOperation = ImGuizmo::SCALE;
-	float matrixTranslation[3], matrixRotation[3], matrixScale[3];
-	ImGuizmo::DecomposeMatrixToComponents(matrix.m16, matrixTranslation, matrixRotation, matrixScale);
-	ImGui::InputFloat3("Tr", matrixTranslation, 3);
-	ImGui::InputFloat3("Rt", matrixRotation, 3);
-	ImGui::InputFloat3("Sc", matrixScale, 3);
-	ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, matrix.m16);
+   static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
+   static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
+   if (ImGui::IsKeyPressed(90))
+      mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+   if (ImGui::IsKeyPressed(69))
+      mCurrentGizmoOperation = ImGuizmo::ROTATE;
+   if (ImGui::IsKeyPressed(82)) // r Key
+      mCurrentGizmoOperation = ImGuizmo::SCALE;
+   if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
+      mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+   ImGui::SameLine();
+   if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
+      mCurrentGizmoOperation = ImGuizmo::ROTATE;
+   ImGui::SameLine();
+   if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
+      mCurrentGizmoOperation = ImGuizmo::SCALE;
+   float matrixTranslation[3], matrixRotation[3], matrixScale[3];
+   ImGuizmo::DecomposeMatrixToComponents(matrix.m16, matrixTranslation, matrixRotation, matrixScale);
+   ImGui::InputFloat3("Tr", matrixTranslation, 3);
+   ImGui::InputFloat3("Rt", matrixRotation, 3);
+   ImGui::InputFloat3("Sc", matrixScale, 3);
+   ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, matrix.m16);
 
-	if (mCurrentGizmoOperation != ImGuizmo::SCALE)
-	{
-		if (ImGui::RadioButton("Local", mCurrentGizmoMode == ImGuizmo::LOCAL))
-			mCurrentGizmoMode = ImGuizmo::LOCAL;
-		ImGui::SameLine();
-		if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD))
-			mCurrentGizmoMode = ImGuizmo::WORLD;
-	}
-	static bool useSnap(false);
-	if (ImGui::IsKeyPressed(83))
-		useSnap = !useSnap;
-	ImGui::Checkbox("", &useSnap);
-	ImGui::SameLine();
-	vec_t snap;
-	switch (mCurrentGizmoOperation)
-	{
-	case ImGuizmo::TRANSLATE:
-		snap = config.mSnapTranslation;
-		ImGui::InputFloat3("Snap", &snap.x);
-		break;
-	case ImGuizmo::ROTATE:
-		snap = config.mSnapRotation;
-		ImGui::InputFloat("Angle Snap", &snap.x);
-		break;
-	case ImGuizmo::SCALE:
-		snap = config.mSnapScale;
-		ImGui::InputFloat("Scale Snap", &snap.x);
-		break;
-	}
-	ImGuiIO& io = ImGui::GetIO();
-	ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-	ImGuizmo::Manipulate(camera.mView.m16, camera.mProjection.m16, mCurrentGizmoOperation, mCurrentGizmoMode, matrix.m16, NULL, useSnap ? &snap.x : NULL);
+   if (mCurrentGizmoOperation != ImGuizmo::SCALE)
+   {
+      if (ImGui::RadioButton("Local", mCurrentGizmoMode == ImGuizmo::LOCAL))
+         mCurrentGizmoMode = ImGuizmo::LOCAL;
+      ImGui::SameLine();
+      if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD))
+         mCurrentGizmoMode = ImGuizmo::WORLD;
+   }
+   static bool useSnap(false);
+   if (ImGui::IsKeyPressed(83))
+      useSnap = !useSnap;
+   ImGui::Checkbox("", &useSnap);
+   ImGui::SameLine();
+   vec_t snap;
+   switch (mCurrentGizmoOperation)
+   {
+   case ImGuizmo::TRANSLATE:
+      snap = config.mSnapTranslation;
+      ImGui::InputFloat3("Snap", &snap.x);
+      break;
+   case ImGuizmo::ROTATE:
+      snap = config.mSnapRotation;
+      ImGui::InputFloat("Angle Snap", &snap.x);
+      break;
+   case ImGuizmo::SCALE:
+      snap = config.mSnapScale;
+      ImGui::InputFloat("Scale Snap", &snap.x);
+      break;
+   }
+   ImGuiIO& io = ImGui::GetIO();
+   ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+   ImGuizmo::Manipulate(camera.mView.m16, camera.mProjection.m16, mCurrentGizmoOperation, mCurrentGizmoMode, matrix.m16, NULL, useSnap ? &snap.x : NULL);
 }
 #endif
 #pragma once
@@ -113,76 +113,91 @@ void EditTransform(const Camera& camera, matrix_t& matrix)
 
 namespace ImGuizmo
 {
-	// call inside your own window and before Manipulate() in order to draw gizmo to that window.
-	// Or pass a specific ImDrawList to draw to (e.g. ImGui::GetForegroundDrawList()).
-	IMGUI_API void SetDrawlist(ImDrawList* drawlist = nullptr);
+    static const float identityMatrix[16] =
+    { 1.f, 0.f, 0.f, 0.f,
+        0.f, 1.f, 0.f, 0.f,
+        0.f, 0.f, 1.f, 0.f,
+        0.f, 0.f, 0.f, 1.f };
 
-	// call BeginFrame right after ImGui_XXXX_NewFrame();
-	IMGUI_API void BeginFrame();
+   // call inside your own window and before Manipulate() in order to draw gizmo to that window.
+   // Or pass a specific ImDrawList to draw to (e.g. ImGui::GetForegroundDrawList()).
+   IMGUI_API void SetDrawlist(ImDrawList* drawlist = nullptr);
 
-	IMGUI_API void EndFrame();
+   // call BeginFrame right after ImGui_XXXX_NewFrame();
+   IMGUI_API void BeginFrame();
 
-	// return true if mouse cursor is over any gizmo control (axis, plan or screen component)
-	IMGUI_API bool IsOver();
+   // this is necessary because when imguizmo is compiled into a dll, and imgui into another
+   // globals are not shared between them.
+   // More details at https://stackoverflow.com/questions/19373061/what-happens-to-global-and-static-variables-in-a-shared-library-when-it-is-dynam
+   // expose method to set imgui context
+   IMGUI_API void SetImGuiContext(ImGuiContext* ctx);
 
-	// return true if mouse IsOver or if the gizmo is in moving state
-	IMGUI_API bool IsUsing();
+   // return true if mouse cursor is over any gizmo control (axis, plan or screen component)
+   IMGUI_API bool IsOver();
 
-	// enable/disable the gizmo. Stay in the state until next call to Enable.
-	// gizmo is rendered with gray half transparent color when disabled
-	IMGUI_API void Enable(bool enable);
+   // return true if mouse IsOver or if the gizmo is in moving state
+   IMGUI_API bool IsUsing();
 
-	// helper functions for manualy editing translation/rotation/scale with an input float
-	// translation, rotation and scale float points to 3 floats each
-	// Angles are in degrees (more suitable for human editing)
-	// example:
-	// float matrixTranslation[3], matrixRotation[3], matrixScale[3];
-	// ImGuizmo::DecomposeMatrixToComponents(gizmoMatrix.m16, matrixTranslation, matrixRotation, matrixScale);
-	// ImGui::InputFloat3("Tr", matrixTranslation, 3);
-	// ImGui::InputFloat3("Rt", matrixRotation, 3);
-	// ImGui::InputFloat3("Sc", matrixScale, 3);
-	// ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, gizmoMatrix.m16);
-	//
-	// These functions have some numerical stability issues for now. Use with caution.
-	IMGUI_API void DecomposeMatrixToComponents(const float *matrix, float *translation, float *rotation, float *scale);
-	IMGUI_API void RecomposeMatrixFromComponents(const float *translation, const float *rotation, const float *scale, float *matrix);
+   // enable/disable the gizmo. Stay in the state until next call to Enable.
+   // gizmo is rendered with gray half transparent color when disabled
+   IMGUI_API void Enable(bool enable);
 
-	IMGUI_API void SetRect(float x, float y, float width, float height);
-	// default is false
-	IMGUI_API void SetOrthographic(bool isOrthographic);
+   // helper functions for manualy editing translation/rotation/scale with an input float
+   // translation, rotation and scale float points to 3 floats each
+   // Angles are in degrees (more suitable for human editing)
+   // example:
+   // float matrixTranslation[3], matrixRotation[3], matrixScale[3];
+   // ImGuizmo::DecomposeMatrixToComponents(gizmoMatrix.m16, matrixTranslation, matrixRotation, matrixScale);
+   // ImGui::InputFloat3("Tr", matrixTranslation, 3);
+   // ImGui::InputFloat3("Rt", matrixRotation, 3);
+   // ImGui::InputFloat3("Sc", matrixScale, 3);
+   // ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, gizmoMatrix.m16);
+   //
+   // These functions have some numerical stability issues for now. Use with caution.
+   IMGUI_API void DecomposeMatrixToComponents(const float* matrix, float* translation, float* rotation, float* scale);
+   IMGUI_API void RecomposeMatrixFromComponents(const float* translation, const float* rotation, const float* scale, float* matrix);
 
-	// Render a cube with face color corresponding to face normal. Usefull for debug/tests
-	IMGUI_API void DrawCubes(const float *view, const float *projection, const float *matrices, int matrixCount);
-	IMGUI_API void DrawGrid(const float *view, const float *projection, const float *matrix, const float gridSize);
+   IMGUI_API void SetRect(float x, float y, float width, float height);
+   // default is false
+   IMGUI_API void SetOrthographic(bool isOrthographic);
 
-	// call it when you want a gizmo
-	// Needs view and projection matrices. 
-	// matrix parameter is the source matrix (where will be gizmo be drawn) and might be transformed by the function. Return deltaMatrix is optional
-	// translation is applied in world space
-	enum OPERATION
-	{
-		TRANSLATE,
-		ROTATE,
-		SCALE,
-		BOUNDS,
-	};
+   // Render a cube with face color corresponding to face normal. Usefull for debug/tests
+   IMGUI_API void DrawCubes(const float* view, const float* projection, const float* matrices, int matrixCount);
+   IMGUI_API void DrawGrid(const float* view, const float* projection, const float* matrix, const float gridSize);
 
-	enum MODE
-	{
-		LOCAL,
-		WORLD
-	};
+   // call it when you want a gizmo
+   // Needs view and projection matrices. 
+   // matrix parameter is the source matrix (where will be gizmo be drawn) and might be transformed by the function. Return deltaMatrix is optional
+   // translation is applied in world space
+   enum OPERATION
+   {
+      TRANSLATE,
+      ROTATE,
+      SCALE,
+      BOUNDS,
+   };
 
-	IMGUI_API bool Manipulate(const float *view, const float *projection, OPERATION operation, MODE mode, float *matrix, float *deltaMatrix = NULL, float *snap = NULL, float *localBounds = NULL, float *boundsSnap = NULL);
+   enum MODE
+   {
+      LOCAL,
+      WORLD
+   };
+
+
+   IMGUI_API void LookAt(const float* eye, const float* at, const float* up, float* m16);
+   IMGUI_API void Perspective(float fovyInDegrees, float aspectRatio, float znear, float zfar, float* m16);
+
+   IMGUI_API bool Manipulate(const float* view, const float* projection, OPERATION operation, MODE mode, float* matrix, float* deltaMatrix = NULL, const float* snap = NULL, const float* localBounds = NULL, const float* boundsSnap = NULL);
    //
    // Please note that this cubeview is patented by Autodesk : https://patents.google.com/patent/US7782319B2/en
    // It seems to be a defensive patent in the US. I don't think it will bring troubles using it as
    // other software are using the same mechanics. But just in case, you are now warned!
    //
    IMGUI_API void ViewManipulate(float* view, float length, ImVec2 position, ImVec2 size, ImU32 backgroundColor);
-   
+
    IMGUI_API void SetID(int id);
-   
+
    // return true if the cursor is over the operation's gizmo
    IMGUI_API bool IsOver(OPERATION op);
+   IMGUI_API void SetGizmoSizeClipSpace(float value);
 };

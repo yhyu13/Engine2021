@@ -9,6 +9,8 @@
 
 #include <imgui/addons/ImGuizmo/ImGuizmo.h>
 
+#define USE_IMGUIZMO_CAM 1
+
 void longmarch::EditorPickingComSys::Init()
 {
 	m_renderPass.SetParentWorld(m_parentWorld);
@@ -43,7 +45,6 @@ void longmarch::EditorPickingComSys::RenderUI()
 				}
 			}
 		}
-		ImGuizmo::EndFrame();
 		break;
 	}
 }
@@ -98,21 +99,25 @@ void longmarch::EditorPickingComSys::ManipulatePickedEntityGizmos(const Entity& 
 	}
 
 	auto camera = m_parentWorld->GetTheOnlyEntityWithType((EntityType)EngineEntityType::EDITOR_CAMERA);
-	auto current_camera = m_parentWorld->GetComponent<PerspectiveCameraCom>(camera)->GetCamera();
+	auto current_camera = GetComponent<PerspectiveCameraCom>(camera)->GetCamera();
 	auto trans = GetComponent<Transform3DCom>(e);
 	if (camera != e && trans.Valid())
 	{
 		ImGuizmo::SetRect(0, 0, Window::width, Window::height);
 
-		Mat4 cam_view = current_camera->GetViewMatrix();
-		Mat4 cam_proj = Geommath::ReverseZProjectionMatrixZeroOne(current_camera->cameraSettings.fovy_rad,
-			current_camera->cameraSettings.aspectRatioWbyH,
-			current_camera->cameraSettings.nearZ,
-			current_camera->cameraSettings.farZ);
 		auto trans_mat = trans->GetModelTr();
+		Mat4 cam_view = current_camera->GetViewMatrix();
+		Mat4 cam_proj = current_camera->GetProjectionMatrix();
+#if USE_IMGUIZMO_CAM == 1
+		auto cam_location = current_camera->GetWorldPosition();
+		auto cam_rotation = current_camera->GetGlobalRotation();
+		auto cam_lookat = cam_location + cam_rotation * Geommath::WorldFront;
+		ImGuizmo::LookAt(&(cam_location[0]), &(cam_lookat[0]), &(Vec3f(0, 0, 1)[0]), &(cam_view[0][0]));
+		ImGuizmo::Perspective(current_camera->cameraSettings.fovy_rad * 0.5 * RAD2DEG, current_camera->cameraSettings.aspectRatioWbyH, current_camera->cameraSettings.nearZ, current_camera->cameraSettings.farZ, &(cam_proj[0][0]));
+#endif // USE_IMGUIZMO_CAM
 
-		ImGuizmo::SetDrawlist();
-		if (ImGuizmo::Manipulate(&(cam_view[0][0]), &(cam_proj[0][0]), operation, mode, &trans_mat[0][0], nullptr, nullptr))
+		// Draw guizmo
+		if (ImGuizmo::Manipulate(&(cam_view[0][0]), &(cam_proj[0][0]), operation, mode, &(trans_mat[0][0]), nullptr, nullptr, nullptr, nullptr))
 		{
 			trans->SetModelTr(trans_mat);
 		}

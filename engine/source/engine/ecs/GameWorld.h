@@ -150,7 +150,7 @@ namespace longmarch
 		//! Helper method that links an entity to a new parent, remove older parent as well.
 		void AddChildHelper(Entity parent, Entity child);
 
-		//! Type must have one entity, if that entity does not exist, throw an exception
+		//! Type must have one entity. If that entity does not exist or there exists more than one, throw an exception
 		const Entity GetTheOnlyEntityWithType(EntityType type);
 		const LongMarch_Vector<Entity> GetAllEntityWithType(EntityType type);
 		const LongMarch_Vector<Entity> GetAllEntityWithType(const std::initializer_list<EntityType>& types);

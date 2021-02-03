@@ -40,14 +40,13 @@ void longmarch::PerspectiveCamera::RecalculateViewMatrix()
 	{
 	case longmarch::PerspectiveCameraType::LOOK_AT:
 	{
-		// m_ViewMatrix = Geommath::LookAtWorld(worldPosition, worldPosition + globalRotation * Geommath::WorldFront, Vec3f(0, 0, localZoom)); // Bad at looking right up or right down using lookat matrix due to gimbal lock
-		// Using quaternion
+		// m_ViewMatrix = Geommath::LookAtWorld(worldPosition, worldPosition + globalRotation * Geommath::WorldFront, Vec3f(0, 0, localZoom)); // Bad at looking straight up or straight down using lookat matrix due to gimbal lock
 		m_ViewMatrix = Geommath::ToTranslateMatrix(Vec3f(0, 0, -localZoom)) * Geommath::ViewMatrix(worldPosition, globalRotation);
 	}
 	break;
 	case longmarch::PerspectiveCameraType::FIRST_PERSON:
 	{
-		// m_ViewMatrix = Geommath::LookAtWorld(worldPosition, worldPosition + globalRotation * Geommath::WorldFront); // Bad at looking right up or right down using lookat matrix due to gimbal lock
+		// m_ViewMatrix = Geommath::LookAtWorld(worldPosition, worldPosition + globalRotation * Geommath::WorldFront); // Bad at looking straight up or straight down using lookat matrix due to gimbal lock
 		m_ViewMatrix = Geommath::ViewMatrix(worldPosition, globalRotation);
 	}
 	break;

@@ -583,11 +583,12 @@ namespace longmarch
 		static void _BeginClusterLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _RenderBoundingBox(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 
-		static void _BeginToneMappingPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out = nullptr);
 		static void _BeginTAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out = nullptr);
 		static void _BeginFXAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out = nullptr);
 		static void _BeginSMAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_edge, const std::shared_ptr<FrameBuffer>& framebuffer_blend, const std::shared_ptr<FrameBuffer>& framebuffer_out = nullptr);
 		static void _BeginMotionBlurPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out = nullptr);
+		static void _BeginBloomPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_bright, const std::shared_ptr<FrameBuffer>& framebuffer_blend, const std::shared_ptr<FrameBuffer>& framebuffer_out = nullptr);
+		static void _BeginToneMappingPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out = nullptr);
 
 		static void _RenderFullScreenQuad();
 		static void _RenderFullScreenCube();

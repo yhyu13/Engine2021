@@ -17,6 +17,7 @@
 #**.exe
 **/doxygen/
 
+/engine/asset/
 /engine/vendors/
 /engine/external/glad/bin/
 /engine/external/glad/bin-int/

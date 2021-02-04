@@ -2482,6 +2482,68 @@ void longmarch::Renderer3D::_BeginMotionBlurPass(const std::shared_ptr<FrameBuff
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
+void longmarch::Renderer3D::_BeginBloomPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_bright, const std::shared_ptr<FrameBuffer>& framebuffer_blend, const std::shared_ptr<FrameBuffer>& framebuffer_out)
+{
+	// Extract brightness map
+	{
+		framebuffer_bright->Bind();
+		Vec2u traget_resoluation = framebuffer_bright->GetBufferSize();
+		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+		{
+			s_Data.CurrentShader = s_Data.ShaderMap["Bloom_ExtractBrightness"];
+			s_Data.CurrentShader->Bind();
+
+			s_Data.CurrentShader->SetFloat("u_Threshold", Engine::GetTotalTime()); // TODO
+			framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
+			
+			// Render quad
+			Renderer3D::_RenderFullScreenQuad();
+		}
+	}
+	// Blur brightness map
+	{
+		framebuffer_blend->Bind();
+		Vec2u traget_resoluation = framebuffer_blend->GetBufferSize();
+		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+		{
+			s_Data.CurrentShader = s_Data.ShaderMap["Bloom_Gaussian"]; // TODO
+			s_Data.CurrentShader->Bind();
+
+			s_Data.CurrentShader->SetFloat("u_Threshold", Engine::GetTotalTime()); // TODO
+			framebuffer_bright->BindTexture(s_Data.fragTexture_0_slot);
+
+			// Render quad
+			Renderer3D::_RenderFullScreenQuad();
+		}
+	}
+
+	// Blend original map with blurred brightness map
+	{
+		if (framebuffer_out)
+		{
+			framebuffer_out->Bind();
+			Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
+			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+		}
+		else
+		{
+			RenderCommand::BindDefaultFrameBuffer();
+			Vec2u traget_resoluation(Window::width, Window::height);
+			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+		}
+		{
+			s_Data.CurrentShader = s_Data.ShaderMap["Bloom_Blend"];
+			s_Data.CurrentShader->Bind();
+			framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
+			framebuffer_blend->BindTexture(s_Data.fragTexture_1_slot);
+
+			// Render quad
+			Renderer3D::_RenderFullScreenQuad();
+		}
+	}
+	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
+}
+
 void longmarch::Renderer3D::_BeginToneMappingPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
 	if (framebuffer_out)

@@ -106,6 +106,7 @@ namespace longmarch
 		inline static bool GetQuit() { return s_instance->m_shouldQUit; }
 
 		static void SetMaxFrameRate(unsigned int newMax) { FramerateController::GetInstance()->SetMaxFrameRate(newMax); }
+		//! Return frame time in seconds
 		static double GetFrameTime() { return FramerateController::GetInstance()->GetFrameTime(); }
 
 		static void ShowMessageBox(const std::wstring& title, const std::wstring& message);

@@ -191,13 +191,29 @@ namespace longmarch
 	};
 
 	struct ToggleMotionBlurEvent : public Event<EngineGraphicsEventType> {
-		explicit ToggleMotionBlurEvent(bool b)
+		explicit ToggleMotionBlurEvent(bool b, int shutterSpeed)
 			:
 			Event(EngineGraphicsEventType::TOGGLE_MOTION_BLUR),
-			m_enable(b)
+			m_enable(b),
+			m_shutterSpeed(shutterSpeed)
 		{
 		}
 		bool m_enable;
+		int m_shutterSpeed;
+	};
+
+	struct ToggleBloomEvent : public Event<EngineGraphicsEventType> {
+		explicit ToggleBloomEvent(bool b, float threshold, float strength)
+			:
+			Event(EngineGraphicsEventType::TOGGLE_BLOOM),
+			m_enable(b),
+			m_threshold(threshold),
+			m_strength(strength)
+		{
+		}
+		bool m_enable;
+		float m_threshold;
+		float m_strength;
 	};
 
 	struct ToggleTAAEvent : public Event<EngineGraphicsEventType> {

@@ -85,6 +85,8 @@ void longmarch::Renderer3D::Init()
 		s_Data.enable_fxaa = graphicsConfiguration["FXAA"].asBool();
 		s_Data.enable_taa = graphicsConfiguration["TAA"].asBool();
 		s_Data.enable_motionblur = graphicsConfiguration["Motion-blur"].asBool();
+		s_Data.motionblur_shutterSpeed = graphicsConfiguration["Motion-blur-shutter-speed"].asInt();
+		
 		s_Data.enable_deferredShading = graphicsConfiguration["Deferred-shading"].asBool();
 		{
 			auto enable_clustered = graphicsConfiguration["Clustered-shading"].asBool();
@@ -99,7 +101,6 @@ void longmarch::Renderer3D::Init()
 				s_Data.RENDER_PIPE = RENDER_PIPE::FORWARD;
 			}
 		}
-		s_Data.motionblur_shutterPeriod = 1.0f / graphicsConfiguration["Motion-blur-shutter-speed"].asFloat();
 		s_Data.resolution_ratio = graphicsConfiguration["Resolution-ratio"].asFloat();
 		s_Data.enable_shadow = graphicsConfiguration["Shadow"].asBool();
 		s_Data.enable_debug_cluster_light = graphicsConfiguration["Debug-cluster-light"].asBool();;
@@ -107,14 +108,21 @@ void longmarch::Renderer3D::Init()
 		s_Data.toneMapping_mode = 0;
 		s_Data.value_gamma = 2.2f;
 		{
+			const auto& bloom_settings = graphicsConfiguration["Bloom"];
+			s_Data.BloomSettings.enable = bloom_settings["Enable"].asBool();
+			s_Data.BloomSettings.bloom_threshold = bloom_settings["Threshold"].asFloat();
+			s_Data.BloomSettings.bloom_blend_strength = bloom_settings["Strength"].asFloat();
+			s_Data.BloomSettings.bloom_gaussian_kernal = bloom_settings["Gaussian-kernel"].asUInt();
+		}
+		{
 			const auto& ao_settings = graphicsConfiguration["AO"];
 			s_Data.AOSettings.enable = ao_settings["Enable"].asBool();
-			s_Data.AOSettings.aoGaussianKernal = ao_settings["Gaussian-kernel"].asUInt();
-			s_Data.AOSettings.aoSamples = ao_settings["Num-samples"].asUInt();
-			s_Data.AOSettings.aoSampleResolutionDownScale = ao_settings["Res-down-scale"].asUInt();
-			s_Data.AOSettings.aoSampleRadius = ao_settings["Radius"].asFloat();
-			s_Data.AOSettings.aoScale = ao_settings["Scale"].asFloat();
-			s_Data.AOSettings.aoPower = ao_settings["Power"].asFloat();
+			s_Data.AOSettings.ao_gaussian_kernal = ao_settings["Gaussian-kernel"].asUInt();
+			s_Data.AOSettings.ao_samples = ao_settings["Num-samples"].asUInt();
+			s_Data.AOSettings.ao_sample_resolution_downScale = ao_settings["Res-down-scale"].asUInt();
+			s_Data.AOSettings.ao_sample_radius = ao_settings["Radius"].asFloat();
+			s_Data.AOSettings.ao_scale = ao_settings["Scale"].asFloat();
+			s_Data.AOSettings.ao_power = ao_settings["Power"].asFloat();
 			s_Data.AOSettings.enable_indirect_light_bounce = ao_settings["Indirect-bounce"].asBool();
 		}
 
@@ -158,6 +166,8 @@ void longmarch::Renderer3D::Init()
 		s_Data.ShaderMap["FXAAShader"] = Shader::Create("$shader:simple_fxaa.vert", "$shader:simple_fxaa.frag");
 		s_Data.ShaderMap["TAAShader"] = Shader::Create("$shader:simple_taa.vert", "$shader:simple_taa.frag");
 		s_Data.ShaderMap["MotionBlur"] = Shader::Create("$shader:motion_blur.vert", "$shader:motion_blur.frag");
+		s_Data.ShaderMap["Bloom_Brightness_Filter"] = Shader::Create("$shader:bloom_brightness_filter.vert", "$shader:bloom_brightness_filter.frag");
+		s_Data.ShaderMap["Bloom_Blend"] = Shader::Create("$shader:bloom_blend_shader.vert", "$shader:bloom_blend_shader.frag");
 		s_Data.ShaderMap["DepthCopyShader"] = Shader::Create("$shader:depth_copy_shader.vert", "$shader:depth_copy_shader.frag");
 		s_Data.ShaderMap["BBoxShader"] = Shader::Create("$shader:bbox_shader.vert", "$shader:bbox_shader.frag");
 		s_Data.ShaderMap["ToneMapping"] = Shader::Create("$shader:tone_mapping.vert", "$shader:tone_mapping.frag");
@@ -296,6 +306,7 @@ void longmarch::Renderer3D::Init()
 			s_Data.gpuBuffer.FrameBuffer_3 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
 			s_Data.gpuBuffer.FrameBuffer_4 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
 			s_Data.gpuBuffer.CurrentDynamicAOBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
+			s_Data.gpuBuffer.CurrentBloomBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
 
 			// GBuffer
 			s_Data.gpuBuffer.CurrentGBuffer = GBuffer::Create(1, 1, GBuffer::GBUFFER_TYPE::DEFAULT);
@@ -546,6 +557,7 @@ void longmarch::Renderer3D::Init()
 		{
 			auto queue = EventQueue<EngineGraphicsEventType>::GetInstance();
 			queue->Subscribe(EngineGraphicsEventType::TOGGLE_MOTION_BLUR, &Renderer3D::_ON_TOGGLE_MOTION_BLUR);
+			queue->Subscribe(EngineGraphicsEventType::TOGGLE_BLOOM, &Renderer3D::_ON_TOGGLE_BLOOM);
 			queue->Subscribe(EngineGraphicsEventType::TOGGLE_TAA, &Renderer3D::_ON_TOGGLE_TAA);
 			queue->Subscribe(EngineGraphicsEventType::TOGGLE_FXAA, &Renderer3D::_ON_TOGGLE_FXAA);
 			queue->Subscribe(EngineGraphicsEventType::TOGGLE_SMAA, &Renderer3D::_ON_TOGGLE_SMAA);
@@ -578,6 +590,15 @@ void longmarch::Renderer3D::_ON_TOGGLE_MOTION_BLUR(EventQueue<EngineGraphicsEven
 {
 	auto event = std::static_pointer_cast<ToggleMotionBlurEvent>(e);
 	s_Data.enable_motionblur = event->m_enable;
+	s_Data.motionblur_shutterSpeed = event->m_shutterSpeed;
+}
+
+void longmarch::Renderer3D::_ON_TOGGLE_BLOOM(EventQueue<EngineGraphicsEventType>::EventPtr e)
+{
+	auto event = std::static_pointer_cast<ToggleBloomEvent>(e);
+	s_Data.BloomSettings.enable = event->m_enable;
+	s_Data.BloomSettings.bloom_threshold = event->m_threshold;
+	s_Data.BloomSettings.bloom_blend_strength = event->m_strength;
 }
 
 void longmarch::Renderer3D::_ON_TOGGLE_TAA(EventQueue<EngineGraphicsEventType>::EventPtr e)
@@ -614,17 +635,17 @@ void longmarch::Renderer3D::_ON_SET_AO_VALUE(EventQueue<EngineGraphicsEventType>
 {
 	auto event = std::static_pointer_cast<SetAOValueEvent>(e);
 	s_Data.AOSettings.enable = event->m_enable;
-	s_Data.AOSettings.aoGaussianKernal = event->m_gaussKernel;
-	if (s_Data.AOSettings.aoGaussianKernal % 2u == 0)
+	s_Data.AOSettings.ao_gaussian_kernal = event->m_gaussKernel;
+	if (s_Data.AOSettings.ao_gaussian_kernal % 2u == 0)
 	{
-		++s_Data.AOSettings.aoGaussianKernal;
+		++s_Data.AOSettings.ao_gaussian_kernal;
 	}
-	s_Data.AOSettings.aoGaussianKernal = (glm::clamp)(s_Data.AOSettings.aoGaussianKernal, 3u, 51u);
-	s_Data.AOSettings.aoSamples = event->m_sample;
-	s_Data.AOSettings.aoSampleRadius = event->m_sampleRadius;
-	s_Data.AOSettings.aoSampleResolutionDownScale = event->m_sampleResolutionDownScale;
-	s_Data.AOSettings.aoScale = event->m_scale;
-	s_Data.AOSettings.aoPower = event->m_power;
+	s_Data.AOSettings.ao_gaussian_kernal = (glm::clamp)(s_Data.AOSettings.ao_gaussian_kernal, 3u, 51u);
+	s_Data.AOSettings.ao_samples = event->m_sample;
+	s_Data.AOSettings.ao_sample_radius = event->m_sampleRadius;
+	s_Data.AOSettings.ao_sample_resolution_downScale = event->m_sampleResolutionDownScale;
+	s_Data.AOSettings.ao_scale = event->m_scale;
+	s_Data.AOSettings.ao_power = event->m_power;
 	s_Data.AOSettings.enable_indirect_light_bounce = event->m_enable_indirect_bounce;
 }
 
@@ -1399,10 +1420,15 @@ void longmarch::Renderer3D::BeginScene(
 				s_Data.window_size_changed_this_frame = true;
 				s_Data.gpuBuffer.FrameBuffer_4 = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
 			}
-			if (s_Data.gpuBuffer.CurrentDynamicAOBuffer->GetBufferSize() != s_Data.resolution / s_Data.AOSettings.aoSampleResolutionDownScale) // Only render the AO with half resolution
+			if (s_Data.gpuBuffer.CurrentDynamicAOBuffer->GetBufferSize() != s_Data.resolution / s_Data.AOSettings.ao_sample_resolution_downScale) // Only render the AO with half resolution
 			{
 				s_Data.window_size_changed_this_frame = true;
-				s_Data.gpuBuffer.CurrentDynamicAOBuffer = FrameBuffer::Create(s_Data.resolution.x / s_Data.AOSettings.aoSampleResolutionDownScale, s_Data.resolution.y / s_Data.AOSettings.aoSampleResolutionDownScale, FrameBuffer::BUFFER_FORMAT::Float16);
+				s_Data.gpuBuffer.CurrentDynamicAOBuffer = FrameBuffer::Create(s_Data.resolution.x / s_Data.AOSettings.ao_sample_resolution_downScale, s_Data.resolution.y / s_Data.AOSettings.ao_sample_resolution_downScale, FrameBuffer::BUFFER_FORMAT::Float16);
+			}
+			if (s_Data.gpuBuffer.CurrentBloomBuffer->GetBufferSize() != s_Data.resolution / 2u) // Only render the Bloom with half resolution
+			{
+				s_Data.window_size_changed_this_frame = true;
+				s_Data.gpuBuffer.CurrentBloomBuffer = FrameBuffer::Create(s_Data.resolution.x / 2u, s_Data.resolution.y / 2u, FrameBuffer::BUFFER_FORMAT::Float16);
 			}
 			RenderCommand::DepthTest(true, true); // Enable depth testing and wirte to depth buffer just for the clearing commend
 			RenderCommand::SetClearColor(clear_color);
@@ -1414,7 +1440,13 @@ void longmarch::Renderer3D::BeginScene(
 			RenderCommand::Clear();
 			s_Data.gpuBuffer.FrameBuffer_2->Bind();
 			RenderCommand::Clear();
+			s_Data.gpuBuffer.FrameBuffer_3->Bind();
+			RenderCommand::Clear();
+			s_Data.gpuBuffer.FrameBuffer_4->Bind();
+			RenderCommand::Clear();
 			s_Data.gpuBuffer.CurrentDynamicAOBuffer->Bind();
+			RenderCommand::Clear();
+			s_Data.gpuBuffer.CurrentBloomBuffer->Bind();
 			RenderCommand::Clear();
 
 			if (s_Data.RENDER_PIPE == RENDER_PIPE::DEFERRED)
@@ -1954,11 +1986,11 @@ void longmarch::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<GBuffer>& 
 	s_Data.CurrentShader->Bind();
 	s_Data.CurrentShader->SetInt("enabled", s_Data.AOSettings.enable);
 	s_Data.CurrentShader->SetInt("enabled_indirect_bounce", s_Data.AOSettings.enable_indirect_light_bounce);
-	s_Data.CurrentShader->SetInt("num_sample", s_Data.AOSettings.aoSamples);
-	s_Data.CurrentShader->SetFloat("sample_radius", s_Data.AOSettings.aoSampleRadius);
-	s_Data.CurrentShader->SetFloat("scale_s", s_Data.AOSettings.aoScale);
-	s_Data.CurrentShader->SetFloat("power_k", s_Data.AOSettings.aoPower);
-	s_Data.gpuBuffer.CurrentDynamicAOBuffer->Bind();
+	s_Data.CurrentShader->SetInt("num_sample", s_Data.AOSettings.ao_samples);
+	s_Data.CurrentShader->SetFloat("sample_radius", s_Data.AOSettings.ao_sample_radius);
+	s_Data.CurrentShader->SetFloat("scale_s", s_Data.AOSettings.ao_scale);
+	s_Data.CurrentShader->SetFloat("power_k", s_Data.AOSettings.ao_power);
+	AOBuffer->Bind();
 	// Bind Prev frame buffer
 	s_Data.gpuBuffer.PrevFrameBuffer->BindTexture(s_Data.fragTexture_0_slot);
 	// Bind g buffer content
@@ -1980,7 +2012,7 @@ void longmarch::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<GBuffer>& 
 	{
 		AOBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::Float16);
 	}
-	auto kernel_size = s_Data.AOSettings.aoGaussianKernal;
+	auto kernel_size = s_Data.AOSettings.ao_gaussian_kernal;
 	auto [length, offset, weight] = s_Data.gpuBuffer.GuassinKernelHalfBilinear[kernel_size];
 	{
 		s_Data.CurrentShader = guassian_shader;
@@ -2259,6 +2291,7 @@ void longmarch::Renderer3D::BeginPostProcessing()
 	}
 
 	{
+		Renderer3D::_BeginBloomPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_3, s_Data.gpuBuffer.FrameBuffer_4, s_Data.gpuBuffer.FrameBuffer_2);
 		Renderer3D::_BeginToneMappingPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FinalFrameBuffer);
 	}
 }
@@ -2284,7 +2317,7 @@ void longmarch::Renderer3D::_BeginTAAPass(const std::shared_ptr<FrameBuffer>& fr
 		s_Data.CurrentShader->Bind();
 
 		s_Data.CurrentShader->SetInt("enabled", s_Data.enable_taa && !s_Data.window_size_changed_this_frame);
-		s_Data.CurrentShader->SetFloat("u_VelocityScale", s_Data.motionblur_shutterPeriod / Engine::GetFrameTime());
+		s_Data.CurrentShader->SetFloat("u_VelocityScale", 1.0f / s_Data.motionblur_shutterSpeed / Engine::GetFrameTime());
 		s_Data.CurrentShader->SetFloat2("u_ScreenSize", framebuffer_in->GetBufferSize());
 		s_Data.CurrentShader->SetFloat2("u_VelocityScreenSize", s_Data.gpuBuffer.CurrentGBuffer->GetBufferSize());
 		framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
@@ -2455,7 +2488,7 @@ void longmarch::Renderer3D::_BeginMotionBlurPass(const std::shared_ptr<FrameBuff
 		s_Data.CurrentShader = s_Data.ShaderMap["MotionBlur"];
 		s_Data.CurrentShader->Bind();
 		s_Data.CurrentShader->SetInt("enabled", s_Data.enable_motionblur);
-		s_Data.CurrentShader->SetFloat("u_VelocityScale", s_Data.motionblur_shutterPeriod / Engine::GetFrameTime());
+		s_Data.CurrentShader->SetFloat("u_VelocityScale", 1.0f / s_Data.motionblur_shutterSpeed / Engine::GetFrameTime());
 		s_Data.CurrentShader->SetFloat2("u_ScreenSize", framebuffer_in->GetBufferSize());
 		s_Data.CurrentShader->SetFloat2("u_GBufferSize", s_Data.gpuBuffer.CurrentGBuffer->GetBufferSize());
 		framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
@@ -2484,40 +2517,87 @@ void longmarch::Renderer3D::_BeginMotionBlurPass(const std::shared_ptr<FrameBuff
 
 void longmarch::Renderer3D::_BeginBloomPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_bright, const std::shared_ptr<FrameBuffer>& framebuffer_blend, const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
-	// Extract brightness map
+	if (s_Data.BloomSettings.enable)
 	{
-		framebuffer_bright->Bind();
-		Vec2u traget_resoluation = framebuffer_bright->GetBufferSize();
+		// Extract brightness map
+		auto& BrightnessBuffer = s_Data.gpuBuffer.CurrentDynamicAOBuffer;
+		Vec2u traget_resoluation = BrightnessBuffer->GetBufferSize();
 		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+
+		BrightnessBuffer->Bind();
 		{
-			s_Data.CurrentShader = s_Data.ShaderMap["Bloom_ExtractBrightness"];
+			s_Data.CurrentShader = s_Data.ShaderMap["Bloom_Brightness_Filter"];
 			s_Data.CurrentShader->Bind();
 
-			s_Data.CurrentShader->SetFloat("u_Threshold", Engine::GetTotalTime()); // TODO
+			s_Data.CurrentShader->SetFloat("u_Threshold", s_Data.BloomSettings.bloom_threshold);
 			framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
 			
 			// Render quad
 			Renderer3D::_RenderFullScreenQuad();
 		}
-	}
-	// Blur brightness map
-	{
-		framebuffer_blend->Bind();
-		Vec2u traget_resoluation = framebuffer_blend->GetBufferSize();
-		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+
+		// Blur brightness map
+		static const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur"];
+		Vec2u traget_resoluation2(traget_resoluation);
+		static auto BrightnessBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::Float16);
+		if (BrightnessBackBuffer->GetBufferSize() != traget_resoluation2)
 		{
-			s_Data.CurrentShader = s_Data.ShaderMap["Bloom_Gaussian"]; // TODO
+			BrightnessBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::Float16);
+		}
+		auto kernel_size = s_Data.BloomSettings.bloom_gaussian_kernal;
+		auto [length, offset, weight] = s_Data.gpuBuffer.GuassinKernelHalfBilinear[kernel_size];
+		{
+			s_Data.CurrentShader = guassian_shader;
 			s_Data.CurrentShader->Bind();
+			s_Data.CurrentShader->SetInt("u_length", length);
+			weight->Bind(1);
+			offset->Bind(2);
+			{
+				RenderCommand::SetViewport(0, 0, traget_resoluation2.x, traget_resoluation2.y);
+				// Bind shadow buffer
+				BrightnessBackBuffer->Bind();
+				s_Data.CurrentShader->SetInt("u_Horizontal", 1);
+				BrightnessBuffer->BindTexture(s_Data.fragTexture_0_slot);
+				_RenderFullScreenQuad();
+			}
+			{
+				RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+				// Bind shadow buffer
+				BrightnessBuffer->Bind();
+				s_Data.CurrentShader->SetInt("u_Horizontal", 0);
+				BrightnessBackBuffer->BindTexture(s_Data.fragTexture_0_slot);
+				_RenderFullScreenQuad();
+			}
+		}
 
-			s_Data.CurrentShader->SetFloat("u_Threshold", Engine::GetTotalTime()); // TODO
-			framebuffer_bright->BindTexture(s_Data.fragTexture_0_slot);
+		// Blend original map with blurred brightness map
+		{
+			if (framebuffer_out)
+			{
+				framebuffer_out->Bind();
+				Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
+				RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+			}
+			else
+			{
+				RenderCommand::BindDefaultFrameBuffer();
+				Vec2u traget_resoluation(Window::width, Window::height);
+				RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+			}
+			{
+				s_Data.CurrentShader = s_Data.ShaderMap["Bloom_Blend"];
+				s_Data.CurrentShader->Bind();
 
-			// Render quad
-			Renderer3D::_RenderFullScreenQuad();
+				s_Data.CurrentShader->SetFloat("u_Strength", s_Data.BloomSettings.bloom_blend_strength);
+				framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
+				BrightnessBuffer->BindTexture(s_Data.fragTexture_1_slot);
+
+				// Render quad
+				Renderer3D::_RenderFullScreenQuad();
+			}
 		}
 	}
-
-	// Blend original map with blurred brightness map
+	else
 	{
 		if (framebuffer_out)
 		{
@@ -2531,15 +2611,11 @@ void longmarch::Renderer3D::_BeginBloomPass(const std::shared_ptr<FrameBuffer>& 
 			Vec2u traget_resoluation(Window::width, Window::height);
 			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 		}
-		{
-			s_Data.CurrentShader = s_Data.ShaderMap["Bloom_Blend"];
-			s_Data.CurrentShader->Bind();
-			framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
-			framebuffer_blend->BindTexture(s_Data.fragTexture_1_slot);
-
-			// Render quad
-			Renderer3D::_RenderFullScreenQuad();
-		}
+		s_Data.CurrentShader = s_Data.ShaderMap["ColorCopyShader"];
+		s_Data.CurrentShader->Bind();
+		framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
+		// Render quad
+		Renderer3D::_RenderFullScreenQuad();
 	}
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }

@@ -52,16 +52,24 @@
 		"Clustered-shading": false,
 		"Debug_cluster_light" : false,
 		"Motion-blur":true, /* only take effects under deffered shading */
+		"Motion-blur-shutter-speed": 45, /* higher this value, lower the motion blur effect */
 		"TAA":true, /* only take effects under deffered shading */
 		"SMAA":false,
 		"FXAA":true,
-		"Motion-blur-shutter-speed": 45, /* higher this value, lower the motion blur effect */
-		
 		// Shadow
 		"Shadow" : true,
 		// IBL
 		"Sky-box":["shanghai_bund_2k"],
 		"BRDF-lut":"ggx_integrate_lut",
+
+		"Bloom":
+		{
+			"Enable": true,
+			"Threshold" : -20, /* negative value use a exp s-curve, lower this value, higher the bloom effect */
+							   /* positive value use as the cutoff value of a step function, ranges from 0~1, the closer to 0, higher the bloom effect */
+			"Strength" : 0.25, /* Bloom strength range of 0 to 1 */
+			"Gaussian-kernel": 15,
+		},
 
 		"AO":
 		{

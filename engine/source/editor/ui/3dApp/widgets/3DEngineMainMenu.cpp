@@ -129,6 +129,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static auto windowConfig = engineConfiguration["window"];
 		static auto graphicsConfig = engineConfiguration["graphics"];
 		static auto AOConfig = graphicsConfig["AO"];
+		static auto BloomConfig = graphicsConfig["Bloom"];
 		// 1. Window mode
 		static const char* windowModes[]{ "Fullscreen", "Borderless Windowed", "Windowed" };
 		static int selected_windowModes = windowConfig["Full-screen"].asInt();
@@ -162,6 +163,11 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static bool checkFXAA = graphicsConfig["FXAA"].asBool();
 		// Motion Blur
 		static bool checkMotionBlur = graphicsConfig["Motion-blur"].asBool();
+		static int valueMotionblurShutterSpeed = graphicsConfig["Motion-blur-shutter-speed"].asInt();
+		// Bloom
+		static bool checkBloom = BloomConfig["Enable"].asBool();
+		static float valueBloomThreshold = BloomConfig["Threshold"].asFloat();
+		static float valueBloomStrength = BloomConfig["Strength"].asFloat();
 		// TAA
 		static bool checkTAA = graphicsConfig["TAA"].asBool();
 		// Tone mapping
@@ -193,10 +199,17 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 			checkFXAA = graphicsConfig["FXAA"].asBool();
 			checkSMAA = graphicsConfig["SMAA"].asBool();
 			checkMotionBlur = graphicsConfig["Motion-blur"].asBool();
+			valueMotionblurShutterSpeed = graphicsConfig["Motion-blur-shutter-speed"].asInt();
 			checkTAA = graphicsConfig["TAA"].asBool();
 			{
 				selected_toneMap = 0;
 				valueGamma = 2.2f;
+			}
+			{
+				// Bloom
+				checkBloom = BloomConfig["Enable"].asBool();
+				valueBloomThreshold = BloomConfig["Threshold"].asFloat();
+				valueBloomStrength = BloomConfig["Strength"].asFloat();
 			}
 			{
 				// AO
@@ -227,7 +240,11 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				graphicDebugEventQueue->Publish(e);
 			}
 			{
-				auto e = MemoryManager::Make_shared<ToggleMotionBlurEvent>(checkMotionBlur);
+				auto e = MemoryManager::Make_shared<ToggleMotionBlurEvent>(checkMotionBlur, valueMotionblurShutterSpeed);
+				graphicEventQueue->Publish(e);
+			}
+			{
+				auto e = MemoryManager::Make_shared<ToggleBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength);
 				graphicEventQueue->Publish(e);
 			}
 			{
@@ -335,7 +352,31 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				{
 					if (ImGui::Checkbox("Moltion Blur", &checkMotionBlur))
 					{
-						auto e = MemoryManager::Make_shared<ToggleMotionBlurEvent>(checkMotionBlur);
+						auto e = MemoryManager::Make_shared<ToggleMotionBlurEvent>(checkMotionBlur, valueMotionblurShutterSpeed);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Moltion Blur Shutter Speed", &valueMotionblurShutterSpeed, 15, 90))
+					{
+						auto e = MemoryManager::Make_shared<ToggleMotionBlurEvent>(checkMotionBlur, valueMotionblurShutterSpeed);
+						graphicEventQueue->Publish(e);
+					}
+				}
+				ImGui::Dummy(ImVec2(0, yoffset_item));
+				// Bloom
+				{
+					if (ImGui::Checkbox("Bloom", &checkBloom))
+					{
+						auto e = MemoryManager::Make_shared<ToggleBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::DragFloat("Bloom Threshold", &valueBloomThreshold, 0.05, -50, 1, "%.2f"))
+					{
+						auto e = MemoryManager::Make_shared<ToggleBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::DragFloat("Bloom Strength", &valueBloomStrength, 0.01, 0, 1, "%.2f"))
+					{
+						auto e = MemoryManager::Make_shared<ToggleBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength);
 						graphicEventQueue->Publish(e);
 					}
 				}

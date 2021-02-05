@@ -245,6 +245,7 @@ namespace longmarch
 			std::shared_ptr<FrameBuffer> FrameBuffer_3;
 			std::shared_ptr<FrameBuffer> FrameBuffer_4;
 			std::shared_ptr<FrameBuffer> CurrentDynamicAOBuffer;
+			std::shared_ptr<FrameBuffer> CurrentBloomBuffer;
 			std::shared_ptr<GBuffer> CurrentGBuffer;
 			std::shared_ptr<GBuffer> CurrentThinGBuffer;
 			std::shared_ptr<UniformBuffer> CurrentModelTrBuffer;
@@ -396,14 +397,22 @@ namespace longmarch
 			struct
 			{
 				bool enable;
-				uint32_t aoSamples;
-				uint32_t aoGaussianKernal;
-				uint32_t aoSampleResolutionDownScale;
-				float aoSampleRadius;
-				float aoScale;
-				float aoPower;
+				uint32_t ao_samples;
+				uint32_t ao_gaussian_kernal;
+				uint32_t ao_sample_resolution_downScale;
+				float ao_sample_radius;
+				float ao_scale;
+				float ao_power;
 				bool enable_indirect_light_bounce;
 			}AOSettings;
+
+			struct
+			{
+				bool enable;
+				uint32_t bloom_gaussian_kernal;
+				float bloom_threshold;
+				float bloom_blend_strength;
+			}BloomSettings;
 
 			bool enable_deferredShading;
 			bool enable_reverse_z;
@@ -412,15 +421,16 @@ namespace longmarch
 			bool enable_debug_cluster_light;
 
 			bool enable_motionblur;
-			float motionblur_shutterPeriod;
+			int motionblur_shutterSpeed;
 
-			bool window_size_changed_this_frame;
 			bool enable_fxaa;
 			bool enable_taa;
 			bool enable_smaa;
 
 			bool enable_drawingBoundingVolume;
 			bool enable_wireframe;
+
+			bool window_size_changed_this_frame;
 
 			RENDER_PIPE RENDER_PIPE;
 
@@ -605,6 +615,7 @@ namespace longmarch
 		static void _ON_TOGGLE_SHADOW(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
 		static void _ON_SWITCH_GBUFFER_MODE(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
 		static void _ON_TOGGLE_MOTION_BLUR(EventQueue<EngineGraphicsEventType>::EventPtr e);
+		static void _ON_TOGGLE_BLOOM(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_TOGGLE_TAA(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_TOGGLE_FXAA(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_TOGGLE_SMAA(EventQueue<EngineGraphicsEventType>::EventPtr e);

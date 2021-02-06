@@ -1,3 +1,4 @@
+/*
 #pragma once
 #include <blaze/Blaze.h>
 
@@ -18,3 +19,4 @@ namespace longmarch
 		using quatf64 = vec4f64;
 	}
 }
+*/

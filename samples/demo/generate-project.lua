@@ -151,13 +151,11 @@ IncludeDir["fmod_studio"]  	= "%{EngineDir.vendors}/fmod/api/studio/inc"
 IncludeDir["spdlog"] 		= "%{EngineDir.vendors}/spdlog/include"
 IncludeDir["phmap"]     	= "%{EngineDir.vendors}/phmap/include"
 IncludeDir["blaze"]     	= "%{EngineDir.vendors}/blaze/include"
-IncludeDir["qu3e"]     		= "%{EngineDir.vendors}/qu3e/include"
 IncludeDir["sol2"]     		= "%{EngineDir.vendors}/sol2/include"
 IncludeDir["FastBVH"]     	= "%{EngineDir.vendors}/Fast-BVH/include"
 
 LibDir = {}
 LibDir["assimp"] 			= "%{EngineDir.vendors}/assimp/lib/x64"
-LibDir["qu3e"] 				= "%{EngineDir.vendors}/qu3e/lib/x64"
 LibDir["fmod_core"] 		= "%{EngineDir.vendors}/fmod/api/core/lib/x64"
 LibDir["fmod_bank"] 		= "%{EngineDir.vendors}/fmod/api/fsbank/lib/x64"
 LibDir["fmod_studio"] 		= "%{EngineDir.vendors}/fmod/api/studio/lib/x64"
@@ -168,8 +166,6 @@ LibName["fmod_bank"] 		= "fsbank_vc.lib"
 LibName["fmod_studio"] 		= "fmodstudio_vc.lib"
 LibName["assimp_debug"] 	= "/Release/assimp-vc142-mt.lib"
 LibName["assimp"] 			= "/Release/assimp-vc142-mt.lib"
-LibName["qu3e"] 			= "/Release/qu3e.lib"
-LibName["qu3e_debug"] 		= "/Debug/qu3e.lib"
 
 DllName = {}
 DllName["assimp_debug"] 	= "/Release/assimp-vc142-mt.dll"
@@ -213,7 +209,6 @@ project "engine"
 	{
 		"%{EngineDir.source}",
 		"%{IncludeDir.assimp}",
-		"%{IncludeDir.qu3e}",
 		"%{IncludeDir.blaze}",
 		"%{IncludeDir.phmap}",
 		"%{IncludeDir.glfw}",
@@ -235,7 +230,6 @@ project "engine"
 	libdirs
 	{
 		"%{LibDir.assimp}",
-		"%{LibDir.qu3e}",
 		"%{LibDir.fmod_core}",
 		"%{LibDir.fmod_bank}",
 		"%{LibDir.fmod_studio}",
@@ -260,14 +254,12 @@ project "engine"
 		links
 		{
 			"%{LibName.assimp_debug}",
-			"%{LibName.qu3e_debug}",
 		}
 
 	filter "configurations:Release"
 		links
 		{
 			"%{LibName.assimp}",
-			"%{LibName.qu3e}",
 		}
 
 	
@@ -355,7 +347,6 @@ project "application"
 		"%{EngineDir.source}",
 		"%{EngineDir.vendors}",
 		"%{IncludeDir.assimp}",
-		"%{IncludeDir.qu3e}",
 		"%{IncludeDir.blaze}",
 		"%{IncludeDir.phmap}",
 		"%{IncludeDir.glfw}",

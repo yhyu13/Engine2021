@@ -74,12 +74,12 @@ namespace longmarch
         return m_awake;
     }
 
-    f32 RigidBody::GetMass() const
+    float RigidBody::GetMass() const
     {
         return m_mass;
     }
 
-    f32 RigidBody::GetInvMass() const
+    float RigidBody::GetInvMass() const
     {
         return m_invMass;
     }
@@ -99,12 +99,12 @@ namespace longmarch
         return m_prevPos;
     }
 
-    f32 RigidBody::GetLinearDamping() const
+    float RigidBody::GetLinearDamping() const
     {
         return m_linearDamping;
     }
 
-    f32 RigidBody::GetAngularDamping() const
+    float RigidBody::GetAngularDamping() const
     {
         return m_angularDamping;
     }
@@ -114,17 +114,17 @@ namespace longmarch
         return m_force * m_invMass;
     }
 
-    f32 RigidBody::GetRestitution() const
+    float RigidBody::GetRestitution() const
     {
         return m_restitution;
     }
 
-    f32 RigidBody::GetGravityScale() const
+    float RigidBody::GetGravityScale() const
     {
         return m_gravityScale;
     }
 
-    f32 RigidBody::GetFriction() const
+    float RigidBody::GetFriction() const
     {
         return m_friction;
     }
@@ -169,7 +169,7 @@ namespace longmarch
     //    return m_entity;
     //}
 
-    void RigidBody::SetMass(f32 mass)
+    void RigidBody::SetMass(float mass)
     {
         m_mass = mass;
 
@@ -191,17 +191,17 @@ namespace longmarch
         m_angularVelocity = velocity;
     }
 
-    void RigidBody::SetLinearDamping(f32 damping)
+    void RigidBody::SetLinearDamping(float damping)
     {
         m_linearDamping = damping;
     }
 
-    void RigidBody::SetAngularDamping(f32 damping)
+    void RigidBody::SetAngularDamping(float damping)
     {
         m_angularDamping = damping;
     }
 
-    void RigidBody::SetRestitution(f32 restitution)
+    void RigidBody::SetRestitution(float restitution)
     {
         m_restitution = restitution;
     }
@@ -234,12 +234,12 @@ namespace longmarch
         m_transform.m_scale = Geommath::GetScale(trans);
     }
 
-    void RigidBody::SetGravityScale(f32 gravityScale)
+    void RigidBody::SetGravityScale(float gravityScale)
     {
         m_gravityScale = gravityScale;
     }
 
-    void RigidBody::SetFriction(f32 friction)
+    void RigidBody::SetFriction(float friction)
     {
         m_friction = friction;
     }
@@ -278,7 +278,7 @@ namespace longmarch
         m_colliderDisplacement = displacement;
     }
 
-    void RigidBody::SetCollisionStatus(bool collided, f32 solveTimeLeft)
+    void RigidBody::SetCollisionStatus(bool collided, float solveTimeLeft)
     {
         m_collided = collided;
         m_solveTimeLeft = solveTimeLeft;

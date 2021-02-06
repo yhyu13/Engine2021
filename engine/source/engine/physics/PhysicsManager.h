@@ -22,14 +22,14 @@ namespace longmarch
 		void Update(double deltaTime);
 		void Shutdown();
 
-		//u32 CreateIsland();
-		//void DeleteIsland(u32 id);
+		//uint32_t CreateIsland();
+		//void DeleteIsland(uint32_t id);
 
 		std::shared_ptr<Scene> CreateScene();
 		void AddScene(const std::shared_ptr<Scene>& scene);
 		void DeleteScene(const std::shared_ptr<Scene>& scene);
 
-		//Scene* GetScene(u32 sceneID);
+		//Scene* GetScene(uint32_t sceneID);
 		
 	private:
 		PhysicsManager();

@@ -3,6 +3,8 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <math.h>
+#include <random>
 
 #ifndef PI
 #define PI 3.14159265359f

@@ -3,6 +3,7 @@
 #if defined(WINDOWS_APP)
 #define NOMINMAX // NOMINMAX for WINDOWS
 #define _ENABLE_EXTENDED_ALIGNED_STORAGE // VS2017 15.8 fix on aligned allocation (for phmap to work)
+#include <windows.h>
 #endif
 
 #include <iostream>
@@ -49,6 +50,9 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp >
 #include <glm/gtc/random.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+// OpenGL Binding
 #include <glad/glad.h>
 
 // Assimp scene file loader
@@ -65,22 +69,15 @@
 #include <stb_image.h>
 #include <stb_image_write.h>
 
-// Blaze Math
-#define BLAZE_MPI_PARALLEL_MODE 1
-#include <blaze/Blaze.h>
-
-// qu3e Simple AABB Physics
-#include <qu3e/q3.h>
-
 // Parrallel hash map and Block-Tree
 #include <phmap/phmap.h>
 #include <phmap/btree.h>
 
-// Lua binding
+// SOL2 Lua binding
 #include <lua.hpp>
 #include <sol/sol.hpp>
 
-// Fast BVH
+// Fast BVH for physics and raycasting
 #include <FastBVH.h>
 
 namespace longmarch

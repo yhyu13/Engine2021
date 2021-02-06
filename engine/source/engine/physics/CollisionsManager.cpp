@@ -486,13 +486,13 @@ namespace longmarch
 		// epsilon added to prevent possible division by 0
 		Vec3f relativeVel = (Vel2 - Vel1) + Vec3f(glm::epsilon<float>(), glm::epsilon<float>(), glm::epsilon<float>());
 
-		f32 tFirst = 0.0f;
-		f32 tLast = dt;
+		float tFirst = 0.0f;
+		float tLast = dt;
 
 		Vec3f min1 = AABB1->GetMin(), min2 = AABB2->GetMin();
 		Vec3f max1 = AABB1->GetMax(), max2 = AABB2->GetMax();
 
-		f32 firstIntersect = dt;	// time of first intersection
+		float firstIntersect = dt;	// time of first intersection
 		int intersectAxis = 0;		// axis of intersection
 		float penetrationDepth = 0.0f;
 

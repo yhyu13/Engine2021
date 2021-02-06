@@ -36,37 +36,37 @@ namespace longmarch
 
 		bool IsAwake() const;
 
-		f32 GetMass() const;
-		f32 GetInvMass() const;
+		float GetMass() const;
+		float GetInvMass() const;
 
 		const Vec3f& GetLinearVelocity() const;
 		const Vec3f& GetWorldPosition() const;
 		const Vec3f& GetPrevWorldPosition() const;
 
-		f32 GetLinearDamping() const;
-		f32 GetAngularDamping() const;
+		float GetLinearDamping() const;
+		float GetAngularDamping() const;
 
 		const Vec3f GetLinearAcceleration() const;
 
-		f32 GetRestitution() const;
+		float GetRestitution() const;
 
-		f32 GetGravityScale() const;
-		f32 GetFriction() const;
+		float GetGravityScale() const;
+		float GetFriction() const;
 
 		const Entity& GetEntity() const;
 		void SetEntity(const Entity& entity);
 
-		void SetMass(f32 mass);
+		void SetMass(float mass);
 		void SetLinearVelocity(const Vec3f& velocity);
 		void SetAngularVelocity(const Vec3f& velocity);
 
-		void SetLinearDamping(f32 damping);
-		void SetAngularDamping(f32 damping);
+		void SetLinearDamping(float damping);
+		void SetAngularDamping(float damping);
 
-		void SetRestitution(f32 restitution);
+		void SetRestitution(float restitution);
 
-		void SetGravityScale(f32 gravityScale);
-		void SetFriction(f32 friction);
+		void SetGravityScale(float gravityScale);
+		void SetFriction(float friction);
 
 		void SetWorldPosition(const Vec3f& pos);
 		void SetPrevWorldPosition(const Vec3f& pos);
@@ -90,7 +90,7 @@ namespace longmarch
 		RBType GetRBType() const;
 		void SetRBType(RBType type);
 
-		void SetCollisionStatus(bool collided, f32 solveTimeLeft);
+		void SetCollisionStatus(bool collided, float solveTimeLeft);
 		bool IsCollided() const;
 		float GetSolveTimeLeft() const;
 
@@ -109,20 +109,20 @@ namespace longmarch
 		Entity m_entity;
 
 		// usage to be decided
-		u32 m_islandIndex;
+		uint32_t m_islandIndex;
 
-		f32 m_restitution;
+		float m_restitution;
 
-		f32 m_mass;
-		f32 m_invMass;
+		float m_mass;
+		float m_invMass;
 
-		f32 m_linearDamping;
-		f32 m_angularDamping;
+		float m_linearDamping;
+		float m_angularDamping;
 
-		f32 m_sleepTime;
-		f32 m_gravityScale;
+		float m_sleepTime;
+		float m_gravityScale;
 
-		f32 m_friction;
+		float m_friction;
 
 		Vec3f m_prevPos;
 

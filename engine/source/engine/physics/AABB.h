@@ -26,7 +26,7 @@ namespace longmarch
 		void SetOriginalMax(const Vec3f& max);
 		void SetOriginalMin(const Vec3f& min);
 		void SetCenter(const Vec3f& center);
-		f32 ComputeSurfaceArea() const;
+		float ComputeSurfaceArea() const;
 		bool Overlaps(const AABB& aabb) const;
 		void Merge(const AABB& aabb);
 		void Merge(const AABB& aabb1, const AABB& aabb2);

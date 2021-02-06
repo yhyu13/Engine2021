@@ -259,7 +259,7 @@ void longmarch::AABB::SetCenter(const Vec3f& center)
 	Max = center + extents;
 }
 
-f32 longmarch::AABB::ComputeSurfaceArea() const
+float longmarch::AABB::ComputeSurfaceArea() const
 {
 	Vec3f widths(Max - Min);
 

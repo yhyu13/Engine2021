@@ -1,3 +1,4 @@
+/*
 #pragma once
 #include "BlazeCustom.h"
 #include "engine/core/EngineCore.h"
@@ -7,13 +8,6 @@ namespace longmarch
 {
 	namespace BlazeCustom
 	{
-		/**
-		 * @brief Custom Quat class using (w,x,y,z) format
-		 *
-		 * Reference : http://danceswithcode.net/engineeringnotes/Quats/Quats.html
-		 *
-		 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
-		 */
 		template<typename ft = float, bool matrix_major = blaze::columnMajor>
 		struct Quat
 		{
@@ -485,3 +479,4 @@ namespace longmarch
 		};
 	}
 }
+*/

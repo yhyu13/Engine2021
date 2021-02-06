@@ -1,5 +1,12 @@
 #pragma once
 #include "MathUtil.h"
+
+#define GLM_FORCE_CTOR_INIT
+#define GLM_FORCE_INLINE
+#define GLM_FORCE_AVX2
+#define GLM_RIGHT_HANDED
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_SWIZZLE
 #include <glm/glm.hpp>
 #include <glm/gtc/packing.hpp>
 

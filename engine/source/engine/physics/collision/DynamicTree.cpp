@@ -371,17 +371,17 @@ namespace longmarch
             int leftNodeIndex = m_nodes[index].m_left;
             int rightNodeIndex = m_nodes[index].m_right;
 
-            f32 surfaceArea = m_nodes[index].m_aabb.ComputeSurfaceArea();
+            float surfaceArea = m_nodes[index].m_aabb.ComputeSurfaceArea();
 
             AABB combinedAABB;
             combinedAABB.Merge(m_nodes[index].m_aabb, leafAABB);
 
-            f32 combinedSurfaceArea = combinedAABB.ComputeSurfaceArea();
+            float combinedSurfaceArea = combinedAABB.ComputeSurfaceArea();
 
-            f32 cost = combinedSurfaceArea * 2.0f;
-            f32 inheritanceCost = (combinedSurfaceArea - surfaceArea) * 2.0f;
+            float cost = combinedSurfaceArea * 2.0f;
+            float inheritanceCost = (combinedSurfaceArea - surfaceArea) * 2.0f;
 
-            f32 leftCost, rightCost;
+            float leftCost, rightCost;
 
             // compute cost of descending in the left subtree and right subtree
             if (m_nodes[leftNodeIndex].IsLeaf())
@@ -842,7 +842,7 @@ namespace longmarch
 
         while (count > 1)
         {
-            f32 minCost = std::numeric_limits<float>::max();
+            float minCost = std::numeric_limits<float>::max();
             int minIndex1 = -1, minIndex2 = -1;
 
             for (int i = 0; i < count; i++)
@@ -860,7 +860,7 @@ namespace longmarch
                     AABB combinedAABB;
 
                     combinedAABB.Merge(aabb1, aabb2);
-                    f32 cost = combinedAABB.ComputeSurfaceArea();
+                    float cost = combinedAABB.ComputeSurfaceArea();
 
                     if (cost < minCost)
                     {

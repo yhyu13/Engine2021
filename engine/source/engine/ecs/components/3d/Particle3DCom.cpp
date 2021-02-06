@@ -1,10 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "Particle3DCom.h"
 #include "engine/renderer/Renderer3D.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include "../../../audio/AudioManager.h"
+#include "engine/audio/AudioManager.h"
 
 namespace longmarch
 {

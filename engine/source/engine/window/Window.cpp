@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "engine/window/Window.h"
 
-#if defined(WIN32) && defined(WINDOWS_APP)
+#if defined(WINDOWS_APP)
 #include <windows.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define GLFW_EXPOSE_NATIVE_WGL

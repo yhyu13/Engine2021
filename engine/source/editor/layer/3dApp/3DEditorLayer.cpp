@@ -62,7 +62,8 @@ void longmarch::_3DEditorLayer::BuildRenderPipeline()
 		auto cam = GameWorld::GetCurrent()->GetComponent<PerspectiveCameraCom>(camera)->GetCamera();
 		// TODO : most editor would create a tab window space that stores a captured texture of the rendering result
 		// and that tab window could resize at a user's will. Right now, we still render to the whole screen
-		cam->SetViewPort(Vec2u(0), Vec2u(Window::width, Window::height));
+		const auto& prop = Engine::GetWindow()->GetWindowProperties();
+		cam->SetViewPort(Vec2u(0), Vec2u(prop.m_width, prop.m_height));
 
 		Renderer3D::BeginRendering();
 		{

@@ -8,29 +8,32 @@
 struct GLFWwindow;
 
 namespace longmarch {
-	typedef std::function<void(const int& isFocussed)> InterruptHandler;
+	typedef std::function<void(int IsFocussed)> InterruptHandler;
 
 	struct ENGINE_API WindowProperties {
-		unsigned int m_width;
-		unsigned int m_height;
-		unsigned int m_resolutionX;
-		unsigned int m_resolutionY;
+		int m_upperleft_xpos;
+		int m_upperleft_ypos;
+		int m_width;
+		int m_height;
+		int m_resolutionX;
+		int m_resolutionY;
 		std::string m_title;
 		InputManager* m_input = nullptr;
+		bool IsResizable = true;
 		int IsFullScreen = 1; /* 0-Full screen, 1- Borderless full screen 2- Windowed mode  */
-		InterruptHandler m_interruptHandler = nullptr;
 		bool IsVSync = true;
-		bool IsCPUGPUSync = true;
+		bool IsCPUGPUSync = true; 
+		InterruptHandler m_interruptHandler = nullptr;
 
 		std::pair<unsigned int, unsigned int> m_Res1;
 		std::pair<unsigned int, unsigned int> m_Res2;
 		std::pair<unsigned int, unsigned int> m_Res3;
 		std::pair<unsigned int, unsigned int> m_Res4;
 
-		unsigned int m_monitorWidth;
-		unsigned int m_monitorHeight;
+		int m_monitorWidth;
+		int m_monitorHeight;
 
-		WindowProperties(unsigned int width = 1280, unsigned int height = 720, std::string title = "ENGINE GSWY")
+		WindowProperties(int width = 1280, int height = 720, std::string title = "ENGINE GSWY")
 			:
 			m_width(width),
 			m_height(height),
@@ -69,7 +72,7 @@ namespace longmarch {
 		void ShowMessageBox(const std::wstring& title, const std::wstring& message);
 
 		inline GLFWwindow* GetNativeWindow() const { return m_window; }
-		inline WindowProperties GetWindowProperties() const { return m_windowProperties; }
+		inline WindowProperties& GetWindowProperties() { return m_windowProperties; }
 		inline unsigned int GetWidth() const { return m_windowProperties.m_width; }
 		inline unsigned int GetHeight() const { return m_windowProperties.m_height; }
 		inline void SetInterruptHandler(const InterruptHandler& handler) { m_windowProperties.m_interruptHandler = handler; };
@@ -80,9 +83,5 @@ namespace longmarch {
 	private:
 		WindowProperties m_windowProperties;
 		GLFWwindow* m_window;
-	public:
-		inline static unsigned int width = { 1920 };
-		inline static unsigned int height = { 1080 };
-		inline static bool Resizable = { true };
 	};
 }

@@ -385,9 +385,9 @@ namespace longmarch
 			//! Before this slot are reserved for uniform texture bindings, you can bind custom textures (including gbuffer textures) after this slot
 			const uint32_t fragTexture_empty_slot = { 3u };
 
+			Vec2u window_size;
 			Vec2u resolution;
-			float resolution_ratio;
-			uint32_t resolution_shadowMap;
+			float resolution_ratio; //!< ratio of resolution vs. window_size
 
 			int gBuffer_display_mode;
 

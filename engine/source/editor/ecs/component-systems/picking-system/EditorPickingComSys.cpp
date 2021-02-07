@@ -103,7 +103,8 @@ void longmarch::EditorPickingComSys::ManipulatePickedEntityGizmos(const Entity& 
 	auto trans = GetComponent<Transform3DCom>(e);
 	if (camera != e && trans.Valid())
 	{
-		ImGuizmo::SetRect(0, 0, Window::width, Window::height);
+		const auto& prop = Engine::GetWindow()->GetWindowProperties();
+		ImGuizmo::SetRect(prop.m_upperleft_xpos, prop.m_upperleft_ypos, prop.m_width, prop.m_height);
 
 		auto trans_mat = trans->GetModelTr();
 		Mat4 cam_view = current_camera->GetViewMatrix();

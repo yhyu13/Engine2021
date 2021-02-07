@@ -80,7 +80,6 @@ void longmarch::Renderer3D::Init()
 		s_Data.multiDrawBuffer.MultiDraw_CmdBuffer.reserve(TWO_11);
 		s_Data.multiDrawBuffer.MultiDraw_MeshDataToDraw.reserve(TWO_11);
 
-		s_Data.resolution_shadowMap = graphicsConfiguration["ShadowMap-resolution"].asInt();
 		s_Data.enable_smaa = graphicsConfiguration["SMAA"].asBool();
 		s_Data.enable_fxaa = graphicsConfiguration["FXAA"].asBool();
 		s_Data.enable_taa = graphicsConfiguration["TAA"].asBool();
@@ -1369,7 +1368,9 @@ void longmarch::Renderer3D::BeginScene(
 		s_Data.window_size_changed_this_frame = false;
 		s_Data.RENDER_PASS = RENDER_PASS::SCENE;
 		// TODO : set view port size by camera
-		s_Data.resolution = Vec2u(Window::width * s_Data.resolution_ratio, Window::height * s_Data.resolution_ratio);
+		const auto& prop = Engine::GetWindow()->GetWindowProperties();
+		s_Data.window_size = Vec2u(prop.m_width, prop.m_height);
+		s_Data.resolution = Vec2u(prop.m_width * s_Data.resolution_ratio, prop.m_height * s_Data.resolution_ratio);
 		if (glm::any(glm::equal(s_Data.resolution, Vec2u(0u))))
 		{
 			// Early quit on, say, minimizing window
@@ -1380,15 +1381,15 @@ void longmarch::Renderer3D::BeginScene(
 		// Prepare buffers
 		{
 			// Resize FrameBuffer if necessary
-			if (s_Data.gpuBuffer.CurrentWindowFrameBuffer->GetBufferSize() != Vec2u(Window::width, Window::height))
+			if (s_Data.gpuBuffer.CurrentWindowFrameBuffer->GetBufferSize() != s_Data.window_size)
 			{
 				s_Data.window_size_changed_this_frame = true;
-				s_Data.gpuBuffer.CurrentWindowFrameBuffer = FrameBuffer::Create(Window::width, Window::height, FrameBuffer::BUFFER_FORMAT::Float16);
+				s_Data.gpuBuffer.CurrentWindowFrameBuffer = FrameBuffer::Create(s_Data.window_size.x, s_Data.window_size.y, FrameBuffer::BUFFER_FORMAT::Float16);
 			}
-			if (s_Data.gpuBuffer.PrevWindowFrameBuffer->GetBufferSize() != Vec2u(Window::width, Window::height))
+			if (s_Data.gpuBuffer.PrevWindowFrameBuffer->GetBufferSize() != s_Data.window_size)
 			{
 				s_Data.window_size_changed_this_frame = true;
-				s_Data.gpuBuffer.PrevWindowFrameBuffer = FrameBuffer::Create(Window::width, Window::height, FrameBuffer::BUFFER_FORMAT::Float16);
+				s_Data.gpuBuffer.PrevWindowFrameBuffer = FrameBuffer::Create(s_Data.window_size.x, s_Data.window_size.y, FrameBuffer::BUFFER_FORMAT::Float16);
 			}
 			if (s_Data.gpuBuffer.PrevFrameBuffer->GetBufferSize() != s_Data.resolution)
 			{
@@ -1595,7 +1596,7 @@ void longmarch::Renderer3D::_BeginDebugCluster(const std::shared_ptr<FrameBuffer
 		else
 		{
 			RenderCommand::BindDefaultFrameBuffer();
-			Vec2u traget_resoluation(Window::width, Window::height);
+			Vec2u traget_resoluation = s_Data.window_size;
 			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 		}
 	}
@@ -1889,8 +1890,8 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 		{
 			s_Data.gpuBuffer.AABBvolumeGridBuffer->Bind(14);
 
-			auto width = Window::width;
-			auto height = Window::height;
+			auto width = s_Data.resolution.x;
+			auto height = s_Data.resolution.y;
 			auto gridX = s_Data.ClusterData.gridSizeX;
 			auto gridY = s_Data.ClusterData.gridSizeY;
 			auto gridZ = s_Data.ClusterData.gridSizeZ;
@@ -2067,7 +2068,7 @@ void longmarch::Renderer3D::_BeginDeferredLightingPass(
 		else
 		{
 			RenderCommand::BindDefaultFrameBuffer();
-			Vec2u traget_resoluation(Window::width, Window::height);
+			Vec2u traget_resoluation = s_Data.window_size;
 			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 		}
 	}
@@ -2134,7 +2135,7 @@ void longmarch::Renderer3D::_BeginForwardLightingPass(const std::shared_ptr<Fram
 		else
 		{
 			RenderCommand::BindDefaultFrameBuffer();
-			Vec2u traget_resoluation(Window::width, Window::height);
+			Vec2u traget_resoluation = s_Data.window_size;
 			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 		}
 	}
@@ -2154,7 +2155,7 @@ void longmarch::Renderer3D::_BeginClusterLightingPass(const std::shared_ptr<Fram
 		else
 		{
 			RenderCommand::BindDefaultFrameBuffer();
-			Vec2u traget_resoluation(Window::width, Window::height);
+			Vec2u traget_resoluation = s_Data.window_size;
 			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 		}
 	}
@@ -2185,7 +2186,7 @@ void longmarch::Renderer3D::_BeginSkyBoxPass(const std::shared_ptr<FrameBuffer>&
 		else
 		{
 			RenderCommand::BindDefaultFrameBuffer();
-			Vec2u traget_resoluation(Window::width, Window::height);
+			Vec2u traget_resoluation = s_Data.window_size;
 			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 		}
 
@@ -2219,7 +2220,7 @@ void longmarch::Renderer3D::_RenderBoundingBox(const std::shared_ptr<FrameBuffer
 			else
 			{
 				RenderCommand::BindDefaultFrameBuffer();
-				Vec2u traget_resoluation(Window::width, Window::height);
+				Vec2u traget_resoluation = s_Data.window_size;
 				RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 			}
 		}
@@ -2307,7 +2308,7 @@ void longmarch::Renderer3D::_BeginTAAPass(const std::shared_ptr<FrameBuffer>& fr
 	else
 	{
 		RenderCommand::BindDefaultFrameBuffer();
-		Vec2u traget_resoluation(Window::width, Window::height);
+		Vec2u traget_resoluation = s_Data.window_size;
 		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 	}
 
@@ -2355,7 +2356,7 @@ void longmarch::Renderer3D::_BeginFXAAPass(const std::shared_ptr<FrameBuffer>& f
 	else
 	{
 		RenderCommand::BindDefaultFrameBuffer();
-		Vec2u traget_resoluation(Window::width, Window::height);
+		Vec2u traget_resoluation = s_Data.window_size;
 		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 	}
 	if (s_Data.enable_fxaa)
@@ -2429,7 +2430,7 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 			else
 			{
 				RenderCommand::BindDefaultFrameBuffer();
-				Vec2u traget_resoluation(Window::width, Window::height);
+				Vec2u traget_resoluation = s_Data.window_size;
 				RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 			}
 			{
@@ -2455,7 +2456,7 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 		else
 		{
 			RenderCommand::BindDefaultFrameBuffer();
-			Vec2u traget_resoluation(Window::width, Window::height);
+			Vec2u traget_resoluation = s_Data.window_size;
 			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 		}
 		{
@@ -2480,7 +2481,7 @@ void longmarch::Renderer3D::_BeginMotionBlurPass(const std::shared_ptr<FrameBuff
 	else
 	{
 		RenderCommand::BindDefaultFrameBuffer();
-		Vec2u traget_resoluation(Window::width, Window::height);
+		Vec2u traget_resoluation = s_Data.window_size;
 		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 	}
 	if (s_Data.enable_motionblur)
@@ -2581,7 +2582,7 @@ void longmarch::Renderer3D::_BeginBloomPass(const std::shared_ptr<FrameBuffer>& 
 			else
 			{
 				RenderCommand::BindDefaultFrameBuffer();
-				Vec2u traget_resoluation(Window::width, Window::height);
+				Vec2u traget_resoluation = s_Data.window_size;
 				RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 			}
 			{
@@ -2608,7 +2609,7 @@ void longmarch::Renderer3D::_BeginBloomPass(const std::shared_ptr<FrameBuffer>& 
 		else
 		{
 			RenderCommand::BindDefaultFrameBuffer();
-			Vec2u traget_resoluation(Window::width, Window::height);
+			Vec2u traget_resoluation = s_Data.window_size;
 			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 		}
 		s_Data.CurrentShader = s_Data.ShaderMap["ColorCopyShader"];
@@ -2631,7 +2632,7 @@ void longmarch::Renderer3D::_BeginToneMappingPass(const std::shared_ptr<FrameBuf
 	else
 	{
 		RenderCommand::BindDefaultFrameBuffer();
-		Vec2u traget_resoluation(Window::width, Window::height);
+		Vec2u traget_resoluation = s_Data.window_size;
 		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 	}
 	{
@@ -2675,8 +2676,8 @@ void longmarch::Renderer3D::EndRendering()
 		s_Data.resolution.x,
 		s_Data.resolution.y,
 		0,
-		Window::width,
-		Window::height
+		s_Data.window_size.x,
+		s_Data.window_size.y
 	);
 }
 

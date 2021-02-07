@@ -95,7 +95,7 @@ namespace longmarch
 		inline ConnectableUpdater& Render() { return m_renderUpdate; }
 		inline ConnectableUpdater& PostRenderUpdate() { return m_postRenderUpdate; }
 
-		inline Window* GetWindow() { return m_engineWindow.get(); }
+		inline static std::shared_ptr<Window> GetWindow() { return s_instance->m_engineWindow; }
 		inline static Engine* GetInstance() { return s_instance; }
 		inline static double GetTotalTime() { return s_instance->m_timer.Mark(); }
 

@@ -33,7 +33,7 @@ namespace longmarch {
 
 	void Window::ToggleFullScreen(int mode)
 	{
-		glfwWindowHint(GLFW_RESIZABLE, Resizable);
+		glfwWindowHint(GLFW_RESIZABLE, m_windowProperties.IsResizable);
 		/* 0-Full screen, 1- Borderless full screen 2- Windowed mode  */
 		if (mode != 2)
 		{
@@ -73,13 +73,12 @@ namespace longmarch {
 		}
 		SetVSync(m_windowProperties.IsVSync);
 		m_windowProperties.IsFullScreen = mode;
-		width = m_windowProperties.m_width;
-		height = m_windowProperties.m_height;
-		printf("Window Size : %d x %d\n", width, height);
+		int width = m_windowProperties.m_width;
+		int height = m_windowProperties.m_height;
+		DEBUG_PRINT(Str("Window Size : %d x %d\n", width, height));
 
-		int w, h;
-		glfwGetFramebufferSize(m_window, &w, &h);
-		printf("Framebuffer Size : %d x %d\n", w, h);
+		glfwGetFramebufferSize(m_window, &width, &height);
+		DEBUG_PRINT(Str("Framebuffer Size : %d x %d\n", width, height));
 
 		m_windowProperties.m_input->SetMouseMaxPositions(m_windowProperties.m_resolutionX, m_windowProperties.m_resolutionY);
 	}
@@ -136,7 +135,7 @@ namespace longmarch {
 		break;
 		}
 
-		glfwWindowHint(GLFW_RESIZABLE, Resizable);
+		glfwWindowHint(GLFW_RESIZABLE, m_windowProperties.IsResizable);
 
 		/* 0-Full screen, 1- Borderless full screen 2- Windowed mode  */
 		if (m_windowProperties.IsFullScreen != 2)
@@ -153,8 +152,6 @@ namespace longmarch {
 		}
 		SetVSync(m_windowProperties.IsVSync);
 		m_windowProperties.m_input->SetMouseMaxPositions(m_windowProperties.m_resolutionX, m_windowProperties.m_resolutionY);
-		width = m_windowProperties.m_resolutionX;
-		height = m_windowProperties.m_resolutionY;
 	}
 
 	void Window::SetVSync(bool on)
@@ -209,18 +206,16 @@ namespace longmarch {
 		SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
 #endif
 		bool hide = windowConfiguration["Hide-On-Creation"].asBool();
-		Resizable = windowConfiguration["Resizable"].asBool();
-		width = windowConfiguration["Width"].asInt();
-		height = windowConfiguration["Height"].asInt();
-		m_windowProperties.m_width = width;
-		m_windowProperties.m_height = height;
+		m_windowProperties.IsResizable = windowConfiguration["Resizable"].asBool();
+		m_windowProperties.m_width = windowConfiguration["Width"].asInt();
+		m_windowProperties.m_height = windowConfiguration["Height"].asInt();
 		m_windowProperties.m_title = windowConfiguration["Title"].asString();
 		m_windowProperties.IsFullScreen = windowConfiguration["Full-screen"].asInt();
 		m_windowProperties.IsVSync = windowConfiguration["V-sync"].asBool();
 		m_windowProperties.IsCPUGPUSync = windowConfiguration["GPU-sync"].asBool();
 
 		m_windowProperties.m_input = InputManager::GetInstance();
-		m_windowProperties.m_input->SetMouseMaxPositions(width, height);
+		m_windowProperties.m_input->SetMouseMaxPositions(m_windowProperties.m_width, m_windowProperties.m_height);
 
 		m_windowProperties.m_Res1 = { windowConfiguration["Resolution1_X"].asInt(), windowConfiguration["Resolution1_Y"].asInt() };
 		m_windowProperties.m_Res2 = { windowConfiguration["Resolution2_X"].asInt(), windowConfiguration["Resolution2_Y"].asInt() };
@@ -239,7 +234,7 @@ namespace longmarch {
 		m_windowProperties.m_resolutionX = m_windowProperties.m_width;
 		m_windowProperties.m_resolutionY = m_windowProperties.m_height;
 
-		glfwWindowHint(GLFW_RESIZABLE, Resizable);
+		glfwWindowHint(GLFW_RESIZABLE, m_windowProperties.IsResizable);
 		glfwWindowHint(GLFW_VISIBLE, !hide);
 
 		if (m_windowProperties.IsFullScreen != 2)
@@ -252,8 +247,8 @@ namespace longmarch {
 			glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 
 			// Update window width and height
-			width = mode->width;
-			height = mode->height;
+			m_windowProperties.m_resolutionX = m_windowProperties.m_width = mode->width;
+			m_windowProperties.m_resolutionY = m_windowProperties.m_height = mode->height;
 
 			m_window = glfwCreateWindow(mode->width, mode->height, m_windowProperties.m_title.c_str(), (m_windowProperties.IsFullScreen == 0) ? monitor : nullptr, nullptr);
 			m_windowProperties.m_input->SetMouseMaxPositions(mode->width, mode->height);
@@ -275,17 +270,19 @@ namespace longmarch {
 		glfwMakeContextCurrent(m_window);
 		// Register user pointer forsake of callbacks
 		glfwSetWindowUserPointer(m_window, &m_windowProperties);
+		// Get window pos
+		glfwGetWindowPos(m_window, &m_windowProperties.m_upperleft_xpos, &m_windowProperties.m_upperleft_ypos);
 
 		success = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		ASSERT(success >= 0, "Could not initialize Glad!");
 
-		//Put info to Log
+		// Put info to Log
 		ENGINE_INFO(" OpenGL Info:");
 		ENGINE_INFO(" Vendor: {0}", glGetString(GL_VENDOR));
 		ENGINE_INFO(" Renderer: {0}", glGetString(GL_RENDERER));
 		ENGINE_INFO(" Version: {0}", glGetString(GL_VERSION));
 
-		// Key callback
+		// Callbacks
 		glfwSetKeyCallback(m_window, [](GLFWwindow* window, int key, int scanCode, int action, int mods) {
 			WindowProperties& properties = *(WindowProperties*)glfwGetWindowUserPointer(window);
 			switch (action) {
@@ -335,12 +332,18 @@ namespace longmarch {
 		glfwSetWindowSizeCallback(m_window, [](GLFWwindow* window, int width, int height)
 		{
 			WindowProperties& properties = *(WindowProperties*)glfwGetWindowUserPointer(window);
-			Window::width = width;
-			Window::height = height;
 			properties.m_width = width;
 			properties.m_height = height;
 			properties.m_input->SetMouseMaxPositions(width, height);
 		});
+
+		glfwSetWindowPosCallback(m_window, [](GLFWwindow* window, int upperleft_xpos, int upperleft_ypos)
+		{
+			WindowProperties& properties = *(WindowProperties*)glfwGetWindowUserPointer(window);
+			properties.m_upperleft_xpos = upperleft_xpos;
+			properties.m_upperleft_ypos = upperleft_ypos;
+		}
+		);
 
 		glfwSetWindowFocusCallback(m_window, [](GLFWwindow* window, int focussed)
 		{

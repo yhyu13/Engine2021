@@ -1,6 +1,6 @@
 #include "engine-precompiled-header.h"
 #include "PerspectiveCamera.h"
-#include "engine/window/Window.h"
+#include "engine/Engine.h"
 
 longmarch::PerspectiveCamera::PerspectiveCamera(float fovy_rad, float aspectRatioWbyH, float nearZ, float farZ)
 {
@@ -9,7 +9,8 @@ longmarch::PerspectiveCamera::PerspectiveCamera(float fovy_rad, float aspectRati
 
 void longmarch::PerspectiveCamera::OnUpdate()
 {
-	SetProjection(cameraSettings.fovy_rad, (Window::Resizable) ? float(Window::width) / float(Window::height) : cameraSettings.aspectRatioWbyH, cameraSettings.nearZ, cameraSettings.farZ);
+	const auto& prop = Engine::GetWindow()->GetWindowProperties();
+	SetProjection(cameraSettings.fovy_rad, (prop.IsResizable) ? float(prop.m_width) / float(prop.m_height) : cameraSettings.aspectRatioWbyH, cameraSettings.nearZ, cameraSettings.farZ);
 	RecalculateProjectionMatrix();
 	RecalculateViewMatrix();
 	RecalculateViewFrustum();

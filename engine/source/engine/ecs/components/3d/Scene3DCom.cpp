@@ -47,24 +47,6 @@ Scene3DCom::SceneDataRef& longmarch::Scene3DCom::GetSceneData(bool waitOnHandle)
 	return m_objDatasRef;
 }
 
-bool longmarch::Scene3DCom::IsEmissive() const
-{
-	LOCK_GUARD2();
-	if (!m_objDatasRef)
-	{
-		return false;
-	}
-	const auto& _sceneData = *m_objDatasRef;
-	for (const auto& [level, data] : _sceneData)
-	{
-		if (data->material->emissive)
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
 void longmarch::Scene3DCom::SetShaderName(const std::string& name)
 {
 	LOCK_GUARD2();
@@ -556,6 +538,15 @@ void longmarch::Scene3DCom::ImGuiRender()
 						if (ImGui::DragFloat(LongMarch_ImGuiHashTagName("Roughness", "roug_picker" + Str(data.get())), &roughness, speed, 0.0f, 1.0f))
 						{
 							mat->roughness = roughness;
+						}
+						ImGui::TreePop();
+					}
+					if (ImGui::TreeNode(LongMarch_ImGuiHashTagName("Emssive", "emssive_tree" + Str(data.get()))))
+					{
+						auto emissive = mat->emissive;
+						if (ImGui::Checkbox(LongMarch_ImGuiHashTagName("Emssive", "emssive_checker" + Str(data.get())), &emissive))
+						{
+							mat->emissive = emissive;
 						}
 						ImGui::TreePop();
 					}

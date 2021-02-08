@@ -150,7 +150,8 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 
 		// Debug Cluster Light Mode
 		static bool enable_debug_cluster_light_mode = windowConfig["Debug_cluster_light"].asBool();
-
+		// Env mapping
+		static bool checkEvnMapping = graphicsConfig["Env-mapping"].asBool();
 		// Toggle shadow
 		static bool checkShadow = graphicsConfig["Shadow"].asBool();
 		// Deferred shading
@@ -193,6 +194,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 			checkVSync = windowConfig["V-sync"].asBool();
 			checkGPUSync = windowConfig["GPU-sync"].asBool();
 			selected_gbufferModes = 0;
+			checkEvnMapping = graphicsConfig["Env-mapping"].asBool();
 			checkShadow = graphicsConfig["Shadow"].asBool();
 			checkDeferredShading = graphicsConfig["Deferred-shading"].asBool();
 			checkClusteredShading = graphicsConfig["Clustered-shading"].asBool();
@@ -237,6 +239,11 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 			}
 			{
 				auto e = MemoryManager::Make_shared<ToggleShadowEvent>(checkShadow);
+				graphicDebugEventQueue->Publish(e);
+			}
+
+			{
+				auto e = MemoryManager::Make_shared<ToggleEnvironmentMappingEvent>(checkEvnMapping);
 				graphicDebugEventQueue->Publish(e);
 			}
 			{
@@ -331,6 +338,15 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 					if (ImGui::Combo("G-buffer", &selected_gbufferModes, gbufferModes, IM_ARRAYSIZE(gbufferModes)))
 					{
 						auto e = MemoryManager::Make_shared<SwitchGBufferEvent>(selected_gbufferModes);
+						graphicDebugEventQueue->Publish(e);
+					}
+				}
+				ImGui::Dummy(ImVec2(0, yoffset_item));
+				// Toggle shadow
+				{
+					if (ImGui::Checkbox("Environment Mapping", &checkEvnMapping))
+					{
+						auto e = MemoryManager::Make_shared<ToggleEnvironmentMappingEvent>(checkEvnMapping);
 						graphicDebugEventQueue->Publish(e);
 					}
 				}

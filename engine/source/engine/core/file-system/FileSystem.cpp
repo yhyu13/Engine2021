@@ -57,7 +57,7 @@ fs::path longmarch::FileSystem::Absolute(const fs::path& path)
 fs::path longmarch::FileSystem::Absolute(const fs::path& p, std::error_code& ec)
 {
 	ec.clear();
-#ifdef WINDOWS_APP
+#if defined(WIN32) || defined(WINDOWS_APP)
 	if (p.empty()) {
 		return Absolute(CWD(ec), ec) / "";
 	}
@@ -131,7 +131,7 @@ bool longmarch::FileSystem::ExistCheck(const fs::path& path, bool throwOnNotExis
 fs::path longmarch::FileSystem::CWD(std::error_code& ec)
 {
 	ec.clear();
-#ifdef WINDOWS_APP
+#if defined(WIN32) || defined(WINDOWS_APP)
 	DWORD pathlen = ::GetCurrentDirectoryW(0, 0);
 	std::unique_ptr<wchar_t[]> buffer(new wchar_t[pathlen + 1]);
 	if (::GetCurrentDirectoryW(pathlen, buffer.get()) == 0) {

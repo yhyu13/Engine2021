@@ -1,5 +1,5 @@
 #pragma once
-#if defined(WINDOWS_APP)
+#if defined(WIN32)
 #define _ENABLE_EXTENDED_ALIGNED_STORAGE // VS2017 15.8 fix on aligned allocation (for phmap to work)
 #endif
 #include <type_traits>

@@ -59,7 +59,8 @@
 		// Shadow
 		"Shadow" : true,
 		// IBL
-		"Sky-box":["shanghai_bund_2k"],
+		"Sky-box": ["shanghai_bund_2k"],
+		"Env-mapping": false,
 		"BRDF-lut":"ggx_integrate_lut",
 
 		"Bloom":

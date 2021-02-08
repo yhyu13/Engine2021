@@ -416,6 +416,8 @@ namespace longmarch
 
 			bool enable_deferredShading;
 			bool enable_reverse_z;
+
+			bool enable_env_mapping;
 			bool enable_shadow;
 
 			bool enable_debug_cluster_light;
@@ -612,6 +614,7 @@ namespace longmarch
 
 	private:
 		static void _ON_TOGGLE_SLICES(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
+		static void _ON_TOGGLE_ENV_MAPPING(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
 		static void _ON_TOGGLE_SHADOW(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
 		static void _ON_SWITCH_GBUFFER_MODE(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
 		static void _ON_TOGGLE_MOTION_BLUR(EventQueue<EngineGraphicsEventType>::EventPtr e);

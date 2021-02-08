@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "engine/window/Window.h"
 
-#if defined(WINDOWS_APP)
+#if defined(WIN32) || defined(WINDOWS_APP)
 #include <windows.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define GLFW_EXPOSE_NATIVE_WGL
@@ -174,7 +174,7 @@ namespace longmarch {
 
 	void Window::ShowMessageBox(const std::wstring& title, const std::wstring& message)
 	{
-#if defined(WIN32)
+#if defined(WIN32) || defined(WINDOWS_APP)
 		MessageBox(glfwGetWin32Window(m_window), message.c_str(), title.c_str(), MB_OK);
 #endif
 	}
@@ -196,7 +196,7 @@ namespace longmarch {
 	}
 
 	void Window::Init(const Json::Value& windowConfiguration) {
-#if defined(WIN32)
+#if defined(WIN32) || defined(WINDOWS_APP)
 		// This api call make the process be aware of dpi
 		// i.e. managing dpi by ourself instead of Desktop Window Manager(DWM)
 		// i.e. ignoring user dpi scales which are common to be 125%, 150%, etc

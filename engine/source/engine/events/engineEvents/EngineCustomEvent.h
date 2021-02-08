@@ -160,6 +160,17 @@ namespace longmarch
 		bool m_enable;
 	};
 
+	
+	struct ToggleEnvironmentMappingEvent : public Event<EngineGraphicsDebugEventType> {
+		explicit ToggleEnvironmentMappingEvent(bool b)
+			:
+			Event(EngineGraphicsDebugEventType::TOGGLE_ENV_MAPPING),
+			m_enable(b)
+		{
+		}
+		bool m_enable;
+	};
+
 	struct ToggleShadowEvent : public Event<EngineGraphicsDebugEventType> {
 		explicit ToggleShadowEvent(bool b)
 			:

@@ -26,8 +26,6 @@ namespace longmarch
 
 		void SetShaderName(const std::string& name);
 
-		bool IsEmissive() const;
-
 		bool IsVisible() const;
 		void SetVisiable(bool b);
 		bool IsHideInGame() const;

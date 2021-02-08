@@ -1,6 +1,6 @@
 #pragma once
 
-#if defined(WINDOWS_APP)
+#if defined(WIN32) || defined(WINDOWS_APP)
 #define NOMINMAX // NOMINMAX for WINDOWS
 #define _ENABLE_EXTENDED_ALIGNED_STORAGE // VS2017 15.8 fix on aligned allocation (for phmap to work)
 #include <windows.h>

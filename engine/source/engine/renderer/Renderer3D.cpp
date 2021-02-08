@@ -101,6 +101,7 @@ void longmarch::Renderer3D::Init()
 			}
 		}
 		s_Data.resolution_ratio = graphicsConfiguration["Resolution-ratio"].asFloat();
+		s_Data.enable_env_mapping = graphicsConfiguration["Env-mapping"].asBool();
 		s_Data.enable_shadow = graphicsConfiguration["Shadow"].asBool();
 		s_Data.enable_debug_cluster_light = graphicsConfiguration["Debug-cluster-light"].asBool();;
 		s_Data.gBuffer_display_mode = 0;
@@ -549,6 +550,7 @@ void longmarch::Renderer3D::Init()
 	{
 		{
 			auto queue = EventQueue<EngineGraphicsDebugEventType>::GetInstance();
+			queue->Subscribe(EngineGraphicsDebugEventType::TOGGLE_ENV_MAPPING, &Renderer3D::_ON_TOGGLE_ENV_MAPPING);
 			queue->Subscribe(EngineGraphicsDebugEventType::TOGGLE_SHADOW, &Renderer3D::_ON_TOGGLE_SHADOW);
 			queue->Subscribe(EngineGraphicsDebugEventType::SWITCH_G_BUFFER_DISPLAY, &Renderer3D::_ON_SWITCH_GBUFFER_MODE);
 			queue->Subscribe(EngineGraphicsDebugEventType::TOGGLE_DEBUG_SLICES, &Renderer3D::_ON_TOGGLE_SLICES);
@@ -567,6 +569,18 @@ void longmarch::Renderer3D::Init()
 	}
 }
 
+void longmarch::Renderer3D::_ON_TOGGLE_SLICES(EventQueue<EngineGraphicsDebugEventType>::EventPtr e)
+{
+	auto event = std::static_pointer_cast<ToggleSlicesEvent>(e);
+	s_Data.enable_debug_cluster_light = event->m_enable;
+}
+
+void longmarch::Renderer3D::_ON_TOGGLE_ENV_MAPPING(EventQueue<EngineGraphicsDebugEventType>::EventPtr e)
+{
+	auto event = std::static_pointer_cast<ToggleShadowEvent>(e);
+	s_Data.enable_env_mapping = event->m_enable;
+}
+
 void longmarch::Renderer3D::_ON_TOGGLE_SHADOW(EventQueue<EngineGraphicsDebugEventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<ToggleShadowEvent>(e);
@@ -577,12 +591,6 @@ void longmarch::Renderer3D::_ON_SWITCH_GBUFFER_MODE(EventQueue<EngineGraphicsDeb
 {
 	auto event = std::static_pointer_cast<SwitchGBufferEvent>(e);
 	s_Data.gBuffer_display_mode = event->m_value;
-}
-
-void longmarch::Renderer3D::_ON_TOGGLE_SLICES(EventQueue<EngineGraphicsDebugEventType>::EventPtr e)
-{
-	auto event = std::static_pointer_cast<ToggleSlicesEvent>(e);
-	s_Data.enable_debug_cluster_light = event->m_enable;
 }
 
 void longmarch::Renderer3D::_ON_TOGGLE_MOTION_BLUR(EventQueue<EngineGraphicsEventType>::EventPtr e)
@@ -1705,7 +1713,7 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 		{
 			const auto& shaderProg = s_Data.ShaderMap[shaderName];
 			shaderProg->Bind();
-			shaderProg->SetInt("hasEnvLighting", s_Data.CurrentEnvMapName != "");
+			shaderProg->SetInt("hasEnvLighting", s_Data.enable_env_mapping && s_Data.CurrentEnvMapName != "");
 			shaderProg->SetFloat("u_Time", Engine::GetTotalTime());
 			shaderProg->SetInt("u_numLights", s_Data.NUM_LIGHT);
 			shaderProg->SetInt("u_numDirectionalLights", s_Data.NUM_DIRECTIONAL_LIGHT);

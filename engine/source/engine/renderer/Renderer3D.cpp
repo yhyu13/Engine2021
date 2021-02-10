@@ -1748,8 +1748,7 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 			ShadowBuffer::Create(1, 1, ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4);
 
 		{
-			// TODO: need to be larger than the sum of scene texture and emptyu slots.
-			// Set the empty texture binding location offset from a slot that is unlikely to be used
+			// Shadow texture offset needs to be larger than the sum of empty slots and scene texture slots.
 			int init_offset_shadow = s_Data.fragTexture_empty_slot + s_Data.MAX_SCENE_BATCH + 1;
 			int total_shaows_count = 0;
 			int light_type_count = 0;

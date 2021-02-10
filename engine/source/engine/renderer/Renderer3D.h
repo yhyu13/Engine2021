@@ -150,7 +150,7 @@ namespace longmarch
 			inline float* GetPtr() { return &(this->Pos_shadowMapIndex[0]); }
 			Vec4f Pos_shadowMapIndex;
 			Vec4f Kd_shadowMatrixIndex;  /* Let shadowMatrixIndex be -1 to indicate not casting shadow */
-			Vec4f Dir;
+			Vec4f Dir; /* Light direction */
 			Vec4f Attenuation; /* x-const,y-linear,z-quadratic, w- intensity multiplier */
 			Vec4f numCSM_lambda_near_far;
 			Vec4f shadowMatrixIndcies;
@@ -168,7 +168,7 @@ namespace longmarch
 			inline float* GetPtr() { return &(this->Pos_shadowMapIndex[0]); }
 			Vec4f Pos_shadowMapIndex;
 			Vec4f Kd_shadowMatrixIndex;  /* Let shadowMatrixIndex be -1 to indicate not casting shadow */
-			Vec4f Dir;
+			Vec4f Dir; /* Light direction */
 			Vec4f Attenuation; /* x-const,y-linear,z-quadratic, w- intensity multiplier */
 			Vec4f Radius_CollisionRadius_CosInnerCone_CosOutterCone;
 			Vec4f SoftEdgeRatio;
@@ -382,8 +382,7 @@ namespace longmarch
 			const uint32_t fragTexture_0_slot = { 0u };
 			const uint32_t fragTexture_1_slot = { 1u };
 			const uint32_t fragTexture_2_slot = { 2u };
-			//! Before this slot are reserved for uniform texture bindings, you can bind custom textures (including gbuffer textures) after this slot
-			const uint32_t fragTexture_empty_slot = { 3u };
+			const uint32_t fragTexture_empty_slot = { 3u }; //<! Slots before this slot are reserved for uniform texture bindings, you can bind custom textures (including gbuffer textures) after this slot
 
 			Vec2u window_size;
 			Vec2u resolution;

@@ -858,7 +858,7 @@ void longmarch::Renderer3D::BeginShadowing(
 							Geommath::ProjectionMatrixZeroOne(foyz, aspect, split_Near, split_Far);
 						const auto& pv = p * v;
 
-						// Calculate the 1st approximate light view matrix
+						// Calculate the pesudo light view matrix for directional light
 						Vec3f split_world_NDCCentroid;
 						ViewFrustumCorners split_world_NDCCorners;
 						Geommath::Frustum::GetCornersAndCentroid(pv, s_Data.enable_reverse_z, split_world_NDCCorners, split_world_NDCCentroid);
@@ -866,7 +866,6 @@ void longmarch::Renderer3D::BeginShadowing(
 						const auto& light_pos = (light_pos_tr + split_world_NDCCentroid);
 						const auto& look_at_pos = split_world_NDCCentroid;
 						const auto& light_view_mat = Geommath::LookAtWorld(light_pos, look_at_pos);
-						const auto& light_view_mat2 = light_view_mat;
 
 						// Find VF conrners in light's view space for the the ortho bounding
 						Vec3f Min((std::numeric_limits<float>::max)());
@@ -890,8 +889,8 @@ void longmarch::Renderer3D::BeginShadowing(
 						auto light_projection_mat2 = (s_Data.enable_reverse_z) ?
 							Geommath::OrthogonalReverseZProjectionMatrixZeroOne(Min.x, Max.x, Min.y, Max.y, Near, Far) :
 							Geommath::OrthogonalProjectionMatrixZeroOne(Min.x, Max.x, Min.y, Max.y, Near, Far);
-						light_projection_mat2 = OvercomeShadowShimmering(lightCom->shadow.dimension, light_projection_mat2, light_view_mat2);
-						const auto& light_pv = light_projection_mat2 * light_view_mat2;
+						light_projection_mat2 = OvercomeShadowShimmering(lightCom->shadow.dimension, light_projection_mat2, light_view_mat);
+						const auto& light_pv = light_projection_mat2 * light_view_mat;
 
 						// Update shadow matrix
 						{
@@ -925,8 +924,8 @@ void longmarch::Renderer3D::BeginShadowing(
 						// Render the scene
 						{
 							ENG_TIME("Shadow phase: DIRECTIONAL LOOPING");
-							f_setRenderShaderName("MSMShadowBuffer"); // TODO need to change name if you are using a different shadow map shader
-							f_setVFCullingParam(true, Geommath::Frustum::FromProjection(light_projection_mat), light_view_mat2);
+							f_setRenderShaderName("MSMShadowBuffer");
+							f_setVFCullingParam(true, Geommath::Frustum::FromProjection(light_projection_mat), light_view_mat);
 							f_setDistanceCullingParam(false, Vec3f(), 0, 0);
 							f_render();
 						}
@@ -1012,91 +1011,188 @@ void longmarch::Renderer3D::BeginShadowing(
 
 					const auto& Near = lightCom->shadow.nearZ;
 					const auto& Far = lightCom->shadow.farZ;
-					PointLightPVMatrix_GPU matrices;
+
+					// Array texture point light shadow map
 					for (int i = 0; i < 6; ++i)
 					{
 						const auto& light_view_mat = Geommath::LookAt(light_pos, light_pos + s_Data.cube_directions[i].xyz, s_Data.cube_ups[i]);
 						const auto& light_projection_mat = (s_Data.enable_reverse_z) ?
 							Geommath::ReverseZProjectionMatrixZeroOne(90 * DEG2RAD, 1, Near, Far) :
 							Geommath::ProjectionMatrixZeroOne(90 * DEG2RAD, 1, Near, Far);
-						matrices.PVMatrices[i] = std::move(light_projection_mat * light_view_mat);
-					}
+						const auto& light_pv = light_projection_mat * light_view_mat;
 
-					static std::shared_ptr<UniformBuffer> pvMatrixBuffer = UniformBuffer::Create(nullptr, 0);
-					pvMatrixBuffer->UpdateBufferData(matrices.GetPtr(), sizeof(PointLightPVMatrix_GPU));
-
-					// Update shadow matrix
-					{
-						ShadowData_GPU data;
-						data.ShadowAlgorithmMode_DepthBiasHigher_DepthBiasMulti_NrmBiasMulti.x = lightCom->shadow.shadowAlgorithmMode;
-						data.ShadowAlgorithmMode_DepthBiasHigher_DepthBiasMulti_NrmBiasMulti.y = lightCom->shadow.depthBiasHigherBound;
-						data.ShadowAlgorithmMode_DepthBiasHigher_DepthBiasMulti_NrmBiasMulti.z = lightCom->shadow.depthBiasMultiplier;
-						data.ShadowAlgorithmMode_DepthBiasHigher_DepthBiasMulti_NrmBiasMulti.w = lightCom->shadow.nrmBiasMultiplier;
-						s_Data.cpuBuffer.SHADOW_DATA_PROCESSED.emplace_back(std::move(data));
-						currentPointLight.Kd_shadowMatrixIndex.w = s_Data.cpuBuffer.SHADOW_DATA_PROCESSED.size() - 1;
-					}
-					// Render shadow map
-					RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-					// Bind shader
-					s_Data.CurrentShader = msm_cube_shader;
-					s_Data.CurrentShader->Bind();
-					s_Data.CurrentShader->SetFloat3("u_LightPos", light_pos);
-					s_Data.CurrentShader->SetFloat("u_LightRadius", radius);
-					pvMatrixBuffer->Bind(0);
-					// Bind shadow buffer
-					shadowBuffer->Bind();
-					// Clear buffer
-					(s_Data.enable_reverse_z) ?
-						RenderCommand::SetClearColor(Vec4f(0, 0, 0, 1))
-						: RenderCommand::SetClearColor(Vec4f(1, 1, 1, 1));
-					RenderCommand::Clear();
-					sceneCom->SetShouldDraw(false, true);
-					// Render the scene
-					{
-						ENG_TIME("Shadow phase: POINT LOOPING");
-						f_setRenderShaderName("MSMShadowBuffer_Cube");
-						f_setVFCullingParam(false, ViewFrustum(), Mat4(0));
-						f_setDistanceCullingParam(true, light_pos, Near, Far);
-						f_render();
-					}
-					{
-						ENG_TIME("Shadow phase: POINT BATCH RENDER");
-						CommitBatchRendering();
-					}
-					if (lightCom->shadow.bEnableGaussianBlur)
-					{
-						const auto& shadowBuffer2 = lightCom->shadow.shadowBuffer2;
-						Vec2u traget_resoluation2 = shadowBuffer2->GetBufferSize();
-						auto kernel_size = lightCom->shadow.gaussianKernal;
-						auto [length, offsets, weights] = s_Data.gpuBuffer.GuassinKernelHalf[kernel_size];
-						BeginGaussianBlur();
+						// Update shadow matrix
 						{
-							s_Data.CurrentShader = guassian_cube_shader;
-							s_Data.CurrentShader->Bind();
-							s_Data.CurrentShader->SetFloat3("u_LightPos", light_pos);
-							s_Data.CurrentShader->SetInt("u_length", length);
-							pvMatrixBuffer->Bind(0);
-							weights->Bind(1);
-							offsets->Bind(2);
+							ShadowData_GPU data;
+							data.PVMatrix = light_pv;
+							data.ShadowAlgorithmMode_DepthBiasHigher_DepthBiasMulti_NrmBiasMulti.x = lightCom->shadow.shadowAlgorithmMode;
+							data.ShadowAlgorithmMode_DepthBiasHigher_DepthBiasMulti_NrmBiasMulti.y = lightCom->shadow.depthBiasHigherBound;
+							data.ShadowAlgorithmMode_DepthBiasHigher_DepthBiasMulti_NrmBiasMulti.z = lightCom->shadow.depthBiasMultiplier;
+							data.ShadowAlgorithmMode_DepthBiasHigher_DepthBiasMulti_NrmBiasMulti.w = lightCom->shadow.nrmBiasMultiplier;
+							s_Data.cpuBuffer.SHADOW_DATA_PROCESSED.emplace_back(std::move(data));
+							if (i < 3)
 							{
-								RenderCommand::SetViewport(0, 0, traget_resoluation2.x, traget_resoluation2.y);
-								// Bind shadow buffer
-								shadowBuffer2->Bind();
-								s_Data.CurrentShader->SetInt("u_Horizontal", 1);
-								shadowBuffer->BindTexture(s_Data.fragTexture_0_slot);
-								_RenderFullScreenCube();
+								currentPointLight.shadowMatrixIndcies_1_2_3[i] = s_Data.cpuBuffer.SHADOW_DATA_PROCESSED.size() - 1;
 							}
+							else
 							{
-								RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-								// Bind shadow buffer
-								shadowBuffer->Bind();
-								s_Data.CurrentShader->SetInt("u_Horizontal", 0);
-								shadowBuffer2->BindTexture(s_Data.fragTexture_0_slot);
-								_RenderFullScreenCube();
+								currentPointLight.shadowMatrixIndcies_4_5_6[i-3] = s_Data.cpuBuffer.SHADOW_DATA_PROCESSED.size() - 1;
 							}
 						}
-						EndGaussianBlur();
+
+						RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+						// Bind shadow buffer
+						shadowBuffer->Bind();
+						// Bind shadow map ith array layer
+						shadowBuffer->BindLayer(i);
+						// Clear buffer
+						(s_Data.enable_reverse_z) ?
+							RenderCommand::SetClearColor(Vec4f(0, 0, 0, 1))
+							: RenderCommand::SetClearColor(Vec4f(1, 1, 1, 1));
+						RenderCommand::Clear();
+
+						// Bind shader
+						s_Data.CurrentShader = msm_shader;
+						s_Data.CurrentShader->Bind();
+						s_Data.CurrentShader->SetMat4("u_PVMatrix", light_pv);
+						s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
+						sceneCom->SetShouldDraw(false, true);
+						// Render the scene
+						{
+							ENG_TIME("Shadow phase: POINT LOOPING");
+							f_setRenderShaderName("MSMShadowBuffer");
+							f_setVFCullingParam(true, Geommath::Frustum::FromProjection(light_projection_mat), light_view_mat);
+							f_setDistanceCullingParam(true, light_pos, Near, Far);
+							f_render();
+						}
+						{
+							ENG_TIME("Shadow phase: POINT BATCH RENDER");
+							CommitBatchRendering();
+						}
+						if (lightCom->shadow.bEnableGaussianBlur)
+						{
+							const auto& shadowBuffer2 = lightCom->shadow.shadowBuffer2;
+							Vec2u traget_resoluation2 = shadowBuffer2->GetBufferSize();
+							auto kernel_size = lightCom->shadow.gaussianKernal;
+							auto [length, offsets, weights] = s_Data.gpuBuffer.GuassinKernelHalf[kernel_size];
+							BeginGaussianBlur();
+							{
+								s_Data.CurrentShader = guassian_CSM_shader;
+								s_Data.CurrentShader->Bind();
+								s_Data.CurrentShader->SetInt("u_layer", i);
+								s_Data.CurrentShader->SetInt("u_length", length);
+								weights->Bind(1);
+								offsets->Bind(2);
+								{
+									RenderCommand::SetViewport(0, 0, traget_resoluation2.x, traget_resoluation2.y);
+									// Bind shadow buffer
+									shadowBuffer2->Bind();
+									shadowBuffer2->BindLayer(i);
+									s_Data.CurrentShader->SetInt("u_Horizontal", 1);
+									shadowBuffer->BindTexture(s_Data.fragTexture_0_slot);
+									_RenderFullScreenQuad();
+								}
+								{
+									RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+									// Bind shadow buffer
+									shadowBuffer->Bind();
+									shadowBuffer->BindLayer(i);
+									s_Data.CurrentShader->SetInt("u_Horizontal", 0);
+									shadowBuffer2->BindTexture(s_Data.fragTexture_0_slot);
+									_RenderFullScreenQuad();
+								}
+							}
+							EndGaussianBlur();
+						}
 					}
+
+
+					// Cubic texture point light shadow map
+					//PointLightPVMatrix_GPU matrices;
+					//for (int i = 0; i < 6; ++i)
+					//{
+					//	const auto& light_view_mat = Geommath::LookAt(light_pos, light_pos + s_Data.cube_directions[i].xyz, s_Data.cube_ups[i]);
+					//	const auto& light_projection_mat = (s_Data.enable_reverse_z) ?
+					//		Geommath::ReverseZProjectionMatrixZeroOne(90 * DEG2RAD, 1, Near, Far) :
+					//		Geommath::ProjectionMatrixZeroOne(90 * DEG2RAD, 1, Near, Far);
+					//	matrices.PVMatrices[i] = std::move(light_projection_mat * light_view_mat);
+					//}
+
+					//static std::shared_ptr<UniformBuffer> pvMatrixBuffer = UniformBuffer::Create(nullptr, 0);
+					//pvMatrixBuffer->UpdateBufferData(matrices.GetPtr(), sizeof(PointLightPVMatrix_GPU));
+
+					//// Update shadow matrix
+					//{
+					//	ShadowData_GPU data;
+					//	data.ShadowAlgorithmMode_DepthBiasHigher_DepthBiasMulti_NrmBiasMulti.x = lightCom->shadow.shadowAlgorithmMode;
+					//	data.ShadowAlgorithmMode_DepthBiasHigher_DepthBiasMulti_NrmBiasMulti.y = lightCom->shadow.depthBiasHigherBound;
+					//	data.ShadowAlgorithmMode_DepthBiasHigher_DepthBiasMulti_NrmBiasMulti.z = lightCom->shadow.depthBiasMultiplier;
+					//	data.ShadowAlgorithmMode_DepthBiasHigher_DepthBiasMulti_NrmBiasMulti.w = lightCom->shadow.nrmBiasMultiplier;
+					//	s_Data.cpuBuffer.SHADOW_DATA_PROCESSED.emplace_back(std::move(data));
+					//	currentPointLight.Kd_shadowMatrixIndex.w = s_Data.cpuBuffer.SHADOW_DATA_PROCESSED.size() - 1;
+					//}
+					//// Render shadow map
+					//RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+					//// Bind shader
+					//s_Data.CurrentShader = msm_cube_shader;
+					//s_Data.CurrentShader->Bind();
+					//s_Data.CurrentShader->SetFloat3("u_LightPos", light_pos);
+					//s_Data.CurrentShader->SetFloat("u_LightRadius", radius);
+					//pvMatrixBuffer->Bind(0);
+					//// Bind shadow buffer
+					//shadowBuffer->Bind();
+					//// Clear buffer
+					//(s_Data.enable_reverse_z) ?
+					//	RenderCommand::SetClearColor(Vec4f(0, 0, 0, 1))
+					//	: RenderCommand::SetClearColor(Vec4f(1, 1, 1, 1));
+					//RenderCommand::Clear();
+					//sceneCom->SetShouldDraw(false, true);
+					//// Render the scene
+					//{
+					//	ENG_TIME("Shadow phase: POINT LOOPING");
+					//	f_setRenderShaderName("MSMShadowBuffer_Cube");
+					//	f_setVFCullingParam(false, ViewFrustum(), Mat4(0));
+					//	f_setDistanceCullingParam(true, light_pos, Near, Far);
+					//	f_render();
+					//}
+					//{
+					//	ENG_TIME("Shadow phase: POINT BATCH RENDER");
+					//	CommitBatchRendering();
+					//}
+					//if (lightCom->shadow.bEnableGaussianBlur)
+					//{
+					//	const auto& shadowBuffer2 = lightCom->shadow.shadowBuffer2;
+					//	Vec2u traget_resoluation2 = shadowBuffer2->GetBufferSize();
+					//	auto kernel_size = lightCom->shadow.gaussianKernal;
+					//	auto [length, offsets, weights] = s_Data.gpuBuffer.GuassinKernelHalf[kernel_size];
+					//	BeginGaussianBlur();
+					//	{
+					//		s_Data.CurrentShader = guassian_cube_shader;
+					//		s_Data.CurrentShader->Bind();
+					//		s_Data.CurrentShader->SetFloat3("u_LightPos", light_pos);
+					//		s_Data.CurrentShader->SetInt("u_length", length);
+					//		pvMatrixBuffer->Bind(0);
+					//		weights->Bind(1);
+					//		offsets->Bind(2);
+					//		{
+					//			RenderCommand::SetViewport(0, 0, traget_resoluation2.x, traget_resoluation2.y);
+					//			// Bind shadow buffer
+					//			shadowBuffer2->Bind();
+					//			s_Data.CurrentShader->SetInt("u_Horizontal", 1);
+					//			shadowBuffer->BindTexture(s_Data.fragTexture_0_slot);
+					//			_RenderFullScreenCube();
+					//		}
+					//		{
+					//			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+					//			// Bind shadow buffer
+					//			shadowBuffer->Bind();
+					//			s_Data.CurrentShader->SetInt("u_Horizontal", 0);
+					//			shadowBuffer2->BindTexture(s_Data.fragTexture_0_slot);
+					//			_RenderFullScreenCube();
+					//		}
+					//	}
+					//	EndGaussianBlur();
+					//}
 				}
 				s_Data.cpuBuffer.POINT_LIGHT_PROCESSED.emplace_back(std::move(currentPointLight));
 				s_Data.gpuBuffer.PointLightShadowBuffer.emplace_back(lightCom->shadow.shadowBuffer);
@@ -1587,7 +1683,7 @@ void longmarch::Renderer3D::_BeginLightCullingPass(const PerspectiveCamera* came
 	s_Data.CurrentShader = s_Data.ShaderMap["CullLightsCompShader"];
 	s_Data.CurrentShader->Bind();
 	s_Data.CurrentShader->SetMat4("u_ViewMatrix", camera->GetViewMatrix());
-	RenderCommand::DispatchCompute(1, 1, 6);
+	RenderCommand::DispatchCompute(1, 1, 24);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 

@@ -504,6 +504,16 @@ void longmarch::LightCom::ImGuiRender()
 				if (ImGui::Combo("Shadow Algorithm", &v, shadowAlgorithmModes, IM_ARRAYSIZE(shadowAlgorithmModes)))
 				{
 					shadow.shadowAlgorithmMode = v;
+					if (v < 3)
+					{
+						shadow.bEnableGaussianBlur = false;
+					}
+					else
+					{
+						shadow.bEnableGaussianBlur = true;
+					}
+					ReleaseShadowBuffer();
+					AllocateShadowBuffer();
 				}
 			}
 			{
@@ -618,9 +628,14 @@ void longmarch::LightCom::AllocateShadowBuffer()
 				ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
 			break;
 		case longmarch::LightCom::LIGHT_TYPE::POINT:
-			shadow.shadowBuffer = ShadowBuffer::Create(
-				shadow.dimension, shadow.dimension,
-				ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE);
+			shadow.shadowBuffer = ShadowBuffer::CreateArray(
+				shadow.dimension, shadow.dimension, 
+				6,
+				ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
+			//shadow.shadowBuffer = ShadowBuffer::Create(
+			//	shadow.dimension, shadow.dimension,
+			//	ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE);
+
 			break;
 		case longmarch::LightCom::LIGHT_TYPE::SPOT:
 			shadow.shadowBuffer = ShadowBuffer::Create(
@@ -639,9 +654,13 @@ void longmarch::LightCom::AllocateShadowBuffer()
 					ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
 				break;
 			case longmarch::LightCom::LIGHT_TYPE::POINT:
-				shadow.shadowBuffer2 = ShadowBuffer::Create(
+				shadow.shadowBuffer2 = ShadowBuffer::CreateArray(
+					shadow.dimension, shadow.dimension,
+					6,
+					ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
+				/*shadow.shadowBuffer2 = ShadowBuffer::Create(
 					shadow.backBufferDimension, shadow.backBufferDimension,
-					ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE);
+					ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE);*/
 				break;
 			case longmarch::LightCom::LIGHT_TYPE::SPOT:
 				shadow.shadowBuffer2 = ShadowBuffer::Create(

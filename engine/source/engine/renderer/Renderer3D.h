@@ -153,7 +153,7 @@ namespace longmarch
 			Vec4f Dir; /* Light direction */
 			Vec4f Attenuation; /* x-const,y-linear,z-quadratic, w- intensity multiplier */
 			Vec4f numCSM_lambda_near_far;
-			Vec4f shadowMatrixIndcies;
+			Vec4f shadowMatrixIndcies; /* Since there are at most 4 levels of CSM for directional light, we can use a vec4 to store all 4 indices */
 		};
 		struct PointLightBuffer_GPU
 		{
@@ -162,6 +162,8 @@ namespace longmarch
 			Vec4f Kd_shadowMatrixIndex;  /* Let shadowMatrixIndex be -1 to indicate not casting shadow */
 			Vec4f Attenuation; /* x-const,y-linear,z-quadratic, w- intensity multiplier */
 			Vec4f Radius_CollisionRadius_SoftEdgeRatio;
+			Vec4f shadowMatrixIndcies_1_2_3; /* Since there are at most 6 shadow matrices for point light, we can use a vec4 to store the first 3 */
+			Vec4f shadowMatrixIndcies_4_5_6; /* Since there are at most 6 shadow matrices for point light, we can use a vec4 to store store the last 3 */
 		};
 		struct SpotLightBuffer_GPU
 		{

@@ -66,7 +66,7 @@ void longmarch::Scene3DComSys::PreRenderUpdate(double dt)
 
 void longmarch::Scene3DComSys::PrepareScene(double dt)
 {
-	Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_BUFFERED.clear();
+	Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE.clear();
 
 	auto root = m_parentWorld->GetTheOnlyEntityWithType((EntityType)(EngineEntityType::SCENE_ROOT));
 	{
@@ -84,7 +84,14 @@ void longmarch::Scene3DComSys::PrepareScene(double dt)
 			if (scene->IsVisible())
 			{
 				LOCK_GUARD_NC();
-				Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_BUFFERED.emplace_back(EntityDecorator{ child,m_parentWorld });
+				if (!scene->IsTranslucenctRendering())
+				{
+					Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE.emplace_back(EntityDecorator{ child,m_parentWorld });
+				}
+				else
+				{
+					Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT.emplace_back(EntityDecorator{ child,m_parentWorld });
+				}
 			}
 			if (auto childrenCom = GetComponent<ChildrenCom>(child).GetPtr(); !childrenCom->IsLeaf())
 			{
@@ -118,7 +125,14 @@ void longmarch::Scene3DComSys::RecursivePrepareScene(double dt, const Entity& pa
 		if (scene->IsVisible())
 		{
 			LOCK_GUARD_NC();
-			Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_BUFFERED.emplace_back(EntityDecorator{ child,m_parentWorld });
+			if (!scene->IsTranslucenctRendering())
+			{
+				Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE.emplace_back(EntityDecorator{ child,m_parentWorld });
+			}
+			else
+			{
+				Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT.emplace_back(EntityDecorator{ child,m_parentWorld });
+			}
 		}
 		if (auto childrenCom = GetComponent<ChildrenCom>(child).GetPtr(); !childrenCom->IsLeaf())
 		{
@@ -131,26 +145,45 @@ void longmarch::Scene3DComSys::RecursivePrepareScene(double dt, const Entity& pa
 	}
 }
 
-void longmarch::Scene3DComSys::RenderWithRenderObj()
+void longmarch::Scene3DComSys::RenderOpaqueObj()
 {
 	switch (Engine::GetEngineMode())
 	{
 	case Engine::ENGINE_MODE::INGAME:
-		for (auto& renderObj : Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_BUFFERED)
+		for (auto& renderObj : Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE)
 		{
 			RenderWithModeInGame(renderObj);
 		}
 		break;
 	default:
-		for (auto& renderObj : Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_BUFFERED)
+		for (auto& renderObj : Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE)
 		{
-			RenderWithMode(renderObj);
+			RenderWithModeEditor(renderObj);
 		}
 		break;
 	}
 }
 
-void longmarch::Scene3DComSys::RenderWithMode(Renderer3D::RenderObj_CPU& renderObj)
+void longmarch::Scene3DComSys::RenderTranslucentObj()
+{
+	switch (Engine::GetEngineMode())
+	{
+	case Engine::ENGINE_MODE::INGAME:
+		for (auto& renderObj : Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT)
+		{
+			RenderWithModeInGame(renderObj);
+		}
+		break;
+	default:
+		for (auto& renderObj : Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT)
+		{
+			RenderWithModeEditor(renderObj);
+		}
+		break;
+	}
+}
+
+void longmarch::Scene3DComSys::RenderWithModeEditor(Renderer3D::RenderObj_CPU& renderObj)
 {
 	{
 		auto scene = renderObj.entity.GetComponent<Scene3DCom>();
@@ -180,6 +213,7 @@ void longmarch::Scene3DComSys::RenderWithMode(Renderer3D::RenderObj_CPU& renderO
 			return;
 			case RenderMode::SCENE_AND_BBOX:
 			{
+				// TODO add toggle of visualizing bounding volume in imgui of body component
 				/*if (body.Valid() && body->GetBV())
 				{
 					body->GetBV()->RenderShape();

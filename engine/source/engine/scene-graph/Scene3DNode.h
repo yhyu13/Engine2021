@@ -9,7 +9,7 @@ namespace longmarch
 	struct Animation3DCom;
 
 	/**
-	 * @brief Representation of a scene node in the overall scene (a scene node could be consistent of multiple mesh, animations and skeletons)
+	 * @brief Representation of a scene node in the overall scene (a scene node could be consistent of multiple meshs, materials, animations and skeletons)
 	 *
 	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
 	 */

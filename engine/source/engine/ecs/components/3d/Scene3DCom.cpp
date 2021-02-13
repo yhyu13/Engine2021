@@ -101,6 +101,30 @@ void longmarch::Scene3DCom::SetCastReflection(bool b)
 	m_castReflection = b;
 }
 
+bool longmarch::Scene3DCom::IsTranslucenctRendering() const
+{
+	LOCK_GUARD2();
+	return m_translucent;
+}
+
+void longmarch::Scene3DCom::SetTranslucenctRendering(bool v)
+{
+	LOCK_GUARD2();
+	m_translucent = v;
+}
+
+int longmarch::Scene3DCom::GetTranslucencySortPriority() const
+{
+	LOCK_GUARD2();
+	return m_translucencySortPriority;
+}
+
+void longmarch::Scene3DCom::SetTranslucencySortPriority(int v)
+{
+	LOCK_GUARD2();
+	m_translucencySortPriority = v;
+}
+
 void longmarch::Scene3DCom::SetShouldDraw(bool b, bool _override)
 {
 	LOCK_GUARD2();
@@ -136,8 +160,8 @@ void longmarch::Scene3DCom::Draw()
 		LOCK_GUARD2();
 		if (m_shoudlDraw && m_objDatasRef)
 		{
-			auto trans = EntityDecorator{ m_this , m_world }.GetComponent<Transform3DCom>();
-			auto& shaderName = m_shaderName;
+			const auto trans = EntityDecorator{ m_this , m_world }.GetComponent<Transform3DCom>();
+			const auto& shaderName = m_shaderName;
 			Renderer3D::Draw(m_this, m_objDatasRef.get(), trans->GetModelTr(), trans->GetPrevModelTr(), shaderName);
 		}
 		// Automatically retset the drawable flag on render completion (always set shouldDraw before Render)
@@ -351,38 +375,6 @@ void longmarch::Scene3DCom::ImGuiRender()
 	if (ImGui::TreeNode("Scene3D"))
 	{
 		constexpr int yoffset_item = 2;
-		{
-			// Visible
-			bool val = m_visible;
-			if (ImGui::Checkbox("Visible", &val))
-			{
-				m_visible = val;
-			}
-		}
-		{
-			// Hide in Game
-			bool val = m_hideInGame;
-			if (ImGui::Checkbox("Hide In Game", &val))
-			{
-				m_hideInGame = val;
-			}
-		}
-		{
-			// Cast Shadow
-			bool val = m_castShadow;
-			if (ImGui::Checkbox("Cast Shadow", &val))
-			{
-				m_castShadow = val;
-			}
-		}
-		{
-			// Cast Reflection
-			bool val = m_castReflection;
-			if (ImGui::Checkbox("Cast Reflection", &val))
-			{
-				m_castReflection = val;
-			}
-		}
 		// Scene Mesh
 		{
 			const auto meshName = (m_objDatasRef) ? m_objDatasRef->Name() : "None";
@@ -399,6 +391,71 @@ void longmarch::Scene3DCom::ImGuiRender()
 		{
 			ImGui::TreePop();
 			return;
+		}
+		if (ImGui::TreeNode("Rendering"))
+		{
+			{
+				// Visible
+				bool val = m_visible;
+				if (ImGui::Checkbox("Visible", &val))
+				{
+					m_visible = val;
+				}
+			}
+			{
+				// Hide in Game
+				bool val = m_hideInGame;
+				if (ImGui::Checkbox("Hide In Game", &val))
+				{
+					m_hideInGame = val;
+				}
+			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
+			{
+				// Cast Shadow
+				bool val = m_castShadow;
+				if (ImGui::Checkbox("Cast Shadow", &val))
+				{
+					m_castShadow = val;
+				}
+			}
+			{
+				// Cast Reflection
+				bool val = m_castReflection;
+				if (ImGui::Checkbox("Cast Reflection", &val))
+				{
+					m_castReflection = val;
+				}
+			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
+			{
+				// Use translucency rendering or not
+				bool val = m_translucent;
+				if (ImGui::Checkbox("Translucenct Rendering", &val))
+				{
+					m_translucent = val;
+				}
+				ImGuiUtil::InlineHelpMarker("Use translucency rendering or not");
+			}
+			{
+				// Translucency sort priority, positive draw at front, negative draw at back 
+				int val = m_translucencySortPriority;
+				if (ImGui::InputInt("Translucency Sort Priority", &val))
+				{
+					m_translucencySortPriority = val;
+				}
+				ImGuiUtil::InlineHelpMarker("Translucency sort priority, positive draw at front, negative draw at back");
+			}
+			{
+				// Translucency alpha value applied to the whole object
+				float val = m_translucencyAlpha;
+				if (ImGui::SliderFloat("Translucency Alpha", &val, 0, 1.0, "%.2f"))
+				{
+					m_translucencyAlpha = val;
+				}
+				ImGuiUtil::InlineHelpMarker("Translucency alpha value applied to the whole object");
+			}
+			ImGui::TreePop();
 		}
 		// Material
 		for (auto& [level, data] : *m_objDatasRef)

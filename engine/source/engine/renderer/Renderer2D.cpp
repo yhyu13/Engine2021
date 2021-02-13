@@ -85,7 +85,7 @@ namespace longmarch {
 		s_Data->QuadTexture = Texture2D::Create(Texture::Setting());
 
 		// Create all shaders
-		s_Data->ShaderMap["Default"] = Shader::Create("$shader:QuadShader.vert", "$shader:QuadShader.frag");
+		s_Data->ShaderMap["DefaultRenderShader"] = Shader::Create("$shader:QuadShader.vert", "$shader:QuadShader.frag");
 		s_Data->ShaderMap["White"] = Shader::Create("$shader:QuadShader.vert", "$shader:QuadShaderWhite.frag");
 		// Init all shaders
 		for (auto it = s_Data->ShaderMap.begin(); it != s_Data->ShaderMap.end(); ++it)
@@ -95,7 +95,7 @@ namespace longmarch {
 			it->second->SetInt("u_Texture", 0);
 		}
 		// Assign default shader
-		s_Data->QuadShader = s_Data->ShaderMap["Default"];
+		s_Data->QuadShader = s_Data->ShaderMap["DefaultRenderShader"];
 		s_Data->QuadShader->Bind();
 
 		//Batch Rendering Initialize

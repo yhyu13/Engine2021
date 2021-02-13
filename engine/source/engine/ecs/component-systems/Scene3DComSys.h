@@ -49,8 +49,11 @@ namespace longmarch
 			m_systemSignature.AddComponent<Scene3DCom>();
 			m_systemSignature.AddComponent<Body3DCom>();
 		}
+		//! Prepare lights and scene rendering data in pre-render phase
 		virtual void PreRenderUpdate(double dt) override;
-		void RenderWithRenderObj();
+		
+		void RenderOpaqueObj(); 
+		void RenderTranslucentObj();
 
 		inline void SetRenderMode(RenderMode mode)
 		{
@@ -80,7 +83,7 @@ namespace longmarch
 	private:
 		void PrepareScene(double dt);
 		void RecursivePrepareScene(double dt, const Entity& parent, Transform3DCom* parentTr, ChildrenCom* childChildrenCom, unsigned int level);
-		void RenderWithMode(Renderer3D::RenderObj_CPU& renderObj); 
+		void RenderWithModeEditor(Renderer3D::RenderObj_CPU& renderObj);
 		void RenderWithModeInGame(Renderer3D::RenderObj_CPU& renderObj);
 
 		inline bool ViewFustrumCullingTest(const std::shared_ptr<Shape>& BoudingVolume)

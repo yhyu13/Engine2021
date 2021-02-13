@@ -63,7 +63,7 @@ namespace longmarch
 
 		inline virtual void RenderWithCulling()
 		{
-			for (auto& renderObj : Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_BUFFERED)
+			for (auto& renderObj : Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE)
 			{
 				auto scene = renderObj.entity.GetComponent<Scene3DCom>();
 				auto body = renderObj.entity.GetComponent<Body3DCom>();

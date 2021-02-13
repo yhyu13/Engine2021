@@ -67,34 +67,44 @@ void longmarch::_3DEditorLayer::BuildRenderPipeline()
 
 		Renderer3D::BeginRendering();
 		{
+			// callbacks for scene rendering
 			auto scene3DComSys = static_cast<Scene3DComSys*>(GameWorld::GetCurrent()->GetComponentSystem("Scene3DComSys"));
-			std::function<void()> f_render = std::bind(&Scene3DComSys::RenderWithRenderObj, scene3DComSys);
+			std::function<void()> f_render_opaque = std::bind(&Scene3DComSys::RenderOpaqueObj, scene3DComSys);
+			std::function<void()> f_render_translucent = std::bind(&Scene3DComSys::RenderTranslucentObj, scene3DComSys);
 			std::function<void(bool, const ViewFrustum&, const Mat4&)> f_setVFCullingParam = std::bind(&Scene3DComSys::SetVFCullingParam, scene3DComSys, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 			std::function<void(bool, const Vec3f&, float, float)> f_setDistanceCullingParam = std::bind(&Scene3DComSys::SetDistanceCullingParam, scene3DComSys, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
 			std::function<void(const std::string&)> f_setRenderShaderName = std::bind(&Scene3DComSys::SetRenderShaderName, scene3DComSys, std::placeholders::_1);
+			
+			// callbacks for particle rendering 
+			auto particle3DComSys = static_cast<Particle3DComSys*>(GameWorld::GetCurrent()->GetComponentSystem("Particle3DComSys"));
+			std::function<void(PerspectiveCamera*)> f_render_particle = std::bind(&Particle3DComSys::RenderParticleSystems, particle3DComSys, std::placeholders::_1);
+			std::function<void(const std::string&)> f_setRenderShaderName_particle = std::bind(&Particle3DComSys::SetRenderShaderName, particle3DComSys, std::placeholders::_1);
 			{
-				ENG_TIME("Shadow pass");
+				ENG_TIME("Opaque Shadow pass");
 				scene3DComSys->SetRenderMode(Scene3DComSys::RenderMode::SHADOW);
-				Renderer3D::BeginShadowing(cam, f_render, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
+				Renderer3D::BeginShadowing(cam, f_render_opaque, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
 				Renderer3D::EndShadowing();
 			}
 			{
-				ENG_TIME("Scene pass");
-				scene3DComSys->SetRenderMode(Scene3DComSys::RenderMode::SCENE_AND_BBOX);
-				Renderer3D::BeginScene(cam, f_render, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
-				Renderer3D::EndScene();
+				ENG_TIME("Opaque Scene pass");
+				scene3DComSys->SetRenderMode(Scene3DComSys::RenderMode::SCENE);
+				Renderer3D::BeginOpaqueScene(cam, f_render_opaque, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
+				Renderer3D::EndOpaqueScene();
 			}
 			{
-				ENG_TIME("Lighting pass");
-				Renderer3D::BeginLighting(cam, f_render, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
-				Renderer3D::EndLighting();
+				ENG_TIME("Opaque Lighting pass");
+				Renderer3D::BeginOpaqueLighting(cam, f_render_opaque, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
+				Renderer3D::EndOpaqueLighting();
 			}
 			{
-				// callbacks for rendering particles
-				auto particle3DComSys = static_cast<Particle3DComSys*>(GameWorld::GetCurrent()->GetComponentSystem("Particle3DComSys"));
-				std::function<void(PerspectiveCamera*)> render_callback = std::bind(&Particle3DComSys::RenderParticleSystems, particle3DComSys, std::placeholders::_1);
-				std::function<void(const std::string&)> setRenderShaderNameCallback = std::bind(&Particle3DComSys::SetRenderShaderName, particle3DComSys, std::placeholders::_1);
-				Renderer3D::BeginRenderingParticles(cam, render_callback, setRenderShaderNameCallback);
+				ENG_TIME("Translucent Scene pass");
+				scene3DComSys->SetRenderMode(Scene3DComSys::RenderMode::SCENE);
+				Renderer3D::BeginTranslucentSceneAndLighting(cam, f_render_translucent, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
+				Renderer3D::EndTranslucentSceneAndLighting();
+			}
+			{
+				ENG_TIME("Particle pass");
+				Renderer3D::BeginRenderingParticles(cam, f_render_particle, f_setRenderShaderName_particle);
 				Renderer3D::EndRenderingParticles();
 			}
 			{

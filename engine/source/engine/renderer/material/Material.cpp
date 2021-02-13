@@ -4,9 +4,12 @@
 #include "engine/core/asset-manager/AssetLoader.h"
 #include "engine/renderer/Image2D.h"
 
+#define ASYNC_LOAD
+
 std::shared_ptr<Material> longmarch::Material::LoadFromFile(const fs::path& path)
 {
 	// TODO : implement material load from file function
+	throw NotImplementedException();
 	return nullptr;
 }
 
@@ -67,7 +70,6 @@ void longmarch::Material::BindAllTexture(const LongMarch_Vector<std::pair<uint32
 
 void longmarch::Material::SetTexture(const std::string& name, const fs::path& filepath, Material::MAT_TEXTURE_TYPE type)
 {
-#define ASYNC_LOAD
 	auto resourceManager = ResourceManager<Texture2D>::GetInstance();
 	if (!resourceManager->HasLoadFromFileFunc())
 	{

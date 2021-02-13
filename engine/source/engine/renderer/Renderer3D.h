@@ -329,7 +329,8 @@ namespace longmarch
 			friend Renderer3D;
 		public:
 			LongMarch_Vector<LightBuffer_CPU> LIGHTS_BUFFERED;
-			LongMarch_Vector<RenderObj_CPU> RENDERABLE_OBJ_BUFFERED;
+			LongMarch_Vector<RenderObj_CPU> RENDERABLE_OBJ_OPAQUE;
+			LongMarch_Vector<RenderObj_CPU> RENDERABLE_OBJ_TRANSPARENT;
 		private:
 			// Lighting data
 			LongMarch_Vector<DirectionalLightBuffer_GPU> DIRECTIONAL_LIGHT_PROCESSED;
@@ -474,28 +475,33 @@ namespace longmarch
 			const std::function<void()>& f_render,
 			const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
 			const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
-			const std::function<void(const std::string&)>& f_setRenderShaderName,
-			const Vec4f& clear_color = Vec4f(0., 0., 0., 1)
+			const std::function<void(const std::string&)>& f_setRenderShaderName
 		);
 		static void EndShadowing();
-		static void BeginScene(
+		static void BeginOpaqueScene(
 			const PerspectiveCamera* camera,
 			const std::function<void()>& f_render,
 			const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
 			const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
-			const std::function<void(const std::string&)>& f_setRenderShaderName,
-			const Vec4f& clear_color = Vec4f(0., 0., 0., 1)
+			const std::function<void(const std::string&)>& f_setRenderShaderName
 		);
-		static void EndScene();
-		static void BeginLighting(
+		static void EndOpaqueScene();
+		static void BeginOpaqueLighting(
 			const PerspectiveCamera* camera,
 			const std::function<void()>& f_render,
 			const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
 			const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
-			const std::function<void(const std::string&)>& f_setRenderShaderName,
-			const Vec4f& clear_color = Vec4f(0., 0., 0., 1)
+			const std::function<void(const std::string&)>& f_setRenderShaderName
 		);
-		static void EndLighting();
+		static void EndOpaqueLighting();
+		static void BeginTranslucentSceneAndLighting(
+			const PerspectiveCamera* camera,
+			const std::function<void()>& f_render,
+			const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
+			const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
+			const std::function<void(const std::string&)>& f_setRenderShaderName
+		);
+		static void EndTranslucentSceneAndLighting();
 		static void BeginPostProcessing();
 		static void EndPostProcessing();
 		static void EndRendering();
@@ -503,8 +509,8 @@ namespace longmarch
 		static void BeginRenderingParticles(
 			PerspectiveCamera* camera,
 			const std::function<void(PerspectiveCamera*)>& f_render,
-			const std::function<void(const std::string&)>& f_setRenderShaderName,
-			const Vec4f& clear_color = Vec4f(0., 0., 0., 1));
+			const std::function<void(const std::string&)>& f_setRenderShaderName
+		);
 		static void EndRenderingParticles();
 
 		/**************************************************************
@@ -576,8 +582,8 @@ namespace longmarch
 		static void _BeginDebugCluster(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static glm::vec3 HSVtoRGB(float H, float S, float V);
 
-		static void _BeginForwardGeomtryPass(const PerspectiveCamera* camera, const Vec4f& clear_color, const std::shared_ptr<FrameBuffer>& framebuffer_out = nullptr);
-		static void _BeginDeferredGeomtryPass(const PerspectiveCamera* camera, const Vec4f& clear_color, const std::shared_ptr<GBuffer>& gBuffer_out);
+		static void _BeginForwardGeomtryPass(const PerspectiveCamera* camera, const std::shared_ptr<FrameBuffer>& framebuffer_out);
+		static void _BeginDeferredGeomtryPass(const PerspectiveCamera* camera, const std::shared_ptr<GBuffer>& gBuffer_out);
 		static void _PopulateShadingPassUniformsVariables(const PerspectiveCamera* camera);
 
 		static void _BeginSkyBoxPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
@@ -589,19 +595,18 @@ namespace longmarch
 			const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
 			const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
 			const std::function<void(const std::string&)>& f_setRenderShaderName,
-			const Vec4f& clear_color = Vec4f(0., 0., 0., 1),
-			const std::shared_ptr<FrameBuffer>& framebuffer_out = nullptr
+			const std::shared_ptr<FrameBuffer>& framebuffer_out
 		);
-		static void _BeginForwardLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out = nullptr);
+		static void _BeginForwardLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginClusterLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _RenderBoundingBox(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 
-		static void _BeginTAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out = nullptr);
-		static void _BeginFXAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out = nullptr);
-		static void _BeginSMAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_edge, const std::shared_ptr<FrameBuffer>& framebuffer_blend, const std::shared_ptr<FrameBuffer>& framebuffer_out = nullptr);
-		static void _BeginMotionBlurPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out = nullptr);
-		static void _BeginBloomPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_bright, const std::shared_ptr<FrameBuffer>& framebuffer_blend, const std::shared_ptr<FrameBuffer>& framebuffer_out = nullptr);
-		static void _BeginToneMappingPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out = nullptr);
+		static void _BeginTAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
+		static void _BeginFXAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
+		static void _BeginSMAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_edge, const std::shared_ptr<FrameBuffer>& framebuffer_blend, const std::shared_ptr<FrameBuffer>& framebuffer_out);
+		static void _BeginMotionBlurPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
+		static void _BeginBloomPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_bright, const std::shared_ptr<FrameBuffer>& framebuffer_blend, const std::shared_ptr<FrameBuffer>& framebuffer_out);
+		static void _BeginToneMappingPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 
 		static void _RenderFullScreenQuad();
 		static void _RenderFullScreenCube();

@@ -39,7 +39,7 @@ void longmarch::Renderer3D::Init()
 		s_Data.MAX_SHADOW_BATCH = LongMarch_MAX_SHADOW_PASS_BATCH;
 		s_Data.MAX_SCENE_BATCH = LongMarch_MAX_SCENE_PASS_BATCH;
 
-		s_Data.cpuBuffer.RENDERABLE_OBJ_BUFFERED.reserve(TWO_12);
+		s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE.reserve(TWO_12);
 		s_Data.cpuBuffer.LIGHTS_BUFFERED.reserve(s_Data.MAX_LIGHT);
 		s_Data.cpuBuffer.DIRECTIONAL_LIGHT_PROCESSED.reserve(1);
 		s_Data.cpuBuffer.POINT_LIGHT_PROCESSED.reserve(128);
@@ -242,16 +242,17 @@ void longmarch::Renderer3D::Init()
 		switch (s_Data.RENDER_PIPE)
 		{
 		case RENDER_PIPE::CLUSTER:
-			s_Data.ShaderMap["Default"] = s_Data.ShaderMap["ClusterShader"];
+			s_Data.ShaderMap["DefaultOpaqueRenderShader"] = s_Data.ShaderMap["ClusterShader"];
 			break;
 		case RENDER_PIPE::DEFERRED:
-			s_Data.ShaderMap["Default"] = s_Data.ShaderMap["GBufferShader"];
+			s_Data.ShaderMap["DefaultOpaqueRenderShader"] = s_Data.ShaderMap["GBufferShader"];
 			break;
 		case RENDER_PIPE::FORWARD:
-			s_Data.ShaderMap["Default"] = s_Data.ShaderMap["ForwardShader"];
+			s_Data.ShaderMap["DefaultOpaqueRenderShader"] = s_Data.ShaderMap["ForwardShader"];
 			break;
 		}
-		s_Data.CurrentShader = s_Data.ShaderMap["Default"];
+		s_Data.ShaderMap["DefaultTranslucentRenderShader"] = s_Data.ShaderMap["ForwardShader"];
+		s_Data.CurrentShader = s_Data.ShaderMap["DefaultOpaqueRenderShader"];
 
 		/**************************************************************
 		*	Init Buffer Objects
@@ -662,6 +663,83 @@ void longmarch::Renderer3D::_ON_SET_AO_VALUE(EventQueue<EngineGraphicsEventType>
 **************************************************************/
 void longmarch::Renderer3D::BeginRendering()
 {
+	const auto& prop = Engine::GetWindow()->GetWindowProperties();
+	s_Data.window_size = Vec2u(prop.m_width, prop.m_height);
+	s_Data.resolution = Vec2u(prop.m_width * s_Data.resolution_ratio, prop.m_height * s_Data.resolution_ratio);
+	s_Data.window_size_changed_this_frame = false;
+	// Prepare buffers
+	{
+		// Resize FrameBuffer if necessary
+		if (s_Data.gpuBuffer.CurrentWindowFrameBuffer->GetBufferSize() != s_Data.window_size)
+		{
+			s_Data.window_size_changed_this_frame = true;
+			s_Data.gpuBuffer.CurrentWindowFrameBuffer = FrameBuffer::Create(s_Data.window_size.x, s_Data.window_size.y, FrameBuffer::BUFFER_FORMAT::Float16);
+		}
+		if (s_Data.gpuBuffer.PrevWindowFrameBuffer->GetBufferSize() != s_Data.window_size)
+		{
+			s_Data.window_size_changed_this_frame = true;
+			s_Data.gpuBuffer.PrevWindowFrameBuffer = FrameBuffer::Create(s_Data.window_size.x, s_Data.window_size.y, FrameBuffer::BUFFER_FORMAT::Float16);
+		}
+		if (s_Data.gpuBuffer.PrevFrameBuffer->GetBufferSize() != s_Data.resolution)
+		{
+			s_Data.window_size_changed_this_frame = true;
+			s_Data.gpuBuffer.PrevFrameBuffer = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
+		}
+		if (s_Data.gpuBuffer.FinalFrameBuffer->GetBufferSize() != s_Data.resolution)
+		{
+			s_Data.window_size_changed_this_frame = true;
+			s_Data.gpuBuffer.FinalFrameBuffer = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
+		}
+		if (s_Data.gpuBuffer.FrameBuffer_1->GetBufferSize() != s_Data.resolution)
+		{
+			s_Data.window_size_changed_this_frame = true;
+			s_Data.gpuBuffer.FrameBuffer_1 = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
+		}
+		if (s_Data.gpuBuffer.FrameBuffer_2->GetBufferSize() != s_Data.resolution)
+		{
+			s_Data.window_size_changed_this_frame = true;
+			s_Data.gpuBuffer.FrameBuffer_2 = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
+		}
+		if (s_Data.gpuBuffer.FrameBuffer_3->GetBufferSize() != s_Data.resolution)
+		{
+			s_Data.window_size_changed_this_frame = true;
+			s_Data.gpuBuffer.FrameBuffer_3 = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
+		}
+		if (s_Data.gpuBuffer.FrameBuffer_4->GetBufferSize() != s_Data.resolution)
+		{
+			s_Data.window_size_changed_this_frame = true;
+			s_Data.gpuBuffer.FrameBuffer_4 = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
+		}
+		if (s_Data.gpuBuffer.CurrentDynamicAOBuffer->GetBufferSize() != s_Data.resolution / s_Data.AOSettings.ao_sample_resolution_downScale) // Render the AO with potentially downscaled resolution
+		{
+			s_Data.window_size_changed_this_frame = true;
+			s_Data.gpuBuffer.CurrentDynamicAOBuffer = FrameBuffer::Create(s_Data.resolution.x / s_Data.AOSettings.ao_sample_resolution_downScale, s_Data.resolution.y / s_Data.AOSettings.ao_sample_resolution_downScale, FrameBuffer::BUFFER_FORMAT::Float16);
+		}
+		if (s_Data.gpuBuffer.CurrentBloomBuffer->GetBufferSize() != s_Data.resolution / 2u) // Only render Bloom effect with half resolution
+		{
+			s_Data.window_size_changed_this_frame = true;
+			s_Data.gpuBuffer.CurrentBloomBuffer = FrameBuffer::Create(s_Data.resolution.x / 2u, s_Data.resolution.y / 2u, FrameBuffer::BUFFER_FORMAT::Float16);
+		}
+		// Enable depth testing and wirte to depth buffer just for the clearing commend
+		RenderCommand::DepthTest(true, true);
+		RenderCommand::SetClearColor(Vec4f(0,0,0,1));
+		s_Data.gpuBuffer.CurrentWindowFrameBuffer->Bind();
+		RenderCommand::Clear();
+		s_Data.gpuBuffer.FinalFrameBuffer->Bind();
+		RenderCommand::Clear();
+		s_Data.gpuBuffer.FrameBuffer_1->Bind();
+		RenderCommand::Clear();
+		s_Data.gpuBuffer.FrameBuffer_2->Bind();
+		RenderCommand::Clear();
+		s_Data.gpuBuffer.FrameBuffer_3->Bind();
+		RenderCommand::Clear();
+		s_Data.gpuBuffer.FrameBuffer_4->Bind();
+		RenderCommand::Clear();
+		s_Data.gpuBuffer.CurrentDynamicAOBuffer->Bind();
+		RenderCommand::Clear();
+		s_Data.gpuBuffer.CurrentBloomBuffer->Bind();
+		RenderCommand::Clear();
+	}
 }
 
 /**************************************************************
@@ -673,8 +751,7 @@ void longmarch::Renderer3D::BeginShadowing(
 	const std::function<void()>& f_render,
 	const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
 	const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
-	const std::function<void(const std::string&)>& f_setRenderShaderName,
-	const Vec4f& clear_color)
+	const std::function<void(const std::string&)>& f_setRenderShaderName)
 {
 	s_Data.RENDER_PASS = RENDER_PASS::SHADOW;
 	RenderCommand::PolyModeFill();
@@ -1459,158 +1536,81 @@ void longmarch::Renderer3D::EndShadowing()
 *	Render3D highlevel API : BeginScene
 *
 **************************************************************/
-void longmarch::Renderer3D::BeginScene(
+void longmarch::Renderer3D::BeginOpaqueScene(
 	const PerspectiveCamera* camera,
 	const std::function<void()>& f_render,
 	const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
 	const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
-	const std::function<void(const std::string&)>& f_setRenderShaderName,
-	const Vec4f& clear_color)
+	const std::function<void(const std::string&)>& f_setRenderShaderName)
 {
 	{
-		ENG_TIME("Scene phase: BEGIN");
-		s_Data.window_size_changed_this_frame = false;
+		ENG_TIME("Scene phase (Opaque): BEGIN");
 		s_Data.RENDER_PASS = RENDER_PASS::SCENE;
-		// TODO : set view port size by camera
-		const auto& prop = Engine::GetWindow()->GetWindowProperties();
-		s_Data.window_size = Vec2u(prop.m_width, prop.m_height);
-		s_Data.resolution = Vec2u(prop.m_width * s_Data.resolution_ratio, prop.m_height * s_Data.resolution_ratio);
+
 		if (glm::any(glm::equal(s_Data.resolution, Vec2u(0u))))
 		{
 			// Early quit on, say, minimizing window
 			return;
 		}
-		RenderCommand::SetViewport(0, 0, s_Data.resolution.x, s_Data.resolution.y);
-
-		// Prepare buffers
+		if (s_Data.RENDER_PIPE == RENDER_PIPE::DEFERRED)
 		{
-			// Resize FrameBuffer if necessary
-			if (s_Data.gpuBuffer.CurrentWindowFrameBuffer->GetBufferSize() != s_Data.window_size)
+			// Resize GBuffer if necessary
+			if (s_Data.gpuBuffer.CurrentGBuffer->GetBufferSize() != s_Data.resolution)
 			{
-				s_Data.window_size_changed_this_frame = true;
-				s_Data.gpuBuffer.CurrentWindowFrameBuffer = FrameBuffer::Create(s_Data.window_size.x, s_Data.window_size.y, FrameBuffer::BUFFER_FORMAT::Float16);
+				s_Data.gpuBuffer.CurrentGBuffer = GBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, GBuffer::GBUFFER_TYPE::DEFAULT);
 			}
-			if (s_Data.gpuBuffer.PrevWindowFrameBuffer->GetBufferSize() != s_Data.window_size)
-			{
-				s_Data.window_size_changed_this_frame = true;
-				s_Data.gpuBuffer.PrevWindowFrameBuffer = FrameBuffer::Create(s_Data.window_size.x, s_Data.window_size.y, FrameBuffer::BUFFER_FORMAT::Float16);
-			}
-			if (s_Data.gpuBuffer.PrevFrameBuffer->GetBufferSize() != s_Data.resolution)
-			{
-				s_Data.window_size_changed_this_frame = true;
-				s_Data.gpuBuffer.PrevFrameBuffer = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
-			}
-			if (s_Data.gpuBuffer.FinalFrameBuffer->GetBufferSize() != s_Data.resolution)
-			{
-				s_Data.window_size_changed_this_frame = true;
-				s_Data.gpuBuffer.FinalFrameBuffer = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
-			}
-			if (s_Data.gpuBuffer.FrameBuffer_1->GetBufferSize() != s_Data.resolution)
-			{
-				s_Data.window_size_changed_this_frame = true;
-				s_Data.gpuBuffer.FrameBuffer_1 = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
-			}
-			if (s_Data.gpuBuffer.FrameBuffer_2->GetBufferSize() != s_Data.resolution)
-			{
-				s_Data.window_size_changed_this_frame = true;
-				s_Data.gpuBuffer.FrameBuffer_2 = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
-			}
-			if (s_Data.gpuBuffer.FrameBuffer_3->GetBufferSize() != s_Data.resolution)
-			{
-				s_Data.window_size_changed_this_frame = true;
-				s_Data.gpuBuffer.FrameBuffer_3 = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
-			}
-			if (s_Data.gpuBuffer.FrameBuffer_4->GetBufferSize() != s_Data.resolution)
-			{
-				s_Data.window_size_changed_this_frame = true;
-				s_Data.gpuBuffer.FrameBuffer_4 = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
-			}
-			if (s_Data.gpuBuffer.CurrentDynamicAOBuffer->GetBufferSize() != s_Data.resolution / s_Data.AOSettings.ao_sample_resolution_downScale) // Only render the AO with half resolution
-			{
-				s_Data.window_size_changed_this_frame = true;
-				s_Data.gpuBuffer.CurrentDynamicAOBuffer = FrameBuffer::Create(s_Data.resolution.x / s_Data.AOSettings.ao_sample_resolution_downScale, s_Data.resolution.y / s_Data.AOSettings.ao_sample_resolution_downScale, FrameBuffer::BUFFER_FORMAT::Float16);
-			}
-			if (s_Data.gpuBuffer.CurrentBloomBuffer->GetBufferSize() != s_Data.resolution / 2u) // Only render the Bloom with half resolution
-			{
-				s_Data.window_size_changed_this_frame = true;
-				s_Data.gpuBuffer.CurrentBloomBuffer = FrameBuffer::Create(s_Data.resolution.x / 2u, s_Data.resolution.y / 2u, FrameBuffer::BUFFER_FORMAT::Float16);
-			}
-			RenderCommand::DepthTest(true, true); // Enable depth testing and wirte to depth buffer just for the clearing commend
-			RenderCommand::SetClearColor(clear_color);
-			s_Data.gpuBuffer.CurrentWindowFrameBuffer->Bind();
+			// GBuffer should be cleared with black color instead of a custom clear color
+			RenderCommand::SetClearColor(Vec4f(0, 0, 0, 1));
+			s_Data.gpuBuffer.CurrentGBuffer->Bind();
 			RenderCommand::Clear();
-			s_Data.gpuBuffer.FinalFrameBuffer->Bind();
-			RenderCommand::Clear();
-			s_Data.gpuBuffer.FrameBuffer_1->Bind();
-			RenderCommand::Clear();
-			s_Data.gpuBuffer.FrameBuffer_2->Bind();
-			RenderCommand::Clear();
-			s_Data.gpuBuffer.FrameBuffer_3->Bind();
-			RenderCommand::Clear();
-			s_Data.gpuBuffer.FrameBuffer_4->Bind();
-			RenderCommand::Clear();
-			s_Data.gpuBuffer.CurrentDynamicAOBuffer->Bind();
-			RenderCommand::Clear();
-			s_Data.gpuBuffer.CurrentBloomBuffer->Bind();
-			RenderCommand::Clear();
-
-			if (s_Data.RENDER_PIPE == RENDER_PIPE::DEFERRED)
-			{
-				// Resize GBuffer if necessary
-				if (s_Data.gpuBuffer.CurrentGBuffer->GetBufferSize() != s_Data.resolution)
-				{
-					s_Data.gpuBuffer.CurrentGBuffer = GBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, GBuffer::GBUFFER_TYPE::DEFAULT);
-				}
-				RenderCommand::SetClearColor(Vec4f(0, 0, 0, 1));
-				s_Data.gpuBuffer.CurrentGBuffer->Bind();
-				RenderCommand::Clear();
-			}
 		}
+
 		// Assign current frame buffer
 		{
 			s_Data.gpuBuffer.CurrentFrameBuffer = s_Data.gpuBuffer.FrameBuffer_1;
 		}
 
+		// Populate shading parameters
 		{
-			ENG_TIME("Scene phase: Populate Data");
+			ENG_TIME("Scene phase (Opaque): Populate Data");
 			_PopulateShadingPassUniformsVariables(camera);
 		}
-		//if (s_Data.enable_debug_cluster_light) {
-		//	Renderer3D::_BeginClusterBuildGrid(camera);
-		//	Renderer3D::_BeginDebugCluster(s_Data.gpuBuffer.CurrentFrameBuffer);
-		//	return;
-		//}
+		if (s_Data.enable_debug_cluster_light) {
+			Renderer3D::_BeginClusterBuildGrid(camera);
+			Renderer3D::_BeginDebugCluster(s_Data.gpuBuffer.CurrentFrameBuffer);
+			return;
+		}
 		// Begin geomtry passes
 		{
 			switch (s_Data.RENDER_PIPE)
 			{
 			case RENDER_PIPE::CLUSTER:
 				Renderer3D::_BeginClusterBuildGrid(camera);
-				Renderer3D::_BeginForwardGeomtryPass(camera, clear_color, s_Data.gpuBuffer.CurrentFrameBuffer);
+				Renderer3D::_BeginForwardGeomtryPass(camera, s_Data.gpuBuffer.CurrentFrameBuffer);
 				break;
 			case RENDER_PIPE::DEFERRED:
-				Renderer3D::_BeginDeferredGeomtryPass(camera, clear_color, s_Data.gpuBuffer.CurrentGBuffer);
+				Renderer3D::_BeginDeferredGeomtryPass(camera, s_Data.gpuBuffer.CurrentGBuffer);
 				break;
 			case RENDER_PIPE::FORWARD:
-				Renderer3D::_BeginForwardGeomtryPass(camera, clear_color, s_Data.gpuBuffer.CurrentFrameBuffer);
+				Renderer3D::_BeginForwardGeomtryPass(camera, s_Data.gpuBuffer.CurrentFrameBuffer);
 				break;
 			}
 		}
 	}
 	{
 		// Bind default shader here to avoid rebinding in the subsequent draw call
-		s_Data.CurrentShader = s_Data.ShaderMap["Default"];
+		s_Data.CurrentShader = s_Data.ShaderMap["DefaultOpaqueRenderShader"];
 		s_Data.CurrentShader->Bind();
 		// Rendering
 		{
-			ENG_TIME("Scene phase: LOOPING");
-			f_setRenderShaderName("Default");
-			f_setVFCullingParam(false, camera->GetViewFrustumInViewSpace(), camera->GetViewMatrix());
+			ENG_TIME("Scene phase (Opaque): LOOPING");
+			f_setRenderShaderName("DefaultOpaqueRenderShader");
+			f_setVFCullingParam(true, camera->GetViewFrustumInViewSpace(), camera->GetViewMatrix());
 			f_setDistanceCullingParam(false, Vec3f(), 0, 0);
 			f_render();
 		}
 		{
-			ENG_TIME("Scene phase: BATCH RENDER");
+			ENG_TIME("Scene phase (Opaque): BATCH RENDER");
 			CommitBatchRendering();
 		}
 	}
@@ -1724,10 +1724,10 @@ void longmarch::Renderer3D::_BeginDebugCluster(const std::shared_ptr<FrameBuffer
 	s_Data.gpuBuffer.FinalFrameBuffer = s_Data.gpuBuffer.CurrentFrameBuffer;
 }
 
-void longmarch::Renderer3D::_BeginForwardGeomtryPass(const PerspectiveCamera* camera, const Vec4f& clear_color, const std::shared_ptr<FrameBuffer>& framebuffer_out)
+void longmarch::Renderer3D::_BeginForwardGeomtryPass(const PerspectiveCamera* camera, const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
 	{
-		ENG_TIME("Scene Begin Forward");
+		ENG_TIME("Scene Begin Forward Geomtry Pass");
 		RenderCommand::DepthTest(true, true); // Enable depth testing
 		RenderCommand::Blend(true);			  // Enable blending
 		RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ALPHA_BLEND_2);
@@ -1737,25 +1737,38 @@ void longmarch::Renderer3D::_BeginForwardGeomtryPass(const PerspectiveCamera* ca
 			RenderCommand::PolyModeLine() :
 			RenderCommand::PolyModeFill();
 
-		// bind framebuffer to store frag color
-		(framebuffer_out) ?
-			framebuffer_out->Bind() :
+		// bind framebuffer to store fragment color
+		if (framebuffer_out)
+		{
+			framebuffer_out->Bind();
+			Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
+			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+		}
+		else
+		{
 			RenderCommand::BindDefaultFrameBuffer();
+			Vec2u traget_resoluation = s_Data.window_size;
+			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+		}
 	}
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
-void longmarch::Renderer3D::_BeginDeferredGeomtryPass(const PerspectiveCamera* camera, const Vec4f& clear_color, const std::shared_ptr<GBuffer>& gBuffer_out)
+void longmarch::Renderer3D::_BeginDeferredGeomtryPass(const PerspectiveCamera* camera, const std::shared_ptr<GBuffer>& gBuffer_out)
 {
 	{
-		ENG_TIME("Scene Begin Deferred");
+		ENG_TIME("Scene Begin Deferred Geomtry Pass");
 		RenderCommand::DepthTest(true, true);	// Enable depth testing
 		RenderCommand::Blend(false);			// Disable blending (cause gbuffer would use the alpha channel to store data)
 		RenderCommand::CullFace(true, false);	// Cull back faces
 		(s_Data.enable_wireframe) ?
 			RenderCommand::PolyModeLine() :
 			RenderCommand::PolyModeFill();
-		gBuffer_out->Bind();
+		{
+			gBuffer_out->Bind();
+			Vec2u traget_resoluation = gBuffer_out->GetBufferSize();
+			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+		}
 	}
 }
 
@@ -2031,7 +2044,7 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 *	Render3D highlevel API : EndScene
 *
 **************************************************************/
-void longmarch::Renderer3D::EndScene()
+void longmarch::Renderer3D::EndOpaqueScene()
 {
 }
 
@@ -2039,13 +2052,12 @@ void longmarch::Renderer3D::EndScene()
 *	Render3D highlevel API : BeginLighting
 *
 **************************************************************/
-void longmarch::Renderer3D::BeginLighting(
+void longmarch::Renderer3D::BeginOpaqueLighting(
 	const PerspectiveCamera* camera,
 	const std::function<void()>& f_render,
 	const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
 	const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
-	const std::function<void(const std::string&)>& f_setRenderShaderName,
-	const Vec4f& clear_color)
+	const std::function<void(const std::string&)>& f_setRenderShaderName)
 {
 	//if (s_Data.enable_debug_cluster_light) return;
 	switch (s_Data.RENDER_PIPE)
@@ -2062,7 +2074,6 @@ void longmarch::Renderer3D::BeginLighting(
 			f_setVFCullingParam,
 			f_setDistanceCullingParam,
 			f_setRenderShaderName,
-			clear_color,
 			s_Data.gpuBuffer.CurrentFrameBuffer
 		);
 		break;
@@ -2157,7 +2168,6 @@ void longmarch::Renderer3D::_BeginDeferredLightingPass(
 	const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
 	const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
 	const std::function<void(const std::string&)>& f_setRenderShaderName,
-	const Vec4f& clear_color,
 	const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
 	{
@@ -2348,11 +2358,52 @@ void longmarch::Renderer3D::_RenderBoundingBox(const std::shared_ptr<FrameBuffer
 *	Render3D highlevel API : EndLighting
 *
 **************************************************************/
-void longmarch::Renderer3D::EndLighting()
+void longmarch::Renderer3D::EndOpaqueLighting()
 {
 	if (s_Data.enable_debug_cluster_light)
 		return;
 	Renderer3D::_RenderBoundingBox(s_Data.gpuBuffer.CurrentFrameBuffer);
+}
+
+void longmarch::Renderer3D::BeginTranslucentSceneAndLighting(const PerspectiveCamera* camera, const std::function<void()>& f_render, const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam, const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam, const std::function<void(const std::string&)>& f_setRenderShaderName)
+{
+	{
+		ENG_TIME("Scene phase (Translucent): BEGIN");
+		s_Data.RENDER_PASS = RENDER_PASS::SCENE;
+
+		if (glm::any(glm::equal(s_Data.resolution, Vec2u(0u))))
+		{
+			// Early quit on, say, minimizing window
+			return;
+		}
+		// Forward geomtry pass for translucent scene objects
+		{
+			Renderer3D::_BeginForwardGeomtryPass(camera, s_Data.gpuBuffer.CurrentFrameBuffer);
+		}
+		RenderCommand::Blend(true);
+		RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ONE_MINUS_SRC_APLHA);
+		{
+			// Bind default shader here to avoid rebinding in the subsequent draw call
+			s_Data.CurrentShader = s_Data.ShaderMap["DefaultTranslucentRenderShader"];
+			s_Data.CurrentShader->Bind();
+			// Rendering
+			{
+				ENG_TIME("Scene phase (Translucent): LOOPING");
+				f_setRenderShaderName("DefaultTranslucentRenderShader");
+				f_setVFCullingParam(true, camera->GetViewFrustumInViewSpace(), camera->GetViewMatrix());
+				f_setDistanceCullingParam(false, Vec3f(), 0, 0);
+				f_render();
+			}
+			{
+				ENG_TIME("Scene phase (Translucent): BATCH RENDER");
+				CommitBatchRendering();
+			}
+		}
+	}
+}
+
+void longmarch::Renderer3D::EndTranslucentSceneAndLighting()
+{
 }
 
 /**************************************************************
@@ -2784,7 +2835,7 @@ void longmarch::Renderer3D::EndRendering()
 	);
 }
 
-void longmarch::Renderer3D::BeginRenderingParticles(PerspectiveCamera* camera, const std::function<void(PerspectiveCamera*)>& f_render, const std::function<void(const std::string&)>& f_setRenderShaderName, const Vec4f& clear_color)
+void longmarch::Renderer3D::BeginRenderingParticles(PerspectiveCamera* camera, const std::function<void(PerspectiveCamera*)>& f_render, const std::function<void(const std::string&)>& f_setRenderShaderName)
 {
 	RenderCommand::Blend(true);
 	RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ONE_MINUS_SRC_APLHA);

@@ -53,7 +53,7 @@ namespace longmarch
 		virtual void PreRenderUpdate(double dt) override;
 		
 		void RenderOpaqueObj(); 
-		void RenderTranslucentObj();
+		void RenderTranslucentObj(const PerspectiveCamera* camera);
 
 		inline void SetRenderMode(RenderMode mode)
 		{

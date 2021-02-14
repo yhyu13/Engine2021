@@ -2369,7 +2369,7 @@ void longmarch::Renderer3D::EndOpaqueLighting()
 	Renderer3D::_RenderBoundingBox(s_Data.gpuBuffer.CurrentFrameBuffer);
 }
 
-void longmarch::Renderer3D::BeginTranslucentSceneAndLighting(const PerspectiveCamera* camera, const std::function<void()>& f_render, const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam, const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam, const std::function<void(const std::string&)>& f_setRenderShaderName)
+void longmarch::Renderer3D::BeginTranslucentSceneAndLighting(const PerspectiveCamera* camera, const std::function<void(const PerspectiveCamera*)>& f_render, const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam, const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam, const std::function<void(const std::string&)>& f_setRenderShaderName)
 {
 	{
 		ENG_TIME("Scene phase (Translucent): BEGIN");
@@ -2394,7 +2394,7 @@ void longmarch::Renderer3D::BeginTranslucentSceneAndLighting(const PerspectiveCa
 				f_setRenderShaderName("TranslucentForwardShader");
 				f_setVFCullingParam(true, camera->GetViewFrustumInViewSpace(), camera->GetViewMatrix());
 				f_setDistanceCullingParam(false, Vec3f(), 0, 0);
-				f_render();
+				f_render(camera);
 			}
 		}
 

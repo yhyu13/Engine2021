@@ -104,6 +104,23 @@ namespace longmarch
 			{}
 			EntityDecorator entity;
 		};
+		struct CACHE_ALIGN8 RenderTranslucentObj_CPU
+		{
+			explicit RenderTranslucentObj_CPU(const RenderObj_CPU& e, float d)
+				:
+				obj(e),
+				distance(d)
+			{}
+			RenderObj_CPU obj;
+			float distance;
+		};
+		struct RenderTranslucentObj_CPU_ComparatorLesser // used in priority queue that puts objects in greater distances at front
+		{
+			bool operator()(const RenderTranslucentObj_CPU& lhs, const RenderTranslucentObj_CPU& rhs) noexcept
+			{
+				return lhs.distance < rhs.distance;
+			}
+		};
 		struct CACHE_ALIGN8 RenderData_CPU
 		{
 			explicit RenderData_CPU(const Entity& e, MeshData* mesh, Material* mat, const Mat4& Tr, const Mat4& prevTr)
@@ -499,7 +516,7 @@ namespace longmarch
 		static void EndOpaqueLighting();
 		static void BeginTranslucentSceneAndLighting(
 			const PerspectiveCamera* camera,
-			const std::function<void()>& f_render,
+			const std::function<void(const PerspectiveCamera*)>& f_render,
 			const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
 			const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
 			const std::function<void(const std::string&)>& f_setRenderShaderName

@@ -165,20 +165,37 @@ void longmarch::Scene3DComSys::RenderOpaqueObj()
 	}
 }
 
-void longmarch::Scene3DComSys::RenderTranslucentObj()
+void longmarch::Scene3DComSys::RenderTranslucentObj(const PerspectiveCamera* camera)
 {
+	std::priority_queue<Renderer3D::RenderTranslucentObj_CPU, 
+		LongMarch_Vector<Renderer3D::RenderTranslucentObj_CPU>, 
+		Renderer3D::RenderTranslucentObj_CPU_ComparatorLesser> depth_sorted_translucent_obj;
+
+	Mat4 pv = camera->GetViewProjectionMatrix();
+	for (auto& renderObj : Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT)
+	{
+		auto trans = renderObj.entity.GetComponent<Transform3DCom>();
+		auto pos = trans->GetGlobalPos();
+		auto ndc_pos = pv * Vec4f(pos, 1.0f);
+		depth_sorted_translucent_obj.emplace(renderObj, ndc_pos.z);
+	}
+
 	switch (Engine::GetEngineMode())
 	{
 	case Engine::ENGINE_MODE::INGAME:
-		for (auto& renderObj : Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT)
+		while (!depth_sorted_translucent_obj.empty())
 		{
-			RenderWithModeInGame(renderObj);
+			auto translucent_renderObj = depth_sorted_translucent_obj.top();
+			RenderWithModeInGame(translucent_renderObj.obj);
+			depth_sorted_translucent_obj.pop();
 		}
 		break;
 	default:
-		for (auto& renderObj : Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT)
+		while (!depth_sorted_translucent_obj.empty())
 		{
-			RenderWithModeEditor(renderObj);
+			auto translucent_renderObj = depth_sorted_translucent_obj.top();
+			RenderWithModeEditor(translucent_renderObj.obj);
+			depth_sorted_translucent_obj.pop();
 		}
 		break;
 	}

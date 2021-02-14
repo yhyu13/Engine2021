@@ -70,7 +70,7 @@ void longmarch::_3DEditorLayer::BuildRenderPipeline()
 			// callbacks for scene rendering
 			auto scene3DComSys = static_cast<Scene3DComSys*>(GameWorld::GetCurrent()->GetComponentSystem("Scene3DComSys"));
 			std::function<void()> f_render_opaque = std::bind(&Scene3DComSys::RenderOpaqueObj, scene3DComSys);
-			std::function<void()> f_render_translucent = std::bind(&Scene3DComSys::RenderTranslucentObj, scene3DComSys);
+			std::function<void(const PerspectiveCamera*)> f_render_translucent = std::bind(&Scene3DComSys::RenderTranslucentObj, scene3DComSys, std::placeholders::_1);
 			std::function<void(bool, const ViewFrustum&, const Mat4&)> f_setVFCullingParam = std::bind(&Scene3DComSys::SetVFCullingParam, scene3DComSys, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 			std::function<void(bool, const Vec3f&, float, float)> f_setDistanceCullingParam = std::bind(&Scene3DComSys::SetDistanceCullingParam, scene3DComSys, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
 			std::function<void(const std::string&)> f_setRenderShaderName = std::bind(&Scene3DComSys::SetRenderShaderName, scene3DComSys, std::placeholders::_1);

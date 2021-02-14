@@ -191,6 +191,18 @@ void longmarch::Scene3DCom::JsonSerialize(Json::Value& value)
 		{
 			val["castShadow"] = m_castShadow;
 		}
+		if (m_castReflection != _default.m_castReflection)
+		{
+			val["castReflection"] = m_castReflection;
+		}
+		if (m_translucent != _default.m_translucent)
+		{
+			val["translucent"] = m_translucent;
+		}
+		if (m_translucencySortPriority != _default.m_translucencySortPriority)
+		{
+			val["translucency_order"] = m_translucencySortPriority;
+		}
 		if (m_objDatasRef)
 		{
 			const auto& sceneData = *m_objDatasRef;
@@ -214,6 +226,10 @@ void longmarch::Scene3DCom::JsonSerialize(Json::Value& value)
 						static const auto& _default = Material();
 
 						val2[(mat->emissive) ? "Kd" : "albedo"] = LongMarch_ArrayToJsonValue(mat->Kd, 3);
+						if (mat->alpha != _default.alpha)
+						{
+							val["alpha"] = mat->alpha;
+						}
 						if (mat->emissive != _default.emissive)
 						{
 							val2["emissive"] = mat->emissive;
@@ -282,6 +298,18 @@ void longmarch::Scene3DCom::JsonDeserialize(const Json::Value& value)
 		{
 			m_castShadow = val.asBool();
 		}
+		if (auto& val = value["castReflection"]; !val.isNull())
+		{
+			m_castReflection = val.asBool();
+		}
+		if (auto& val = value["translucent"]; !val.isNull())
+		{
+			m_translucent = val.asBool();
+		}
+		if (auto& val = value["translucency_order"]; !val.isNull())
+		{
+			m_translucencySortPriority = val.asBool();
+		}
 		if (auto& val = value["mat"]; !val.isNull() && mesh_name.find("prefab") == std::string::npos)
 		{
 			const auto& sceneData = *(GetSceneData(true));
@@ -307,6 +335,13 @@ void longmarch::Scene3DCom::JsonDeserialize(const Json::Value& value)
 				auto value = glm::clamp(Vec3f(val2[0].asFloat(), val2[1].asFloat(), val2[2].asFloat()), 0.05f, 0.92f); // NTSC safe rgb range
 				sceneData.ModifyAllMaterial([&value](Material* mat) {
 					mat->Kd = value;
+				});
+			}
+			if (auto& val2 = val["alpha"]; !val2.isNull())
+			{
+				auto value = glm::clamp(val2.asFloat(), 0.f, 1.f);
+				sceneData.ModifyAllMaterial([&value](Material* mat) {
+					mat->alpha = value;
 				});
 			}
 			if (auto& val2 = val["metallic"]; !val2.isNull())
@@ -446,15 +481,6 @@ void longmarch::Scene3DCom::ImGuiRender()
 				}
 				ImGuiUtil::InlineHelpMarker("Translucency sort priority, positive draw at front, negative draw at back");
 			}
-			{
-				// Translucency alpha value applied to the whole object
-				float val = m_translucencyAlpha;
-				if (ImGui::SliderFloat("Translucency Alpha", &val, 0, 1.0, "%.2f"))
-				{
-					m_translucencyAlpha = val;
-				}
-				ImGuiUtil::InlineHelpMarker("Translucency alpha value applied to the whole object");
-			}
 			ImGui::TreePop();
 		}
 		// Material
@@ -576,6 +602,16 @@ void longmarch::Scene3DCom::ImGuiRender()
 							ImGui::DragFloat(LongMarch_ImGuiHashTagName("B", "kd_picker_b" + Str(data.get())), &kd[2], speed, 0.f, 1.f);
 						}
 						mat->Kd = kd;
+						ImGui::TreePop();
+					}
+					if (ImGui::TreeNode(LongMarch_ImGuiHashTagName("Alpha", "alpha_tree" + Str(data.get()))))
+					{
+						float speed = 0.01f;
+						auto alpha = mat->alpha;
+						if (ImGui::DragFloat(LongMarch_ImGuiHashTagName("Alpha", "alpha_picker" + Str(data.get())), &alpha, speed, 0.0f, 1.0f))
+						{
+							mat->alpha = alpha;
+						}
 						ImGui::TreePop();
 					}
 					if (ImGui::TreeNode(LongMarch_ImGuiHashTagName("Metallic", "met_tree" + Str(data.get()))))

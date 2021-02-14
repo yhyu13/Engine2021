@@ -356,7 +356,9 @@ namespace longmarch
 			GPUBuffer gpuBuffer;
 			// Shaders
 			LongMarch_UnorderedMap_node<std::string, std::shared_ptr<Shader>> ShaderMap;
-			std::shared_ptr<Shader> CurrentShader;
+			std::shared_ptr<Shader> CurrentShader; 
+			LongMarch_Vector<std::string> ListRenderShadersToPopulateData;
+			LongMarch_Vector<std::string> ListShadersToPopulateData;
 
 			Vec4f cube_directions[6];
 			Vec3f cube_ups[6];
@@ -469,6 +471,7 @@ namespace longmarch
 		*	Render3D highlevel API
 		*
 		**************************************************************/
+		static bool ShouldRendering();
 		static void BeginRendering();
 		static void BeginShadowing(
 			const PerspectiveCamera* camera,
@@ -580,7 +583,7 @@ namespace longmarch
 		static void _BeginClusterBuildGrid(const PerspectiveCamera* camera);
 		static void _BeginLightCullingPass(const PerspectiveCamera* camera);
 		static void _BeginDebugCluster(const std::shared_ptr<FrameBuffer>& framebuffer_out);
-		static glm::vec3 HSVtoRGB(float H, float S, float V);
+		static Vec3f _HSVtoRGB(float H, float S, float V);
 
 		static void _BeginForwardGeomtryPass(const PerspectiveCamera* camera, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginDeferredGeomtryPass(const PerspectiveCamera* camera, const std::shared_ptr<GBuffer>& gBuffer_out);

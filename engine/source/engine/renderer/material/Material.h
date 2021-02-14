@@ -44,7 +44,8 @@ namespace longmarch
 			inline bool has_roughness() { return IsTextureValid(roughness_texture->TryGet()); }
 			inline bool has_ao() { return IsTextureValid(ao_texture->TryGet()); }
 		} textures;
-		Vec3f Kd{ Vec3f(.65) };
+		Vec3f Kd{ Vec3f(.65) }; 
+		float alpha{ 1.0f };
 		float metallic{ 0.5f };
 		float roughness{ .5f };
 		bool emissive{ false };

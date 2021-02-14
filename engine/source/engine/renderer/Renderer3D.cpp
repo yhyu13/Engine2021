@@ -134,15 +134,15 @@ void longmarch::Renderer3D::Init()
 
 		if (s_Data.enable_motionblur && !s_Data.enable_deferredShading)
 		{
-			ENGINE_EXCEPT(L"Motion Blur requires Deferred Renderering as 'True' in the engine configuration file!");
+			ENGINE_INFO("Motion Blur requires Deferred Renderering as 'True' in the engine configuration file!");
 		}
 		if (s_Data.enable_taa && !s_Data.enable_deferredShading)
 		{
-			ENGINE_EXCEPT(L"TAA requires Deferred Renderering as 'True' in the engine configuration file!");
+			ENGINE_INFO("TAA requires Deferred Renderering as 'True' in the engine configuration file!");
 		}
 		if (s_Data.AOSettings.enable && !s_Data.enable_deferredShading)
 		{
-			ENGINE_EXCEPT(L"Alchemy AO requires Deferred Renderering as 'True' in the engine configuration file!");
+			ENGINE_INFO("Alchemy AO (SSAO) requires Deferred Renderering as 'True' in the engine configuration file!");
 		}
 
 		/**************************************************************
@@ -154,6 +154,7 @@ void longmarch::Renderer3D::Init()
 		s_Data.ShaderMap["CullLightsCompShader"] = Shader::Create("$shader:cluster_cull_light.comp");
 		s_Data.ShaderMap["ClusterDebugShader"] = Shader::Create("$shader:debug_clusters.vert", "$shader:debug_clusters.frag", "$shader:debug_clusters.geom");
 		s_Data.ShaderMap["ClusterShader"] = Shader::Create("$shader:cluster_shader.vert", "$shader:cluster_shader.frag");
+		s_Data.ShaderMap["TranslucentForwardShader"] = Shader::Create("$shader:forward_shader.vert", "$shader:forward_shader.frag");
 		s_Data.ShaderMap["DeferredShader"] = Shader::Create("$shader:deferred_shader.vert", "$shader:deferred_shader.frag");
 		s_Data.ShaderMap["DynamicAOShader"] = Shader::Create("$shader:dynamic_ao_shader.vert", "$shader:dynamic_ao_shader.frag");
 
@@ -242,17 +243,28 @@ void longmarch::Renderer3D::Init()
 		switch (s_Data.RENDER_PIPE)
 		{
 		case RENDER_PIPE::CLUSTER:
-			s_Data.ShaderMap["DefaultOpaqueRenderShader"] = s_Data.ShaderMap["ClusterShader"];
+			s_Data.ShaderMap["OpaqueRenderShader"] = s_Data.ShaderMap["ClusterShader"];
 			break;
 		case RENDER_PIPE::DEFERRED:
-			s_Data.ShaderMap["DefaultOpaqueRenderShader"] = s_Data.ShaderMap["GBufferShader"];
+			s_Data.ShaderMap["OpaqueRenderShader"] = s_Data.ShaderMap["GBufferShader"];
 			break;
 		case RENDER_PIPE::FORWARD:
-			s_Data.ShaderMap["DefaultOpaqueRenderShader"] = s_Data.ShaderMap["ForwardShader"];
+			s_Data.ShaderMap["OpaqueRenderShader"] = s_Data.ShaderMap["ForwardShader"];
 			break;
 		}
-		s_Data.ShaderMap["DefaultTranslucentRenderShader"] = s_Data.ShaderMap["ForwardShader"];
-		s_Data.CurrentShader = s_Data.ShaderMap["DefaultOpaqueRenderShader"];
+		s_Data.CurrentShader = s_Data.ShaderMap["OpaqueRenderShader"];
+
+		LongMarch_Vector<std::string> forwardShader = { "ForwardShader", "TranslucentForwardShader" };
+		LongMarch_Vector<std::string> clusteredShader = { "BuildAABBGridCompShader", "CullLightsCompShader","ClusterShader", "ClusterDebugShader" };
+		LongMarch_Vector<std::string> deferredShader = { "GBufferShader","DeferredShader" };
+
+		s_Data.ListRenderShadersToPopulateData.insert(s_Data.ListRenderShadersToPopulateData.end(), forwardShader.begin(), forwardShader.end());
+		s_Data.ListRenderShadersToPopulateData.insert(s_Data.ListRenderShadersToPopulateData.end(), clusteredShader.begin(), clusteredShader.end());
+		s_Data.ListRenderShadersToPopulateData.insert(s_Data.ListRenderShadersToPopulateData.end(), deferredShader.begin(), deferredShader.end());
+
+		LongMarch_Vector<std::string> MiscShader = { "BBoxShader", "SkyboxShader","TAAShader","DynamicAOShader","GaussianBlur_AO","MotionBlur" };
+		s_Data.ListShadersToPopulateData = s_Data.ListRenderShadersToPopulateData;
+		s_Data.ListShadersToPopulateData.insert(s_Data.ListShadersToPopulateData.end(), MiscShader.begin(), MiscShader.end());
 
 		/**************************************************************
 		*	Init Buffer Objects
@@ -655,6 +667,23 @@ void longmarch::Renderer3D::_ON_SET_AO_VALUE(EventQueue<EngineGraphicsEventType>
 	s_Data.AOSettings.ao_scale = event->m_scale;
 	s_Data.AOSettings.ao_power = event->m_power;
 	s_Data.AOSettings.enable_indirect_light_bounce = event->m_enable_indirect_bounce;
+}
+
+
+/**************************************************************
+*	Render3D highlevel API
+*
+**************************************************************/
+
+bool longmarch::Renderer3D::ShouldRendering()
+{
+	const auto& prop = Engine::GetWindow()->GetWindowProperties();
+	if (glm::any(glm::equal(Vec2u(prop.m_width, prop.m_height), Vec2u(0u))))
+	{
+		// Early quit on, say, minimizing window
+		return false;
+	}
+	return true;
 }
 
 /**************************************************************
@@ -1547,11 +1576,6 @@ void longmarch::Renderer3D::BeginOpaqueScene(
 		ENG_TIME("Scene phase (Opaque): BEGIN");
 		s_Data.RENDER_PASS = RENDER_PASS::SCENE;
 
-		if (glm::any(glm::equal(s_Data.resolution, Vec2u(0u))))
-		{
-			// Early quit on, say, minimizing window
-			return;
-		}
 		if (s_Data.RENDER_PIPE == RENDER_PIPE::DEFERRED)
 		{
 			// Resize GBuffer if necessary
@@ -1599,12 +1623,12 @@ void longmarch::Renderer3D::BeginOpaqueScene(
 	}
 	{
 		// Bind default shader here to avoid rebinding in the subsequent draw call
-		s_Data.CurrentShader = s_Data.ShaderMap["DefaultOpaqueRenderShader"];
+		s_Data.CurrentShader = s_Data.ShaderMap["OpaqueRenderShader"];
 		s_Data.CurrentShader->Bind();
 		// Rendering
 		{
 			ENG_TIME("Scene phase (Opaque): LOOPING");
-			f_setRenderShaderName("DefaultOpaqueRenderShader");
+			f_setRenderShaderName("OpaqueRenderShader");
 			f_setVFCullingParam(true, camera->GetViewFrustumInViewSpace(), camera->GetViewMatrix());
 			f_setDistanceCullingParam(false, Vec3f(), 0, 0);
 			f_render();
@@ -1796,29 +1820,9 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 		ppv = camera->GetPrevViewProjectionMatrix();
 	}
 
-	static const LongMarch_Vector<std::string> forwardShader = { "ForwardShader" };
-	static const LongMarch_Vector<std::string> clusteredShader = { "BuildAABBGridCompShader", "CullLightsCompShader","ClusterShader", "ClusterDebugShader" };
-	static const LongMarch_Vector<std::string> deferredShader = { "GBufferShader","DeferredShader" };
-	static const LongMarch_Vector<std::string> MiscShader = { "BBoxShader", "SkyboxShader","TAAShader","DynamicAOShader","GaussianBlur_AO","MotionBlur" };
-	LongMarch_Vector<std::string> render_shader;
-	switch (s_Data.RENDER_PIPE)
-	{
-	case RENDER_PIPE::CLUSTER:
-		render_shader = clusteredShader;
-		break;
-	case RENDER_PIPE::DEFERRED:
-		render_shader = deferredShader;
-		break;
-	case RENDER_PIPE::FORWARD:
-		render_shader = forwardShader;
-		break;
-	}
-	LongMarch_Vector<std::string> shaders = render_shader;
-	shaders.insert(shaders.end(), MiscShader.begin(), MiscShader.end());
-
 	// Update shader uniforms
 	{
-		for (auto&& shaderName : shaders)
+		for (auto&& shaderName : s_Data.ListShadersToPopulateData)
 		{
 			const auto& shaderProg = s_Data.ShaderMap[shaderName];
 			shaderProg->Bind();
@@ -1890,7 +1894,7 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 						}
 					}
 				}
-				for (auto&& shaderName : render_shader)
+				for (auto&& shaderName : s_Data.ListRenderShadersToPopulateData)
 				{
 					const auto& shaderProg = s_Data.ShaderMap[shaderName];
 					shaderProg->Bind();
@@ -1930,7 +1934,7 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 						}
 					}
 				}
-				for (auto&& shaderName : render_shader)
+				for (auto&& shaderName : s_Data.ListRenderShadersToPopulateData)
 				{
 					const auto& shaderProg = s_Data.ShaderMap[shaderName];
 					shaderProg->Bind();
@@ -1970,7 +1974,7 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 						}
 					}
 				}
-				for (auto&& shaderName : render_shader)
+				for (auto&& shaderName : s_Data.ListRenderShadersToPopulateData)
 				{
 					const auto& shaderProg = s_Data.ShaderMap[shaderName];
 					shaderProg->Bind();
@@ -2031,7 +2035,7 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 				auto size = gridX * gridY * gridZ;
 				s_Data.ClusterData.clusterColors.resize(size);
 				for (int i = 0; i < size; ++i) {
-					s_Data.ClusterData.clusterColors[i] = glm::vec4(HSVtoRGB(glm::linearRand(0.0f, 360.0f), glm::linearRand(0.0f, 1.0f), 1.0f), 1.0f);
+					s_Data.ClusterData.clusterColors[i] = Vec4f(_HSVtoRGB(glm::linearRand(0.0f, 360.0f), glm::linearRand(0.0f, 1.0f), 1.0f), 1.0f);
 				}
 				s_Data.gpuBuffer.ClusterColorBuffer->UpdateBufferData(&s_Data.ClusterData.clusterColors, sizeof(s_Data.ClusterData.clusterColors));
 				s_Data.gpuBuffer.ClusterColorBuffer->Bind(19);
@@ -2369,36 +2373,33 @@ void longmarch::Renderer3D::BeginTranslucentSceneAndLighting(const PerspectiveCa
 {
 	{
 		ENG_TIME("Scene phase (Translucent): BEGIN");
+		auto render_pipe_original = s_Data.RENDER_PIPE;
+		auto render_mode_original = s_Data.RENDER_MODE;
 		s_Data.RENDER_PASS = RENDER_PASS::SCENE;
+		s_Data.RENDER_PIPE = RENDER_PIPE::FORWARD;
+		s_Data.RENDER_MODE = RENDER_MODE::CANONICAL;
 
-		if (glm::any(glm::equal(s_Data.resolution, Vec2u(0u))))
-		{
-			// Early quit on, say, minimizing window
-			return;
-		}
 		// Forward geomtry pass for translucent scene objects
 		{
 			Renderer3D::_BeginForwardGeomtryPass(camera, s_Data.gpuBuffer.CurrentFrameBuffer);
 		}
-		RenderCommand::Blend(true);
-		RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ONE_MINUS_SRC_APLHA);
+		
 		{
 			// Bind default shader here to avoid rebinding in the subsequent draw call
-			s_Data.CurrentShader = s_Data.ShaderMap["DefaultTranslucentRenderShader"];
+			s_Data.CurrentShader = s_Data.ShaderMap["TranslucentForwardShader"];
 			s_Data.CurrentShader->Bind();
 			// Rendering
 			{
 				ENG_TIME("Scene phase (Translucent): LOOPING");
-				f_setRenderShaderName("DefaultTranslucentRenderShader");
+				f_setRenderShaderName("TranslucentForwardShader");
 				f_setVFCullingParam(true, camera->GetViewFrustumInViewSpace(), camera->GetViewMatrix());
 				f_setDistanceCullingParam(false, Vec3f(), 0, 0);
 				f_render();
 			}
-			{
-				ENG_TIME("Scene phase (Translucent): BATCH RENDER");
-				CommitBatchRendering();
-			}
 		}
+
+		s_Data.RENDER_PIPE = render_pipe_original;
+		s_Data.RENDER_MODE = render_mode_original;
 	}
 }
 
@@ -2675,7 +2676,7 @@ void longmarch::Renderer3D::_BeginBloomPass(const std::shared_ptr<FrameBuffer>& 
 	if (s_Data.BloomSettings.enable)
 	{
 		// Extract brightness map
-		auto& BrightnessBuffer = s_Data.gpuBuffer.CurrentDynamicAOBuffer;
+		auto& BrightnessBuffer = s_Data.gpuBuffer.CurrentBloomBuffer;
 		Vec2u traget_resoluation = BrightnessBuffer->GetBufferSize();
 		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 
@@ -2838,7 +2839,7 @@ void longmarch::Renderer3D::EndRendering()
 void longmarch::Renderer3D::BeginRenderingParticles(PerspectiveCamera* camera, const std::function<void(PerspectiveCamera*)>& f_render, const std::function<void(const std::string&)>& f_setRenderShaderName)
 {
 	RenderCommand::Blend(true);
-	RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ONE_MINUS_SRC_APLHA);
+	RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ALPHA_BLEND_1);
 	RenderCommand::DepthTest(false, false);
 	RenderCommand::CullFace(false, false);
 	f_render(camera);
@@ -3056,7 +3057,11 @@ void longmarch::Renderer3D::Draw(Entity entity, MeshData* Mesh, Material* Mat, c
 				radiance->BindTexture(s_Data.fragTexture_1_slot);
 				s_Data.gpuBuffer.BrdfIntegrateLUT->BindTexture(s_Data.fragTexture_2_slot);
 			}
-			Mesh->Draw();
+			{
+				// set transparent alpha
+				s_Data.CurrentShader->SetFloat("u_Alpha", Mat->alpha);
+			}
+			Mesh->Draw(); 
 		}
 		break;
 		}
@@ -3918,14 +3923,14 @@ void longmarch::Renderer3D::AppendMeshToMultiDraw(MeshData* Mesh)
 // @param H Hue in the range [0, 360)
 // @param S Saturation in the range [0, 1]
 // @param V Value in the range [0, 1]
-glm::vec3 longmarch::Renderer3D::HSVtoRGB(float H, float S, float V)
+Vec3f longmarch::Renderer3D::_HSVtoRGB(float H, float S, float V)
 {
 	float C = V * S;
 	float m = V - C;
 	float H2 = H / 60.0f;
 	float X = C * (1.0f - fabsf(fmodf(H2, 2.0f) - 1.0f));
 
-	glm::vec3 RGB;
+	Vec3f RGB;
 
 	switch (static_cast<int>(H2))
 	{

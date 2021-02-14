@@ -61,7 +61,6 @@ namespace longmarch
 
 		Entity m_this; // Bookkeeper of which entity this component belong to
 		
-		float m_translucencyAlpha{ 1.0f };
 		int m_translucencySortPriority{ 0 };
 		bool m_translucent{ false };
 

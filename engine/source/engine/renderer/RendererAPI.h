@@ -34,8 +34,7 @@ namespace longmarch {
 		{
 			ADDITION = 0,
 			ALPHA_BLEND_1,
-			ALPHA_BLEND_2,
-			ONE_MINUS_SRC_APLHA
+			ALPHA_BLEND_2
 		};
 
 		virtual void Init() = 0;

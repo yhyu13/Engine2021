@@ -67,6 +67,7 @@ void longmarch::Scene3DComSys::PreRenderUpdate(double dt)
 void longmarch::Scene3DComSys::PrepareScene(double dt)
 {
 	Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE.clear();
+	Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT.clear();
 
 	auto root = m_parentWorld->GetTheOnlyEntityWithType((EntityType)(EngineEntityType::SCENE_ROOT));
 	{

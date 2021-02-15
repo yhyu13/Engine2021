@@ -427,11 +427,11 @@ namespace longmarch {
 			glBlendEquation(GL_FUNC_ADD);
 			glBlendFunc(GL_ONE, GL_ONE);
 			break;
-		case longmarch::RendererAPI::BlendFuncEnum::ALPHA_BLEND_1:
+		case longmarch::RendererAPI::BlendFuncEnum::ALPHA_BLEND_USE_SRC_ALPHA:
 			glBlendEquation(GL_FUNC_ADD);
 			glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
 			break;
-		case longmarch::RendererAPI::BlendFuncEnum::ALPHA_BLEND_2:
+		case longmarch::RendererAPI::BlendFuncEnum::ALPHA_BLEND_ALPHA_SUM_TO_ONE:
 			glBlendEquation(GL_FUNC_ADD);
 			glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 			break;

@@ -38,23 +38,23 @@ namespace longmarch
 		m_randomRotation = true;
 	}
 
-	void ParticleSystem3D::SetDirection(const Vec3f& _direction, const float& _deviation)
+	void ParticleSystem3D::SetDirection(const Vec3f& _direction, const float _deviation)
 	{
 		m_direction = _direction;
 		m_directionVariation = (float)(_deviation * std::_Pi);
 	}
 
-	void ParticleSystem3D::SetSpeedvariation(const float& variation)
+	void ParticleSystem3D::SetSpeedvariation(const float variation)
 	{
 		m_speedVariation = variation;
 	}
 
-	void ParticleSystem3D::SetLifeLengthVariation(const float& variation)
+	void ParticleSystem3D::SetLifeLengthVariation(const float variation)
 	{
 		m_lifeLengthVariation = variation;
 	}
 
-	void ParticleSystem3D::SetScaleVariation(const float& variation)
+	void ParticleSystem3D::SetScaleVariation(const float variation)
 	{
 		m_scaleVariation = variation;
 	}
@@ -64,7 +64,7 @@ namespace longmarch
 		m_center = center;
 	}
 
-	void ParticleSystem3D::Update(const float& frametime, const Vec3f& cameraPosition)
+	void ParticleSystem3D::Update(const float frametime, const Vec3f& cameraPosition)
 	{
 		EmitParticles(frametime);
 
@@ -85,7 +85,7 @@ namespace longmarch
 		Sort();
 	}
 
-	void ParticleSystem3D::EmitParticles(const float& frametime)
+	void ParticleSystem3D::EmitParticles(const float frametime)
 	{
 		float particlesToCreate = m_particlePerSecond * frametime;
 		int count = std::floor(particlesToCreate);
@@ -137,7 +137,7 @@ namespace longmarch
 		}
 	}
 
-	std::vector<Particle3D>& ParticleSystem3D::GetParticles()
+	LongMarch_Vector<Particle3D>& ParticleSystem3D::GetParticles()
 	{
 		return m_particles;
 	}
@@ -155,13 +155,13 @@ namespace longmarch
 		return m_distribution(m_generator);
 	}
 
-	float ParticleSystem3D::GenerateValue(const float& average, const float& errorMargin)
+	float ParticleSystem3D::GenerateValue(const float average, const float errorMargin)
 	{
 		float offset = (NextRandomFloat() - 0.5f) * 2.0f * errorMargin;
 		return average + offset;
 	}
 
-	Vec3f ParticleSystem3D::GenerateRandomUnitVectorWithinCone(const Vec3f& coneDirection, const float& angle)
+	Vec3f ParticleSystem3D::GenerateRandomUnitVectorWithinCone(const Vec3f& coneDirection, const float angle)
 	{
 		float cosAngle = (float)std::cosf(angle);
 
@@ -216,23 +216,24 @@ namespace longmarch
 
 	void ParticleSystem3D::Sort()
 	{
-		if (m_particles.empty())
+		struct Particle3DObj_ComparatorLesser // used in priority queue that puts objects in greater distances at front
 		{
-			return;
-		}
-
-		bool swapp = true;
-		while (swapp)
-		{
-			swapp = false;
-			for (int i = 0; i < m_particles.size() - 1; ++i)
+			bool operator()(const Particle3D& lhs, const Particle3D& rhs) noexcept
 			{
-				if (m_particles[i].m_distance < m_particles[i + 1].m_distance)
-				{
-					std::swap(m_particles[i], m_particles[i + 1]);
-					swapp = true;
-				}
+				return lhs.m_distance < rhs.m_distance;
 			}
+		};
+
+		std::priority_queue<Particle3D, LongMarch_Vector<Particle3D>, Particle3DObj_ComparatorLesser> depth_sorted_particle_obj;
+		for (auto& particle : m_particles)
+		{
+			depth_sorted_particle_obj.emplace(particle);
+		}
+		m_particles.clear();
+		while (!depth_sorted_particle_obj.empty())
+		{
+			m_particles.push_back(depth_sorted_particle_obj.top());
+			depth_sorted_particle_obj.pop();
 		}
 	}
 }

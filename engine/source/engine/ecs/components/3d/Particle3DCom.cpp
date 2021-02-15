@@ -12,12 +12,12 @@ namespace longmarch
 	{
 	}
 
-	void Particle3DCom::SetParticleSystem(std::shared_ptr<ParticleSystem3D> particleSystem)
+	void Particle3DCom::SetParticleSystem(const std::shared_ptr<ParticleSystem3D>& particleSystem)
 	{
 		m_particleSystem = particleSystem;
 	}
 
-	void Particle3DCom::Update(const double& frametime, const glm::vec3 cameraPosition)
+	void Particle3DCom::Update(const double frametime, const Vec3f& cameraPosition)
 	{
 		m_particleSystem->Update(frametime, cameraPosition);
 
@@ -27,7 +27,7 @@ namespace longmarch
 		//audio->SetChannel3dPosition(audio->GetSoundChannel("bgm0"), position);
 	}
 
-	void Particle3DCom::RenderParticleSystems(PerspectiveCamera* camera)
+	void Particle3DCom::RenderParticleSystems(const PerspectiveCamera* camera)
 	{
 		if (m_render)
 		{
@@ -35,15 +35,15 @@ namespace longmarch
 			// TODO collect data for all particles in a map [texture, vector of particle instanced data]
 			LongMarch_Vector<std::pair<int, Renderer3D::ParticleInstanceData>> instancedDataList;
 
-			std::vector<Particle3D> particles = m_particleSystem->GetParticles();
+			auto particles = m_particleSystem->GetParticles();
 			Renderer3D::ParticleInstanceData instanceData;
 			for (auto& particle : particles)
 			{
-				glm::mat4 model(1.0);
+				Mat4 model(1.0);
 				UpdateModelMatrix(model, particle, camera);
 				instanceData.models.push_back(model);
 
-				glm::vec4 textureOffsets(particle.m_currentTextureOffset.xy, particle.m_nextTextureOffset.xy);
+				Vec4f textureOffsets(particle.m_currentTextureOffset.xy, particle.m_nextTextureOffset.xy);
 				instanceData.textureOffsets.push_back(textureOffsets);
 
 				instanceData.blendFactors.push_back(particle.m_blendFactor);
@@ -58,14 +58,19 @@ namespace longmarch
 		}
 	}
 
-	void Particle3DCom::SetCenter(glm::vec3 center)
+	void Particle3DCom::SetCenter(const Vec3f& center)
 	{
 		m_particleSystem->SetCenter(center);
 	}
 
-	void Particle3DCom::EnableRendering()
+	void Particle3DCom::SetRendering(bool b)
 	{
-		m_render = true;
+		m_render = b;
+	}
+
+	bool Particle3DCom::IsRendering() const
+	{
+		return m_render;
 	}
 
 	void Particle3DCom::SetPPS(unsigned int count)
@@ -85,46 +90,44 @@ namespace longmarch
 		}
 
 		Json::Value particleSystems = value["particle-systems"];
-		for (int i = 0; i < particleSystems.size(); ++i) {
-			Json::Value data = particleSystems[i];
+		auto& data = particleSystems;
+		m_render = data["enable"].asBool();
+		std::string type = data["type"].asString();
 
-			std::string type = data["type"].asString();
-
-			if ("fire")
-			{
-				AudioManager::GetInstance()->PlaySoundByName("bgm0", AudioVector3{ 0,0,0 }, -10, 1);
-			}
-
-			float pps = data["pps"].asFloat();
-			float speed = data["avg_speed"].asFloat();
-			float gravity = data["gravity_compliance"].asFloat();
-			float life = data["avg_life"].asFloat();
-			float scale = data["avg_scale"].asFloat();
-			float speedVariation = data["speed_variation"].asFloat();
-			float lifeVariation = data["life_variation"].asFloat();
-			float scaleVariation = data["scale_variation"].asFloat();
-			auto& centerValue = data["center"];
-			glm::vec3 center(centerValue[0].asFloat(), centerValue[1].asFloat(), centerValue[2].asFloat());
-			auto& dirValue = data["direction"];
-			glm::vec3 direction(dirValue[0].asFloat(), dirValue[1].asFloat(), dirValue[2].asFloat());
-			float dirVariation = data["direction_variation"].asFloat();
-			std::string texturename = data["texture"].asString();
-			bool randomRotation = data["randomize-rotation"].asBool();
-
-			std::shared_ptr<ParticleSystem3D> particleSystem = std::make_shared<ParticleSystem3D>(pps, speed, gravity, life, scale, texturename);
-			//ParticleSystem3D particleSystem(pps, speed, gravity, life, scale, texturename);
-			particleSystem->SetCenter(center);
-			particleSystem->SetDirection(direction, dirVariation);
-			particleSystem->SetLifeLengthVariation(lifeVariation);
-			particleSystem->SetScaleVariation(scaleVariation);
-			particleSystem->SetSpeedvariation(speedVariation);
-			if (randomRotation)
-			{
-				particleSystem->RandomizeRotation();
-			}
-
-			SetParticleSystem(particleSystem);
+		if ("fire")
+		{
+			AudioManager::GetInstance()->PlaySoundByName("bgm0", AudioVector3{ 0,0,0 }, -10, 1);
 		}
+
+		float pps = data["pps"].asFloat();
+		float speed = data["avg_speed"].asFloat();
+		float gravity = data["gravity_compliance"].asFloat();
+		float life = data["avg_life"].asFloat();
+		float scale = data["avg_scale"].asFloat();
+		float speedVariation = data["speed_variation"].asFloat();
+		float lifeVariation = data["life_variation"].asFloat();
+		float scaleVariation = data["scale_variation"].asFloat();
+		auto& centerValue = data["center"];
+		Vec3f center(centerValue[0].asFloat(), centerValue[1].asFloat(), centerValue[2].asFloat());
+		auto& dirValue = data["direction"];
+		Vec3f direction(dirValue[0].asFloat(), dirValue[1].asFloat(), dirValue[2].asFloat());
+		float dirVariation = data["direction_variation"].asFloat();
+		std::string texturename = data["texture"].asString();
+		bool randomRotation = data["randomize-rotation"].asBool();
+
+		std::shared_ptr<ParticleSystem3D> particleSystem = std::make_shared<ParticleSystem3D>(pps, speed, gravity, life, scale, texturename);
+		//ParticleSystem3D particleSystem(pps, speed, gravity, life, scale, texturename);
+		particleSystem->SetCenter(center);
+		particleSystem->SetDirection(direction, dirVariation);
+		particleSystem->SetLifeLengthVariation(lifeVariation);
+		particleSystem->SetScaleVariation(scaleVariation);
+		particleSystem->SetSpeedvariation(speedVariation);
+		if (randomRotation)
+		{
+			particleSystem->RandomizeRotation();
+		}
+
+		SetParticleSystem(particleSystem);
 	}
 
 	void Particle3DCom::ImGuiRender()
@@ -168,9 +171,9 @@ namespace longmarch
 		}
 	}
 
-	void Particle3DCom::UpdateModelMatrix(glm::mat4& model, const Particle3D& particle, PerspectiveCamera* camera)
+	void Particle3DCom::UpdateModelMatrix(Mat4& model, const Particle3D& particle, const PerspectiveCamera* camera)
 	{
-		glm::mat4 view = camera->GetViewMatrix();
+		Mat4 view = camera->GetViewMatrix();
 		model = glm::translate(model, particle.m_position);
 
 		model[0][0] = view[0][0];
@@ -187,7 +190,7 @@ namespace longmarch
 
 		model = view * model;
 
-		model = glm::rotate(model, glm::radians(particle.m_rotation), glm::vec3(0.0, 0.0, 1.0));
-		model = glm::scale(model, glm::vec3(particle.m_scale, particle.m_scale, particle.m_scale));
+		model = glm::rotate(model, glm::radians(particle.m_rotation), Vec3f(0.0, 0.0, 1.0));
+		model = glm::scale(model, Vec3f(particle.m_scale, particle.m_scale, particle.m_scale));
 	}
 }

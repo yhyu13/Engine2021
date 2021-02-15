@@ -1,6 +1,7 @@
 #pragma once
 
 #include "engine/math/Geommath.h"
+#include "engine/core/utility/TypeHelper.h"
 #include "../../renderer/Texture.h"
 
 #include "Particle3D.h"
@@ -14,25 +15,25 @@ namespace longmarch
 		explicit ParticleSystem3D(float _pps, float _avgSpeed, float _gravityCompliance, float _avgLifeLength, float _avgScale, const std::string& texturename);
 
 		void RandomizeRotation();
-		void SetDirection(const Vec3f& _direction, const float& _deviation);
-		void SetSpeedvariation(const float& variation);
-		void SetLifeLengthVariation(const float& variation);
-		void SetScaleVariation(const float& variation);
+		void SetDirection(const Vec3f& _direction, const float _deviation);
+		void SetSpeedvariation(const float variation);
+		void SetLifeLengthVariation(const float variation);
+		void SetScaleVariation(const float variation);
 		void SetCenter(const Vec3f& center);
-		void Update(const float& frametime, const Vec3f& cameraPosition);
+		void Update(const float frametime, const Vec3f& cameraPosition);
 
-		virtual std::vector<Particle3D>& GetParticles();
+		virtual LongMarch_Vector<Particle3D>& GetParticles();
 		virtual std::shared_ptr<Texture2D> GetTexture();
 
 	protected:
-		virtual void EmitParticles(const float& frametime);
+		virtual void EmitParticles(const float frametime);
 
 	private:
 
-		Vec3f GenerateRandomUnitVectorWithinCone(const Vec3f& coneDirection, const float& angle);
+		Vec3f GenerateRandomUnitVectorWithinCone(const Vec3f& coneDirection, const float angle);
 		Vec3f GenerateRandomUnitVector();
 
-		float GenerateValue(const float& average, const float& errorMargin);
+		float GenerateValue(const float average, const float errorMargin);
 		float NextRandomFloat();
 		float GenerateRotation();
 		void Sort();
@@ -58,6 +59,6 @@ namespace longmarch
 		std::uniform_real_distribution<double> m_distribution;
 
 		std::shared_ptr<Texture2D> m_texture = { nullptr };
-		std::vector<Particle3D> m_particles;
+		LongMarch_Vector<Particle3D> m_particles;
 	};
 }

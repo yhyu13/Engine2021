@@ -167,15 +167,29 @@ void longmarch::Scene3DComSys::RenderOpaqueObj()
 
 void longmarch::Scene3DComSys::RenderTranslucentObj(const PerspectiveCamera* camera)
 {
-	std::priority_queue<Renderer3D::RenderTranslucentObj_CPU, 
-		LongMarch_Vector<Renderer3D::RenderTranslucentObj_CPU>, 
-		Renderer3D::RenderTranslucentObj_CPU_ComparatorLesser> depth_sorted_translucent_obj;
+	struct RenderTranslucentObj_CPU
+	{
+		explicit RenderTranslucentObj_CPU(const Renderer3D::RenderObj_CPU& e, float d)
+			:
+			obj(e),
+			distance(d)
+		{}
+		Renderer3D::RenderObj_CPU obj;
+		float distance;
+	};
+	struct RenderTranslucentObj_CPU_ComparatorLesser // used in priority queue that puts objects in greater distances at front
+	{
+		bool operator()(const RenderTranslucentObj_CPU& lhs, const RenderTranslucentObj_CPU& rhs) noexcept
+		{
+			return lhs.distance < rhs.distance;
+		}
+	};
 
+	std::priority_queue<RenderTranslucentObj_CPU, LongMarch_Vector<RenderTranslucentObj_CPU>, RenderTranslucentObj_CPU_ComparatorLesser> depth_sorted_translucent_obj;
 	Mat4 pv = camera->GetViewProjectionMatrix();
 	for (auto& renderObj : Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT)
 	{
-		auto trans = renderObj.entity.GetComponent<Transform3DCom>();
-		auto pos = trans->GetGlobalPos();
+		auto pos = renderObj.entity.GetComponent<Transform3DCom>()->GetGlobalPos();
 		auto ndc_pos = pv * Vec4f(pos, 1.0f);
 		depth_sorted_translucent_obj.emplace(renderObj, ndc_pos.z);
 	}

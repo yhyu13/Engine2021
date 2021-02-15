@@ -25,7 +25,7 @@ namespace longmarch
 		float m_blendFactor;
 
 	public:
-		bool Update(const float& frametime, const Vec3f& cameraPosition);
+		bool Update(const float frametime, const Vec3f& cameraPosition);
 
 	private:
 		void UpdateTextureCoordinateInfo();

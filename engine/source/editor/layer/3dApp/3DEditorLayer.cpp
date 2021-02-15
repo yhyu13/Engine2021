@@ -80,8 +80,8 @@ void longmarch::_3DEditorLayer::BuildRenderPipeline()
 			std::function<void(PerspectiveCamera*)> f_render_particle = std::bind(&Particle3DComSys::RenderParticleSystems, particle3DComSys, std::placeholders::_1);
 			std::function<void(const std::string&)> f_setRenderShaderName_particle = std::bind(&Particle3DComSys::SetRenderShaderName, particle3DComSys, std::placeholders::_1);
 
-			Renderer3D::BeginRendering();
 			{
+				Renderer3D::BeginRendering();
 				{
 					ENG_TIME("Opaque Shadow pass");
 					scene3DComSys->SetRenderMode(Scene3DComSys::RenderMode::SHADOW);
@@ -115,8 +115,8 @@ void longmarch::_3DEditorLayer::BuildRenderPipeline()
 					Renderer3D::BeginPostProcessing();
 					Renderer3D::EndPostProcessing();
 				}
+				Renderer3D::EndRendering();
 			}
-			Renderer3D::EndRendering();
 		}
 	};
 }

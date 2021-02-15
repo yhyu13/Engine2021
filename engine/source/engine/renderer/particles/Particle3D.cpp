@@ -18,7 +18,7 @@ namespace longmarch
 		m_blendFactor(0.0f)
 	{}
 
-	bool Particle3D::Update(const float& frametime, const Vec3f& cameraPosition)
+	bool Particle3D::Update(const float frametime, const Vec3f& cameraPosition)
 	{
 		m_velocity.z += GRAVITY * m_gravityEffect * frametime; // frame-time in seconds
 		Vec3f change(m_velocity);

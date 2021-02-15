@@ -17,28 +17,27 @@ namespace longmarch
 		/*
 			Pass in particle system wanted. Example, fire, smoke ,etc.
 		*/
-		void SetParticleSystem(std::shared_ptr<ParticleSystem3D> particleSystem);
-		void Update(const double& frametime, const glm::vec3 cameraPosition);
+		void SetParticleSystem(const std::shared_ptr<ParticleSystem3D>& particleSystem);
+		void Update(const double frametime, const Vec3f& cameraPosition);
 
-		void RenderParticleSystems(PerspectiveCamera* camera);
+		void RenderParticleSystems(const PerspectiveCamera* camera);
 
-		void SetCenter(glm::vec3 center);
-		void EnableRendering();
+		void SetCenter(const Vec3f& center);
 		void SetPPS(unsigned int count);
+
+		void SetRendering(bool b);
+		bool IsRendering() const;
 
 		virtual void JsonSerialize(Json::Value& value) override;
 		virtual void JsonDeserialize(const Json::Value& value) override;
 		virtual void ImGuiRender() override;
 
 	private:
-
-		void UpdateModelMatrix(glm::mat4& model, const Particle3D& particle, PerspectiveCamera* camera);
+		void UpdateModelMatrix(Mat4& model, const Particle3D& particle, const PerspectiveCamera* camera);
 
 	private:
-
-	std::shared_ptr<ParticleSystem3D> m_particleSystem;
-	Entity m_this;
-
-	bool m_render = false;
+		std::shared_ptr<ParticleSystem3D> m_particleSystem{ nullptr };
+		Entity m_this;
+		bool m_render{ false };
 	};
 }

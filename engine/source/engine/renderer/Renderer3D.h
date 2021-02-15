@@ -104,23 +104,6 @@ namespace longmarch
 			{}
 			EntityDecorator entity;
 		};
-		struct CACHE_ALIGN8 RenderTranslucentObj_CPU
-		{
-			explicit RenderTranslucentObj_CPU(const RenderObj_CPU& e, float d)
-				:
-				obj(e),
-				distance(d)
-			{}
-			RenderObj_CPU obj;
-			float distance;
-		};
-		struct RenderTranslucentObj_CPU_ComparatorLesser // used in priority queue that puts objects in greater distances at front
-		{
-			bool operator()(const RenderTranslucentObj_CPU& lhs, const RenderTranslucentObj_CPU& rhs) noexcept
-			{
-				return lhs.distance < rhs.distance;
-			}
-		};
 		struct CACHE_ALIGN8 RenderData_CPU
 		{
 			explicit RenderData_CPU(const Entity& e, MeshData* mesh, Material* mat, const Mat4& Tr, const Mat4& prevTr)

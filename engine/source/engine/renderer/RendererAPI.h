@@ -33,8 +33,8 @@ namespace longmarch {
 		enum class BlendFuncEnum : uint8_t
 		{
 			ADDITION = 0,
-			ALPHA_BLEND_1,
-			ALPHA_BLEND_2
+			ALPHA_BLEND_USE_SRC_ALPHA,
+			ALPHA_BLEND_ALPHA_SUM_TO_ONE
 		};
 
 		virtual void Init() = 0;

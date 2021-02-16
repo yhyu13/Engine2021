@@ -262,7 +262,7 @@ void longmarch::Renderer3D::Init()
 		s_Data.ListRenderShadersToPopulateData.insert(s_Data.ListRenderShadersToPopulateData.end(), clusteredShader.begin(), clusteredShader.end());
 		s_Data.ListRenderShadersToPopulateData.insert(s_Data.ListRenderShadersToPopulateData.end(), deferredShader.begin(), deferredShader.end());
 
-		LongMarch_Vector<std::string> MiscShader = { "BBoxShader", "SkyboxShader","TAAShader","DynamicAOShader","GaussianBlur_AO","MotionBlur" };
+		LongMarch_Vector<std::string> MiscShader = { "BBoxShader", "SkyboxShader","TAAShader","DynamicAOShader","GaussianBlur_AO","MotionBlur","ParticleShader" };
 		s_Data.ListShadersToPopulateData = s_Data.ListRenderShadersToPopulateData;
 		s_Data.ListShadersToPopulateData.insert(s_Data.ListShadersToPopulateData.end(), MiscShader.begin(), MiscShader.end());
 
@@ -1640,13 +1640,10 @@ void longmarch::Renderer3D::BeginOpaqueScene(
 	}
 }
 
-void longmarch::Renderer3D::RenderParticles(const LongMarch_Vector<std::pair<int, ParticleInstanceData>> particleData, const PerspectiveCamera* camera)
+void longmarch::Renderer3D::RenderParticles(const LongMarch_Vector<std::pair<int, ParticleInstanceData>>& particleData, const PerspectiveCamera* camera)
 {
 	s_Data.CurrentShader = s_Data.ShaderMap["ParticleShader"];
-
 	s_Data.CurrentShader->Bind();
-	s_Data.CurrentShader->SetMat4("projection", camera->GetProjectionMatrix());
-	s_Data.CurrentShader->SetMat4("view", camera->GetViewMatrix());
 
 	for (auto& pair : particleData)
 	{
@@ -1662,7 +1659,7 @@ void longmarch::Renderer3D::RenderParticles(const LongMarch_Vector<std::pair<int
 		{
 			s_Data.CurrentShader->SetFloat("rows", instanceData.textureRows);
 
-			const glm::mat4& matrix = instanceData.models[i];
+			const Mat4& matrix = instanceData.models[i];
 			data[pointer++] = matrix[0][0];
 			data[pointer++] = matrix[0][1];
 			data[pointer++] = matrix[0][2];
@@ -1680,7 +1677,7 @@ void longmarch::Renderer3D::RenderParticles(const LongMarch_Vector<std::pair<int
 			data[pointer++] = matrix[3][2];
 			data[pointer++] = matrix[3][3];
 
-			const glm::vec4& offsets = instanceData.textureOffsets[i];
+			const Vec4f& offsets = instanceData.textureOffsets[i];
 			data[pointer++] = offsets.x;
 			data[pointer++] = offsets.y;
 			data[pointer++] = offsets.z;
@@ -1754,7 +1751,7 @@ void longmarch::Renderer3D::_BeginForwardGeomtryPass(const PerspectiveCamera* ca
 		ENG_TIME("Scene Begin Forward Geomtry Pass");
 		RenderCommand::DepthTest(true, true); // Enable depth testing
 		RenderCommand::Blend(true);			  // Enable blending
-		RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ALPHA_BLEND_USE_SRC_ALPHA);
+		RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ALPHA_BLEND_ALPHA_SUM_TO_ONE);
 		RenderCommand::CullFace(true, false); // Cull back faces
 
 		(s_Data.enable_wireframe) ?
@@ -2837,20 +2834,17 @@ void longmarch::Renderer3D::EndRendering()
 	);
 }
 
-void longmarch::Renderer3D::BeginRenderingParticles(PerspectiveCamera* camera, const std::function<void(PerspectiveCamera*)>& f_render, const std::function<void(const std::string&)>& f_setRenderShaderName)
+void longmarch::Renderer3D::BeginRenderingParticles(PerspectiveCamera* camera, const std::function<void(PerspectiveCamera*)>& f_render)
 {
 	RenderCommand::Blend(true);
 	RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ALPHA_BLEND_USE_SRC_ALPHA);
-	RenderCommand::DepthTest(false, false);
+	RenderCommand::DepthTest(true, false);
 	RenderCommand::CullFace(false, false);
 	f_render(camera);
 }
 
 void longmarch::Renderer3D::EndRenderingParticles()
 {
-	RenderCommand::Blend(false);
-	RenderCommand::CullFace(true, false);
-	RenderCommand::DepthTest(true, true);
 }
 
 void longmarch::Renderer3D::_RenderFullScreenQuad()
@@ -3348,16 +3342,6 @@ void longmarch::Renderer3D::_RenderParticles(float* data, const int& instanceCou
 	s_Data.gpuBuffer.particleInstBO->UpdateBufferData(data, instanceCount * PARTICLE_INSTANCED_DATA_LENGTH * sizeof(GLfloat));
 	s_Data.gpuBuffer.particleVAO->Bind();
 	RenderCommand::DrawTriangleIndexedInstanced(s_Data.gpuBuffer.particleVAO, instanceCount);
-
-	//{
-	//glBindBuffer(GL_ARRAY_BUFFER, s_Data.gpuBuffer.particleInstBO->GetRendererID());
-	//glBufferData(GL_ARRAY_BUFFER, MAX_PARTICLE_INSTANCES * PARTICLE_INSTANCED_DATA_LENGTH * sizeof(GLfloat), NULL, GL_DYNAMIC_DRAW);
-	//glBufferSubData(GL_ARRAY_BUFFER, 0, instanceCount * PARTICLE_INSTANCED_DATA_LENGTH * sizeof(GLfloat), data);
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//s_Data.gpuBuffer.particleVAO->Bind();
-	//RenderCommand::DrawTriangleIndexedInstanced(s_Data.gpuBuffer.particleVAO, instanceCount);
-	//}
-
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 

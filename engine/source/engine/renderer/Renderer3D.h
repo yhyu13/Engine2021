@@ -511,8 +511,7 @@ namespace longmarch
 
 		static void BeginRenderingParticles(
 			PerspectiveCamera* camera,
-			const std::function<void(PerspectiveCamera*)>& f_render,
-			const std::function<void(const std::string&)>& f_setRenderShaderName
+			const std::function<void(PerspectiveCamera*)>& f_render
 		);
 		static void EndRenderingParticles();
 
@@ -567,7 +566,7 @@ namespace longmarch
 			_RenderFullScreenCube();
 		}
 
-		static void RenderParticles(const LongMarch_Vector<std::pair<int, ParticleInstanceData>> particleData, const PerspectiveCamera* camera);
+		static void RenderParticles(const LongMarch_Vector<std::pair<int, ParticleInstanceData>>& particleData, const PerspectiveCamera* camera);
 
 		inline static void CommitBatchRendering()
 		{

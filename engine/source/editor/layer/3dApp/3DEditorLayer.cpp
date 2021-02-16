@@ -78,7 +78,6 @@ void longmarch::_3DEditorLayer::BuildRenderPipeline()
 			// callbacks for particle rendering 
 			auto particle3DComSys = static_cast<Particle3DComSys*>(GameWorld::GetCurrent()->GetComponentSystem("Particle3DComSys"));
 			std::function<void(PerspectiveCamera*)> f_render_particle = std::bind(&Particle3DComSys::RenderParticleSystems, particle3DComSys, std::placeholders::_1);
-			std::function<void(const std::string&)> f_setRenderShaderName_particle = std::bind(&Particle3DComSys::SetRenderShaderName, particle3DComSys, std::placeholders::_1);
 
 			{
 				Renderer3D::BeginRendering();
@@ -107,7 +106,7 @@ void longmarch::_3DEditorLayer::BuildRenderPipeline()
 				}
 				{
 					ENG_TIME("Particle pass");
-					Renderer3D::BeginRenderingParticles(cam, f_render_particle, f_setRenderShaderName_particle);
+					Renderer3D::BeginRenderingParticles(cam, f_render_particle);
 					Renderer3D::EndRenderingParticles();
 				}
 				{

@@ -19,6 +19,7 @@ namespace longmarch
 		void SetSpeedvariation(const float variation);
 		void SetLifeLengthVariation(const float variation);
 		void SetScaleVariation(const float variation);
+		void SetCenterOffset(const Vec3f& center_offset);
 		void SetCenter(const Vec3f& center);
 		void Update(const float frametime, const Vec3f& cameraPosition);
 
@@ -36,7 +37,7 @@ namespace longmarch
 		float GenerateValue(const float average, const float errorMargin);
 		float NextRandomFloat();
 		float GenerateRotation();
-		void Sort();
+		void SortDepth();
 
 	public:
 		float m_particlePerSecond;
@@ -52,6 +53,7 @@ namespace longmarch
 		bool m_randomRotation = false;
 		Vec3f m_direction{ 0.f };
 		float m_directionVariation{ 0.f };
+		Vec3f m_center_offset{ 0.f };
 		Vec3f m_center{ 0.f };
 
 		std::random_device m_randDevice;

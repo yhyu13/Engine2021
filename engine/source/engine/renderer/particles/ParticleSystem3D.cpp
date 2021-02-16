@@ -59,16 +59,20 @@ namespace longmarch
 		m_scaleVariation = variation;
 	}
 
+	void ParticleSystem3D::SetCenterOffset(const Vec3f& center_offset)
+	{
+		m_center_offset = center_offset;
+	}
+
 	void ParticleSystem3D::SetCenter(const Vec3f& center)
 	{
-		m_center = center;
+		m_center= center;
 	}
 
 	void ParticleSystem3D::Update(const float frametime, const Vec3f& cameraPosition)
 	{
 		EmitParticles(frametime);
-
-		std::vector<Particle3D>::iterator itr = m_particles.begin();
+		auto itr = m_particles.begin();
 		while (itr != m_particles.end())
 		{
 			bool stillAlive = itr->Update(frametime, cameraPosition);
@@ -81,40 +85,13 @@ namespace longmarch
 				++itr;
 			}
 		}
-
-		Sort();
+		SortDepth();
 	}
 
 	void ParticleSystem3D::EmitParticles(const float frametime)
 	{
 		float particlesToCreate = m_particlePerSecond * frametime;
 		int count = std::floor(particlesToCreate);
-		//static bool render = true;
-		/*if (render)
-		{
-			int count = 10;
-			for (int i = 0; i < count; i++)
-			{
-				Vec3f velocity;
-				if (m_direction.x != 0.0f || m_direction.y != 0.0f || m_direction.z != 0.0f)
-				{
-					velocity = GenerateRandomUnitVectorWithinCone(m_direction, m_directionVariation);
-				}
-				else
-				{
-					velocity = GenerateRandomUnitVector();
-				}
-
-				velocity = glm::normalize(velocity);
-				velocity *= GenerateValue(m_avgSpeed, m_speedVariation);
-				float scale = GenerateValue(m_avgScale, m_scaleVariation);
-				float lifeLength = GenerateValue(m_avgLifeLength, m_lifeLengthVariation);
-				Particle3D particle(m_center, velocity, m_gravityCompliance, lifeLength, GenerateRotation(), scale, m_texture->GetTextureRowCount());
-				m_particles.push_back(particle);
-			}
-
-			render = false;
-		}*/
 
 		for (int i = 0; i < count; i++)
 		{
@@ -132,7 +109,7 @@ namespace longmarch
 			velocity *= GenerateValue(m_avgSpeed, m_speedVariation);
 			float scale = GenerateValue(m_avgScale, m_scaleVariation);
 			float lifeLength = GenerateValue(m_avgLifeLength, m_lifeLengthVariation);
-			Particle3D particle(m_center, velocity, m_gravityCompliance, lifeLength, GenerateRotation(), scale, m_texture->GetTextureRowCount());
+			Particle3D particle(m_center + m_center_offset, velocity, m_gravityCompliance, lifeLength, GenerateRotation(), scale, m_texture->GetTextureRowCount());
 			m_particles.push_back(particle);
 		}
 	}
@@ -214,7 +191,7 @@ namespace longmarch
 		}
 	}
 
-	void ParticleSystem3D::Sort()
+	void ParticleSystem3D::SortDepth()
 	{
 		struct Particle3DObj_ComparatorLesser // used in priority queue that puts objects in greater distances at front
 		{

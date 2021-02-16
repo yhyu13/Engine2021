@@ -20,11 +20,6 @@ namespace longmarch
 	void Particle3DCom::Update(const double frametime, const Vec3f& cameraPosition)
 	{
 		m_particleSystem->Update(frametime, cameraPosition);
-
-		//auto audio = AudioManager::GetInstance();
-		//auto position = AudioVector3(cameraPosition);
-		//audio->Set3dListenerAndOrientation(position);
-		//audio->SetChannel3dPosition(audio->GetSoundChannel("bgm0"), position);
 	}
 
 	void Particle3DCom::RenderParticleSystems(const PerspectiveCamera* camera)
@@ -94,11 +89,6 @@ namespace longmarch
 		m_render = data["enable"].asBool();
 		std::string type = data["type"].asString();
 
-		if ("fire")
-		{
-			AudioManager::GetInstance()->PlaySoundByName("bgm0", AudioVector3{ 0,0,0 }, -10, 1);
-		}
-
 		float pps = data["pps"].asFloat();
 		float speed = data["avg_speed"].asFloat();
 		float gravity = data["gravity_compliance"].asFloat();
@@ -107,7 +97,7 @@ namespace longmarch
 		float speedVariation = data["speed_variation"].asFloat();
 		float lifeVariation = data["life_variation"].asFloat();
 		float scaleVariation = data["scale_variation"].asFloat();
-		auto& centerValue = data["center"];
+		auto& centerValue = data["center_offset"];
 		Vec3f center(centerValue[0].asFloat(), centerValue[1].asFloat(), centerValue[2].asFloat());
 		auto& dirValue = data["direction"];
 		Vec3f direction(dirValue[0].asFloat(), dirValue[1].asFloat(), dirValue[2].asFloat());
@@ -115,8 +105,7 @@ namespace longmarch
 		std::string texturename = data["texture"].asString();
 		bool randomRotation = data["randomize-rotation"].asBool();
 
-		std::shared_ptr<ParticleSystem3D> particleSystem = std::make_shared<ParticleSystem3D>(pps, speed, gravity, life, scale, texturename);
-		//ParticleSystem3D particleSystem(pps, speed, gravity, life, scale, texturename);
+		auto particleSystem = MemoryManager::Make_shared<ParticleSystem3D>(pps, speed, gravity, life, scale, texturename);
 		particleSystem->SetCenter(center);
 		particleSystem->SetDirection(direction, dirVariation);
 		particleSystem->SetLifeLengthVariation(lifeVariation);

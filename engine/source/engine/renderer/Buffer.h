@@ -286,14 +286,11 @@ namespace longmarch
 		enum class SHADOW_MAP_TYPE
 		{
 			BASIC = 0,
-			BASIC_CUBE = 0, // TODO implement basic cubic shadow map
 			MOMENT4,
 			MOMENT4_CUBE,
 
 			ARRAY_BASIC,
-			ARRAY_BASIC_CUBE,  // TODO implement basic cubic shadow map
-			ARRAY_MOMENT4,
-			ARRAY_MOMENT4_CUBE,  // TODO implement basic cubic shadow map
+			ARRAY_MOMENT4
 		};
 
 		virtual ~ShadowBuffer() = default;

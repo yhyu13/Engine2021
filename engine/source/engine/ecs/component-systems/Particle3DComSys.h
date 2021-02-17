@@ -17,7 +17,7 @@ namespace longmarch
 		COMSYS_DEFAULT_COPY(Particle3DComSys);
 
 		Particle3DComSys();
-		virtual void PreRenderUpdate(double dt) override;
+		virtual void Update(double dt) override;
 		
 		void RenderParticleSystems(const PerspectiveCamera* camera);
 	private:

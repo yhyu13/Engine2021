@@ -35,7 +35,7 @@ namespace longmarch
 			float innerConeRad = { 45 * DEG2RAD };
 			float outterConeRad = { 55 * DEG2RAD };
 			float softEdgeRatio = { 0.1f };
-			float aspectWByH = { 1.0f }; // TODO implement eliptical spot light in gpu shader
+			float aspectWByH = { 1.0f }; //<! TODO implement eliptical spot light in gpu shader
 		}spotLight;
 		struct
 		{
@@ -52,24 +52,24 @@ namespace longmarch
 			bool bInit = { false };
 			bool bCastShadow = { false };
 			bool bEnableGaussianBlur = { false };
-			uint32_t shadowAlgorithmMode = { 1u }; // Default to PCF
+			uint32_t shadowAlgorithmMode = { 1u }; //<! Direct = 0, PCF = 1, Possion = 2, M2M = 3, M4M = 4
 			float depthBiasHigherBound = { 20.0f };
 			float depthBiasMultiplier = { 10.0f };
 			float nrmBiasMultiplier = { -1.0f };
 
-			float dropOffDistance = { 100.0f }; // cutoff distance of shadow map
-			float farZ = { 100.0f }; // far plane of the shadow map
-			float nearZ = { 1.0f }; // near plane of the shadow map
+			float dropOffDistance = { 100.0f }; //<! cutoff distance of shadow map
+			float farZ = { 100.0f }; //<! far plane of the shadow map
+			float nearZ = { 1.0f }; //<! near plane of the shadow map
 			uint32_t dimension = { 512u };
 			uint32_t origin_dimension = { 512u };
 			uint32_t gaussianKernal = { 5u };
-			uint32_t backBufferDimension = { 256u }; // Back shadow buffers are used for gaussian blur if necessary
+			uint32_t backBufferDimension = { 256u }; //<! Back shadow buffers are used for gaussian blur if necessary
 			uint32_t origin_backBufferDimension = { 256u };
 			std::shared_ptr<ShadowBuffer> shadowBuffer = { nullptr };
-			std::shared_ptr<ShadowBuffer> shadowBuffer2 = { nullptr }; // Back shadow buffers
+			std::shared_ptr<ShadowBuffer> shadowBuffer2 = { nullptr }; //<! Secondary shadow buffer used for gaussian blur
 		}shadow;
-		float collisionRadius = { 0.1f }; // Object samller than this distance should not be lit by this light
-		Vec4f attenuation{1.0f, 0.7f, 0.01f, 1.0f }; // Light attenuation: w / ( x + 1/d * y + 1/d^2 * z)
+		float collisionRadius = { 0.1f }; //<! Object samller than this distance should not be lit by this light
+		Vec4f attenuation{1.0f, 0.7f, 0.01f, 1.0f }; //<! Light attenuation: w / ( x + 1/d * y + 1/d^2 * z)
 		LIGHT_TYPE type;
 	public:
 		inline constexpr static uint32_t shadowMapSizeLowerBound = { 128u };

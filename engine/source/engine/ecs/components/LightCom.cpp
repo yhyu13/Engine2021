@@ -2,6 +2,8 @@
 #include "LightCom.h"
 #include "engine/renderer/Renderer3D.h"
 
+#define POINT_LIGHT_ARRAY_SHADOW_MAP
+
 void longmarch::LightCom::JsonSerialize(Json::Value& value)
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
@@ -628,14 +630,16 @@ void longmarch::LightCom::AllocateShadowBuffer()
 				ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
 			break;
 		case longmarch::LightCom::LIGHT_TYPE::POINT:
+#ifdef POINT_LIGHT_ARRAY_SHADOW_MAP
 			shadow.shadowBuffer = ShadowBuffer::CreateArray(
-				shadow.dimension, shadow.dimension, 
+				shadow.dimension, shadow.dimension,
 				6,
 				ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
-			//shadow.shadowBuffer = ShadowBuffer::Create(
-			//	shadow.dimension, shadow.dimension,
-			//	ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE);
-
+#else
+			shadow.shadowBuffer = ShadowBuffer::Create(
+				shadow.dimension, shadow.dimension,
+				ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE);
+#endif
 			break;
 		case longmarch::LightCom::LIGHT_TYPE::SPOT:
 			shadow.shadowBuffer = ShadowBuffer::Create(
@@ -654,13 +658,20 @@ void longmarch::LightCom::AllocateShadowBuffer()
 					ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
 				break;
 			case longmarch::LightCom::LIGHT_TYPE::POINT:
+#ifdef POINT_LIGHT_ARRAY_SHADOW_MAP
 				shadow.shadowBuffer2 = ShadowBuffer::CreateArray(
 					shadow.dimension, shadow.dimension,
 					6,
 					ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
-				/*shadow.shadowBuffer2 = ShadowBuffer::Create(
-					shadow.backBufferDimension, shadow.backBufferDimension,
-					ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE);*/
+#else
+				shadow.shadowBuffer2 = ShadowBuffer::Create(
+					shadow.dimension, shadow.dimension,
+					ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE);
+#endif
+				shadow.shadowBuffer2 = ShadowBuffer::CreateArray(
+					shadow.dimension, shadow.dimension,
+					6,
+					ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
 				break;
 			case longmarch::LightCom::LIGHT_TYPE::SPOT:
 				shadow.shadowBuffer2 = ShadowBuffer::Create(

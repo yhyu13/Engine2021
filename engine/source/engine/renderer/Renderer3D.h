@@ -526,6 +526,8 @@ namespace longmarch
 		static void Draw(Entity entity, Scene3DNode* sceneNode, const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName);
 		//! For canonical drawing
 		static void DrawMesh(const std::shared_ptr<VertexArray>& MeshVertexArray);
+		static void RenderParticles(const LongMarch_Vector<std::pair<std::shared_ptr<Texture2D>, ParticleInstanceData>>& particleData, const PerspectiveCamera* camera);
+
 
 		/**************************************************************
 		*	Render3D debug rendering API
@@ -565,9 +567,6 @@ namespace longmarch
 			renderCommend();
 			_RenderFullScreenCube();
 		}
-
-		static void RenderParticles(const LongMarch_Vector<std::pair<int, ParticleInstanceData>>& particleData, const PerspectiveCamera* camera);
-
 		inline static void CommitBatchRendering()
 		{
 			switch (s_Data.RENDER_MODE)

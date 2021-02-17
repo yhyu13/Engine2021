@@ -486,8 +486,8 @@ namespace longmarch {
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_DepthID);
 
-		// Create a ture and attach FBO's color 0 attachment.  The
-		// GL_RGBA32F and GL_RGBA constants set this ture to be 32 bit
+		// Create a texture and attach FBO's color 0 attachment.  The
+		// GL_RGBA32F and GL_RGBA constants set this texture to be 32 bit
 		// floats for each of the 4 components.  Many other choices are
 		// possible.
 		glGenTextures(1, &m_RenderTargetID);
@@ -615,75 +615,6 @@ namespace longmarch {
 		GLCHECKERROR;
 	}
 	void OpenGLMSMCubeShadowBuffer::BindTexture(uint32_t slot) const
-	{
-		glBindTextureUnit(slot, m_RenderTargetID);
-		GLCHECKERROR;
-	}
-	/**************************************************************
-	*	OpenGLMSMCubeShadowBuffer2 Buffer (array of 6 faces)
-	**************************************************************/
-	OpenGLMSMCubeShadowBuffer2::OpenGLMSMCubeShadowBuffer2(uint32_t width, uint32_t height)
-	{
-		m_width = width;
-		m_height = height;
-		m_type = ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4_CUBE;
-
-		glGenFramebuffers(1, &m_RendererID);
-		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-
-		//Create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
-		glGenRenderbuffers(1, &m_DepthID);
-		glBindRenderbuffer(GL_RENDERBUFFER, m_DepthID);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_DepthID);
-
-		glGenTextures(1, &m_RenderTargetID);
-		glBindTexture(GL_TEXTURE_2D_ARRAY, m_RenderTargetID);
-		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, 0);
-		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_LEVEL, 0);
-		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, SHADOW_FILTER); // Even though it doesn't make sense to have shadow map filtered linear, but it looks nicer
-		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, SHADOW_FILTER); // Even though it doesn't make sense to have shadow map filtered linear, but it looks nicer
-		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		float color2[] = { 0,0,0,0 };
-		glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, &color2[0]);
-		glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA16F, width, height, 6, 0, GL_RGBA, GL_FLOAT, NULL);
-
-		GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-		glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
-
-		// Check for completeness/correctness
-		int status = (int)glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		if (status != int(GL_FRAMEBUFFER_COMPLETE))
-		{
-			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"FBO Error : " + wStr(status));
-		}
-		// Unbind the fbo until it's ready to be used
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
-	}
-	OpenGLMSMCubeShadowBuffer2::~OpenGLMSMCubeShadowBuffer2()
-	{
-		glDeleteFramebuffers(1, &m_RendererID);
-		glDeleteRenderbuffers(1, &m_DepthID);
-		glDeleteTextures(1, &m_RenderTargetID);
-	}
-	void OpenGLMSMCubeShadowBuffer2::Bind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-		GLCHECKERROR;
-	}
-	void OpenGLMSMCubeShadowBuffer2::BindLayer(uint32_t slot) const
-	{
-		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_RenderTargetID, 0, slot);
-		GLCHECKERROR;
-	}
-	void OpenGLMSMCubeShadowBuffer2::Unbind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
-	}
-	void OpenGLMSMCubeShadowBuffer2::BindTexture(uint32_t slot) const
 	{
 		glBindTextureUnit(slot, m_RenderTargetID);
 		GLCHECKERROR;

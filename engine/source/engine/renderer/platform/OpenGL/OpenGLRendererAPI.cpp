@@ -206,56 +206,54 @@ namespace longmarch {
 
 	void OpenGLRendererAPI::TransferColorBit(uint32_t src, uint32_t src_tex, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_tex, uint32_t dest_w, uint32_t dest_h)
 	{
-		// Method 1
-		// Bind input FBO + texture to a color attachment
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, src);
-		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, src_tex, 0);
-		glReadBuffer(GL_COLOR_ATTACHMENT0);
-
-		// Bind destination FBO + texture to another color attachment
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest);
-		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, dest_tex, 0);
-		glDrawBuffer(GL_COLOR_ATTACHMENT1);
-
-		// specify source, destination drawing (sub)rectangles.
-		glBlitFramebuffer(0, 0, src_w, src_h,
-			0, 0, dest_w, dest_h,
-			GL_COLOR_BUFFER_BIT, GL_LINEAR);
-
-		// unbind the color attachments
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, 0, 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
-		
-		// Method 2
+		//// Method 1
+		//// Bind input FBO + texture to a color attachment
 		//glBindFramebuffer(GL_READ_FRAMEBUFFER, src);
+		//glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, src_tex, 0);
 		//glReadBuffer(GL_COLOR_ATTACHMENT0);
+
+		//// Bind destination FBO + texture to another color attachment
 		//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest);
-		//GLenum drawbuf = GL_COLOR_ATTACHMENT0;
-		//glDrawBuffers(1, &drawbuf);
-		//glBlitFramebuffer(0, 0, src_w, src_h, 0, 0, dest_w, dest_h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, dest_tex, 0);
+		//glDrawBuffer(GL_COLOR_ATTACHMENT1);
+
+		//// specify source, destination drawing (sub)rectangles.
+		//glBlitFramebuffer(
+		//	0, 0, src_w, src_h, 0, 0, dest_w, dest_h, GL_COLOR_BUFFER_BIT, GL_LINEAR
+		//);
+
+		//// unbind the color attachments
+		//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, 0, 0);
+		//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
+		//
+		// Method 2
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, src);
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest);
+		glDrawBuffer(GL_COLOR_ATTACHMENT0);
+		glBlitFramebuffer(0, 0, src_w, src_h, 0, 0, dest_w, dest_h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 		GLCHECKERROR;
 	}
 
 	void OpenGLRendererAPI::TransferDepthBit(uint32_t src, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_w, uint32_t dest_h)
 	{
 		/*
-			For OpenGL 4.5 glBlitNamedFramebuffer is pipelined, use with caution
-			So here we remain using the old method.
+			For OpenGL 4.5 , there exists a method called glBlitNamedFramebuffer which is pipelined by the driver, which means it may not happen in the order that we want
+			So here we remain using the old method before OpenGL 4.5
 		*/
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, src);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest);
 		glBlitFramebuffer(
 			0, 0, src_w, src_h, 0, 0, dest_w, dest_h, GL_DEPTH_BUFFER_BIT, GL_NEAREST
-		);
+		); 
 		GLCHECKERROR;
 	}
 
 	void OpenGLRendererAPI::TransferStencilBit(uint32_t src, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_w, uint32_t dest_h)
 	{
 		/*
-			For OpenGL 4.5 glBlitNamedFramebuffer is pipelined, use with caution
-			So here we remain using the old method.
+			For OpenGL 4.5 , there exists a method called glBlitNamedFramebuffer which is pipelined by the driver, which means it may not happen in the order that we want
+			So here we remain using the old method before OpenGL 4.5
 		*/
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, src);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest);

@@ -122,10 +122,6 @@ namespace longmarch
 		__LongMarch_TRVIAL_TEMPLATE__
 			inline void ForEach(typename Identity<std::function<void(EntityDecorator e)>>::Type func)
 		{
-			if (this == nullptr)
-			{
-				int a = 10;
-			}
 			m_parentWorld->ForEach(GetRegisteredEntities(), func);
 		}
 		//! Dispatcher to parent world

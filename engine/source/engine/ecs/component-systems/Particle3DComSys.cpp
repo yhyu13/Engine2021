@@ -7,7 +7,7 @@ longmarch::Particle3DComSys::Particle3DComSys()
 	m_systemSignature.AddComponent<Particle3DCom>();
 }
 
-void longmarch::Particle3DComSys::PreRenderUpdate(double dt)
+void longmarch::Particle3DComSys::Update(double dt)
 {
 	EARLY_RETURN(dt);
 

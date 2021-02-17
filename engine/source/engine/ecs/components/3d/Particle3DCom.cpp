@@ -14,29 +14,30 @@ namespace longmarch
 
 	void Particle3DCom::SetParticleSystem(const std::shared_ptr<ParticleSystem3D>& particleSystem)
 	{
+		LOCK_GUARD2();
 		m_particleSystem = particleSystem;
 	}
 
 	void Particle3DCom::Update(const double frametime, const Vec3f& cameraPosition)
 	{
+		LOCK_GUARD2();
 		m_particleSystem->Update(frametime, cameraPosition);
 	}
 
 	void Particle3DCom::RenderParticleSystems(const PerspectiveCamera* camera)
 	{
+		LOCK_GUARD2();
 		if (m_render)
 		{
 			// draw calls for particle systems
 			// TODO collect data for all particles in a map [texture, vector of particle instanced data]
-			LongMarch_Vector<std::pair<int, Renderer3D::ParticleInstanceData>> instancedDataList;
+			LongMarch_Vector<std::pair<std::shared_ptr<Texture2D>, Renderer3D::ParticleInstanceData>> instancedDataList;
 
 			auto particles = m_particleSystem->GetParticles();
 			Renderer3D::ParticleInstanceData instanceData;
 			for (auto& particle : particles)
 			{
-				Mat4 model(1.0);
-				UpdateModelMatrix(model, particle, camera);
-				instanceData.models.push_back(model);
+				instanceData.models.push_back(GetModelViewMatrix(particle, camera));
 
 				Vec4f textureOffsets(particle.m_currentTextureOffset.xy, particle.m_nextTextureOffset.xy);
 				instanceData.textureOffsets.push_back(textureOffsets);
@@ -47,7 +48,7 @@ namespace longmarch
 			std::shared_ptr<Texture2D> texture = m_particleSystem->GetTexture();
 			instanceData.textureRows = texture->GetTextureRowCount();
 
-			instancedDataList.push_back(std::make_pair(texture->GetRendererID(), instanceData));
+			instancedDataList.emplace_back(texture, instanceData);
 
 			Renderer3D::RenderParticles(instancedDataList, camera);
 		}
@@ -55,21 +56,25 @@ namespace longmarch
 
 	void Particle3DCom::SetCenter(const Vec3f& center)
 	{
+		LOCK_GUARD2();
 		m_particleSystem->SetCenter(center);
 	}
 
 	void Particle3DCom::SetRendering(bool b)
 	{
+		LOCK_GUARD2();
 		m_render = b;
 	}
 
 	bool Particle3DCom::IsRendering() const
 	{
+		LOCK_GUARD2();
 		return m_render;
 	}
 
 	void Particle3DCom::SetPPS(unsigned int count)
 	{
+		LOCK_GUARD2();
 		m_particleSystem->m_particlePerSecond = count;
 	}
 
@@ -160,11 +165,10 @@ namespace longmarch
 		}
 	}
 
-	void Particle3DCom::UpdateModelMatrix(Mat4& model, const Particle3D& particle, const PerspectiveCamera* camera)
+	Mat4 Particle3DCom::GetModelViewMatrix(const Particle3D& particle, const PerspectiveCamera* camera)
 	{
 		Mat4 view = camera->GetViewMatrix();
-		model = glm::translate(model, particle.m_position);
-
+		Mat4 model(1.0f);
 		model[0][0] = view[0][0];
 		model[0][1] = view[1][0];
 		model[0][2] = view[2][0];
@@ -177,9 +181,10 @@ namespace longmarch
 		model[2][1] = view[1][2];
 		model[2][2] = view[2][2];
 
+		Geommath::SetTranslation(model, particle.m_position);
 		model = view * model;
-
-		model = glm::rotate(model, glm::radians(particle.m_rotation), Vec3f(0.0, 0.0, 1.0));
-		model = glm::scale(model, Vec3f(particle.m_scale, particle.m_scale, particle.m_scale));
+		Geommath::SetRotation(model, Geommath::FromAxisRot(glm::radians(particle.m_rotation), Vec3f(0.0, 0.0, 1.0)));
+		Geommath::SetScale(model, Vec3f(particle.m_scale)); 
+		return model;
 	}
 }

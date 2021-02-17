@@ -33,7 +33,7 @@ namespace longmarch
 		virtual void ImGuiRender() override;
 
 	private:
-		void UpdateModelMatrix(Mat4& model, const Particle3D& particle, const PerspectiveCamera* camera);
+		Mat4 GetModelViewMatrix(const Particle3D& particle, const PerspectiveCamera* camera);
 
 	private:
 		std::shared_ptr<ParticleSystem3D> m_particleSystem{ nullptr };

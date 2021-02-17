@@ -1640,26 +1640,21 @@ void longmarch::Renderer3D::BeginOpaqueScene(
 	}
 }
 
-void longmarch::Renderer3D::RenderParticles(const LongMarch_Vector<std::pair<int, ParticleInstanceData>>& particleData, const PerspectiveCamera* camera)
+void longmarch::Renderer3D::RenderParticles(const LongMarch_Vector<std::pair<std::shared_ptr<Texture2D>, ParticleInstanceData>>& particleData, const PerspectiveCamera* camera)
 {
 	s_Data.CurrentShader = s_Data.ShaderMap["ParticleShader"];
 	s_Data.CurrentShader->Bind();
 
-	for (auto& pair : particleData)
+	for (auto& [texture, instanceData] : particleData)
 	{
-		int textureId = pair.first;
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, textureId);
+		texture->BindTexture(0);
+		s_Data.CurrentShader->SetFloat("rows", instanceData.textureRows);
 
-		ParticleInstanceData instanceData = pair.second;
 		int pointer = 0;
-
 		float* data = new float[instanceData.models.size() * Renderer3D::PARTICLE_INSTANCED_DATA_LENGTH];
 		for (size_t i = 0; i < instanceData.models.size(); ++i)
 		{
-			s_Data.CurrentShader->SetFloat("rows", instanceData.textureRows);
-
-			const Mat4& matrix = instanceData.models[i];
+			const auto& matrix = instanceData.models[i];
 			data[pointer++] = matrix[0][0];
 			data[pointer++] = matrix[0][1];
 			data[pointer++] = matrix[0][2];
@@ -1686,8 +1681,8 @@ void longmarch::Renderer3D::RenderParticles(const LongMarch_Vector<std::pair<int
 			const float blendFactor = instanceData.blendFactors[i];
 			data[pointer++] = blendFactor;
 		}
-
 		_RenderParticles(data, instanceData.models.size(), s_Data.gpuBuffer.CurrentFrameBuffer);
+		delete[] data;
 	}
 }
 

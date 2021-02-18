@@ -3,6 +3,13 @@
 #include "engine/ecs/header/header.h"
 #include "engine/core/thread/StealThreadPool.h"
 
+longmarch::Scene3DComSys::Scene3DComSys()
+{
+	m_systemSignature.AddComponent<Transform3DCom>();
+	m_systemSignature.AddComponent<Scene3DCom>();
+	m_systemSignature.AddComponent<Body3DCom>();
+}
+
 void longmarch::Scene3DComSys::PreRenderUpdate(double dt)
 {
 	/**************************************************************
@@ -87,24 +94,24 @@ void longmarch::Scene3DComSys::PrepareScene(double dt)
 				LOCK_GUARD_NC();
 				if (!scene->IsTranslucenctRendering())
 				{
-					Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE.emplace_back(EntityDecorator{ child,m_parentWorld });
+					Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE.emplace_back(EntityDecorator{ child, m_parentWorld });
 				}
 				else
 				{
-					Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT.emplace_back(EntityDecorator{ child,m_parentWorld });
+					Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT.emplace_back(EntityDecorator{ child, m_parentWorld });
 				}
 			}
 			if (auto childrenCom = GetComponent<ChildrenCom>(child).GetPtr(); !childrenCom->IsLeaf())
 			{
-#if MULTITHREAD_PRE_RENDER_UPDATE == 0
-				RecursivePrepareScene(dt, child, trans, childrenCom, 0);
-#else
+#ifdef MULTITHREAD_PRE_RENDER_UPDATE
 				m_threadJob.push(std::move(StealThreadPool::GetInstance()->enqueue_task([this, dt, child, trans, childrenCom]() {RecursivePrepareScene(dt, child, trans, childrenCom, 0); }).share()));
+#else
+				RecursivePrepareScene(dt, child, trans, childrenCom, 0);
 #endif
 			}
 		}
 	}
-#if MULTITHREAD_PRE_RENDER_UPDATE
+#ifdef MULTITHREAD_PRE_RENDER_UPDATE
 	while (!m_threadJob.empty())
 	{
 		m_threadJob.front().wait();
@@ -128,19 +135,19 @@ void longmarch::Scene3DComSys::RecursivePrepareScene(double dt, const Entity& pa
 			LOCK_GUARD_NC();
 			if (!scene->IsTranslucenctRendering())
 			{
-				Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE.emplace_back(EntityDecorator{ child,m_parentWorld });
+				Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE.emplace_back(EntityDecorator{ child, m_parentWorld });
 			}
 			else
 			{
-				Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT.emplace_back(EntityDecorator{ child,m_parentWorld });
+				Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT.emplace_back(EntityDecorator{ child, m_parentWorld });
 			}
 		}
 		if (auto childrenCom = GetComponent<ChildrenCom>(child).GetPtr(); !childrenCom->IsLeaf())
 		{
-#if MULTITHREAD_PRE_RENDER_UPDATE == 0
-			RecursivePrepareScene(dt, child, trans, childrenCom, level + 1);
-#else
+#ifdef MULTITHREAD_PRE_RENDER_UPDATE
 			m_threadJob.push(std::move(StealThreadPool::GetInstance()->enqueue_task([this, dt, child, trans, childrenCom, level]() {RecursivePrepareScene(dt, child, trans, childrenCom, level + 1); }).share()));
+#else
+			RecursivePrepareScene(dt, child, trans, childrenCom, level + 1);
 #endif
 		}
 	}
@@ -148,20 +155,9 @@ void longmarch::Scene3DComSys::RecursivePrepareScene(double dt, const Entity& pa
 
 void longmarch::Scene3DComSys::RenderOpaqueObj()
 {
-	switch (Engine::GetEngineMode())
+	for (auto& renderObj : Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE)
 	{
-	case Engine::ENGINE_MODE::INGAME:
-		for (auto& renderObj : Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE)
-		{
-			RenderWithModeInGame(renderObj);
-		}
-		break;
-	default:
-		for (auto& renderObj : Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE)
-		{
-			RenderWithModeEditor(renderObj);
-		}
-		break;
+		RenderWithModeOpaque(renderObj);
 	}
 }
 
@@ -194,28 +190,15 @@ void longmarch::Scene3DComSys::RenderTranslucentObj(const PerspectiveCamera* cam
 		depth_sorted_translucent_obj.emplace(renderObj, ndc_pos.z);
 	}
 
-	switch (Engine::GetEngineMode())
+	while (!depth_sorted_translucent_obj.empty())
 	{
-	case Engine::ENGINE_MODE::INGAME:
-		while (!depth_sorted_translucent_obj.empty())
-		{
-			auto translucent_renderObj = depth_sorted_translucent_obj.top();
-			RenderWithModeInGame(translucent_renderObj.obj);
-			depth_sorted_translucent_obj.pop();
-		}
-		break;
-	default:
-		while (!depth_sorted_translucent_obj.empty())
-		{
-			auto translucent_renderObj = depth_sorted_translucent_obj.top();
-			RenderWithModeEditor(translucent_renderObj.obj);
-			depth_sorted_translucent_obj.pop();
-		}
-		break;
+		auto translucent_renderObj = depth_sorted_translucent_obj.top();
+		RenderWithModeTranslucent(translucent_renderObj.obj, camera);
+		depth_sorted_translucent_obj.pop();
 	}
 }
 
-void longmarch::Scene3DComSys::RenderWithModeEditor(Renderer3D::RenderObj_CPU& renderObj)
+void longmarch::Scene3DComSys::RenderWithModeOpaque(Renderer3D::RenderObj_CPU& renderObj)
 {
 	{
 		auto scene = renderObj.entity.GetComponent<Scene3DCom>();
@@ -223,7 +206,7 @@ void longmarch::Scene3DComSys::RenderWithModeEditor(Renderer3D::RenderObj_CPU& r
 		auto body = renderObj.entity.GetComponent<Body3DCom>();
 		if (body.Valid())
 		{
-			if (const auto& bv = body->GetBV(); bv)
+			if (const auto& bv = body->GetBoundingVolume(); bv)
 			{
 				if (DistanceCullingTest(bv))
 				{
@@ -242,17 +225,7 @@ void longmarch::Scene3DComSys::RenderWithModeEditor(Renderer3D::RenderObj_CPU& r
 			{
 				scene->Draw();
 			}
-			return;
-			case RenderMode::SCENE_AND_BBOX:
-			{
-				// TODO add toggle of visualizing bounding volume in imgui of body component
-				/*if (body.Valid() && body->GetBV())
-				{
-					body->GetBV()->RenderShape();
-				}*/
-				scene->Draw();
-			}
-			return;
+			break;
 			case RenderMode::SHADOW:
 			{
 				if (scene->IsCastShadow())
@@ -260,22 +233,24 @@ void longmarch::Scene3DComSys::RenderWithModeEditor(Renderer3D::RenderObj_CPU& r
 					scene->Draw();
 				}
 			}
-			return;
+			break;
 			}
 		}
 	}
 }
 
 
-void longmarch::Scene3DComSys::RenderWithModeInGame(Renderer3D::RenderObj_CPU& renderObj)
+void longmarch::Scene3DComSys::RenderWithModeTranslucent(Renderer3D::RenderObj_CPU& renderObj, const PerspectiveCamera* camera)
 {
 	{
+		auto particle = renderObj.entity.GetComponent<Particle3DCom>();
+		bool isParticle = particle.Valid();
 		auto scene = renderObj.entity.GetComponent<Scene3DCom>();
 		scene->SetShaderName(m_RenderShaderName);
 		auto body = renderObj.entity.GetComponent<Body3DCom>();
 		if (body.Valid())
 		{
-			if (const auto& bv = body->GetBV(); bv)
+			if (const auto& bv = body->GetBoundingVolume(); bv)
 			{
 				if (DistanceCullingTest(bv))
 				{
@@ -285,20 +260,30 @@ void longmarch::Scene3DComSys::RenderWithModeInGame(Renderer3D::RenderObj_CPU& r
 				{
 					scene->SetShouldDraw(false, false);
 				}
+				if (isParticle)
+				{
+					particle->SetRendering(scene->GetShouldDraw());
+				}
 			}
 		}
 		{
 			switch (m_RenderMode)
 			{
 			case RenderMode::SCENE:
-			case RenderMode::SCENE_AND_BBOX:
 			{
 				if (!scene->IsHideInGame())
 				{
-					scene->Draw();
+					if (isParticle)
+					{
+						particle->RenderParticleSystems(camera);
+					}
+					else
+					{
+						scene->Draw();
+					}
 				}
 			}
-			return;
+			break;
 			case RenderMode::SHADOW:
 			{
 				if (scene->IsCastShadow())
@@ -306,8 +291,25 @@ void longmarch::Scene3DComSys::RenderWithModeInGame(Renderer3D::RenderObj_CPU& r
 					scene->Draw();
 				}
 			}
-			return;
+			break;
 			}
 		}
+	}
+}
+
+void longmarch::Scene3DComSys::Render()
+{
+	if (m_enableDebugDraw)
+	{
+		LongMarch_ForEach([](const Renderer3D::RenderObj_CPU& renderObj) {
+			auto body = renderObj.entity.GetComponent<Body3DCom>();
+			if (body.Valid())
+			{
+				if (auto bv = body->GetBoundingVolume(); bv)
+				{
+					bv->RenderShape();
+				}
+			}
+		}, { Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE, Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT });
 	}
 }

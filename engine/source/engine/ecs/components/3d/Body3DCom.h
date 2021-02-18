@@ -31,16 +31,13 @@ namespace longmarch
 
 		//Choose Shape, fill in width and height for the body
 		template<typename Shape, typename ...Args>
-		void CreateBV(Args... args)
+		void CreateBoundingVolume(Args... args)
 		{
 			LOCK_GUARD2();
 			m_boundingVolume = MemoryManager::Make_shared<Shape>(args...);
 		}
-		std::shared_ptr<Shape> GetBV();
 
-		void ResetOtherEntity();
-		void SetOtherEntity(const Entity& other);
-		const Entity& GetOtherEntity();
+		std::shared_ptr<Shape> GetBoundingVolume() const;
 
 		//void Integrate(float dt);
 		bool HasRigidBody() const;
@@ -61,18 +58,16 @@ namespace longmarch
 
 		virtual void JsonSerialize(Json::Value& value) override;
 		virtual void JsonDeserialize(const Json::Value& value) override;
-		//virtual void ImGuiRender() override;
-		//virtual void Copy(BaseComponentInterface* other) override;
+		virtual void ImGuiRender() override;
 
 	public:
-		// just store mass here for now, position and rotation should be taken care of by transform component
-		float m_mass;
-		float m_invMass;
+		//! Just store mass here for now, position and rotation should be taken care of by transform component
+		float m_mass{ 0.f };
+		float m_invMass{ 0.f };
 
 		Entity m_this;
-		Entity m_otherEntity;
 		
-		std::shared_ptr<Shape> m_boundingVolume{ nullptr }; // For view frustum culling
+		std::shared_ptr<Shape> m_boundingVolume{ nullptr }; //!< For view frustum culling
 
 		// Physics body variable
 		std::shared_ptr<RigidBody> m_body{ nullptr };

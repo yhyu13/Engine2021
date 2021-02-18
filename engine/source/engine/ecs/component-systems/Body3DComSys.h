@@ -21,6 +21,7 @@ namespace longmarch
 		virtual void Init() override;
 		virtual void PreRenderUpdate(double dt) override;
 		virtual void Update(double dt) override;
+		virtual void Render() override;
 		virtual std::shared_ptr<BaseComponentSystem> Copy() const override;
 
 		virtual std::shared_ptr<Scene> GetScene() const 
@@ -35,5 +36,6 @@ namespace longmarch
 
 	private:
 		std::shared_ptr<Scene> m_scene;
+		bool m_enableDebugDraw{ false };
 	};
 }

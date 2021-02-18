@@ -44,7 +44,7 @@ namespace longmarch
 			meaning SetDrawable() shall be called before each Render() call.
 		*/
 		void SetShouldDraw(bool b, bool _override = true);
-
+		bool GetShouldDraw() const;
 
 		void Draw(const std::function<void(const Renderer3D::RenderData_CPU&)>& drawFunc);
 		void Draw();

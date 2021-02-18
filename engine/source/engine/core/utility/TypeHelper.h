@@ -169,6 +169,13 @@ namespace longmarch
 #define LongMarch_contains(c, x) (c.contains(x))
 #endif
 
+	template<typename Func, typename T>
+	void LongMarch_ForEach(Func callback, std::initializer_list<std::vector<T>> list) {
+		for (auto& vec : list) {
+			std::for_each(vec.begin(), vec.end(), callback);
+		}
+	}
+
 	template <typename TValue>
 	constexpr bool LongMarch_Contains(const std::vector<TValue>& c, const TValue& x)
 	{
@@ -235,6 +242,13 @@ namespace longmarch
 #if CUSTOM_ALLOCATOR == 1
 	template<class T>
 	using LongMarch_Vector = std::vector<T, longmarch::Mallocator<T>>;
+
+	template<typename Func, typename T>
+	void LongMarch_ForEach(Func callback, std::initializer_list<LongMarch_Vector<T>> list) {
+		for (auto& vec : list) {
+			std::for_each(vec.begin(), vec.end(), callback);
+		}
+	}
 
 	template <typename TValue>
 	constexpr bool LongMarch_Contains(const LongMarch_Vector<TValue>& c, const TValue& x)

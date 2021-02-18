@@ -319,7 +319,7 @@ namespace longmarch
 
     void RigidBody::Render()
     {
-        if (m_shape != nullptr)
+        if (m_shape)
         {
             m_shape->RenderShape();
         }

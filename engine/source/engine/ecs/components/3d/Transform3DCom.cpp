@@ -3,7 +3,7 @@
 
 longmarch::Transform3DCom::Transform3DCom(const EntityDecorator& _this)
 	:
-	BaseComponent(_this.GetWorld()),
+	BaseComponent(_this.GetVolatileWorld()),
 	m_this(_this.GetEntity())
 {
 }
@@ -641,14 +641,16 @@ void longmarch::Transform3DCom::ImGuiRender()
 
 void longmarch::Transform3DCom::Copy(BaseComponentInterface* other)
 {
+	// This Copy function is just an example
 	LOCK_GUARD2();
 	auto com = static_cast<Transform3DCom*>(other);
 	prev_parentTr = com->prev_parentTr;
 	parentTr = com->parentTr;
 	prev_rtp_rotation = com->prev_rtp_rotation;
 	rtp_rotation = com->rtp_rotation;
-	l_rotational_velocity = com->l_rotational_velocity;
+	parent_g_rotational_velocity = com->parent_g_rotational_velocity;
 	rtp_rotational_velocity = com->rtp_rotational_velocity;
+	l_rotational_velocity = com->l_rotational_velocity;
 	prev_rtp_pos = com->prev_rtp_pos;
 	rtp_pos = com->rtp_pos;
 	l_velocity = com->l_velocity;

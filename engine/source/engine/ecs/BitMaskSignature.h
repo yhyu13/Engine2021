@@ -28,7 +28,7 @@ namespace longmarch {
 			m_mask = m_mask2 = m_mask3 = m_mask4 = 0ull;
 		}
 
-		inline const std::set<uint32_t> GetAllComponentIndex()
+		inline const std::set<uint32_t> GetAllComponentIndex() const
 		{
 			std::set<uint32_t> ret;
 			if (m_mask != 0ull)

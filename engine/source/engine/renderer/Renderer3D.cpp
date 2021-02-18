@@ -1746,7 +1746,7 @@ void longmarch::Renderer3D::_BeginForwardGeomtryPass(const PerspectiveCamera* ca
 		ENG_TIME("Scene Begin Forward Geomtry Pass");
 		RenderCommand::DepthTest(true, true); // Enable depth testing
 		RenderCommand::Blend(true);			  // Enable blending
-		RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ALPHA_BLEND_ALPHA_SUM_TO_ONE);
+		RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ALPHA_BLEND_1);
 		RenderCommand::CullFace(true, false); // Cull back faces
 
 		(s_Data.enable_wireframe) ?
@@ -2055,7 +2055,6 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 	const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
 	const std::function<void(const std::string&)>& f_setRenderShaderName)
 {
-	//if (s_Data.enable_debug_cluster_light) return;
 	switch (s_Data.RENDER_PIPE)
 	{
 	case RENDER_PIPE::CLUSTER:
@@ -2078,7 +2077,9 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 		break;
 	}
 	if (!s_Data.enable_debug_cluster_light)
+	{
 		Renderer3D::_BeginSkyBoxPass(s_Data.gpuBuffer.CurrentFrameBuffer);
+	}
 }
 
 void longmarch::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<GBuffer>& gbuffer_in)
@@ -2269,7 +2270,8 @@ void longmarch::Renderer3D::_BeginClusterLightingPass(const std::shared_ptr<Fram
 		}
 	}
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
-	if (s_Data.enable_debug_cluster_light) {
+	if (s_Data.enable_debug_cluster_light) 
+	{
 		s_Data.gpuBuffer.FinalFrameBuffer = s_Data.gpuBuffer.CurrentFrameBuffer;
 	}
 }
@@ -2337,7 +2339,7 @@ void longmarch::Renderer3D::_RenderBoundingBox(const std::shared_ptr<FrameBuffer
 		RenderCommand::PolyModeFill();			// Draw full mode;
 		RenderCommand::CullFace(true, false);	// Cull back faces
 		RenderCommand::Blend(true);				// Enable blending
-		RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ALPHA_BLEND_ALPHA_SUM_TO_ONE);
+		RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ALPHA_BLEND_2);
 		RenderCommand::DepthTest(true, true);	// Enable depth testing and writing
 		s_Data.CurrentShader = s_Data.ShaderMap["BBoxShader"];
 		s_Data.CurrentShader->Bind();
@@ -2356,8 +2358,6 @@ void longmarch::Renderer3D::_RenderBoundingBox(const std::shared_ptr<FrameBuffer
 **************************************************************/
 void longmarch::Renderer3D::EndOpaqueLighting()
 {
-	if (s_Data.enable_debug_cluster_light)
-		return;
 	Renderer3D::_RenderBoundingBox(s_Data.gpuBuffer.CurrentFrameBuffer);
 }
 
@@ -2374,6 +2374,7 @@ void longmarch::Renderer3D::BeginTranslucentSceneAndLighting(const PerspectiveCa
 		// Forward geomtry pass for translucent scene objects
 		{
 			Renderer3D::_BeginForwardGeomtryPass(camera, s_Data.gpuBuffer.CurrentFrameBuffer);
+			RenderCommand::DepthTest(true, false); // Enable depth testing
 			RenderCommand::CullFace(false, false); // Cull back faces
 		}
 		
@@ -2407,7 +2408,9 @@ void longmarch::Renderer3D::EndTranslucentSceneAndLighting()
 void longmarch::Renderer3D::BeginPostProcessing()
 {
 	if (s_Data.enable_debug_cluster_light)
+	{
 		return;
+	}
 	RenderCommand::PolyModeFill();			// Draw full model
 	RenderCommand::DepthTest(false, false);	// Disable depth testing
 	RenderCommand::CullFace(false, false);	// Disable face culling
@@ -2805,8 +2808,6 @@ void longmarch::Renderer3D::_BeginToneMappingPass(const std::shared_ptr<FrameBuf
 **************************************************************/
 void longmarch::Renderer3D::EndPostProcessing()
 {
-	if (s_Data.enable_debug_cluster_light)
-		return;
 }
 
 /**************************************************************
@@ -2832,7 +2833,7 @@ void longmarch::Renderer3D::EndRendering()
 void longmarch::Renderer3D::BeginRenderingParticles(PerspectiveCamera* camera, const std::function<void(PerspectiveCamera*)>& f_render)
 {
 	RenderCommand::Blend(true);
-	RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ALPHA_BLEND_USE_SRC_ALPHA);
+	RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ALPHA_BLEND_1);
 	RenderCommand::DepthTest(true, false);
 	RenderCommand::CullFace(false, false);
 	f_render(camera);

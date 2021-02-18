@@ -7,7 +7,7 @@ namespace longmarch
 {
 	Particle3DCom::Particle3DCom(const EntityDecorator& _this)
 		:
-		BaseComponent(_this.GetWorld()),
+		BaseComponent(_this.GetVolatileWorld()),
 		m_this(_this.GetEntity())
 	{
 	}

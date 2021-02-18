@@ -473,6 +473,7 @@ namespace longmarch
 		**************************************************************/
 		static bool ShouldRendering();
 		static void BeginRendering();
+
 		static void BeginShadowing(
 			const PerspectiveCamera* camera,
 			const std::function<void()>& f_render,
@@ -481,6 +482,7 @@ namespace longmarch
 			const std::function<void(const std::string&)>& f_setRenderShaderName
 		);
 		static void EndShadowing();
+
 		static void BeginOpaqueScene(
 			const PerspectiveCamera* camera,
 			const std::function<void()>& f_render,
@@ -489,6 +491,7 @@ namespace longmarch
 			const std::function<void(const std::string&)>& f_setRenderShaderName
 		);
 		static void EndOpaqueScene();
+
 		static void BeginOpaqueLighting(
 			const PerspectiveCamera* camera,
 			const std::function<void()>& f_render,
@@ -497,6 +500,7 @@ namespace longmarch
 			const std::function<void(const std::string&)>& f_setRenderShaderName
 		);
 		static void EndOpaqueLighting();
+
 		static void BeginTranslucentSceneAndLighting(
 			const PerspectiveCamera* camera,
 			const std::function<void(const PerspectiveCamera*)>& f_render,
@@ -505,15 +509,17 @@ namespace longmarch
 			const std::function<void(const std::string&)>& f_setRenderShaderName
 		);
 		static void EndTranslucentSceneAndLighting();
-		static void BeginPostProcessing();
-		static void EndPostProcessing();
-		static void EndRendering();
-
+		
 		static void BeginRenderingParticles(
 			PerspectiveCamera* camera,
 			const std::function<void(PerspectiveCamera*)>& f_render
 		);
 		static void EndRenderingParticles();
+
+		static void BeginPostProcessing();
+		static void EndPostProcessing();
+		
+		static void EndRendering();
 
 		/**************************************************************
 		*	Render3D lowlevel API

@@ -72,8 +72,10 @@ namespace longmarch
 
 		virtual void PreRenderUpdate(double dt) {}
 
+		//! Can be used for debug rendering, it is called just before the main render pipeline
 		virtual void Render() {}
 
+		//! Can be used for debug rendering, it is called just before the main render pipeline
 		virtual void Render2() {}
 
 		virtual void PostRenderUpdate(double dt) {}

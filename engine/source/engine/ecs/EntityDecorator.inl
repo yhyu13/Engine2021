@@ -6,28 +6,28 @@ namespace longmarch
 	template<typename ComponentType>
 	void EntityDecorator::AddComponent(const ComponentType& component)
 	{
-		m_world->AddComponent<ComponentType>(m_entity, component);
+		GetVolatileWorld()->AddComponent<ComponentType>(m_entity, component);
 	}
 	template<typename ComponentType>
 	void EntityDecorator::RemoveComponent()
 	{
-		m_world->RemoveComponent<ComponentType>(m_entity);
+		GetVolatileWorld()->RemoveComponent<ComponentType>(m_entity);
 	}
 	template<typename ComponentType>
-	ComponentDecorator<ComponentType> EntityDecorator::GetComponent()
+	ComponentDecorator<ComponentType> EntityDecorator::GetComponent() const
 	{
-		return m_world->GetComponent<ComponentType>(m_entity);
+		return GetWorld()->GetComponent<ComponentType>(m_entity);
 	}
 	template<typename ComponentType>
-	bool EntityDecorator::HasComponent()
+	bool EntityDecorator::HasComponent() const
 	{
-		return m_world->HasComponent<ComponentType>(m_entity);
+		return GetWorld()->HasComponent<ComponentType>(m_entity);
 	}
 
 	__LongMarch_TRVIAL_TEMPLATE__
-	LongMarch_Vector<BaseComponentInterface*> EntityDecorator::GetAllComponent()
+	LongMarch_Vector<BaseComponentInterface*> EntityDecorator::GetAllComponent() const
 	{
-		return m_world->GetAllComponent(m_entity);
+		return GetWorld()->GetAllComponent(m_entity);
 	}
 }
 

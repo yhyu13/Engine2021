@@ -69,7 +69,7 @@ namespace longmarch
 				auto body = renderObj.entity.GetComponent<Body3DCom>();
 				if (body.Valid())
 				{
-					if (const auto& bv = body->GetBV(); bv)
+					if (const auto& bv = body->GetBoundingVolume(); bv)
 					{
 						if (DistanceCullingTest(bv))
 						{

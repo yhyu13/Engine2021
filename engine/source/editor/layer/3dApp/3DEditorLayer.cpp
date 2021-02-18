@@ -75,10 +75,6 @@ void longmarch::_3DEditorLayer::BuildRenderPipeline()
 			std::function<void(bool, const Vec3f&, float, float)> f_setDistanceCullingParam = std::bind(&Scene3DComSys::SetDistanceCullingParam, scene3DComSys, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
 			std::function<void(const std::string&)> f_setRenderShaderName = std::bind(&Scene3DComSys::SetRenderShaderName, scene3DComSys, std::placeholders::_1);
 
-			// callbacks for particle rendering 
-			auto particle3DComSys = static_cast<Particle3DComSys*>(GameWorld::GetCurrent()->GetComponentSystem("Particle3DComSys"));
-			std::function<void(PerspectiveCamera*)> f_render_particle = std::bind(&Particle3DComSys::RenderParticleSystems, particle3DComSys, std::placeholders::_1);
-
 			{
 				Renderer3D::BeginRendering();
 				{
@@ -104,11 +100,16 @@ void longmarch::_3DEditorLayer::BuildRenderPipeline()
 					Renderer3D::BeginTranslucentSceneAndLighting(cam, f_render_translucent, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
 					Renderer3D::EndTranslucentSceneAndLighting();
 				}
+				/* [DEPRECATED] Particle rendering has been moved to Scene3DComSys::RenderTranslucentObj
 				{
 					ENG_TIME("Particle pass");
+					// callbacks for particle rendering 
+					auto particle3DComSys = static_cast<Particle3DComSys*>(GameWorld::GetCurrent()->GetComponentSystem("Particle3DComSys"));
+					std::function<void(PerspectiveCamera*)> f_render_particle = std::bind(&Particle3DComSys::RenderParticleSystems, particle3DComSys, std::placeholders::_1);
+
 					Renderer3D::BeginRenderingParticles(cam, f_render_particle);
 					Renderer3D::EndRenderingParticles();
-				}
+				}*/
 				{
 					ENG_TIME("Postprocessing pass");
 					Renderer3D::BeginPostProcessing();

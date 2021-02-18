@@ -39,7 +39,7 @@ void longmarch::EditorCameraControllerComSys::_ON_CAM_TELEPORT_TO_ENTITY(EventQu
 			float zoom_dist = 5.0f;
 			if (auto body_target = GetComponent<Body3DCom>(event->m_entity); body_target.Valid())
 			{
-				if (auto bv = body_target->GetBV(); bv)
+				if (auto bv = body_target->GetBoundingVolume(); bv)
 				{
 					zoom_dist = bv->GetRadius() * 1.2f;
 				}

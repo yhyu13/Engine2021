@@ -7,7 +7,7 @@
 
 longmarch::Scene3DCom::Scene3DCom(const EntityDecorator& _this)
 	:
-	BaseComponent(_this.GetWorld()),
+	BaseComponent(_this.GetVolatileWorld()),
 	m_this(_this.GetEntity())
 {
 }
@@ -129,6 +129,11 @@ void longmarch::Scene3DCom::SetShouldDraw(bool b, bool _override)
 {
 	LOCK_GUARD2();
 	(_override) ? m_shoudlDraw = b : m_shoudlDraw &= b;
+}
+
+bool longmarch::Scene3DCom::GetShouldDraw() const
+{
+	return m_shoudlDraw;
 }
 
 void longmarch::Scene3DCom::Draw(const std::function<void(const Renderer3D::RenderData_CPU&)>& drawFunc)

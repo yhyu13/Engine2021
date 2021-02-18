@@ -23,11 +23,12 @@ namespace longmarch
 	struct EntityDecorator
 	{
 		EntityDecorator() = default;
-		explicit EntityDecorator(const Entity& entity, GameWorld* world)
+		explicit EntityDecorator(const Entity& entity, const GameWorld* world)
 			:
 			m_entity(entity),
 			m_world(world)
-		{}
+		{
+		}
 
 		template<typename ComponentType>
 		void AddComponent(const ComponentType& component);
@@ -36,13 +37,13 @@ namespace longmarch
 		void RemoveComponent();
 
 		template<typename ComponentType>
-		ComponentDecorator<ComponentType> GetComponent();
+		ComponentDecorator<ComponentType> GetComponent() const;
 
 		template<typename ComponentType>
-		bool HasComponent();
+		bool HasComponent() const;
 
 		__LongMarch_TRVIAL_TEMPLATE__
-		LongMarch_Vector<BaseComponentInterface*> GetAllComponent();
+		LongMarch_Vector<BaseComponentInterface*> GetAllComponent() const;
 
 		inline bool Valid() const
 		{
@@ -71,7 +72,12 @@ namespace longmarch
 			return m_entity.m_type;
 		}
 
-		inline GameWorld* GetWorld() const
+		inline GameWorld* GetVolatileWorld() const
+		{
+			return const_cast<GameWorld*>(m_world);
+		}
+
+		inline const GameWorld* GetWorld() const
 		{
 			return m_world;
 		}
@@ -93,7 +99,7 @@ namespace longmarch
 
 	private:
 		Entity m_entity;
-		GameWorld* m_world{ nullptr };
+		const GameWorld* m_world{ nullptr };
 	};
 }
 

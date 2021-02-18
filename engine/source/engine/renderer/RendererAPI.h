@@ -32,9 +32,9 @@ namespace longmarch {
 
 		enum class BlendFuncEnum : uint8_t
 		{
-			ADDITION = 0,
-			ALPHA_BLEND_USE_SRC_ALPHA,
-			ALPHA_BLEND_ALPHA_SUM_TO_ONE
+			ADDITION = 0,  //!< The blending function that simply adds two colors.
+			ALPHA_BLEND_1, //!< The transparency blending function by alpha, which also sets the result alpha value to the same as the source(aka. new color)'s alpha
+			ALPHA_BLEND_2  //!< The transparency blending function by alpha, which also blends alpha values by alpha blending (i.e. result.a = src.a + (1-src.a) * dest.a)
 		};
 
 		virtual void Init() = 0;

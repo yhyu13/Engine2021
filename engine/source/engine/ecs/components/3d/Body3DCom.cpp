@@ -3,32 +3,15 @@
 #include "engine/ecs/object-factory/ObjectFactory.h"
 
 longmarch::Body3DCom::Body3DCom(const Entity& e)
-	: m_this(e)
+	: 
+	m_this(e)
 {
 }
 
-std::shared_ptr<Shape> longmarch::Body3DCom::GetBV()
+std::shared_ptr<Shape> longmarch::Body3DCom::GetBoundingVolume() const
 {
 	LOCK_GUARD2();
 	return m_boundingVolume;
-}
-
-void longmarch::Body3DCom::ResetOtherEntity()
-{
-	LOCK_GUARD2();
-	m_otherEntity = Entity();
-}
-
-void longmarch::Body3DCom::SetOtherEntity(const Entity& other)
-{
-	LOCK_GUARD2();
-	m_otherEntity = other;
-}
-
-const Entity& longmarch::Body3DCom::GetOtherEntity()
-{
-	LOCK_GUARD2();
-	return m_otherEntity;
 }
 
 bool longmarch::Body3DCom::HasRigidBody() const
@@ -40,9 +23,10 @@ bool longmarch::Body3DCom::HasRigidBody() const
 RBType longmarch::Body3DCom::GetRigidBodyType() const
 {
 	LOCK_GUARD2();
-	if (m_body != nullptr)
+	if (m_body)
+	{
 		return m_body->GetRBType();
-
+	}
 	return RBType::EMPTY;
 }
 
@@ -89,9 +73,10 @@ const longmarch::RBTransform& longmarch::Body3DCom::GetRBTrans() const
 bool longmarch::Body3DCom::IsRBAwake() const
 {
 	LOCK_GUARD2();
-	if (m_body == nullptr)
+	if (!m_body)
+	{
 		return false;
-
+	}
 	return m_body->IsAwake();
 }
 
@@ -153,7 +138,7 @@ void longmarch::Body3DCom::JsonSerialize(Json::Value& value)
 				if (m_bodyInfo.entityTypeIngoreSet != _default.m_bodyInfo.entityTypeIngoreSet)
 				{
 					LongMarch_Vector<std::string> vec;
-					for (auto type : m_bodyInfo.entityTypeIngoreSet)
+					for (auto& type : m_bodyInfo.entityTypeIngoreSet)
 					{
 						vec.push_back(ObjectFactory::s_instance->GetEntityNameFromType(type));
 					}
@@ -176,20 +161,41 @@ void longmarch::Body3DCom::JsonDeserialize(const Json::Value& value)
 	}
 	LOCK_GUARD2();
 	{
+		if (auto& bv = value["bounding-volume"]; !bv.isNull())
+		{
+			if (auto& val = bv["type"]; !val.isNull())
+			{
+				auto bodyType = val.asString();
+				if (bodyType == "AABB")
+				{
+					auto min_val = bv["min"];
+					ASSERT(min_val.size() == 3, "must be a vec3!");
+					Vec3f min(min_val[0].asFloat(), min_val[1].asFloat(), min_val[2].asFloat());
+					auto max_val = bv["max"];
+					ASSERT(max_val.size() == 3, "must be a vec3!");
+					Vec3f max(max_val[0].asFloat(), max_val[1].asFloat(), max_val[2].asFloat());
+					m_boundingVolume = MemoryManager::Make_shared<AABB>(min, max);
+				}
+			}
+		}
+
 		if (auto& rigigBodyData = value["rigid-body"]; !rigigBodyData.isNull())
 		{
-			auto bodyType = rigigBodyData["type"].asString();
-			if (bodyType == "dynamic")
+			if (auto& val = rigigBodyData["type"]; !val.isNull())
 			{
-				m_bodyInfo.type = RBType::dynamicBody;
-			}
-			else if (bodyType == "static")
-			{
-				m_bodyInfo.type = RBType::staticBody;
-			}
-			else if (bodyType == "no_collision")
-			{
-				m_bodyInfo.type = RBType::noCollision;
+				auto bodyType = val.asString();
+				if (bodyType == "dynamic")
+				{
+					m_bodyInfo.type = RBType::dynamicBody;
+				}
+				else if (bodyType == "static")
+				{
+					m_bodyInfo.type = RBType::staticBody;
+				}
+				else if (bodyType == "no_collision")
+				{
+					m_bodyInfo.type = RBType::noCollision;
+				}
 			}
 
 			if (auto& val = rigigBodyData["mass"]; !val.isNull())
@@ -239,4 +245,9 @@ void longmarch::Body3DCom::JsonDeserialize(const Json::Value& value)
 		m_mass = m_bodyInfo.mass;
 		m_invMass = m_invMass = 1.0f / (m_mass + FLT_EPSILON);
 	}
+}
+
+void longmarch::Body3DCom::ImGuiRender()
+{
+
 }

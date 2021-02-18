@@ -65,16 +65,19 @@ void longmarch::Body3DComSys::PreRenderUpdate(double dt)
 		auto scene = e.GetComponent<Scene3DCom>();
 		auto body = e.GetComponent<Body3DCom>();
 		auto trans = e.GetComponent<Transform3DCom>();
-		if (auto bv = body->GetBV(); !bv)
+		if (auto bv = body->GetBoundingVolume(); !bv)
 		{
-			if (const auto& data = scene->GetSceneData(false); data)
+			if (scene.Valid())
 			{
-				auto& meshes = data->GetAllMesh();
-				body->CreateBV<AABB>(meshes);
-				body->GetBV()->SetOwnerEntity(e);
+				if (const auto& data = scene->GetSceneData(false); data)
+				{
+					auto& meshes = data->GetAllMesh();
+					body->CreateBoundingVolume<AABB>(meshes);
+					body->GetBoundingVolume()->SetOwnerEntity(e);
+				}
 			}
 		}
-		if (auto bv = body->GetBV(); bv)
+		if (auto bv = body->GetBoundingVolume(); bv)
 		{
 			// Update view frustum culling BV
 			bv->SetModelTrAndUpdate(trans->GetModelTr());
@@ -85,7 +88,7 @@ void longmarch::Body3DComSys::PreRenderUpdate(double dt)
 			// Generate rigid body BV if possible
 			auto body = e.GetComponent<Body3DCom>();
 			auto trans = e.GetComponent<Transform3DCom>();
-			if (auto aabbPtr = std::dynamic_pointer_cast<AABB>(body->GetBV()); aabbPtr)
+			if (auto aabbPtr = std::dynamic_pointer_cast<AABB>(body->GetBoundingVolume()); aabbPtr)
 			{
 				std::shared_ptr<RigidBody> newRB = m_scene->CreateRigidBody();
 				switch (body->m_bodyInfo.type)
@@ -128,10 +131,6 @@ void longmarch::Body3DComSys::PreRenderUpdate(double dt)
 		}
 	}
 	).wait();
-	{
-		// for debugging purposes
-		m_scene->RenderDebug();
-	}
 }
 
 void longmarch::Body3DComSys::Update(double dt)
@@ -158,6 +157,15 @@ void longmarch::Body3DComSys::Update(double dt)
 			}
 		}
 	).wait();
+}
+
+void longmarch::Body3DComSys::Render()
+{
+	if (m_enableDebugDraw)
+	{
+		// For debugging purposes
+		m_scene->RenderDebug();
+	}
 }
 
 std::shared_ptr<BaseComponentSystem> longmarch::Body3DComSys::Copy() const

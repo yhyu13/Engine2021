@@ -4,13 +4,15 @@
 namespace longmarch
 {
 	template<typename ComponentType>
-	inline bool GameWorld::HasComponent(const Entity& entity) {
+	inline bool GameWorld::HasComponent(const Entity& entity)  const
+	{
 		ComponentManager<ComponentType>* manager = _GetComponentManager<ComponentType>();
 		return manager->HasEntity(entity);
 	}
 
 	template<typename ComponentType>
-	inline void GameWorld::AddComponent(const Entity& entity, const ComponentType& component) {
+	inline void GameWorld::AddComponent(const Entity& entity, const ComponentType& component)
+	{
 		ComponentManager<ComponentType>* manager = _GetComponentManager<ComponentType>();
 		component.SetWorld(this);
 		manager->AddComponentToEntity(entity, component);
@@ -36,14 +38,14 @@ namespace longmarch
 	}
 	
 	template<typename ComponentType>
-	inline ComponentDecorator<ComponentType> GameWorld::GetComponent(const Entity& entity)
+	inline ComponentDecorator<ComponentType> GameWorld::GetComponent(const Entity& entity) const
 	{
 		ComponentManager<ComponentType>* manager = _GetComponentManager<ComponentType>();
 		return ComponentDecorator<ComponentType>(EntityDecorator{ entity,this }, manager->GetComponentByEntity(entity));
 	}
 
 	template<class ...Components>
-	inline const LongMarch_Vector<Entity> GameWorld::EntityView()
+	inline const LongMarch_Vector<Entity> GameWorld::EntityView() const
 	{
 		LOCK_GUARD_NC();
 		if constexpr (sizeof...(Components) == 0)
@@ -68,7 +70,7 @@ namespace longmarch
 	//! Unity ECS like for each function
 
 	template<class ...Components>
-	inline void GameWorld::ForEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func)
+	inline void GameWorld::ForEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func) const
 	{
 		for (const auto& e : EntityView<Components...>())
 		{
@@ -81,7 +83,7 @@ namespace longmarch
 
 	template<class ...Components>
 	[[nodiscard]]
-	inline auto GameWorld::BackEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func)
+	inline auto GameWorld::BackEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func) const
 	{
 		return StealThreadPool::GetInstance()->enqueue_task([this, func = std::move(func)]() {
 			_MultiThreadExceptionCatcher(
@@ -98,7 +100,7 @@ namespace longmarch
 	//! Get the component-manager for a given component-type. Example usage: _GetComponentManager<ComponentType>();
 	
 	template<typename ComponentType>
-	ComponentManager<ComponentType>* GameWorld::_GetComponentManager()
+	ComponentManager<ComponentType>* GameWorld::_GetComponentManager() const
 	{
 		const uint32_t family = GetComponentTypeIndex<ComponentType>();
 		LockNC();
@@ -118,7 +120,7 @@ namespace longmarch
 	//! Helper method for pareach
 
 	template<class... Components>
-	void GameWorld::_ParEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func, int min_split)
+	void GameWorld::_ParEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func, int min_split) const
 	{
 		try {
 			auto es = EntityView<Components...>();

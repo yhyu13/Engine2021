@@ -15,7 +15,7 @@ namespace longmarch
 			m_mask = m_mask2 = m_mask3 = m_mask4 = 0ull;
 		}
 
-		inline const LongMarch_Set<T> GetAllIndices()
+		inline const LongMarch_Set<T> GetAllIndices() const
 		{
 			LongMarch_Set<T> ret;
 			if (m_mask != 0ull)

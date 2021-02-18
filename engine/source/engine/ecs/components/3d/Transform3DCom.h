@@ -153,6 +153,8 @@ namespace longmarch
 		virtual void JsonSerialize(Json::Value& value) override;
 		virtual void JsonDeserialize(const Json::Value& value) override;
 		virtual void ImGuiRender() override;
+
+		//! This Copy function is just an example
 		virtual void Copy(BaseComponentInterface* other) override;
 
 	private:
@@ -165,8 +167,8 @@ namespace longmarch
 		Vec3f l_rotational_velocity = { Vec3f(0.0f) };			// Local rotational velocity
 		Vec3f prev_rtp_pos = { Vec3f(0.0f) };					// Prev frame Location relative to parent parent 's frame
 		Vec3f rtp_pos = { Vec3f(0.0f) };						// Location relative to parent in parent 's frame
-		Vec3f l_velocity = { Vec3f(0.0f) };						// Velocity relative to local frame
 		Vec3f rtp_velocity = { Vec3f(0.0f) };					// Velocity relative to parent in parent 's frame
+		Vec3f l_velocity = { Vec3f(0.0f) };						// Velocity relative to local frame
 		Vec3f parent_g_total_velocity = { Vec3f(0.0f) };		// Velocity relative to origin (root) in origin (root) 's frame
 		Vec3f rtp_scale = { Vec3f(1.0f) };
 		Vec3f l_scale = { Vec3f(1.0f) };						// Local scale does not pass onto children scene objects but apply on the current scene model

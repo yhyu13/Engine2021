@@ -7,50 +7,24 @@
 
 namespace longmarch
 {
-#define MULTITHREAD_PRE_RENDER_UPDATE 1
+#define MULTITHREAD_PRE_RENDER_UPDATE
 
-	class Scene3DComSys final : public BaseComponentSystem {
+	class Scene3DComSys final : public BaseComponentSystem 
+	{
 	public:
 		enum class RenderMode
 		{
 			SCENE = 0,
-			SCENE_AND_BBOX,
 			SHADOW,
 		};
-
-	private:
-		struct VFCParam
-		{
-			bool enableVFCulling = { false };
-			ViewFrustum VF;
-			Mat4 WorldSpaceToViewFrustum;
-		};
-		VFCParam m_vfcParam;
-		struct DistanceCParam
-		{
-			bool enableDistanceCulling = { false };
-			Vec3f center;
-			float Near;
-			float Far;
-		};
-		DistanceCParam m_distanceCParam;
-		std::string m_RenderShaderName = { "Default" };
-		RenderMode m_RenderMode = { RenderMode::SCENE };
-#if MULTITHREAD_PRE_RENDER_UPDATE
-		AtomicQueue<std::shared_future<void>> m_threadJob;
-#endif
 	public:
 		NONCOPYABLE(Scene3DComSys);
 		COMSYS_DEFAULT_COPY(Scene3DComSys);
 
-		Scene3DComSys()
-		{
-			m_systemSignature.AddComponent<Transform3DCom>();
-			m_systemSignature.AddComponent<Scene3DCom>();
-			m_systemSignature.AddComponent<Body3DCom>();
-		}
+		Scene3DComSys();
 		//! Prepare lights and scene rendering data in pre-render phase
 		virtual void PreRenderUpdate(double dt) override;
+		virtual void Render();
 		
 		void RenderOpaqueObj(); 
 		void RenderTranslucentObj(const PerspectiveCamera* camera);
@@ -83,8 +57,8 @@ namespace longmarch
 	private:
 		void PrepareScene(double dt);
 		void RecursivePrepareScene(double dt, const Entity& parent, Transform3DCom* parentTr, ChildrenCom* childChildrenCom, unsigned int level);
-		void RenderWithModeEditor(Renderer3D::RenderObj_CPU& renderObj);
-		void RenderWithModeInGame(Renderer3D::RenderObj_CPU& renderObj);
+		void RenderWithModeOpaque(Renderer3D::RenderObj_CPU& renderObj);
+		void RenderWithModeTranslucent(Renderer3D::RenderObj_CPU& renderObj, const PerspectiveCamera* camera);
 
 		inline bool ViewFustrumCullingTest(const std::shared_ptr<Shape>& BoudingVolume)
 		{
@@ -109,5 +83,28 @@ namespace longmarch
 				return BoudingVolume->DistanceTest(m_distanceCParam.center, m_distanceCParam.Near, m_distanceCParam.Far);
 			}
 		}
+
+	private:
+		struct VFCParam
+		{
+			bool enableVFCulling = { false };
+			ViewFrustum VF;
+			Mat4 WorldSpaceToViewFrustum;
+		};
+		VFCParam m_vfcParam;
+		struct DistanceCParam
+		{
+			bool enableDistanceCulling = { false };
+			Vec3f center;
+			float Near;
+			float Far;
+		};
+		DistanceCParam m_distanceCParam;
+		std::string m_RenderShaderName = { "Default" };
+		RenderMode m_RenderMode = { RenderMode::SCENE };
+		bool m_enableDebugDraw{ true };
+#ifdef MULTITHREAD_PRE_RENDER_UPDATE
+		AtomicQueue<std::shared_future<void>> m_threadJob;
+#endif
 	};
 }

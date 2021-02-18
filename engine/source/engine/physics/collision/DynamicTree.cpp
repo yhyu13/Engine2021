@@ -906,7 +906,5 @@ namespace longmarch
 
             dynamic_cast<Shape*>(&elem.m_aabb)->RenderShape();
         }
-
-        //std::cout << "one cycle" << std::endl;
     }
 }

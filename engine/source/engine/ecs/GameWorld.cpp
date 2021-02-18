@@ -485,7 +485,7 @@ void longmarch::GameWorld::RemoveEntityAndComponents(const Entity& entity)
 	RemoveEntity(entity);
 }
 
-const Entity longmarch::GameWorld::GetTheOnlyEntityWithType(EntityType type)
+const Entity longmarch::GameWorld::GetTheOnlyEntityWithType(EntityType type) const
 {
 	auto es = GetAllEntityWithType(type);
 	if (es.size() == 1)
@@ -498,17 +498,17 @@ const Entity longmarch::GameWorld::GetTheOnlyEntityWithType(EntityType type)
 	}
 }
 
-const LongMarch_Vector<Entity> longmarch::GameWorld::GetAllEntityWithType(EntityType type)
+const LongMarch_Vector<Entity> longmarch::GameWorld::GetAllEntityWithType(EntityType type) const
 {
 	return GetAllEntityWithType(LongMarch_Vector<EntityType>({ type }));
 }
 
-const LongMarch_Vector<Entity> longmarch::GameWorld::GetAllEntityWithType(const std::initializer_list<EntityType>& types)
+const LongMarch_Vector<Entity> longmarch::GameWorld::GetAllEntityWithType(const std::initializer_list<EntityType>& types) const
 {
 	return GetAllEntityWithType(LongMarch_Vector<EntityType>(types));
 }
 
-const LongMarch_Vector<Entity> longmarch::GameWorld::GetAllEntityWithType(const LongMarch_Vector<EntityType>& types)
+const LongMarch_Vector<Entity> longmarch::GameWorld::GetAllEntityWithType(const LongMarch_Vector<EntityType>& types) const
 {
 	LOCK_GUARD_NC();
 	LongMarch_Vector<Entity> result;
@@ -522,16 +522,16 @@ const LongMarch_Vector<Entity> longmarch::GameWorld::GetAllEntityWithType(const 
 	return result;
 }
 
-const Entity longmarch::GameWorld::GetEntityFromID(EntityID ID)
+const Entity longmarch::GameWorld::GetEntityFromID(EntityID ID) const
 {
 	return m_entityManager->GetEntityFromID(ID);
 }
 
-const LongMarch_Vector<BaseComponentInterface*> longmarch::GameWorld::GetAllComponent(const Entity& entity)
+const LongMarch_Vector<BaseComponentInterface*> longmarch::GameWorld::GetAllComponent(const Entity& entity) const
 {
 	LOCK_GUARD_NC();
 	LongMarch_Vector<BaseComponentInterface*> ret;
-	for (auto& family : m_entityMasks[entity].GetAllComponentIndex())
+	for (auto& family : m_entityMasks.at(entity).GetAllComponentIndex())
 	{
 		ENGINE_EXCEPT_IF(family >= m_componentManagers.size(), L"Entity " + str2wstr(Str(entity)) + L"is requesting all components before some component managers are initilaized!");
 		ret.emplace_back(m_componentManagers[family]->GetBaseComponentByEntity(entity));
@@ -553,7 +553,7 @@ void longmarch::GameWorld::RemoveAllComponent(const Entity& entity)
 	_UpdateEntityForAllComponentSystems(entity, oldMask);
 }
 
-void longmarch::GameWorld::ForEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func)
+void longmarch::GameWorld::ForEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func) const
 {
 	for (const auto& e : es)
 	{
@@ -562,7 +562,7 @@ void longmarch::GameWorld::ForEach(const LongMarch_Vector<Entity>& es, typename 
 }
 
 [[nodiscard]]
-std::future<void> longmarch::GameWorld::BackEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func)
+std::future<void> longmarch::GameWorld::BackEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func) const
 {
 	return StealThreadPool::GetInstance()->enqueue_task([this, func = std::move(func), es]() {
 		_MultiThreadExceptionCatcher(
@@ -576,12 +576,12 @@ std::future<void> longmarch::GameWorld::BackEach(const LongMarch_Vector<Entity>&
 }
 
 [[nodiscard]]
-std::future<void> longmarch::GameWorld::ParEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split)
+std::future<void> longmarch::GameWorld::ParEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split) const
 {
 	return StealThreadPool::GetInstance()->enqueue_task([this, es, min_split, func = std::move(func)]() { _ParEach2(es, func, min_split); });
 }
 
-void longmarch::GameWorld::_ParEach2(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split)
+void longmarch::GameWorld::_ParEach2(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split) const
 {
 	try {
 		if (es.empty())

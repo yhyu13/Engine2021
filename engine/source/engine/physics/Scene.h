@@ -22,8 +22,7 @@ namespace longmarch
         LongMarch_Vector<Manifold> NarrowPhase(const LongMarch_Vector<RigidBody*>& island, float dt);
 
         void Solve(float dt);
-        // move simulation of Scene forward by given timestep
-        void Step(float dt);
+        void Step(float dt); //!< move simulation of Scene forward by given timestep
 
         void SetGameWorld(GameWorld* world);
         void SetGravity(const Vec3f& g);
@@ -39,10 +38,8 @@ namespace longmarch
 		void RenderDebug();
 
     private:
-
         LongMarch_Vector<std::shared_ptr<RigidBody>> m_rbList;
         LongMarch_UnorderedSet<Manifold> m_contactPairs;
-        //LongMarch_UnorderedMap_flat<size_t, Manifold> m_contactPairs;
         //DynamicAABBTree m_aabbTree;
 
         GameWorld* m_parentWorld{ nullptr };
@@ -50,5 +47,7 @@ namespace longmarch
         bool m_enableSleep{ true };
         bool m_enableFriction{ true };
         bool m_enableUpdate{ true };
+
+        FastBVH::BVH<float, RigidBody*> m_bvh;
     };
 }

@@ -190,23 +190,22 @@ bool longmarch::AABB::VFCTest(const ViewFrustum& VF, const Mat4& worldSpaceToVie
 	// Simplified as: glm::transpose(worldSpaceToViewFrustumSpace);
 	// Could be event more simplified as worldSpaceToViewFrustumSpace to take advantage of row vector operation
 
-	/*
 	const auto& plane_tr = worldSpaceToViewFrustumSpace;
 	for (const auto& plane : VF.planes)
 	{
-		const auto& pl = Geommath::NormalizedPlaneEq(plane * plane_tr); // vec * mat would treat the vector as a row vector, this is equivalent to trans(mat) * vec
+		const auto& pl = Geommath::Plane::Normalize(plane * plane_tr); // vec * mat would treat the vector as a row vector, this is equivalent to trans(mat) * vec
 		// N-P vertex test
 		Vec3f p;
 		for (int i = 0; i < 3; ++i)
 		{
 			p[i] = (pl[i] > 0) ? _max[i] : _min[i];
 		}
-		if (Geommath::PlaneDistanceFromPoint(pl, p) < 0)
+		if (Geommath::Plane::Distance(pl, p) < 0)
 		{
 			m_isCulled = true;
 			return m_isCulled;
 		}
-	}*/
+	}
 	m_isCulled = false;
 	return m_isCulled;
 }

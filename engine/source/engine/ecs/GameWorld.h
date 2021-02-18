@@ -71,9 +71,9 @@ namespace longmarch
 		 */
 		static GameWorld* Clone(const std::string& newName, GameWorld* world);
 
-		inline const std::string& GetName() { return m_name; }
+		inline const std::string& GetName() const { return m_name; }
 		inline void SetPause(bool b) { m_paused = b; }
-		inline bool IsPaused() { return m_paused; }
+		inline bool IsPaused() const { return m_paused; }
 
 		//! Initialize all systems
 		void Init();
@@ -151,15 +151,15 @@ namespace longmarch
 		void AddChildHelper(Entity parent, Entity child);
 
 		//! Type must have one entity. If that entity does not exist or there exists more than one, throw an exception
-		const Entity GetTheOnlyEntityWithType(EntityType type);
-		const LongMarch_Vector<Entity> GetAllEntityWithType(EntityType type);
-		const LongMarch_Vector<Entity> GetAllEntityWithType(const std::initializer_list<EntityType>& types);
-		const LongMarch_Vector<Entity> GetAllEntityWithType(const LongMarch_Vector<EntityType>& types);
-		const Entity GetEntityFromID(EntityID ID);
+		const Entity GetTheOnlyEntityWithType(EntityType type) const;
+		const LongMarch_Vector<Entity> GetAllEntityWithType(EntityType type) const;
+		const LongMarch_Vector<Entity> GetAllEntityWithType(const std::initializer_list<EntityType>& types) const;
+		const LongMarch_Vector<Entity> GetAllEntityWithType(const LongMarch_Vector<EntityType>& types) const;
+		const Entity GetEntityFromID(EntityID ID) const;
+
 		/**************************************************************
 		*	Component System
 		**************************************************************/
-
 		void RegisterSystem(const std::shared_ptr<BaseComponentSystem>& system, const std::string& name);
 
 		//! Return a pointer to a specific component system, return nullptr if it does not exist
@@ -179,13 +179,13 @@ namespace longmarch
 		**************************************************************/
 
 		//! Use this method to get all components for an entity.
-		const LongMarch_Vector<BaseComponentInterface*> GetAllComponent(const Entity& entity);
+		const LongMarch_Vector<BaseComponentInterface*> GetAllComponent(const Entity& entity) const;
 
 		//! Use this method to remove all components for an entity.
 		void RemoveAllComponent(const Entity& entity);
 
 		template<typename ComponentType>
-		bool HasComponent(const Entity& entity);
+		bool HasComponent(const Entity& entity) const;
 
 		template<typename ComponentType>
 		void AddComponent(const Entity& entity, const ComponentType& component);
@@ -194,36 +194,39 @@ namespace longmarch
 		void RemoveComponent(const Entity& entity);
 
 		template<typename ComponentType>
-		ComponentDecorator<ComponentType> GetComponent(const Entity& entity);
+		ComponentDecorator<ComponentType> GetComponent(const Entity& entity) const;
 
 		template<class... Components>
-		const LongMarch_Vector<Entity> EntityView();
+		const LongMarch_Vector<Entity> EntityView() const;
 
 		//! Unity ECS like for each function
 		template<class... Components>
-		void ForEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func);
+		void ForEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func) const;
 
 		//! Unity ECS like for each function (single worker thread), func is moved
 		template<class... Components>
-		[[nodiscard]] auto BackEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func);
+		[[nodiscard]] auto BackEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func) const;
 
 		//! Unity ECS like for each function (multi worker thread), func is moved
 		template<class... Components>
-		[[nodiscard]] auto ParEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func, int min_split = -1)
+		[[nodiscard]] auto ParEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func, int min_split = -1) const
 		{
 			return StealThreadPool::GetInstance()->enqueue_task([this, min_split, func = std::move(func)]() { _ParEach<Components...>(func, min_split); });
 		}
 
 		//! Unity ECS like for each function
-		void ForEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func);
+		void ForEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func) const;
 
 		//! Unity ECS like for each function (single worker thread), func is moved
-		[[nodiscard]] std::future<void> BackEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func);
+		[[nodiscard]] std::future<void> BackEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func) const;
 
 		//! Unity ECS like for each function (multi worker thread), func is moved
-		[[nodiscard]] std::future<void> ParEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split = -1);
+		[[nodiscard]] std::future<void> ParEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split = -1) const;
 
 	private:
+		//! Helper method that wraps exception handling for thread job
+		inline void _MultiThreadExceptionCatcher(typename Identity<std::function<void()>>::Type func) const { ENGINE_TRY_CATCH({ func(); }); };
+
 		//! Init both system and scene from a single file
 		void InitSystemAndScene(const fs::path& _file);
 		//! Call InitSystem before InitScene
@@ -235,28 +238,22 @@ namespace longmarch
 		void _UpdateEntityForAllComponentSystems(const Entity& entity, BitMaskSignature& oldMask);
 
 		//! Helper method for pareach
-		void _ParEach2(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split = -1);
-
-		//! Helper method that wraps exception handling for thread job
-		inline void _MultiThreadExceptionCatcher(typename Identity<std::function<void()>>::Type func)
-		{
-			ENGINE_TRY_CATCH({ func(); });
-		}
+		void _ParEach2(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split = -1) const;
 
 		//! Get the component-manager for a given component-type. Example usage: _GetComponentManager<ComponentType>();
 		template<typename ComponentType>
-		ComponentManager<ComponentType>* _GetComponentManager();
+		ComponentManager<ComponentType>* _GetComponentManager() const;
 
 		//! Helper method for pareach
 		template<class... Components>
-		void _ParEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func, int min_split = -1);
+		void _ParEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func, int min_split = -1) const;
 
 	private:
 		// E
 		std::shared_ptr<EntityManager> m_entityManager; //!< Contains all entities and their compoenent bit masks
 		LongMarch_UnorderedMap_Par<Entity, BitMaskSignature> m_entityMasks; //!< Contains all entities and their compoenent bit masks
 		// C
-		LongMarch_Vector<std::shared_ptr<BaseComponentManager>> m_componentManagers; //!< Contains all component managers which are indexed by component indices
+		mutable LongMarch_Vector<std::shared_ptr<BaseComponentManager>> m_componentManagers; //!< Contains all component managers which are indexed by component indices
 		// S
 		LongMarch_Vector<std::shared_ptr<BaseComponentSystem>> m_systems; //!< In order array of all systems
 		LongMarch_Vector<std::string> m_systemsName; //!< In order array of all names of systems

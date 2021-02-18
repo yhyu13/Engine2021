@@ -30,9 +30,9 @@ namespace longmarch
         // Build BVH
         FastBVH_RigidBodyConverter<float> _bvhAABBConverter; //!< Convert our AABB to fastBVH's BBox
         FastBVH::DefaultBuilder<float> _bvhBuilder; //!< FashBVH deafult BVH builder
-        FastBVH::BVH<float, RigidBody*> bvh = _bvhBuilder(_rbs, _bvhAABBConverter);
-        const auto nodes = bvh.getNodes();
-        auto build_prims = bvh.getPrimitives();
+        m_bvh = _bvhBuilder(_rbs, _bvhAABBConverter);
+        const auto nodes = m_bvh.getNodes();
+        auto build_prims = m_bvh.getPrimitives();
 
         // Iterate over all leaves and treat them as islands
         LongMarch_Vector<LongMarch_Vector<RigidBody*>> ret;
@@ -149,9 +149,6 @@ namespace longmarch
             
             if (shapePtr.get() != nullptr)
             {
-                
-                //Vec3f posDiff = rb->GetWorldPosition() - rb->GetPrevWorldPosition();
-
                 // for now just check for AABB shapes
                 if (shapePtr->GetType() == Shape::SHAPE_TYPE::AABB)
                 {
@@ -216,9 +213,6 @@ namespace longmarch
                     // resolve each contact in the list
                     ResolveCollision(elem, dt, m_enableFriction);
                     m_contactPairs.emplace(elem);
-                    /*size_t hash;
-                    LongMarch_HashCombine(hash, elem.m_A->GetEntity(), elem.m_B->GetEntity());
-                    m_contactPairs[hash] = elem;*/
                 }
             }
         }
@@ -238,9 +232,6 @@ namespace longmarch
                     // resolve each contact in the list
                     ResolveCollision(elem, dt, m_enableFriction);
                     m_contactPairs.emplace(elem);
-                    /*size_t hash;
-                    LongMarch_HashCombine(hash, elem.m_A->GetEntity(), elem.m_B->GetEntity());
-                    m_contactPairs[hash] = elem;*/
                 }
             }
         }
@@ -249,7 +240,6 @@ namespace longmarch
         {
             auto queue = EventQueue<EngineEventType>::GetInstance();
             for (const auto& elem : m_contactPairs)
-            //for (const auto& [_, elem] : m_contactPairs)
             {
                 auto e1 = EntityDecorator{ elem.m_A->GetEntity(), m_parentWorld };
                 auto e2 = EntityDecorator{ elem.m_B->GetEntity(), m_parentWorld };
@@ -332,10 +322,10 @@ namespace longmarch
         // render all the rigid body shapes
         for (auto& elem : m_rbList)
         {
-            std::shared_ptr<Shape> shapePtr = elem->GetShape();
-
-            if(shapePtr != nullptr && elem->GetShape()->GetType() != Shape::SHAPE_TYPE::EMPTY)
+            if (elem->GetShape() && elem->GetShape()->GetType() != Shape::SHAPE_TYPE::EMPTY)
+            {
                 elem->Render();
+            }
         }
     }
 }

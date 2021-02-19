@@ -1,9 +1,9 @@
 #include "application-precompiled-header.h"
 #include "AIControllerCom.h"
 
-longmarch::AIControllerCom::AIControllerCom(Entity _this)
+longmarch::AIControllerCom::AIControllerCom(const EntityDecorator& _this)
 	:
-	m_this(_this)
+	m_this(_this.GetEntity())
 {
 }
 

@@ -18,39 +18,47 @@ namespace longmarch
 		m_particleSystem = particleSystem;
 	}
 
-	void Particle3DCom::Update(const double frametime, const Vec3f& cameraPosition)
+	void Particle3DCom::Update(const double frametime, const PerspectiveCamera* camera)
 	{
 		LOCK_GUARD2();
-		m_particleSystem->Update(frametime, cameraPosition);
+		
+		m_particleSystem->Update(frametime, camera->GetWorldPosition());
+
+		m_instancedDataList.clear();
+		// Draw calls for particle systems
+		// Collect data for all particles in a map [texture, vector of particle instanced data]	
+		Renderer3D::ParticleInstanceData_CPU instanceData;
+		for (auto& particle : m_particleSystem->GetParticles())
+		{
+			instanceData.models.push_back(GetModelViewMatrix(particle, camera));
+
+			Vec4f textureOffsets(particle.m_currentTextureOffset.xy, particle.m_nextTextureOffset.xy);
+			instanceData.textureOffsets.push_back(textureOffsets);
+
+			instanceData.blendFactors.push_back(particle.m_blendFactor);
+		}
+		auto texture = m_particleSystem->GetTexture();
+		instanceData.textureRows = texture->GetTextureRowCount();
+		instanceData.entity = m_this;
+
+		m_instancedDataList.emplace_back(texture, instanceData);
 	}
 
-	void Particle3DCom::RenderParticleSystems(const PerspectiveCamera* camera)
+	void Particle3DCom::Draw()
 	{
 		LOCK_GUARD2();
 		if (m_render)
 		{
-			// draw calls for particle systems
-			// TODO collect data for all particles in a map [texture, vector of particle instanced data]
-			LongMarch_Vector<std::pair<std::shared_ptr<Texture2D>, Renderer3D::ParticleInstanceData>> instancedDataList;
+			Renderer3D::DrawParticles(m_instancedDataList);
+		}
+	}
 
-			auto particles = m_particleSystem->GetParticles();
-			Renderer3D::ParticleInstanceData instanceData;
-			for (auto& particle : particles)
-			{
-				instanceData.models.push_back(GetModelViewMatrix(particle, camera));
-
-				Vec4f textureOffsets(particle.m_currentTextureOffset.xy, particle.m_nextTextureOffset.xy);
-				instanceData.textureOffsets.push_back(textureOffsets);
-
-				instanceData.blendFactors.push_back(particle.m_blendFactor);
-			}
-
-			std::shared_ptr<Texture2D> texture = m_particleSystem->GetTexture();
-			instanceData.textureRows = texture->GetTextureRowCount();
-
-			instancedDataList.emplace_back(texture, instanceData);
-
-			Renderer3D::RenderParticles(instancedDataList, camera);
+	void Particle3DCom::Draw(const std::function<void(const Renderer3D::ParticleInstanceDrawData&)>& drawFunc)
+	{
+		LOCK_GUARD2();
+		if (m_render)
+		{
+			drawFunc(m_instancedDataList);
 		}
 	}
 

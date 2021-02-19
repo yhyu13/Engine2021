@@ -26,6 +26,7 @@ void longmarch::PickingPass::Init()
 	// Create multidraw bindings
 	{
 		m_drawBind = std::move(std::bind(&PickingPass::Draw, this, std::placeholders::_1));
+		m_drawBind_Particle = std::move(std::bind(&PickingPass::DrawParticle, this, std::placeholders::_1));
 		m_submitBatchBind = std::move(std::bind(&PickingPass::SubmitBatch, this));
 		m_clearBatchBind = std::move(std::bind(&PickingPass::ClearBatch, this));
 		m_camera = &m_pickingCam;
@@ -72,7 +73,7 @@ void longmarch::PickingPass::BeginRenderPass()
 			EntityType e_type;
 			switch (Engine::GetEngineMode())
 			{
-			case Engine::ENGINE_MODE::EDITING: case Engine::ENGINE_MODE::INGAME_EDITING:
+			case Engine::ENGINE_MODE::EDITING:
 				e_type = (EntityType)EngineEntityType::EDITOR_CAMERA;
 				break;
 			default:
@@ -80,27 +81,24 @@ void longmarch::PickingPass::BeginRenderPass()
 			}
 
 			auto camera = m_parentWorld->GetTheOnlyEntityWithType(e_type);
-			auto current_camera = m_parentWorld->GetComponent<PerspectiveCameraCom>(camera)->GetCamera();
+			auto camera_ptr = m_parentWorld->GetComponent<PerspectiveCameraCom>(camera)->GetCamera();
 
 			auto cursor_pos = input->GetCursorPositionXY();
 			Vec3f pick_eye;
 			Vec3f pick_at;
 			Vec3f pick_dir;
 
-			current_camera->GenerateRayFromScreenSpace(cursor_pos, true, true, pick_eye, pick_dir);
+			camera_ptr->GenerateRayFromScreenSpace(cursor_pos, true, true, pick_eye, pick_dir);
 			pick_at = pick_eye + pick_dir;
 
 			m_pickingCam.type = PerspectiveCameraType::FIRST_PERSON;
-			m_pickingCam.SetProjection(1.0 * DEG2RAD, 1.0, current_camera->cameraSettings.nearZ, current_camera->cameraSettings.farZ);
+			m_pickingCam.SetProjection(1.0 * DEG2RAD, 1.0, camera_ptr->cameraSettings.nearZ, camera_ptr->cameraSettings.farZ);
 			m_pickingCam.SetLookAt(pick_eye, pick_at);
 			m_pickingCam.OnUpdate();
 
 			Render();
 
 			m_shouldRead = true;
-			// Render the debug obj
-			//scene->SetVisiable(true);
-			//trans->SetGlobalPos(pick_eye + 10.0f * pick_dir);
 		}
 	}
 }
@@ -153,7 +151,7 @@ void longmarch::PickingPass::Render()
 	// Calling base functions
 	SetVFCullingParam(true, m_pickingCam.GetViewFrustumInViewSpace(), m_pickingCam.GetViewMatrix());
 	SetDistanceCullingParam(false, Vec3f(), 0, 0);
-	RenderWithCulling();
+	RenderWithCullingTest();
 
 	// Bind multi draw func
 	Renderer3D::s_Data.multiDrawBuffer.multiDrawRenderPassCallback.submitCallback = &m_submitBatchBind;
@@ -163,17 +161,9 @@ void longmarch::PickingPass::Render()
 
 void longmarch::PickingPass::UpdateShader()
 {
-	if (!m_shader)
 	{
-		auto shaderName = "PickingSystemShader";
-		auto it = Renderer3D::s_Data.ShaderMap.find(shaderName);
-		if (it == Renderer3D::s_Data.ShaderMap.end())
-		{
-			ENGINE_EXCEPT(L"Shader called " + str2wstr(shaderName) + L" has not been managed!");
-		}
-		m_shader = it->second;
-	}
-	{
+		auto shader = Renderer3D::s_Data.ShaderMap["PickingSystemShader"];
+		shader->Bind();
 		Mat4 pv;
 		if (Renderer3D::s_Data.enable_reverse_z)
 		{
@@ -183,8 +173,21 @@ void longmarch::PickingPass::UpdateShader()
 		{
 			pv = m_camera->GetViewProjectionMatrix();
 		}
-		m_shader->Bind();
-		m_shader->SetMat4("u_PVMatrix", pv);
+		shader->SetMat4("u_PVMatrix", pv);
+	}
+	{
+		auto shader = Renderer3D::s_Data.ShaderMap["PickingSystemShader_Particle"];
+		shader->Bind();
+		Mat4 p;
+		if (Renderer3D::s_Data.enable_reverse_z)
+		{
+			p = m_camera->GetReverseZProjectionMatrix();
+		}
+		else
+		{
+			p = m_camera->GetProjectionMatrix();
+		}
+		shader->SetMat4("u_ProjectionMatrix", p);
 	}
 }
 
@@ -210,14 +213,10 @@ void longmarch::PickingPass::ClearBatch()
 	m_multiDraw_PickingTr.clear();
 }
 
-void longmarch::PickingPass::RenderOne(Renderer3D::RenderObj_CPU& renderObj)
-{
-	auto scene = renderObj.entity.GetComponent<Scene3DCom>();
-	scene->Draw(m_drawBind);
-}
-
 void longmarch::PickingPass::Draw(const Renderer3D::RenderData_CPU& data)
 {
+	auto shader = Renderer3D::s_Data.ShaderMap["PickingSystemShader"];
+	shader->Bind();
 	switch (Renderer3D::s_Data.RENDER_MODE)
 	{
 	case Renderer3D::RENDER_MODE::MULTIDRAW:
@@ -233,11 +232,56 @@ void longmarch::PickingPass::Draw(const Renderer3D::RenderData_CPU& data)
 	break;
 	case Renderer3D::RENDER_MODE::CANONICAL:
 	{
-		Renderer3D::s_Data.CurrentShader = m_shader;
-		Renderer3D::s_Data.CurrentShader->SetInt("u_EntityId", data.entity.m_id);
-		Renderer3D::s_Data.CurrentShader->SetMat4("u_ModleTr", data.transform);
-		data.mesh->Draw();
+		shader->SetInt("u_EntityId", data.entity.m_id);
+		shader->SetMat4("u_ModleTr", data.transform);
+		Renderer3D::Draw(data);
 	}
 	break;
+	}
+}
+
+void longmarch::PickingPass::DrawParticle(const Renderer3D::ParticleInstanceDrawData& data)
+{
+	auto shader = Renderer3D::s_Data.ShaderMap["PickingSystemShader_Particle"];
+	shader->Bind();
+	for (auto& [texture, instanceData] : data)
+	{
+		texture->BindTexture(0);
+		shader->SetFloat("rows", instanceData.textureRows);
+		shader->SetInt("u_EntityId", instanceData.entity.m_id);
+
+		int pointer = 0;
+		float* data = new float[instanceData.models.size() * Renderer3D::PARTICLE_INSTANCED_DATA_LENGTH];
+		for (size_t i = 0; i < instanceData.models.size(); ++i)
+		{
+			const auto& matrix = instanceData.models[i];
+			data[pointer++] = matrix[0][0];
+			data[pointer++] = matrix[0][1];
+			data[pointer++] = matrix[0][2];
+			data[pointer++] = matrix[0][3];
+			data[pointer++] = matrix[1][0];
+			data[pointer++] = matrix[1][1];
+			data[pointer++] = matrix[1][2];
+			data[pointer++] = matrix[1][3];
+			data[pointer++] = matrix[2][0];
+			data[pointer++] = matrix[2][1];
+			data[pointer++] = matrix[2][2];
+			data[pointer++] = matrix[2][3];
+			data[pointer++] = matrix[3][0];
+			data[pointer++] = matrix[3][1];
+			data[pointer++] = matrix[3][2];
+			data[pointer++] = matrix[3][3];
+
+			const Vec4f& offsets = instanceData.textureOffsets[i];
+			data[pointer++] = offsets.x;
+			data[pointer++] = offsets.y;
+			data[pointer++] = offsets.z;
+			data[pointer++] = offsets.w;
+
+			const float blendFactor = instanceData.blendFactors[i];
+			data[pointer++] = blendFactor;
+		}
+		Renderer3D::DrawParticlesInstance(data, instanceData.models.size());
+		delete[] data;
 	}
 }

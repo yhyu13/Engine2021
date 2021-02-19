@@ -66,7 +66,7 @@ namespace longmarch
 
 	void ParticleSystem3D::SetCenter(const Vec3f& center)
 	{
-		m_center= center;
+		m_center = center;
 	}
 
 	void ParticleSystem3D::Update(const float frametime, const Vec3f& cameraPosition)

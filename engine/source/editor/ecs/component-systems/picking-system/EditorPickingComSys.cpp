@@ -3,6 +3,7 @@
 #include "engine/ecs/GameWorld.h"
 #include "engine/ecs/EntityType.h"
 #include "engine/ecs/components/PerspectiveCameraCom.h"
+#include "engine/ecs/components/3d/Transform3DCom.h"
 #include "editor/ui/BaseEngineWidgetManager.h"
 #include "editor/ui/widgets/SceneHierarchyDock.h"
 #include "engine/math/Geommath.h"
@@ -21,7 +22,7 @@ void longmarch::EditorPickingComSys::RenderUI()
 {
 	switch (Engine::GetEngineMode())
 	{
-	case Engine::ENGINE_MODE::EDITING: case Engine::ENGINE_MODE::INGAME_EDITING:
+	case Engine::ENGINE_MODE::EDITING:
 		ImGuizmo::BeginFrame();
 		{
 			m_renderPass.BeginRenderPass();

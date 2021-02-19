@@ -61,7 +61,7 @@ BaseComponentInterface* longmarch::MainObjectFactory::AddComponentByName(const s
 			{
 				if (!e.HasComponent<Particle3DCom>())
 				{
-					e.AddComponent(Particle3DCom());
+					e.AddComponent(Particle3DCom(e));
 				}
 				com = e.GetComponent<Particle3DCom>();
 			}

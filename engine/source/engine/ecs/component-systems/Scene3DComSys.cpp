@@ -69,6 +69,58 @@ void longmarch::Scene3DComSys::PreRenderUpdate(double dt)
 		ENG_TIME("Prepare Scene");
 		PrepareScene(dt);
 	}
+
+	/**************************************************************
+	*	Sort translucent object by depth
+	**************************************************************/
+	{
+		struct RenderTransparentObj_CPU
+		{
+			explicit RenderTransparentObj_CPU(const Renderer3D::RenderObj_CPU& e, float d)
+				:
+				obj(e),
+				distance(d)
+			{}
+			Renderer3D::RenderObj_CPU obj;
+			float distance;
+		};
+		struct RenderTransparentObj_CPU_ComparatorLesser // used in priority queue that puts objects in greater distances at front
+		{
+			bool operator()(const RenderTransparentObj_CPU& lhs, const RenderTransparentObj_CPU& rhs) noexcept
+			{
+				return lhs.distance < rhs.distance;
+			}
+		};
+
+		EntityType e_type;
+		switch (Engine::GetEngineMode())
+		{
+		case Engine::ENGINE_MODE::EDITING:
+			e_type = (EntityType)EngineEntityType::EDITOR_CAMERA;
+			break;
+		default:
+			return;
+		}
+
+		auto camera = m_parentWorld->GetTheOnlyEntityWithType(e_type);
+		auto camera_ptr = m_parentWorld->GetComponent<PerspectiveCameraCom>(camera)->GetCamera();
+
+		std::priority_queue<RenderTransparentObj_CPU, LongMarch_Vector<RenderTransparentObj_CPU>, RenderTransparentObj_CPU_ComparatorLesser> depth_sorted_translucent_obj;
+		Mat4 pv = camera_ptr->GetViewProjectionMatrix();
+		for (auto& renderObj : Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT)
+		{
+			auto pos = renderObj.entity.GetComponent<Transform3DCom>()->GetGlobalPos();
+			auto ndc_pos = pv * Vec4f(pos, 1.0f);
+			depth_sorted_translucent_obj.emplace(renderObj, ndc_pos.z);
+		}
+		Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT.clear();
+		while (!depth_sorted_translucent_obj.empty())
+		{
+			auto translucent_renderObj = depth_sorted_translucent_obj.top();
+			Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT.push_back(translucent_renderObj.obj);
+			depth_sorted_translucent_obj.pop();
+		}
+	}
 }
 
 void longmarch::Scene3DComSys::PrepareScene(double dt)
@@ -161,139 +213,105 @@ void longmarch::Scene3DComSys::RenderOpaqueObj()
 	}
 }
 
-void longmarch::Scene3DComSys::RenderTranslucentObj(const PerspectiveCamera* camera)
+void longmarch::Scene3DComSys::RenderTransparentObj()
 {
-	struct RenderTranslucentObj_CPU
-	{
-		explicit RenderTranslucentObj_CPU(const Renderer3D::RenderObj_CPU& e, float d)
-			:
-			obj(e),
-			distance(d)
-		{}
-		Renderer3D::RenderObj_CPU obj;
-		float distance;
-	};
-	struct RenderTranslucentObj_CPU_ComparatorLesser // used in priority queue that puts objects in greater distances at front
-	{
-		bool operator()(const RenderTranslucentObj_CPU& lhs, const RenderTranslucentObj_CPU& rhs) noexcept
-		{
-			return lhs.distance < rhs.distance;
-		}
-	};
-
-	std::priority_queue<RenderTranslucentObj_CPU, LongMarch_Vector<RenderTranslucentObj_CPU>, RenderTranslucentObj_CPU_ComparatorLesser> depth_sorted_translucent_obj;
-	Mat4 pv = camera->GetViewProjectionMatrix();
 	for (auto& renderObj : Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT)
 	{
-		auto pos = renderObj.entity.GetComponent<Transform3DCom>()->GetGlobalPos();
-		auto ndc_pos = pv * Vec4f(pos, 1.0f);
-		depth_sorted_translucent_obj.emplace(renderObj, ndc_pos.z);
-	}
-
-	while (!depth_sorted_translucent_obj.empty())
-	{
-		auto translucent_renderObj = depth_sorted_translucent_obj.top();
-		RenderWithModeTranslucent(translucent_renderObj.obj, camera);
-		depth_sorted_translucent_obj.pop();
+		RenderWithModeTransparent(renderObj);
 	}
 }
 
 void longmarch::Scene3DComSys::RenderWithModeOpaque(Renderer3D::RenderObj_CPU& renderObj)
 {
+	auto scene = renderObj.entity.GetComponent<Scene3DCom>();
+	scene->SetShaderName(m_RenderShaderName);
+		
+	if (auto body = renderObj.entity.GetComponent<Body3DCom>(); body.Valid())
 	{
-		auto scene = renderObj.entity.GetComponent<Scene3DCom>();
-		scene->SetShaderName(m_RenderShaderName);
-		auto body = renderObj.entity.GetComponent<Body3DCom>();
-		if (body.Valid())
+		if (const auto& bv = body->GetBoundingVolume(); bv)
 		{
-			if (const auto& bv = body->GetBoundingVolume(); bv)
+			if (DistanceCullingTest(bv))
 			{
-				if (DistanceCullingTest(bv))
-				{
-					scene->SetShouldDraw(false, false);
-				}
-				else if (ViewFustrumCullingTest(bv))
-				{
-					scene->SetShouldDraw(false, false);
-				}
+				scene->SetShouldDraw(false, false);
+			}
+			else if (ViewFustrumCullingTest(bv))
+			{
+				scene->SetShouldDraw(false, false);
 			}
 		}
+	}
+	switch (m_RenderMode)
+	{
+	case RenderMode::SCENE:
+	{
+		if (!scene->IsHideInGame())
 		{
-			switch (m_RenderMode)
-			{
-			case RenderMode::SCENE:
-			{
-				scene->Draw();
-			}
-			break;
-			case RenderMode::SHADOW:
-			{
-				if (scene->IsCastShadow())
-				{
-					scene->Draw();
-				}
-			}
-			break;
-			}
+			scene->Draw();
 		}
+	}
+	break;
+	case RenderMode::SHADOW:
+	{
+		if (!scene->IsHideInGame() && scene->IsCastShadow())
+		{
+			scene->Draw();
+		}
+	}
+	break;
 	}
 }
 
 
-void longmarch::Scene3DComSys::RenderWithModeTranslucent(Renderer3D::RenderObj_CPU& renderObj, const PerspectiveCamera* camera)
+void longmarch::Scene3DComSys::RenderWithModeTransparent(Renderer3D::RenderObj_CPU& renderObj)
 {
+	auto particle = renderObj.entity.GetComponent<Particle3DCom>();
+	bool isParticle = particle.Valid();
+	auto scene = renderObj.entity.GetComponent<Scene3DCom>();
+	scene->SetShaderName(m_RenderShaderName);
+
+	if (auto body = renderObj.entity.GetComponent<Body3DCom>(); body.Valid())
 	{
-		auto particle = renderObj.entity.GetComponent<Particle3DCom>();
-		bool isParticle = particle.Valid();
-		auto scene = renderObj.entity.GetComponent<Scene3DCom>();
-		scene->SetShaderName(m_RenderShaderName);
-		auto body = renderObj.entity.GetComponent<Body3DCom>();
-		if (body.Valid())
+		if (const auto& bv = body->GetBoundingVolume(); bv)
 		{
-			if (const auto& bv = body->GetBoundingVolume(); bv)
+			if (DistanceCullingTest(bv))
 			{
-				if (DistanceCullingTest(bv))
-				{
-					scene->SetShouldDraw(false, false);
-				}
-				else if (ViewFustrumCullingTest(bv))
-				{
-					scene->SetShouldDraw(false, false);
-				}
-				if (isParticle)
-				{
-					particle->SetRendering(scene->GetShouldDraw());
-				}
+				scene->SetShouldDraw(false, false);
+			}
+			else if (ViewFustrumCullingTest(bv))
+			{
+				scene->SetShouldDraw(false, false);
+			}
+			if (isParticle)
+			{
+				particle->SetRendering(scene->GetShouldDraw());
 			}
 		}
+	}
+	switch (m_RenderMode)
+	{
+	case RenderMode::SCENE:
+	{
+		if (!scene->IsHideInGame())
 		{
-			switch (m_RenderMode)
+			if (isParticle)
 			{
-			case RenderMode::SCENE:
-			{
-				if (!scene->IsHideInGame())
-				{
-					if (isParticle)
-					{
-						particle->RenderParticleSystems(camera);
-					}
-					else
-					{
-						scene->Draw();
-					}
-				}
+				particle->Draw();
 			}
-			break;
-			case RenderMode::SHADOW:
+			else
 			{
-				if (scene->IsCastShadow())
-				{
-					scene->Draw();
-				}
-			}
-			break;
+				scene->Draw();
 			}
 		}
+	}
+	break;
+	case RenderMode::SHADOW:
+	{
+		if (!scene->IsHideInGame() && scene->IsCastShadow())
+		{
+			scene->Draw();
+		}
+	}
+	break;
 	}
 }
 

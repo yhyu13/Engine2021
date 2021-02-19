@@ -82,7 +82,7 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 	EntityType e_type;
 	switch (Engine::GetEngineMode())
 	{
-	case Engine::ENGINE_MODE::EDITING: case Engine::ENGINE_MODE::INGAME_EDITING:
+	case Engine::ENGINE_MODE::EDITING:
 		e_type = (EntityType)EngineEntityType::EDITOR_CAMERA;
 		break;
 	default:

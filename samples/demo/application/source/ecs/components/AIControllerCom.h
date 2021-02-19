@@ -10,8 +10,8 @@ namespace longmarch
 	{
 	public:
 		// Member Functions
-		AIControllerCom() = delete;
-		explicit AIControllerCom(Entity _this);
+		AIControllerCom() = default;
+		explicit AIControllerCom(const EntityDecorator& _this);
 
 		void Update(double dt);
 

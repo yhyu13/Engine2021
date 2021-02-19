@@ -18,9 +18,5 @@ namespace longmarch
 
 		Particle3DComSys();
 		virtual void Update(double dt) override;
-		
-		void RenderParticleSystems(const PerspectiveCamera* camera);
-	private:
-		void Sort(const PerspectiveCamera* camera);
 	};
 }

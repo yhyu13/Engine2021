@@ -45,14 +45,11 @@ void longmarch::_3DEditorLayer::BuildRenderPipeline()
 		EntityType e_type;
 		switch (Engine::GetEngineMode())
 		{
-		case Engine::ENGINE_MODE::EDITING: case Engine::ENGINE_MODE::INGAME_EDITING:
+		case Engine::ENGINE_MODE::EDITING: 
 			e_type = (EntityType)EngineEntityType::EDITOR_CAMERA;
 			break;
 		case Engine::ENGINE_MODE::INGAME:
 			e_type = (EntityType)EngineEntityType::PLAYER_CAMERA;
-			break;
-		case Engine::ENGINE_MODE::INGAME_FREEROAM:
-			e_type = (EntityType)EngineEntityType::FREEROAM_CAMERA;
 			break;
 		default:
 			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Engine mode is not valid!");
@@ -70,7 +67,7 @@ void longmarch::_3DEditorLayer::BuildRenderPipeline()
 			// callbacks for scene rendering
 			auto scene3DComSys = static_cast<Scene3DComSys*>(GameWorld::GetCurrent()->GetComponentSystem("Scene3DComSys"));
 			std::function<void()> f_render_opaque = std::bind(&Scene3DComSys::RenderOpaqueObj, scene3DComSys);
-			std::function<void(const PerspectiveCamera*)> f_render_translucent = std::bind(&Scene3DComSys::RenderTranslucentObj, scene3DComSys, std::placeholders::_1);
+			std::function<void()> f_render_translucent = std::bind(&Scene3DComSys::RenderTransparentObj, scene3DComSys);
 			std::function<void(bool, const ViewFrustum&, const Mat4&)> f_setVFCullingParam = std::bind(&Scene3DComSys::SetVFCullingParam, scene3DComSys, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 			std::function<void(bool, const Vec3f&, float, float)> f_setDistanceCullingParam = std::bind(&Scene3DComSys::SetDistanceCullingParam, scene3DComSys, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
 			std::function<void(const std::string&)> f_setRenderShaderName = std::bind(&Scene3DComSys::SetRenderShaderName, scene3DComSys, std::placeholders::_1);
@@ -80,8 +77,14 @@ void longmarch::_3DEditorLayer::BuildRenderPipeline()
 				{
 					ENG_TIME("Opaque Shadow pass");
 					scene3DComSys->SetRenderMode(Scene3DComSys::RenderMode::SHADOW);
-					Renderer3D::BeginShadowing(cam, f_render_opaque, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
-					Renderer3D::EndShadowing();
+					Renderer3D::BeginOpaqueShadowing(cam, f_render_opaque, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
+					Renderer3D::EndOpaqueShadowing();
+				} 
+				{
+					ENG_TIME("Transparent Shadow pass");
+					scene3DComSys->SetRenderMode(Scene3DComSys::RenderMode::SHADOW);
+					Renderer3D::BeginTransparentShadowing(cam, f_render_translucent, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
+					Renderer3D::EndTransparentShadowing();
 				}
 				{
 					ENG_TIME("Opaque Scene pass");
@@ -95,21 +98,11 @@ void longmarch::_3DEditorLayer::BuildRenderPipeline()
 					Renderer3D::EndOpaqueLighting();
 				}
 				{
-					ENG_TIME("Translucent Scene pass");
+					ENG_TIME("Transparent Scene pass");
 					scene3DComSys->SetRenderMode(Scene3DComSys::RenderMode::SCENE);
-					Renderer3D::BeginTranslucentSceneAndLighting(cam, f_render_translucent, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
-					Renderer3D::EndTranslucentSceneAndLighting();
+					Renderer3D::BeginTransparentSceneAndLighting(cam, f_render_translucent, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
+					Renderer3D::EndTransparentSceneAndLighting();
 				}
-				/* [DEPRECATED] Particle rendering has been moved to Scene3DComSys::RenderTranslucentObj
-				{
-					ENG_TIME("Particle pass");
-					// callbacks for particle rendering 
-					auto particle3DComSys = static_cast<Particle3DComSys*>(GameWorld::GetCurrent()->GetComponentSystem("Particle3DComSys"));
-					std::function<void(PerspectiveCamera*)> f_render_particle = std::bind(&Particle3DComSys::RenderParticleSystems, particle3DComSys, std::placeholders::_1);
-
-					Renderer3D::BeginRenderingParticles(cam, f_render_particle);
-					Renderer3D::EndRenderingParticles();
-				}*/
 				{
 					ENG_TIME("Postprocessing pass");
 					Renderer3D::BeginPostProcessing();

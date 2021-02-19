@@ -34,7 +34,7 @@ namespace longmarch
 
 			switch (Engine::GetEngineMode())
 			{
-			case Engine::ENGINE_MODE::EDITING:
+			case Engine::ENGINE_MODE::EDITING: 
 				Engine::GetInstance()->SwitchCurrentLayer(Layer::LAYER_TYPE::ENG_LAYER);
 				break; 
 			case Engine::ENGINE_MODE::INGAME:

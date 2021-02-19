@@ -153,8 +153,8 @@ void longmarch::Renderer3D::Init()
 		s_Data.ShaderMap["BuildAABBGridCompShader"] = Shader::Create("$shader:cluster_grid.comp");
 		s_Data.ShaderMap["CullLightsCompShader"] = Shader::Create("$shader:cluster_cull_light.comp");
 		s_Data.ShaderMap["ClusterDebugShader"] = Shader::Create("$shader:debug_clusters.vert", "$shader:debug_clusters.frag", "$shader:debug_clusters.geom");
-		s_Data.ShaderMap["ClusterShader"] = Shader::Create("$shader:cluster_shader.vert", "$shader:cluster_shader.frag");
-		s_Data.ShaderMap["TranslucentForwardShader"] = Shader::Create("$shader:forward_shader.vert", "$shader:forward_shader.frag");
+		s_Data.ShaderMap["TransparentForwardShader"] = Shader::Create("$shader:forward_shader.vert", "$shader:forward_shader.frag"); 
+		s_Data.ShaderMap["PickingSystemShader_Particle"] = Shader::Create("$shader:picking_entity_id_shader_particle.vert", "$shader:picking_entity_id_shader_particle.frag");
 		s_Data.ShaderMap["DeferredShader"] = Shader::Create("$shader:deferred_shader.vert", "$shader:deferred_shader.frag");
 		s_Data.ShaderMap["DynamicAOShader"] = Shader::Create("$shader:dynamic_ao_shader.vert", "$shader:dynamic_ao_shader.frag");
 
@@ -192,6 +192,7 @@ void longmarch::Renderer3D::Init()
 		switch (s_Data.RENDER_MODE)
 		{
 		case RENDER_MODE::CANONICAL:
+			s_Data.ShaderMap["ClusterShader"] = Shader::Create("$shader:cluster_shader.vert", "$shader:cluster_shader.frag");
 			s_Data.ShaderMap["ForwardShader"] = Shader::Create("$shader:forward_shader.vert", "$shader:forward_shader.frag");
 			s_Data.ShaderMap["GBufferShader"] = Shader::Create("$shader:gBuffer_shader.vert", "$shader:gBuffer_shader.frag");
 			s_Data.ShaderMap["MSMShadowBuffer"] = Shader::Create("$shader:momentShadowMap_shader.vert", "$shader:momentShadowMap_shader.frag");
@@ -199,6 +200,7 @@ void longmarch::Renderer3D::Init()
 			s_Data.ShaderMap["PickingSystemShader"] = Shader::Create("$shader:picking_entity_id_shader.vert", "$shader:picking_entity_id_shader.frag");
 			break;
 		case RENDER_MODE::MULTIDRAW:
+			s_Data.ShaderMap["ClusterShader"] = Shader::Create("$shader:cluster_shader_MultiDraw.vert", "$shader:cluster_shader_MultiDraw.frag");
 			s_Data.ShaderMap["ForwardShader"] = Shader::Create("$shader:forward_shader_MultiDraw.vert", "$shader:forward_shader_MultiDraw.frag");
 			s_Data.ShaderMap["GBufferShader"] = Shader::Create("$shader:gBuffer_shader_MultiDraw.vert", "$shader:gBuffer_shader_MultiDraw.frag");
 			s_Data.ShaderMap["MSMShadowBuffer"] = Shader::Create("$shader:momentShadowMap_shader_MultiDraw.vert", "$shader:momentShadowMap_shader.frag");
@@ -254,7 +256,7 @@ void longmarch::Renderer3D::Init()
 		}
 		s_Data.CurrentShader = s_Data.ShaderMap["OpaqueRenderShader"];
 
-		LongMarch_Vector<std::string> forwardShader = { "ForwardShader", "TranslucentForwardShader" };
+		LongMarch_Vector<std::string> forwardShader = { "ForwardShader", "TransparentForwardShader" };
 		LongMarch_Vector<std::string> clusteredShader = { "BuildAABBGridCompShader", "CullLightsCompShader","ClusterShader", "ClusterDebugShader" };
 		LongMarch_Vector<std::string> deferredShader = { "GBufferShader","DeferredShader" };
 
@@ -772,10 +774,10 @@ void longmarch::Renderer3D::BeginRendering()
 }
 
 /**************************************************************
-*	Render3D highlevel API : BeginShadowing
+*	Render3D highlevel API : BeginOpaqueShadowing
 *
 **************************************************************/
-void longmarch::Renderer3D::BeginShadowing(
+void longmarch::Renderer3D::BeginOpaqueShadowing(
 	const PerspectiveCamera* camera,
 	const std::function<void()>& f_render,
 	const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
@@ -1448,8 +1450,8 @@ void longmarch::Renderer3D::BeginShadowing(
 		s_Data.NUM_SPOT_LIGHT = s_Data.cpuBuffer.SPOT_LIGHT_PROCESSED.size();
 		s_Data.NUM_SHADOW = s_Data.cpuBuffer.SHADOW_DATA_PROCESSED.size();
 	}
-	// Compute shader blurring reference
-	/*Vec2u traget_resoluation3 = Vec2u(s_Data.resolution_shadowMap);
+	/* [REFERENCE] Compute shader blurring reference
+	Vec2u traget_resoluation3 = Vec2u(s_Data.resolution_shadowMap);
 	std::shared_ptr<ComputeBuffer> shadowBuffer3 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered[j];
 	if (!shadowBuffer3 || shadowBuffer3->GetBufferSize() != traget_resoluation3)
 	{
@@ -1468,101 +1470,118 @@ void longmarch::Renderer3D::BeginShadowing(
 			traget_resoluation4.y,
 			ComputeBuffer::BUFFER_FORMAT::Float16);
 		s_Data.gpuBuffer.ShadowComputeBufferList_Buffered_2nd[j] = shadowBuffer4;
-	}*/
-	// Compute shader blurring reference
-	//static unsigned int group_size = 512;
-	//static unsigned int num_sample = 11;
-	//static auto weights = DistributionMath::Gaussian1D(num_sample, 0, num_sample/4);
-	//static auto weightsBuffer = UniformBuffer::Create(&weights[0], sizeof(float)* weights.X());
-	//s_Data.CurrentShader = s_Data.ShaderMap["GaussianBlur_Comp_H"];
-	//s_Data.CurrentShader->Bind();
-	//weightsBuffer->Bind(2);
-	//for (int i = 0; i < s_Data.NUM_LIGHT; ++i)
-	//{
-	//	const auto& currentLight = s_Data.LIST_LIGHTS_PROCESSED[i];
-	//	if (currentLight.castShadow)
-	//	{
-	//		const auto& shadowBuffer = s_Data.gpuBuffer.ShadowBufferList[i];
-	//		const auto& shadowBuffer3 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered[i];
-	//		const auto& shadowBuffer4 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered_2nd[i];
-	//		const auto& traget_resoluation = shadowBuffer->GetBufferSize();
-	//		const auto& traget_resoluation3 = shadowBuffer3->GetBufferSize();
-	//		const auto& traget_resoluation4 = shadowBuffer4->GetBufferSize();
+	}
 
-	//		RenderCommand::TransferColorBit(shadowBuffer->GetRendererID(),
-	//			traget_resoluation.x,
-	//			traget_resoluation.y,
-	//			shadowBuffer3->GetRendererID(),
-	//			traget_resoluation3.x,
-	//			traget_resoluation3.y
-	//		);
-	//		{
-	//			// Bind shadow buffer
-	//			shadowBuffer4->Bind();
-	//			shadowBuffer3->BindTexture(0, ComputeBuffer::TEXTURE_BIND_MODE::READ_ONLY);
-	//			shadowBuffer4->BindTexture(1, ComputeBuffer::TEXTURE_BIND_MODE::WRITE_ONLY);
-	//			glDispatchCompute(traget_resoluation3.x / group_size, traget_resoluation3.y, 1);
-	//			//glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-	//		}
-	//	}
-	//}
-	//s_Data.CurrentShader = s_Data.ShaderMap["GaussianBlur_Comp_V"];
-	//s_Data.CurrentShader->Bind();
-	//weightsBuffer->Bind(2);
-	//for (int i = 0; i < s_Data.NUM_LIGHT; ++i)
-	//{
-	//	const auto& currentLight = s_Data.LIST_LIGHTS_PROCESSED[i];
-	//	if (currentLight.castShadow)
-	//	{
-	//		const auto& shadowBuffer = s_Data.gpuBuffer.ShadowBufferList[i];
-	//		const auto& shadowBuffer3 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered[i];
-	//		const auto& shadowBuffer4 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered_2nd[i];
-	//		const auto& traget_resoluation = shadowBuffer->GetBufferSize();
-	//		const auto& traget_resoluation3 = shadowBuffer3->GetBufferSize();
-	//		const auto& traget_resoluation4 = shadowBuffer4->GetBufferSize();
-	//		{
-	//			// Bind shadow buffer
-	//			shadowBuffer3->Bind();
-	//			shadowBuffer4->BindTexture(0, ComputeBuffer::TEXTURE_BIND_MODE::READ_ONLY);
-	//			shadowBuffer3->BindTexture(1, ComputeBuffer::TEXTURE_BIND_MODE::WRITE_ONLY);
-	//
-	//			glDispatchCompute(traget_resoluation4.x, traget_resoluation4.y / group_size, 1);
-	//			//glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-	//		}
-	//	}
-	//}
-	//for (int i = 0; i < s_Data.NUM_LIGHT; ++i)
-	//{
-	//	const auto& currentLight = s_Data.LIST_LIGHTS_PROCESSED[i];
-	//	if (currentLight.castShadow)
-	//	{
-	//		const auto& shadowBuffer = s_Data.gpuBuffer.ShadowBufferList[i];
-	//		const auto& shadowBuffer3 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered[i];
-	//		const auto& shadowBuffer4 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered_2nd[i];
-	//		const auto& traget_resoluation = shadowBuffer->GetBufferSize();
-	//		const auto& traget_resoluation3 = shadowBuffer3->GetBufferSize();
-	//		const auto& traget_resoluation4 = shadowBuffer4->GetBufferSize();
-	//		RenderCommand::TransferColorBit(shadowBuffer3->GetRendererID(),
-	//			traget_resoluation3.x,
-	//			traget_resoluation3.y,
-	//			shadowBuffer->GetRendererID(),
-	//			traget_resoluation.x,
-	//			traget_resoluation.y
-	//		);
-	//	}
-	//}
+	static unsigned int group_size = 512;
+	static unsigned int num_sample = 11;
+	static auto weights = DistributionMath::Gaussian1D(num_sample, 0, num_sample/4);
+	static auto weightsBuffer = UniformBuffer::Create(&weights[0], sizeof(float)* weights.X());
+	s_Data.CurrentShader = s_Data.ShaderMap["GaussianBlur_Comp_H"];
+	s_Data.CurrentShader->Bind();
+	weightsBuffer->Bind(2);
+	for (int i = 0; i < s_Data.NUM_LIGHT; ++i)
+	{
+		const auto& currentLight = s_Data.LIST_LIGHTS_PROCESSED[i];
+		if (currentLight.castShadow)
+		{
+			const auto& shadowBuffer = s_Data.gpuBuffer.ShadowBufferList[i];
+			const auto& shadowBuffer3 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered[i];
+			const auto& shadowBuffer4 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered_2nd[i];
+			const auto& traget_resoluation = shadowBuffer->GetBufferSize();
+			const auto& traget_resoluation3 = shadowBuffer3->GetBufferSize();
+			const auto& traget_resoluation4 = shadowBuffer4->GetBufferSize();
+
+			RenderCommand::TransferColorBit(shadowBuffer->GetRendererID(),
+				traget_resoluation.x,
+				traget_resoluation.y,
+				shadowBuffer3->GetRendererID(),
+				traget_resoluation3.x,
+				traget_resoluation3.y
+			);
+			{
+				// Bind shadow buffer
+				shadowBuffer4->Bind();
+				shadowBuffer3->BindTexture(0, ComputeBuffer::TEXTURE_BIND_MODE::READ_ONLY);
+				shadowBuffer4->BindTexture(1, ComputeBuffer::TEXTURE_BIND_MODE::WRITE_ONLY);
+				glDispatchCompute(traget_resoluation3.x / group_size, traget_resoluation3.y, 1);
+				//glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+			}
+		}
+	}
+	s_Data.CurrentShader = s_Data.ShaderMap["GaussianBlur_Comp_V"];
+	s_Data.CurrentShader->Bind();
+	weightsBuffer->Bind(2);
+	for (int i = 0; i < s_Data.NUM_LIGHT; ++i)
+	{
+		const auto& currentLight = s_Data.LIST_LIGHTS_PROCESSED[i];
+		if (currentLight.castShadow)
+		{
+			const auto& shadowBuffer = s_Data.gpuBuffer.ShadowBufferList[i];
+			const auto& shadowBuffer3 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered[i];
+			const auto& shadowBuffer4 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered_2nd[i];
+			const auto& traget_resoluation = shadowBuffer->GetBufferSize();
+			const auto& traget_resoluation3 = shadowBuffer3->GetBufferSize();
+			const auto& traget_resoluation4 = shadowBuffer4->GetBufferSize();
+			{
+				// Bind shadow buffer
+				shadowBuffer3->Bind();
+				shadowBuffer4->BindTexture(0, ComputeBuffer::TEXTURE_BIND_MODE::READ_ONLY);
+				shadowBuffer3->BindTexture(1, ComputeBuffer::TEXTURE_BIND_MODE::WRITE_ONLY);
+	
+				glDispatchCompute(traget_resoluation4.x, traget_resoluation4.y / group_size, 1);
+				//glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+			}
+		}
+	}
+	for (int i = 0; i < s_Data.NUM_LIGHT; ++i)
+	{
+		const auto& currentLight = s_Data.LIST_LIGHTS_PROCESSED[i];
+		if (currentLight.castShadow)
+		{
+			const auto& shadowBuffer = s_Data.gpuBuffer.ShadowBufferList[i];
+			const auto& shadowBuffer3 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered[i];
+			const auto& shadowBuffer4 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered_2nd[i];
+			const auto& traget_resoluation = shadowBuffer->GetBufferSize();
+			const auto& traget_resoluation3 = shadowBuffer3->GetBufferSize();
+			const auto& traget_resoluation4 = shadowBuffer4->GetBufferSize();
+			RenderCommand::TransferColorBit(shadowBuffer3->GetRendererID(),
+				traget_resoluation3.x,
+				traget_resoluation3.y,
+				shadowBuffer->GetRendererID(),
+				traget_resoluation.x,
+				traget_resoluation.y
+			);
+		}
+	}
+	*/
 }
 
 /**************************************************************
-*	Render3D highlevel API : EndShadowing
+*	Render3D highlevel API : EndOpaqueShadowing
 *
 **************************************************************/
-void longmarch::Renderer3D::EndShadowing()
+void longmarch::Renderer3D::EndOpaqueShadowing()
 {
 }
 
 /**************************************************************
-*	Render3D highlevel API : BeginScene
+*	Render3D highlevel API : BeginTransparentShadowing
+*
+**************************************************************/
+void longmarch::Renderer3D::BeginTransparentShadowing(const PerspectiveCamera* camera, const std::function<void()>& f_render, const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam, const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam, const std::function<void(const std::string&)>& f_setRenderShaderName)
+{
+}
+
+/**************************************************************
+*	Render3D highlevel API : EndTransparentShadowing
+*
+**************************************************************/
+void longmarch::Renderer3D::EndTransparentShadowing()
+{
+}
+
+/**************************************************************
+*	Render3D highlevel API : BeginOpaqueScene
 *
 **************************************************************/
 void longmarch::Renderer3D::BeginOpaqueScene(
@@ -1637,52 +1656,6 @@ void longmarch::Renderer3D::BeginOpaqueScene(
 			ENG_TIME("Scene phase (Opaque): BATCH RENDER");
 			CommitBatchRendering();
 		}
-	}
-}
-
-void longmarch::Renderer3D::RenderParticles(const LongMarch_Vector<std::pair<std::shared_ptr<Texture2D>, ParticleInstanceData>>& particleData, const PerspectiveCamera* camera)
-{
-	s_Data.CurrentShader = s_Data.ShaderMap["ParticleShader"];
-	s_Data.CurrentShader->Bind();
-
-	for (auto& [texture, instanceData] : particleData)
-	{
-		texture->BindTexture(0);
-		s_Data.CurrentShader->SetFloat("rows", instanceData.textureRows);
-
-		int pointer = 0;
-		float* data = new float[instanceData.models.size() * Renderer3D::PARTICLE_INSTANCED_DATA_LENGTH];
-		for (size_t i = 0; i < instanceData.models.size(); ++i)
-		{
-			const auto& matrix = instanceData.models[i];
-			data[pointer++] = matrix[0][0];
-			data[pointer++] = matrix[0][1];
-			data[pointer++] = matrix[0][2];
-			data[pointer++] = matrix[0][3];
-			data[pointer++] = matrix[1][0];
-			data[pointer++] = matrix[1][1];
-			data[pointer++] = matrix[1][2];
-			data[pointer++] = matrix[1][3];
-			data[pointer++] = matrix[2][0];
-			data[pointer++] = matrix[2][1];
-			data[pointer++] = matrix[2][2];
-			data[pointer++] = matrix[2][3];
-			data[pointer++] = matrix[3][0];
-			data[pointer++] = matrix[3][1];
-			data[pointer++] = matrix[3][2];
-			data[pointer++] = matrix[3][3];
-
-			const Vec4f& offsets = instanceData.textureOffsets[i];
-			data[pointer++] = offsets.x;
-			data[pointer++] = offsets.y;
-			data[pointer++] = offsets.z;
-			data[pointer++] = offsets.w;
-
-			const float blendFactor = instanceData.blendFactors[i];
-			data[pointer++] = blendFactor;
-		}
-		_RenderParticles(data, instanceData.models.size(), s_Data.gpuBuffer.CurrentFrameBuffer);
-		delete[] data;
 	}
 }
 
@@ -2037,7 +2010,7 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 }
 
 /**************************************************************
-*	Render3D highlevel API : EndScene
+*	Render3D highlevel API : EndOpaqueScene
 *
 **************************************************************/
 void longmarch::Renderer3D::EndOpaqueScene()
@@ -2045,7 +2018,7 @@ void longmarch::Renderer3D::EndOpaqueScene()
 }
 
 /**************************************************************
-*	Render3D highlevel API : BeginLighting
+*	Render3D highlevel API : BeginOpaqueLighting
 *
 **************************************************************/
 void longmarch::Renderer3D::BeginOpaqueLighting(
@@ -2353,7 +2326,7 @@ void longmarch::Renderer3D::_RenderBoundingBox(const std::shared_ptr<FrameBuffer
 }
 
 /**************************************************************
-*	Render3D highlevel API : EndLighting
+*	Render3D highlevel API : EndOpaqueLighting
 *
 **************************************************************/
 void longmarch::Renderer3D::EndOpaqueLighting()
@@ -2361,10 +2334,14 @@ void longmarch::Renderer3D::EndOpaqueLighting()
 	Renderer3D::_RenderBoundingBox(s_Data.gpuBuffer.CurrentFrameBuffer);
 }
 
-void longmarch::Renderer3D::BeginTranslucentSceneAndLighting(const PerspectiveCamera* camera, const std::function<void(const PerspectiveCamera*)>& f_render, const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam, const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam, const std::function<void(const std::string&)>& f_setRenderShaderName)
+/**************************************************************
+*	Render3D highlevel API : BeginTransparentSceneAndLighting
+*
+**************************************************************/
+void longmarch::Renderer3D::BeginTransparentSceneAndLighting(const PerspectiveCamera* camera, const std::function<void()>& f_render, const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam, const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam, const std::function<void(const std::string&)>& f_setRenderShaderName)
 {
 	{
-		ENG_TIME("Scene phase (Translucent): BEGIN");
+		ENG_TIME("Scene phase (Transparent): BEGIN");
 		auto render_pipe_original = s_Data.RENDER_PIPE;
 		auto render_mode_original = s_Data.RENDER_MODE;
 		s_Data.RENDER_PASS = RENDER_PASS::SCENE;
@@ -2380,15 +2357,15 @@ void longmarch::Renderer3D::BeginTranslucentSceneAndLighting(const PerspectiveCa
 		
 		{
 			// Bind default shader here to avoid rebinding in the subsequent draw call
-			s_Data.CurrentShader = s_Data.ShaderMap["TranslucentForwardShader"];
+			s_Data.CurrentShader = s_Data.ShaderMap["TransparentForwardShader"];
 			s_Data.CurrentShader->Bind();
 			// Rendering
 			{
-				ENG_TIME("Scene phase (Translucent): LOOPING");
-				f_setRenderShaderName("TranslucentForwardShader");
+				ENG_TIME("Scene phase (Transparent): LOOPING");
+				f_setRenderShaderName("TransparentForwardShader");
 				f_setVFCullingParam(true, camera->GetViewFrustumInViewSpace(), camera->GetViewMatrix());
 				f_setDistanceCullingParam(false, Vec3f(), 0, 0);
-				f_render(camera);
+				f_render();
 			}
 		}
 
@@ -2397,7 +2374,11 @@ void longmarch::Renderer3D::BeginTranslucentSceneAndLighting(const PerspectiveCa
 	}
 }
 
-void longmarch::Renderer3D::EndTranslucentSceneAndLighting()
+/**************************************************************
+*	Render3D highlevel API : EndTransparentSceneAndLighting
+*
+**************************************************************/
+void longmarch::Renderer3D::EndTransparentSceneAndLighting()
 {
 }
 
@@ -2830,19 +2811,6 @@ void longmarch::Renderer3D::EndRendering()
 	);
 }
 
-void longmarch::Renderer3D::BeginRenderingParticles(PerspectiveCamera* camera, const std::function<void(PerspectiveCamera*)>& f_render)
-{
-	RenderCommand::Blend(true);
-	RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ALPHA_BLEND_1);
-	RenderCommand::DepthTest(true, false);
-	RenderCommand::CullFace(false, false);
-	f_render(camera);
-}
-
-void longmarch::Renderer3D::EndRenderingParticles()
-{
-}
-
 void longmarch::Renderer3D::_RenderFullScreenQuad()
 {
 	// Render quad
@@ -2885,6 +2853,11 @@ void longmarch::Renderer3D::Draw(const RenderData_CPU& data)
 		auto& _multiDrawBuffer = Renderer3D::s_Data.multiDrawBuffer;
 		_multiDrawBuffer.MultiDraw_MeshDataToDraw[data.mesh].emplace_back(_multiDrawBuffer.MultiDraw_MeshDataToDrawIndexCounter++);
 		_multiDrawBuffer.MultiDraw_BoneBaseOffset.emplace_back(0); // TODO : need update RenderData_CPU to include animation
+	}
+	break;
+	case Renderer3D::RENDER_MODE::CANONICAL:
+	{
+		data.mesh->Draw();
 	}
 	break;
 	}
@@ -3124,6 +3097,67 @@ void longmarch::Renderer3D::DrawMesh(const std::shared_ptr<VertexArray>& MeshVer
 }
 
 /**************************************************************
+*	Render3D lowleve API : DrawParticles
+*
+**************************************************************/
+void longmarch::Renderer3D::DrawParticles(const ParticleInstanceDrawData& particleData)
+{
+	s_Data.CurrentShader = s_Data.ShaderMap["ParticleShader"];
+	s_Data.CurrentShader->Bind();
+
+	for (auto& [texture, instanceData] : particleData)
+	{
+		texture->BindTexture(0);
+		s_Data.CurrentShader->SetFloat("rows", instanceData.textureRows);
+
+		int pointer = 0;
+		float* data = new float[instanceData.models.size() * Renderer3D::PARTICLE_INSTANCED_DATA_LENGTH];
+		for (size_t i = 0; i < instanceData.models.size(); ++i)
+		{
+			const auto& matrix = instanceData.models[i];
+			data[pointer++] = matrix[0][0];
+			data[pointer++] = matrix[0][1];
+			data[pointer++] = matrix[0][2];
+			data[pointer++] = matrix[0][3];
+			data[pointer++] = matrix[1][0];
+			data[pointer++] = matrix[1][1];
+			data[pointer++] = matrix[1][2];
+			data[pointer++] = matrix[1][3];
+			data[pointer++] = matrix[2][0];
+			data[pointer++] = matrix[2][1];
+			data[pointer++] = matrix[2][2];
+			data[pointer++] = matrix[2][3];
+			data[pointer++] = matrix[3][0];
+			data[pointer++] = matrix[3][1];
+			data[pointer++] = matrix[3][2];
+			data[pointer++] = matrix[3][3];
+
+			const Vec4f& offsets = instanceData.textureOffsets[i];
+			data[pointer++] = offsets.x;
+			data[pointer++] = offsets.y;
+			data[pointer++] = offsets.z;
+			data[pointer++] = offsets.w;
+
+			const float blendFactor = instanceData.blendFactors[i];
+			data[pointer++] = blendFactor;
+		}
+		DrawParticlesInstance(data, instanceData.models.size());
+		delete[] data;
+	}
+}
+
+/**************************************************************
+*	Render3D lowleve API : DrawParticlesInstance
+*
+**************************************************************/
+void longmarch::Renderer3D::DrawParticlesInstance(float* data, const int instanceCount)
+{
+	s_Data.gpuBuffer.particleInstBO->UpdateBufferData(data, instanceCount * PARTICLE_INSTANCED_DATA_LENGTH * sizeof(float));
+	s_Data.gpuBuffer.particleVAO->Bind();
+	RenderCommand::DrawTriangleIndexedInstanced(s_Data.gpuBuffer.particleVAO, instanceCount);
+}
+
+/**************************************************************
 *	Render3D private method : Render batch
 *
 **************************************************************/
@@ -3331,14 +3365,6 @@ void longmarch::Renderer3D::_RestBatchTextureList()
 	s_Data.multiDrawBuffer.MultiDraw_TextureId.clear();
 	s_Data.multiDrawBuffer.MultiDraw_TextureId.emplace_back(s_Data.fragTexture_empty_slot); //! Always emplace an emppty slot for an empty texture
 	s_Data.multiDrawBuffer.MultiDraw_UniqueTextureLUT.clear();
-}
-
-void longmarch::Renderer3D::_RenderParticles(float* data, const int& instanceCount, const std::shared_ptr<FrameBuffer>& framebuffer_out)
-{
-	s_Data.gpuBuffer.particleInstBO->UpdateBufferData(data, instanceCount * PARTICLE_INSTANCED_DATA_LENGTH * sizeof(GLfloat));
-	s_Data.gpuBuffer.particleVAO->Bind();
-	RenderCommand::DrawTriangleIndexedInstanced(s_Data.gpuBuffer.particleVAO, instanceCount);
-	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
 void longmarch::Renderer3D::BuildAllMesh()

@@ -81,20 +81,22 @@ namespace longmarch
 		*
 		**************************************************************/
 
-		static const int MAX_PARTICLE_INSTANCES = 10000;
-		static const int PARTICLE_INSTANCED_DATA_LENGTH = 21;
-		struct ParticleInstanceData
+		constexpr static int MAX_PARTICLE_INSTANCES = 10000;
+		constexpr static int PARTICLE_INSTANCED_DATA_LENGTH = 21;
+		struct ParticleInstanceData_CPU
 		{
+			Entity entity;
 			LongMarch_Vector<Mat4> models; // model matrix for each particle in the particle-system
 			LongMarch_Vector<Vec4f> textureOffsets; // texture offsets for each particle in the particle-system
 			LongMarch_Vector<float> blendFactors; // blend factor for each particle in the particle-system
 
 			float textureRows; // common for all particles of a particle-system
 
-			ParticleInstanceData()
+			ParticleInstanceData_CPU()
 				: models(), textureOffsets(), blendFactors(), textureRows(1.0f)
 			{}
 		};
+		using ParticleInstanceDrawData = LongMarch_Vector<std::pair<std::shared_ptr<Texture2D>, Renderer3D::ParticleInstanceData_CPU>>;
 
 		struct CACHE_ALIGN8 RenderObj_CPU
 		{
@@ -474,14 +476,23 @@ namespace longmarch
 		static bool ShouldRendering();
 		static void BeginRendering();
 
-		static void BeginShadowing(
+		static void BeginOpaqueShadowing(
 			const PerspectiveCamera* camera,
 			const std::function<void()>& f_render,
 			const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
 			const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
 			const std::function<void(const std::string&)>& f_setRenderShaderName
 		);
-		static void EndShadowing();
+		static void EndOpaqueShadowing();
+
+		static void BeginTransparentShadowing(
+			const PerspectiveCamera* camera,
+			const std::function<void()>& f_render,
+			const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
+			const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
+			const std::function<void(const std::string&)>& f_setRenderShaderName
+		);
+		static void EndTransparentShadowing();
 
 		static void BeginOpaqueScene(
 			const PerspectiveCamera* camera,
@@ -501,20 +512,14 @@ namespace longmarch
 		);
 		static void EndOpaqueLighting();
 
-		static void BeginTranslucentSceneAndLighting(
+		static void BeginTransparentSceneAndLighting(
 			const PerspectiveCamera* camera,
-			const std::function<void(const PerspectiveCamera*)>& f_render,
+			const std::function<void()>& f_render,
 			const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
 			const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
 			const std::function<void(const std::string&)>& f_setRenderShaderName
 		);
-		static void EndTranslucentSceneAndLighting();
-		
-		static void BeginRenderingParticles(
-			PerspectiveCamera* camera,
-			const std::function<void(PerspectiveCamera*)>& f_render
-		);
-		static void EndRenderingParticles();
+		static void EndTransparentSceneAndLighting();
 
 		static void BeginPostProcessing();
 		static void EndPostProcessing();
@@ -530,10 +535,12 @@ namespace longmarch
 		//! For lighting, shadow pass
 		static void Draw(Entity entity, MeshData* Mesh, Material* Mat, const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName);
 		static void Draw(Entity entity, Scene3DNode* sceneNode, const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName);
+
 		//! For canonical drawing
 		static void DrawMesh(const std::shared_ptr<VertexArray>& MeshVertexArray);
-		static void RenderParticles(const LongMarch_Vector<std::pair<std::shared_ptr<Texture2D>, ParticleInstanceData>>& particleData, const PerspectiveCamera* camera);
 
+		static void DrawParticles(const ParticleInstanceDrawData& particleData);
+		static void DrawParticlesInstance(float* data, const int instanceCount);
 
 		/**************************************************************
 		*	Render3D debug rendering API
@@ -622,8 +629,6 @@ namespace longmarch
 		static bool _BeginRenderBatch();
 		static void _EndRenderBatch();
 		static void _RestBatchTextureList();
-
-		static void _RenderParticles(float* data, const int& instanceCount, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 
 	private:
 		static void _ON_TOGGLE_SLICES(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);

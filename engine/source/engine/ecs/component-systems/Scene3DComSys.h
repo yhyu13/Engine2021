@@ -27,7 +27,7 @@ namespace longmarch
 		virtual void Render();
 		
 		void RenderOpaqueObj(); 
-		void RenderTranslucentObj(const PerspectiveCamera* camera);
+		void RenderTransparentObj();
 
 		inline void SetRenderMode(RenderMode mode)
 		{
@@ -58,7 +58,7 @@ namespace longmarch
 		void PrepareScene(double dt);
 		void RecursivePrepareScene(double dt, const Entity& parent, Transform3DCom* parentTr, ChildrenCom* childChildrenCom, unsigned int level);
 		void RenderWithModeOpaque(Renderer3D::RenderObj_CPU& renderObj);
-		void RenderWithModeTranslucent(Renderer3D::RenderObj_CPU& renderObj, const PerspectiveCamera* camera);
+		void RenderWithModeTransparent(Renderer3D::RenderObj_CPU& renderObj);
 
 		inline bool ViewFustrumCullingTest(const std::shared_ptr<Shape>& BoudingVolume)
 		{
@@ -100,7 +100,7 @@ namespace longmarch
 			float Far;
 		};
 		DistanceCParam m_distanceCParam;
-		std::string m_RenderShaderName = { "Default" };
+		std::string m_RenderShaderName = { "" };
 		RenderMode m_RenderMode = { RenderMode::SCENE };
 		bool m_enableDebugDraw{ true };
 #ifdef MULTITHREAD_PRE_RENDER_UPDATE

@@ -46,8 +46,8 @@ namespace longmarch
 		void SetShouldDraw(bool b, bool _override = true);
 		bool GetShouldDraw() const;
 
-		void Draw(const std::function<void(const Renderer3D::RenderData_CPU&)>& drawFunc);
 		void Draw();
+		void Draw(const std::function<void(const Renderer3D::RenderData_CPU&)>& drawFunc);
 
 		virtual void JsonSerialize(Json::Value& value) override;
 		virtual void JsonDeserialize(const Json::Value& value) override;

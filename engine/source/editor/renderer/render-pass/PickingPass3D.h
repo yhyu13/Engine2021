@@ -28,8 +28,8 @@ namespace longmarch
 		virtual void Render() override;
 		virtual void SubmitBatch() override;
 		virtual void ClearBatch() override;
-		virtual void RenderOne(Renderer3D::RenderObj_CPU& renderObj) override;
 		virtual void Draw(const Renderer3D::RenderData_CPU& data) override;
+		virtual void DrawParticle(const Renderer3D::ParticleInstanceDrawData& data) override;
 
 	private:
 		//! Return true if picking a valid entity
@@ -47,7 +47,6 @@ namespace longmarch
 		PerspectiveCamera m_pickingCam;
 		Entity m_pickedEntity;
 		GameWorld* m_parentWorld{ nullptr };
-		std::shared_ptr<Shader> m_shader{ nullptr };
 		std::shared_ptr<FrameBuffer> m_renderTarget{ nullptr };
 		std::shared_ptr<Texture2D> m_renderTexture{ nullptr };
 		std::uint8_t m_blitData[texture_dim * texture_dim * 4u]{ 0u };

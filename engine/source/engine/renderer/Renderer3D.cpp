@@ -153,7 +153,8 @@ void longmarch::Renderer3D::Init()
 		s_Data.ShaderMap["BuildAABBGridCompShader"] = Shader::Create("$shader:cluster_grid.comp");
 		s_Data.ShaderMap["CullLightsCompShader"] = Shader::Create("$shader:cluster_cull_light.comp");
 		s_Data.ShaderMap["ClusterDebugShader"] = Shader::Create("$shader:debug_clusters.vert", "$shader:debug_clusters.frag", "$shader:debug_clusters.geom");
-		s_Data.ShaderMap["TransparentForwardShader"] = Shader::Create("$shader:forward_shader.vert", "$shader:forward_shader.frag"); 
+		s_Data.ShaderMap["TransparentForwardShader"] = Shader::Create("$shader:forward_shader.vert", "$shader:forward_shader.frag");
+		s_Data.ShaderMap["MSMShadowBuffer_Transparent"] = Shader::Create("$shader:momentShadowMap_shader.vert", "$shader:momentShadowMap_shader.frag");
 		s_Data.ShaderMap["PickingSystemShader_Particle"] = Shader::Create("$shader:picking_entity_id_shader_particle.vert", "$shader:picking_entity_id_shader_particle.frag");
 		s_Data.ShaderMap["DeferredShader"] = Shader::Create("$shader:deferred_shader.vert", "$shader:deferred_shader.frag");
 		s_Data.ShaderMap["DynamicAOShader"] = Shader::Create("$shader:dynamic_ao_shader.vert", "$shader:dynamic_ao_shader.frag");
@@ -258,7 +259,7 @@ void longmarch::Renderer3D::Init()
 
 		LongMarch_Vector<std::string> forwardShader = { "ForwardShader", "TransparentForwardShader" };
 		LongMarch_Vector<std::string> clusteredShader = { "BuildAABBGridCompShader", "CullLightsCompShader","ClusterShader", "ClusterDebugShader" };
-		LongMarch_Vector<std::string> deferredShader = { "GBufferShader","DeferredShader" };
+		LongMarch_Vector<std::string> deferredShader = { "GBufferShader", "DeferredShader" };
 
 		s_Data.ListRenderShadersToPopulateData.insert(s_Data.ListRenderShadersToPopulateData.end(), forwardShader.begin(), forwardShader.end());
 		s_Data.ListRenderShadersToPopulateData.insert(s_Data.ListRenderShadersToPopulateData.end(), clusteredShader.begin(), clusteredShader.end());
@@ -692,7 +693,7 @@ bool longmarch::Renderer3D::ShouldRendering()
 *	Render3D highlevel API : BeginRendering
 *
 **************************************************************/
-void longmarch::Renderer3D::BeginRendering()
+void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 {
 	const auto& prop = Engine::GetWindow()->GetWindowProperties();
 	s_Data.window_size = Vec2u(prop.m_width, prop.m_height);
@@ -753,7 +754,7 @@ void longmarch::Renderer3D::BeginRendering()
 		}
 		// Enable depth testing and wirte to depth buffer just for the clearing commend
 		RenderCommand::DepthTest(true, true);
-		RenderCommand::SetClearColor(Vec4f(0,0,0,1));
+		RenderCommand::SetClearColor(Vec4f(0,0,0,0));
 		s_Data.gpuBuffer.CurrentWindowFrameBuffer->Bind();
 		RenderCommand::Clear();
 		s_Data.gpuBuffer.FinalFrameBuffer->Bind();
@@ -771,15 +772,21 @@ void longmarch::Renderer3D::BeginRendering()
 		s_Data.gpuBuffer.CurrentBloomBuffer->Bind();
 		RenderCommand::Clear();
 	}
+	// Populate shading parameters
+	{
+		ENG_TIME("Scene phase (Opaque): Populate Shading Data");
+		_PopulateShadingPassUniformsVariables(camera);
+	}
 }
 
 /**************************************************************
 *	Render3D highlevel API : BeginOpaqueShadowing
 *
 **************************************************************/
-void longmarch::Renderer3D::BeginOpaqueShadowing(
+void longmarch::Renderer3D::BeginShadowing(
 	const PerspectiveCamera* camera,
-	const std::function<void()>& f_render,
+	const std::function<void()>& f_render_opaque,
+	const std::function<void()>& f_render_trasparent,
 	const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
 	const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
 	const std::function<void(const std::string&)>& f_setRenderShaderName)
@@ -789,6 +796,9 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 	RenderCommand::Blend(false);
 	RenderCommand::DepthTest(true, true);
 	RenderCommand::CullFace(true, false);
+
+	auto render_pipe_original = s_Data.RENDER_PIPE;
+	auto render_mode_original = s_Data.RENDER_MODE;
 
 	static auto BeginGaussianBlur = []()
 	{
@@ -800,6 +810,27 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 	{
 		RenderCommand::DepthTest(true, true);
 		RenderCommand::CullFace(true, false);
+	};
+
+	static auto BeginTransparentShadow = []()
+	{
+		s_Data.RENDER_PIPE = RENDER_PIPE::FORWARD;
+		s_Data.RENDER_MODE = RENDER_MODE::CANONICAL;
+		// TODO : implement transparent shadow with transparent color
+		/*RenderCommand::Blend(true);
+		RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::MULTIPLICATION);
+		RenderCommand::DepthTest(true, false);
+		RenderCommand::CullFace(false, false);*/
+	};
+
+	auto EndTransparentShadow = [render_pipe_original, render_mode_original]()
+	{
+		s_Data.RENDER_PIPE = render_pipe_original;
+		s_Data.RENDER_MODE = render_mode_original;
+		// TODO : implement transparent shadow with transparent color
+		/*RenderCommand::Blend(false);
+		RenderCommand::DepthTest(true, true);
+		RenderCommand::CullFace(true, false);*/
 	};
 
 	static auto BeginDirectionLight = []()
@@ -866,7 +897,10 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 	};
 
 	static const auto& msm_shader = s_Data.ShaderMap["MSMShadowBuffer"];
+	static const auto& msm_shader_transparent = s_Data.ShaderMap["MSMShadowBuffer_Transparent"];
 	static const auto& msm_cube_shader = s_Data.ShaderMap["MSMShadowBuffer_Cube"];
+
+	static const auto& transparent_shader = s_Data.ShaderMap["TransparentForwardShader"];
 
 	static const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur"];
 	static const auto& guassian_CSM_shader = s_Data.ShaderMap["GaussianBlur_CSM"];
@@ -1019,8 +1053,8 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 						shadowBuffer->BindLayer(i);
 						// Clear buffer
 						(s_Data.enable_reverse_z) ?
-							RenderCommand::SetClearColor(Vec4f(0, 0, 0, 1))
-							: RenderCommand::SetClearColor(Vec4f(1, 1, 1, 1));
+							RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0))
+							: RenderCommand::SetClearColor(Vec4f(1, 1, 1, 0));
 						RenderCommand::Clear();
 
 						// Bind shader
@@ -1035,11 +1069,62 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 							f_setRenderShaderName("MSMShadowBuffer");
 							f_setVFCullingParam(true, Geommath::Frustum::FromProjection(light_projection_mat), light_view_mat);
 							f_setDistanceCullingParam(false, Vec3f(), 0, 0);
-							f_render();
+							f_render_opaque();
 						}
 						{
 							ENG_TIME("Shadow phase: DIRECTIONAL BATCH RENDER");
 							CommitBatchRendering();
+						}
+						if (lightCom->shadow.bEnableTransparentShadow)
+						{
+							BeginTransparentShadow();
+							{
+								ENG_TIME("Shadow phase: DIRECTIONAL LOOPING (transparent)");
+								s_Data.CurrentShader = msm_shader_transparent;
+								s_Data.CurrentShader->Bind();
+								s_Data.CurrentShader->SetMat4("u_PVMatrix", light_pv);
+								s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
+								f_setRenderShaderName("MSMShadowBuffer_Transparent");
+								f_setVFCullingParam(true, Geommath::Frustum::FromProjection(light_projection_mat), light_view_mat);
+								f_setDistanceCullingParam(false, Vec3f(), 0, 0);
+								f_render_trasparent();
+							}
+							EndTransparentShadow();
+
+							// TODO : implement transparent shadow with transparent color
+							//const auto& shadowBuffer3 = lightCom->shadow.shadowBuffer3;
+							//Vec2u traget_resoluation3 = shadowBuffer3->GetBufferSize();
+							//RenderCommand::SetViewport(0, 0, traget_resoluation3.x, traget_resoluation3.y);
+							//// Bind shadow buffer
+							//shadowBuffer3->Bind();
+							//// Bind shadow map ith array layer
+							//shadowBuffer3->BindLayer(i);
+							//// Clear buffer
+							//RenderCommand::SetClearColor(Vec4f(1, 1, 1, 1));
+							//RenderCommand::Clear();
+							//RenderCommand::TransferDepthBit(
+							//	shadowBuffer->GetRendererID(),
+							//	traget_resoluation.x,
+							//	traget_resoluation.y,
+
+							//	shadowBuffer3->GetRendererID(),
+							//	traget_resoluation3.x,
+							//	traget_resoluation3.y
+							//);
+							//BeginTransparentShadow();
+							//{
+							//	s_Data.CurrentShader = transparent_shader;
+							//	s_Data.CurrentShader->Bind();
+							//	// Render the scene
+							//	{
+							//		ENG_TIME("Shadow phase: DIRECTIONAL LOOPING (transparent)");
+							//		f_setRenderShaderName("TransparentForwardShader");
+							//		f_setVFCullingParam(true, Geommath::Frustum::FromProjection(light_projection_mat), light_view_mat);
+							//		f_setDistanceCullingParam(false, Vec3f(), 0, 0);
+							//		f_render_trasparent();
+							//	}
+							//}
+							//EndTransparentShadow();
 						}
 						if (lightCom->shadow.bEnableGaussianBlur)
 						{
@@ -1060,6 +1145,7 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 									// Bind shadow buffer
 									shadowBuffer2->Bind();
 									shadowBuffer2->BindLayer(i);
+									RenderCommand::Clear();
 									s_Data.CurrentShader->SetInt("u_Horizontal", 1);
 									shadowBuffer->BindTexture(s_Data.fragTexture_0_slot);
 									_RenderFullScreenQuad();
@@ -1069,6 +1155,7 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 									// Bind shadow buffer
 									shadowBuffer->Bind();
 									shadowBuffer->BindLayer(i);
+									RenderCommand::Clear();
 									s_Data.CurrentShader->SetInt("u_Horizontal", 0);
 									shadowBuffer2->BindTexture(s_Data.fragTexture_0_slot);
 									_RenderFullScreenQuad();
@@ -1082,7 +1169,7 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 				s_Data.gpuBuffer.DirectionalLightShadowBuffer.emplace_back(lightCom->shadow.shadowBuffer);
 				EndDirectionLight();
 			}
-			continue;
+			break;
 			//1 - point light
 			case LongMarch_ToUnderlying(LIGHT_TYPE::POINT):
 			{
@@ -1096,8 +1183,8 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 				AABB approx_shape{ Min , Max };
 				approx_shape.RenderShape();
 				bool culled = approx_shape.VFCTest(camera->GetViewFrustumInViewSpace(), camera->GetViewMatrix());
-				bool shouldDropOff = lightCom->HandleShadowBufferDropOff(glm::distance(camera->GetWorldPosition(), light_pos));
-				currentLight.castShadow = lightCom->shadow.bCastShadow && s_Data.enable_shadow && !culled && !shouldDropOff;
+				bool exceedDropOff = lightCom->HandleShadowBufferDropOff(glm::distance(camera->GetWorldPosition(), light_pos));
+				currentLight.castShadow = lightCom->shadow.bCastShadow && s_Data.enable_shadow && !culled && !exceedDropOff;
 
 				auto currentPointLight = CreatePointLight(currentLight);
 				{
@@ -1140,10 +1227,12 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 							s_Data.cpuBuffer.SHADOW_DATA_PROCESSED.emplace_back(std::move(data));
 							if (i < 3)
 							{
+								// First three faces
 								currentPointLight.shadowMatrixIndcies_1_2_3[i] = s_Data.cpuBuffer.SHADOW_DATA_PROCESSED.size() - 1;
 							}
 							else
 							{
+								// Last three faces
 								currentPointLight.shadowMatrixIndcies_4_5_6[i-3] = s_Data.cpuBuffer.SHADOW_DATA_PROCESSED.size() - 1;
 							}
 						}
@@ -1155,8 +1244,8 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 						shadowBuffer->BindLayer(i);
 						// Clear buffer
 						(s_Data.enable_reverse_z) ?
-							RenderCommand::SetClearColor(Vec4f(0, 0, 0, 1))
-							: RenderCommand::SetClearColor(Vec4f(1, 1, 1, 1));
+							RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0))
+							: RenderCommand::SetClearColor(Vec4f(1, 1, 1, 0));
 						RenderCommand::Clear();
 
 						// Bind shader
@@ -1171,11 +1260,27 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 							f_setRenderShaderName("MSMShadowBuffer");
 							f_setVFCullingParam(true, Geommath::Frustum::FromProjection(light_projection_mat), light_view_mat);
 							f_setDistanceCullingParam(true, light_pos, Near, Far);
-							f_render();
+							f_render_opaque();
 						}
 						{
 							ENG_TIME("Shadow phase: POINT BATCH RENDER");
 							CommitBatchRendering();
+						}
+						if (lightCom->shadow.bEnableTransparentShadow)
+						{
+							BeginTransparentShadow();
+							{
+								ENG_TIME("Shadow phase: POINT LOOPING (transparent)");
+								s_Data.CurrentShader = msm_shader_transparent;
+								s_Data.CurrentShader->Bind();
+								s_Data.CurrentShader->SetMat4("u_PVMatrix", light_pv);
+								s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
+								f_setRenderShaderName("MSMShadowBuffer_Transparent");
+								f_setVFCullingParam(true, Geommath::Frustum::FromProjection(light_projection_mat), light_view_mat);
+								f_setDistanceCullingParam(true, light_pos, Near, Far);
+								f_render_trasparent();
+							}
+							EndTransparentShadow();
 						}
 						if (lightCom->shadow.bEnableGaussianBlur)
 						{
@@ -1196,6 +1301,7 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 									// Bind shadow buffer
 									shadowBuffer2->Bind();
 									shadowBuffer2->BindLayer(i);
+									RenderCommand::Clear();
 									s_Data.CurrentShader->SetInt("u_Horizontal", 1);
 									shadowBuffer->BindTexture(s_Data.fragTexture_0_slot);
 									_RenderFullScreenQuad();
@@ -1205,6 +1311,7 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 									// Bind shadow buffer
 									shadowBuffer->Bind();
 									shadowBuffer->BindLayer(i);
+									RenderCommand::Clear();
 									s_Data.CurrentShader->SetInt("u_Horizontal", 0);
 									shadowBuffer2->BindTexture(s_Data.fragTexture_0_slot);
 									_RenderFullScreenQuad();
@@ -1251,8 +1358,8 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 					//shadowBuffer->Bind();
 					//// Clear buffer
 					//(s_Data.enable_reverse_z) ?
-					//	RenderCommand::SetClearColor(Vec4f(0, 0, 0, 1))
-					//	: RenderCommand::SetClearColor(Vec4f(1, 1, 1, 1));
+					//	RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0))
+					//	: RenderCommand::SetClearColor(Vec4f(1, 1, 1, 0));
 					//RenderCommand::Clear();
 					//sceneCom->SetShouldDraw(false, true);
 					//// Render the scene
@@ -1286,6 +1393,7 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 					//			RenderCommand::SetViewport(0, 0, traget_resoluation2.x, traget_resoluation2.y);
 					//			// Bind shadow buffer
 					//			shadowBuffer2->Bind();
+					//			RenderCommand::Clear();
 					//			s_Data.CurrentShader->SetInt("u_Horizontal", 1);
 					//			shadowBuffer->BindTexture(s_Data.fragTexture_0_slot);
 					//			_RenderFullScreenCube();
@@ -1294,6 +1402,7 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 					//			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 					//			// Bind shadow buffer
 					//			shadowBuffer->Bind();
+					//			RenderCommand::Clear();
 					//			s_Data.CurrentShader->SetInt("u_Horizontal", 0);
 					//			shadowBuffer2->BindTexture(s_Data.fragTexture_0_slot);
 					//			_RenderFullScreenCube();
@@ -1305,7 +1414,7 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 				s_Data.cpuBuffer.POINT_LIGHT_PROCESSED.emplace_back(std::move(currentPointLight));
 				s_Data.gpuBuffer.PointLightShadowBuffer.emplace_back(lightCom->shadow.shadowBuffer);
 			}
-			continue;
+			break;
 			//2 - spot light
 			case LongMarch_ToUnderlying(LIGHT_TYPE::SPOT):
 			{
@@ -1343,8 +1452,8 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 				AABB approx_shape = AABB{ Min, Max };
 				approx_shape.RenderShape();
 				bool culled = approx_shape.VFCTest(camera->GetViewFrustumInViewSpace(), camera->GetViewMatrix());
-				bool shouldDropOff = lightCom->HandleShadowBufferDropOff(glm::distance(camera->GetWorldPosition(), light_pos));
-				currentLight.castShadow = lightCom->shadow.bCastShadow && s_Data.enable_shadow && !culled && !shouldDropOff;
+				bool exceedDropOff = lightCom->HandleShadowBufferDropOff(glm::distance(camera->GetWorldPosition(), light_pos));
+				currentLight.castShadow = lightCom->shadow.bCastShadow && s_Data.enable_shadow && !culled && !exceedDropOff;
 
 				auto currentSpotLight = CreateSpotLight(currentLight);
 				{
@@ -1362,7 +1471,6 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 				else
 				{
 					// Build shadow
-					lightCom->HandleShadowBufferDropOff(glm::distance(camera->GetWorldPosition(), light_pos));
 					lightCom->AllocateShadowBuffer();
 					const auto& shadowBuffer = lightCom->shadow.shadowBuffer;
 					Vec2u traget_resoluation = shadowBuffer->GetBufferSize();
@@ -1389,8 +1497,8 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 					shadowBuffer->Bind();
 					// Clear buffer
 					(s_Data.enable_reverse_z) ?
-						RenderCommand::SetClearColor(Vec4f(0, 0, 0, 1))
-						: RenderCommand::SetClearColor(Vec4f(1, 1, 1, 1));
+						RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0))
+						: RenderCommand::SetClearColor(Vec4f(1, 1, 1, 0));
 					RenderCommand::Clear();
 					sceneCom->SetShouldDraw(false, true);
 					// Render the scene
@@ -1399,11 +1507,26 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 						f_setRenderShaderName("MSMShadowBuffer");
 						f_setVFCullingParam(true, Geommath::Frustum::FromProjection(light_projection_mat), light_view_mat);
 						f_setDistanceCullingParam(false, Vec3f(), 0, 0);
-						f_render();
+						f_render_opaque();
 					}
 					{
 						ENG_TIME("Shadow phase: SPOT BATCH RENDER");
 						CommitBatchRendering();
+					}
+					if (lightCom->shadow.bEnableTransparentShadow)
+					{
+						BeginTransparentShadow();
+						{
+							ENG_TIME("Shadow phase: SPOT LOOPING (transparent)");
+							s_Data.CurrentShader = msm_shader_transparent;
+							s_Data.CurrentShader->Bind();
+							s_Data.CurrentShader->SetMat4("u_PVMatrix", light_pv);
+							s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
+							f_setRenderShaderName("MSMShadowBuffer_Transparent");
+							f_setVFCullingParam(true, Geommath::Frustum::FromProjection(light_projection_mat), light_view_mat);
+							f_render_trasparent();
+						}
+						EndTransparentShadow();
 					}
 					if (lightCom->shadow.bEnableGaussianBlur)
 					{
@@ -1422,6 +1545,7 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 								RenderCommand::SetViewport(0, 0, traget_resoluation2.x, traget_resoluation2.y);
 								// Bind shadow buffer
 								shadowBuffer2->Bind();
+								RenderCommand::Clear();
 								s_Data.CurrentShader->SetInt("u_Horizontal", 1);
 								shadowBuffer->BindTexture(s_Data.fragTexture_0_slot);
 								_RenderFullScreenQuad();
@@ -1430,6 +1554,7 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 								RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 								// Bind shadow buffer
 								shadowBuffer->Bind();
+								RenderCommand::Clear();
 								s_Data.CurrentShader->SetInt("u_Horizontal", 0);
 								shadowBuffer2->BindTexture(s_Data.fragTexture_0_slot);
 								_RenderFullScreenQuad();
@@ -1441,7 +1566,7 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 				s_Data.cpuBuffer.SPOT_LIGHT_PROCESSED.emplace_back(std::move(currentSpotLight));
 				s_Data.gpuBuffer.SpotLightShadowBuffer.emplace_back(lightCom->shadow.shadowBuffer);
 			}
-			continue;
+			break;
 			}
 		}
 
@@ -1560,23 +1685,7 @@ void longmarch::Renderer3D::BeginOpaqueShadowing(
 *	Render3D highlevel API : EndOpaqueShadowing
 *
 **************************************************************/
-void longmarch::Renderer3D::EndOpaqueShadowing()
-{
-}
-
-/**************************************************************
-*	Render3D highlevel API : BeginTransparentShadowing
-*
-**************************************************************/
-void longmarch::Renderer3D::BeginTransparentShadowing(const PerspectiveCamera* camera, const std::function<void()>& f_render, const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam, const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam, const std::function<void(const std::string&)>& f_setRenderShaderName)
-{
-}
-
-/**************************************************************
-*	Render3D highlevel API : EndTransparentShadowing
-*
-**************************************************************/
-void longmarch::Renderer3D::EndTransparentShadowing()
+void longmarch::Renderer3D::EndShadowing()
 {
 }
 
@@ -1603,7 +1712,7 @@ void longmarch::Renderer3D::BeginOpaqueScene(
 				s_Data.gpuBuffer.CurrentGBuffer = GBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, GBuffer::GBUFFER_TYPE::DEFAULT);
 			}
 			// GBuffer should be cleared with black color instead of a custom clear color
-			RenderCommand::SetClearColor(Vec4f(0, 0, 0, 1));
+			RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0));
 			s_Data.gpuBuffer.CurrentGBuffer->Bind();
 			RenderCommand::Clear();
 		}
@@ -1615,8 +1724,9 @@ void longmarch::Renderer3D::BeginOpaqueScene(
 
 		// Populate shading parameters
 		{
-			ENG_TIME("Scene phase (Opaque): Populate Data");
+			ENG_TIME("Scene phase (Opaque): Populate Shadow Data");
 			_PopulateShadingPassUniformsVariables(camera);
+			_PopulateShadowPassVariables();
 		}
 		if (s_Data.enable_debug_cluster_light) {
 			Renderer3D::_BeginClusterBuildGrid(camera);
@@ -1812,200 +1922,202 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 			shaderProg->SetInt("b_debug_cluster_light", s_Data.enable_debug_cluster_light);
 		}
 	}
+	if (s_Data.RENDER_PIPE == RENDER_PIPE::CLUSTER)
 	{
-		// CRITICAL: Create placeholder texture (must have)
-		static const auto& placeholder_shadowBuffer_array =
-			ShadowBuffer::CreateArray(1, 1, 1, ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
+		s_Data.gpuBuffer.AABBvolumeGridBuffer->Bind(14);
 
-		// CRITICAL: Create placeholder texture (must have)
-		static const auto& placeholder_shadowBuffer_cube =
-			ShadowBuffer::Create(1, 1, ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE);
+		auto width = s_Data.resolution.x;
+		auto height = s_Data.resolution.y;
+		auto gridX = s_Data.ClusterData.gridSizeX;
+		auto gridY = s_Data.ClusterData.gridSizeY;
+		auto gridZ = s_Data.ClusterData.gridSizeZ;
+		auto sizeX = (unsigned int)std::ceilf(width / gridX);
+		auto inverseProjectionMat = glm::inverse(camera->GetProjectionMatrix());
+		s_Data.ClusterData.screenToView.inverseProjectionMat = inverseProjectionMat;
+		s_Data.ClusterData.screenToView.tileSizes[0] = gridX;
+		s_Data.ClusterData.screenToView.tileSizes[1] = gridY;
+		s_Data.ClusterData.screenToView.tileSizes[2] = gridZ;
+		s_Data.ClusterData.screenToView.tileSizes[3] = sizeX;
+		s_Data.ClusterData.screenToView.screenWidth = width;
+		s_Data.ClusterData.screenToView.screenHeight = height;
 
-		// CRITICAL: Create placeholder texture (must have)
-		static const auto& placeholder_shadowBuffer =
-			ShadowBuffer::Create(1, 1, ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4);
+		s_Data.gpuBuffer.ScreenToViewBuffer->UpdateBufferData(&s_Data.ClusterData.screenToView, sizeof(s_Data.ClusterData.screenToView));
+		s_Data.gpuBuffer.ScreenToViewBuffer->Bind(15);
+		s_Data.gpuBuffer.LightIndexListBuffer->Bind(16);
+		s_Data.gpuBuffer.LightGridBuffer->Bind(17);
+		s_Data.gpuBuffer.LightIndexGlobalCountBuffer->Bind(18);
 
 		{
-			// Shadow texture offset needs to be larger than the sum of empty slots and scene texture slots.
-			int init_offset_shadow = s_Data.fragTexture_empty_slot + s_Data.MAX_SCENE_BATCH + 1;
-			int total_shaows_count = 0;
-			int light_type_count = 0;
+			auto size = gridX * gridY * gridZ;
+			s_Data.ClusterData.clusterColors.resize(size);
+			for (int i = 0; i < size; ++i) {
+				s_Data.ClusterData.clusterColors[i] = Vec4f(_HSVtoRGB(glm::linearRand(0.0f, 360.0f), glm::linearRand(0.0f, 1.0f), 1.0f), 1.0f);
+			}
+			s_Data.gpuBuffer.ClusterColorBuffer->UpdateBufferData(&s_Data.ClusterData.clusterColors, sizeof(s_Data.ClusterData.clusterColors));
+			s_Data.gpuBuffer.ClusterColorBuffer->Bind(19);
+		}
+	}
+}
+
+void longmarch::Renderer3D::_PopulateShadowPassVariables()
+{
+	// CRITICAL: Create placeholder texture (must have)
+	static const auto& placeholder_shadowBuffer_array =
+		ShadowBuffer::CreateArray(1, 1, 1, ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
+
+	// CRITICAL: Create placeholder texture (must have)
+	static const auto& placeholder_shadowBuffer_cube =
+		ShadowBuffer::Create(1, 1, ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE);
+
+	// CRITICAL: Create placeholder texture (must have)
+	static const auto& placeholder_shadowBuffer =
+		ShadowBuffer::Create(1, 1, ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4);
+
+	{
+		// Shadow texture offset needs to be larger than the sum of empty slots and scene texture slots.
+		int init_offset_shadow = s_Data.fragTexture_empty_slot + s_Data.MAX_SCENE_BATCH + 1;
+		int total_shaows_count = 0;
+		int light_type_count = 0;
+		{
+			int shadow_index = 0;
+			int offset_shadow = init_offset_shadow + (total_shaows_count + light_type_count);
+			placeholder_shadowBuffer_array->BindTexture(offset_shadow); // Always bind placeholder texture
+			/**************************************************************
+			*	CRITICAL: need to fill in this whole list with some dummy slot (e.g. 2) that you have binded with an empty texture
+			*	If not, then unset samplers will be initialized as 0. Shaders will crash at run ENG_TIME if you bind 0 to another sampler type (e.g. samplerCube)!
+			**************************************************************/
+			int* ShadowMapTextureArrayId = new int[s_Data.MAX_DIRECTIONAL_SHADOW];
+			for (auto i(0u); i < s_Data.MAX_DIRECTIONAL_SHADOW; ++i)
 			{
-				int shadow_index = 0;
-				int offset_shadow = init_offset_shadow + (total_shaows_count + light_type_count);
-				placeholder_shadowBuffer_array->BindTexture(offset_shadow); // Always bind placeholder texture
-				/**************************************************************
-				*	CRITICAL: need to fill in this whole list with some dummy slot (e.g. 2) that you have binded with an empty texture
-				*	If not, then unset samplers will be initialized as 0. Shaders will crash at run ENG_TIME if you bind 0 to another sampler type (e.g. samplerCube)!
-				**************************************************************/
-				int* ShadowMapTextureArrayId = new int[s_Data.MAX_DIRECTIONAL_SHADOW];
-				for (auto i(0u); i < s_Data.MAX_DIRECTIONAL_SHADOW; ++i)
+				ShadowMapTextureArrayId[i] = offset_shadow;// Bind default texture slot to the placeholder texture
+			}
+			for (auto i(0u); i < s_Data.cpuBuffer.DIRECTIONAL_LIGHT_PROCESSED.size(); ++i)
+			{
+				auto& currentLight = s_Data.cpuBuffer.DIRECTIONAL_LIGHT_PROCESSED[i];
+				const auto& shadowBuffer = s_Data.gpuBuffer.DirectionalLightShadowBuffer[i];
+				if (currentLight.Kd_shadowMatrixIndex.w != -1 && shadowBuffer)
 				{
-					ShadowMapTextureArrayId[i] = offset_shadow;// Bind default texture slot to the placeholder texture
-				}
-				for (auto i(0u); i < s_Data.cpuBuffer.DIRECTIONAL_LIGHT_PROCESSED.size(); ++i)
-				{
-					auto& currentLight = s_Data.cpuBuffer.DIRECTIONAL_LIGHT_PROCESSED[i];
-					const auto& shadowBuffer = s_Data.gpuBuffer.DirectionalLightShadowBuffer[i];
-					if (currentLight.Kd_shadowMatrixIndex.w != -1 && shadowBuffer)
+					int slot = offset_shadow + (shadow_index + 1);
+					ShadowMapTextureArrayId[shadow_index] = slot;
+					shadowBuffer->BindTexture(slot);
+					currentLight.Pos_shadowMapIndex.w = shadow_index;
+					if (++shadow_index == s_Data.MAX_DIRECTIONAL_SHADOW)
 					{
-						int slot = offset_shadow + (shadow_index + 1);
-						ShadowMapTextureArrayId[shadow_index] = slot;
-						shadowBuffer->BindTexture(slot);
-						currentLight.Pos_shadowMapIndex.w = shadow_index;
-						if (++shadow_index == s_Data.MAX_DIRECTIONAL_SHADOW)
-						{
-							break;
-						}
+						break;
 					}
 				}
-				for (auto&& shaderName : s_Data.ListRenderShadersToPopulateData)
-				{
-					const auto& shaderProg = s_Data.ShaderMap[shaderName];
-					shaderProg->Bind();
-					shaderProg->SetIntV("u_shadowMapTextureArrayList", s_Data.MAX_DIRECTIONAL_SHADOW, ShadowMapTextureArrayId);
-				}
-				delete[] ShadowMapTextureArrayId;
-
-				total_shaows_count += shadow_index;
-				++light_type_count;
 			}
+			for (auto&& shaderName : s_Data.ListRenderShadersToPopulateData)
 			{
-				int shadow_index = 0;
-				int offset_shadow = init_offset_shadow + (total_shaows_count + light_type_count);
-				placeholder_shadowBuffer_cube->BindTexture(offset_shadow); // Always bind placeholder texture
-				/**************************************************************
-				*	CRITICAL: need to fill in this whole list with some dummy slot (e.g. 2) that you have binded with an empty texture
-				*	If not, then unset samplers will be initialized as 0. Shaders will crash at run ENG_TIME if you bind 0 to another sampler type (e.g. samplerCube)!
-				**************************************************************/
-				int* ShadowMapTextureCubeId = new int[s_Data.MAX_POINT_SHADOW];
-				for (auto i(0u); i < s_Data.MAX_POINT_SHADOW; ++i)
+				const auto& shaderProg = s_Data.ShaderMap[shaderName];
+				shaderProg->Bind();
+				shaderProg->SetIntV("u_shadowMapTextureArrayList", s_Data.MAX_DIRECTIONAL_SHADOW, ShadowMapTextureArrayId);
+			}
+			delete[] ShadowMapTextureArrayId;
+
+			total_shaows_count += shadow_index;
+			++light_type_count;
+		}
+		{
+			int shadow_index = 0;
+			int offset_shadow = init_offset_shadow + (total_shaows_count + light_type_count);
+			placeholder_shadowBuffer_cube->BindTexture(offset_shadow); // Always bind placeholder texture
+			/**************************************************************
+			*	CRITICAL: need to fill in this whole list with some dummy slot (e.g. 2) that you have binded with an empty texture
+			*	If not, then unset samplers will be initialized as 0. Shaders will crash at run ENG_TIME if you bind 0 to another sampler type (e.g. samplerCube)!
+			**************************************************************/
+			int* ShadowMapTextureCubeId = new int[s_Data.MAX_POINT_SHADOW];
+			for (auto i(0u); i < s_Data.MAX_POINT_SHADOW; ++i)
+			{
+				ShadowMapTextureCubeId[i] = offset_shadow;// Bind default texture slot to the placeholder texture
+			}
+			for (auto i(0u); i < s_Data.cpuBuffer.POINT_LIGHT_PROCESSED.size(); ++i)
+			{
+				auto& currentLight = s_Data.cpuBuffer.POINT_LIGHT_PROCESSED[i];
+				const auto& shadowBuffer = s_Data.gpuBuffer.PointLightShadowBuffer[i];
+				if (currentLight.Kd_shadowMatrixIndex.w != -1 && shadowBuffer)
 				{
-					ShadowMapTextureCubeId[i] = offset_shadow;// Bind default texture slot to the placeholder texture
-				}
-				for (auto i(0u); i < s_Data.cpuBuffer.POINT_LIGHT_PROCESSED.size(); ++i)
-				{
-					auto& currentLight = s_Data.cpuBuffer.POINT_LIGHT_PROCESSED[i];
-					const auto& shadowBuffer = s_Data.gpuBuffer.PointLightShadowBuffer[i];
-					if (currentLight.Kd_shadowMatrixIndex.w != -1 && shadowBuffer)
+					int slot = offset_shadow + (shadow_index + 1);
+					ShadowMapTextureCubeId[shadow_index] = slot;
+					shadowBuffer->BindTexture(slot);
+					currentLight.Pos_shadowMapIndex.w = shadow_index;
+					if (++shadow_index == s_Data.MAX_POINT_SHADOW)
 					{
-						int slot = offset_shadow + (shadow_index + 1);
-						ShadowMapTextureCubeId[shadow_index] = slot;
-						shadowBuffer->BindTexture(slot);
-						currentLight.Pos_shadowMapIndex.w = shadow_index;
-						if (++shadow_index == s_Data.MAX_POINT_SHADOW)
-						{
-							break;
-						}
+						break;
 					}
 				}
-				for (auto&& shaderName : s_Data.ListRenderShadersToPopulateData)
-				{
-					const auto& shaderProg = s_Data.ShaderMap[shaderName];
-					shaderProg->Bind();
-					shaderProg->SetIntV("u_shadowMapTextureCubeList", s_Data.MAX_POINT_SHADOW, ShadowMapTextureCubeId);
-				}
-				delete[] ShadowMapTextureCubeId;
-
-				total_shaows_count += shadow_index;
-				++light_type_count;
 			}
+			for (auto&& shaderName : s_Data.ListRenderShadersToPopulateData)
 			{
-				int shadow_index = 0;
-				int offset_shadow = init_offset_shadow + (total_shaows_count + light_type_count);
-				placeholder_shadowBuffer->BindTexture(offset_shadow); // Always bind placeholder texture
-				/**************************************************************
-				*	CRITICAL: need to fill in this whole list with some dummy slot (e.g. 2) that you have binded with an empty texture
-				*	If not, then unset samplers will be initialized as 0. Shaders will crash at run ENG_TIME if you bind 0 to another sampler type (e.g. samplerCube)!
-				**************************************************************/
-				int* ShadowMapTextureId = new int[s_Data.MAX_SPOT_SHADOW];
-				for (auto i(0u); i < s_Data.MAX_SPOT_SHADOW; ++i)
+				const auto& shaderProg = s_Data.ShaderMap[shaderName];
+				shaderProg->Bind();
+				shaderProg->SetIntV("u_shadowMapTextureCubeList", s_Data.MAX_POINT_SHADOW, ShadowMapTextureCubeId);
+			}
+			delete[] ShadowMapTextureCubeId;
+
+			total_shaows_count += shadow_index;
+			++light_type_count;
+		}
+		{
+			int shadow_index = 0;
+			int offset_shadow = init_offset_shadow + (total_shaows_count + light_type_count);
+			placeholder_shadowBuffer->BindTexture(offset_shadow); // Always bind placeholder texture
+			/**************************************************************
+			*	CRITICAL: need to fill in this whole list with some dummy slot (e.g. 2) that you have binded with an empty texture
+			*	If not, then unset samplers will be initialized as 0. Shaders will crash at run ENG_TIME if you bind 0 to another sampler type (e.g. samplerCube)!
+			**************************************************************/
+			int* ShadowMapTextureId = new int[s_Data.MAX_SPOT_SHADOW];
+			for (auto i(0u); i < s_Data.MAX_SPOT_SHADOW; ++i)
+			{
+				ShadowMapTextureId[i] = offset_shadow;// Bind default texture slot to the placeholder texture
+			}
+			for (auto i(0u); i < s_Data.cpuBuffer.SPOT_LIGHT_PROCESSED.size(); ++i)
+			{
+				auto& currentLight = s_Data.cpuBuffer.SPOT_LIGHT_PROCESSED[i];
+				const auto& shadowBuffer = s_Data.gpuBuffer.SpotLightShadowBuffer[i];
+				if (currentLight.Kd_shadowMatrixIndex.w != -1 && shadowBuffer)
 				{
-					ShadowMapTextureId[i] = offset_shadow;// Bind default texture slot to the placeholder texture
-				}
-				for (auto i(0u); i < s_Data.cpuBuffer.SPOT_LIGHT_PROCESSED.size(); ++i)
-				{
-					auto& currentLight = s_Data.cpuBuffer.SPOT_LIGHT_PROCESSED[i];
-					const auto& shadowBuffer = s_Data.gpuBuffer.SpotLightShadowBuffer[i];
-					if (currentLight.Kd_shadowMatrixIndex.w != -1 && shadowBuffer)
+					int slot = offset_shadow + (shadow_index + 1);
+					ShadowMapTextureId[shadow_index] = slot;
+					shadowBuffer->BindTexture(slot);
+					currentLight.Pos_shadowMapIndex.w = shadow_index;
+					if (++shadow_index == s_Data.MAX_SPOT_SHADOW)
 					{
-						int slot = offset_shadow + (shadow_index + 1);
-						ShadowMapTextureId[shadow_index] = slot;
-						shadowBuffer->BindTexture(slot);
-						currentLight.Pos_shadowMapIndex.w = shadow_index;
-						if (++shadow_index == s_Data.MAX_SPOT_SHADOW)
-						{
-							break;
-						}
+						break;
 					}
 				}
-				for (auto&& shaderName : s_Data.ListRenderShadersToPopulateData)
-				{
-					const auto& shaderProg = s_Data.ShaderMap[shaderName];
-					shaderProg->Bind();
-					shaderProg->SetIntV("u_shadowMapTextureList", s_Data.MAX_SPOT_SHADOW, ShadowMapTextureId);
-				}
-				delete[] ShadowMapTextureId;
-
-				total_shaows_count += shadow_index;
-				++light_type_count;
 			}
-		}
-		if (s_Data.NUM_DIRECTIONAL_LIGHT > 0)
-		{
-			s_Data.gpuBuffer.DirectionalLightBuffer->UpdateBufferData(s_Data.cpuBuffer.DIRECTIONAL_LIGHT_PROCESSED[0].GetPtr(), s_Data.NUM_DIRECTIONAL_LIGHT * sizeof(DirectionalLightBuffer_GPU));
-			s_Data.gpuBuffer.DirectionalLightBuffer->Bind(10);
-		}
-		if (s_Data.NUM_POINT_LIGHT > 0)
-		{
-			s_Data.gpuBuffer.PointLightBuffer->UpdateBufferData(s_Data.cpuBuffer.POINT_LIGHT_PROCESSED[0].GetPtr(), s_Data.NUM_POINT_LIGHT * sizeof(PointLightBuffer_GPU));
-			s_Data.gpuBuffer.PointLightBuffer->Bind(11);
-		}
-		if (s_Data.NUM_SPOT_LIGHT > 0)
-		{
-			s_Data.gpuBuffer.SpotLightBuffer->UpdateBufferData(s_Data.cpuBuffer.SPOT_LIGHT_PROCESSED[0].GetPtr(), s_Data.NUM_SPOT_LIGHT * sizeof(SpotLightBuffer_GPU));
-			s_Data.gpuBuffer.SpotLightBuffer->Bind(12);
-		}
-		if (s_Data.NUM_SHADOW > 0)
-		{
-			s_Data.gpuBuffer.ShadowPVMatrixBuffer->UpdateBufferData(s_Data.cpuBuffer.SHADOW_DATA_PROCESSED[0].GetPtr(), s_Data.NUM_SHADOW * sizeof(ShadowData_GPU));
-			s_Data.gpuBuffer.ShadowPVMatrixBuffer->Bind(13);
-		}
-		if (s_Data.RENDER_PIPE == RENDER_PIPE::CLUSTER)
-		{
-			s_Data.gpuBuffer.AABBvolumeGridBuffer->Bind(14);
-
-			auto width = s_Data.resolution.x;
-			auto height = s_Data.resolution.y;
-			auto gridX = s_Data.ClusterData.gridSizeX;
-			auto gridY = s_Data.ClusterData.gridSizeY;
-			auto gridZ = s_Data.ClusterData.gridSizeZ;
-			auto sizeX = (unsigned int)std::ceilf(width / gridX);
-			auto inverseProjectionMat = glm::inverse(camera->GetProjectionMatrix());
-			s_Data.ClusterData.screenToView.inverseProjectionMat = inverseProjectionMat;
-			s_Data.ClusterData.screenToView.tileSizes[0] = gridX;
-			s_Data.ClusterData.screenToView.tileSizes[1] = gridY;
-			s_Data.ClusterData.screenToView.tileSizes[2] = gridZ;
-			s_Data.ClusterData.screenToView.tileSizes[3] = sizeX;
-			s_Data.ClusterData.screenToView.screenWidth = width;
-			s_Data.ClusterData.screenToView.screenHeight = height;
-
-			s_Data.gpuBuffer.ScreenToViewBuffer->UpdateBufferData(&s_Data.ClusterData.screenToView, sizeof(s_Data.ClusterData.screenToView));
-			s_Data.gpuBuffer.ScreenToViewBuffer->Bind(15);
-			s_Data.gpuBuffer.LightIndexListBuffer->Bind(16);
-			s_Data.gpuBuffer.LightGridBuffer->Bind(17);
-			s_Data.gpuBuffer.LightIndexGlobalCountBuffer->Bind(18);
-
+			for (auto&& shaderName : s_Data.ListRenderShadersToPopulateData)
 			{
-				auto size = gridX * gridY * gridZ;
-				s_Data.ClusterData.clusterColors.resize(size);
-				for (int i = 0; i < size; ++i) {
-					s_Data.ClusterData.clusterColors[i] = Vec4f(_HSVtoRGB(glm::linearRand(0.0f, 360.0f), glm::linearRand(0.0f, 1.0f), 1.0f), 1.0f);
-				}
-				s_Data.gpuBuffer.ClusterColorBuffer->UpdateBufferData(&s_Data.ClusterData.clusterColors, sizeof(s_Data.ClusterData.clusterColors));
-				s_Data.gpuBuffer.ClusterColorBuffer->Bind(19);
+				const auto& shaderProg = s_Data.ShaderMap[shaderName];
+				shaderProg->Bind();
+				shaderProg->SetIntV("u_shadowMapTextureList", s_Data.MAX_SPOT_SHADOW, ShadowMapTextureId);
 			}
+			delete[] ShadowMapTextureId;
+
+			total_shaows_count += shadow_index;
+			++light_type_count;
 		}
+	}
+	if (s_Data.NUM_DIRECTIONAL_LIGHT > 0)
+	{
+		s_Data.gpuBuffer.DirectionalLightBuffer->UpdateBufferData(s_Data.cpuBuffer.DIRECTIONAL_LIGHT_PROCESSED[0].GetPtr(), s_Data.NUM_DIRECTIONAL_LIGHT * sizeof(DirectionalLightBuffer_GPU));
+		s_Data.gpuBuffer.DirectionalLightBuffer->Bind(10);
+	}
+	if (s_Data.NUM_POINT_LIGHT > 0)
+	{
+		s_Data.gpuBuffer.PointLightBuffer->UpdateBufferData(s_Data.cpuBuffer.POINT_LIGHT_PROCESSED[0].GetPtr(), s_Data.NUM_POINT_LIGHT * sizeof(PointLightBuffer_GPU));
+		s_Data.gpuBuffer.PointLightBuffer->Bind(11);
+	}
+	if (s_Data.NUM_SPOT_LIGHT > 0)
+	{
+		s_Data.gpuBuffer.SpotLightBuffer->UpdateBufferData(s_Data.cpuBuffer.SPOT_LIGHT_PROCESSED[0].GetPtr(), s_Data.NUM_SPOT_LIGHT * sizeof(SpotLightBuffer_GPU));
+		s_Data.gpuBuffer.SpotLightBuffer->Bind(12);
+	}
+	if (s_Data.NUM_SHADOW > 0)
+	{
+		s_Data.gpuBuffer.ShadowPVMatrixBuffer->UpdateBufferData(s_Data.cpuBuffer.SHADOW_DATA_PROCESSED[0].GetPtr(), s_Data.NUM_SHADOW * sizeof(ShadowData_GPU));
+		s_Data.gpuBuffer.ShadowPVMatrixBuffer->Bind(13);
 	}
 }
 
@@ -2801,11 +2913,13 @@ void longmarch::Renderer3D::EndRendering()
 		Blit FinalFrameBuffer to have the same size as the back buffer.
 		This allows us to render with a smaller resolution thant the screen
 	*/
+	constexpr int default_framebuffer_rendererID = 0;
 	RenderCommand::TransferColorBit(
 		s_Data.gpuBuffer.FinalFrameBuffer->GetRendererID(),
 		s_Data.resolution.x,
 		s_Data.resolution.y,
-		0,
+
+		default_framebuffer_rendererID,
 		s_Data.window_size.x,
 		s_Data.window_size.y
 	);
@@ -3404,7 +3518,7 @@ void longmarch::Renderer3D::BuildAllTexture()
 		RenderCommand::DepthTest(false, false);	// Disable depth
 		RenderCommand::CullFace(false, false);	// Disable face culling
 		RenderCommand::Blend(false);			// Disable blending
-		RenderCommand::SetClearColor(Vec4f(0, 0, 0, 1));	// Clear to black background
+		RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0));	// Clear to black background
 
 		// SMAA
 		{
@@ -3913,11 +4027,10 @@ void longmarch::Renderer3D::AppendMeshToMultiDraw(MeshData* Mesh)
 			size_t vbo_size = (vbo->GetCount() * vbo->GetElementSize());
 			ASSERT(vbo_size % MeshData::GetVertexStrucSize() == 0, "Mesh VBO must be integer multiples of vertex layout");
 
-			MultiDrawBuffer::CmdBufferSimplified cmd;
+			auto& cmd = cmd_map[Mesh];
 			cmd.indexCount = _ibo_size / ibo->GetElementSize();
 			cmd.firstIndex = ibo->GetCount();
 			cmd.baseVertex = vbo_size / MeshData::GetVertexStrucSize();
-			cmd_map[Mesh] = std::move(cmd);
 		}
 
 		vbo->AppendBufferData(Mesh->GetVertexDataPtr(), _vbo_size);

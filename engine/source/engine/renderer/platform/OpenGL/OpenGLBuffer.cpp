@@ -4,9 +4,8 @@
 #include <glad/glad.h>
 #include <cstdint>
 
-#ifndef SHADOW_FILTER
+//#define SHADOW_FILTER GL_NEAREST
 #define SHADOW_FILTER GL_LINEAR
-#endif // !SHADOW_FILTER
 
 namespace longmarch {
 	/**************************************************************

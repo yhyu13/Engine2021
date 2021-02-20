@@ -27,7 +27,7 @@ namespace longmarch
 #endif
 
 #ifndef LongMarch_MAX_NUM_DIRECTIONAL_SHADOW
-#define LongMarch_MAX_NUM_DIRECTIONAL_SHADOW 1 // Must match "./asset/shader/include/LighStruch.h"
+#define LongMarch_MAX_NUM_DIRECTIONAL_SHADOW 4 // Must match "./asset/shader/include/LighStruch.h"
 #endif
 
 #ifndef LongMarch_MAX_SHADOW_PASS_BATCH
@@ -81,20 +81,15 @@ namespace longmarch
 		*
 		**************************************************************/
 
-		constexpr static int MAX_PARTICLE_INSTANCES = 10000;
+		constexpr static int MAX_PARTICLE_INSTANCES = 1024;
 		constexpr static int PARTICLE_INSTANCED_DATA_LENGTH = 21;
-		struct ParticleInstanceData_CPU
+		struct CACHE_ALIGN8 ParticleInstanceData_CPU
 		{
-			Entity entity;
 			LongMarch_Vector<Mat4> models; // model matrix for each particle in the particle-system
 			LongMarch_Vector<Vec4f> textureOffsets; // texture offsets for each particle in the particle-system
 			LongMarch_Vector<float> blendFactors; // blend factor for each particle in the particle-system
-
+			Entity entity;
 			float textureRows; // common for all particles of a particle-system
-
-			ParticleInstanceData_CPU()
-				: models(), textureOffsets(), blendFactors(), textureRows(1.0f)
-			{}
 		};
 		using ParticleInstanceDrawData = LongMarch_Vector<std::pair<std::shared_ptr<Texture2D>, Renderer3D::ParticleInstanceData_CPU>>;
 
@@ -474,25 +469,17 @@ namespace longmarch
 		*
 		**************************************************************/
 		static bool ShouldRendering();
-		static void BeginRendering();
+		static void BeginRendering(const PerspectiveCamera* camera);
 
-		static void BeginOpaqueShadowing(
+		static void BeginShadowing(
 			const PerspectiveCamera* camera,
-			const std::function<void()>& f_render,
+			const std::function<void()>& f_render_opaque,
+			const std::function<void()>& f_render_trasparent,
 			const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
 			const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
 			const std::function<void(const std::string&)>& f_setRenderShaderName
 		);
-		static void EndOpaqueShadowing();
-
-		static void BeginTransparentShadowing(
-			const PerspectiveCamera* camera,
-			const std::function<void()>& f_render,
-			const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
-			const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
-			const std::function<void(const std::string&)>& f_setRenderShaderName
-		);
-		static void EndTransparentShadowing();
+		static void EndShadowing();
 
 		static void BeginOpaqueScene(
 			const PerspectiveCamera* camera,
@@ -598,7 +585,8 @@ namespace longmarch
 
 		static void _BeginForwardGeomtryPass(const PerspectiveCamera* camera, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginDeferredGeomtryPass(const PerspectiveCamera* camera, const std::shared_ptr<GBuffer>& gBuffer_out);
-		static void _PopulateShadingPassUniformsVariables(const PerspectiveCamera* camera);
+		static void _PopulateShadingPassUniformsVariables(const PerspectiveCamera* camera); 
+		static void _PopulateShadowPassVariables();
 
 		static void _BeginSkyBoxPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginDynamicAOPass(const std::shared_ptr<GBuffer>& gbuffer_in);

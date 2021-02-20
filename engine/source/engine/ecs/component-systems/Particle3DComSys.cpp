@@ -24,9 +24,9 @@ void longmarch::Particle3DComSys::Update(double dt)
 		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Engine mode is not valid!");
 	}
 
-	const auto& player = GameWorld::GetCurrent()->GetTheOnlyEntityWithType(e_type);
-
-	auto camera = GameWorld::GetCurrent()->GetComponent<PerspectiveCameraCom>(player)->GetCamera();
+	auto world = GameWorld::GetCurrent();
+	const auto& player = world->GetTheOnlyEntityWithType(e_type);
+	auto camera = world->GetComponent<PerspectiveCameraCom>(player)->GetCamera();
 
 	ForEach(
 		[dt, camera](EntityDecorator e)

@@ -94,21 +94,25 @@ namespace longmarch
 			s_RendererAPI->BindDefaultFrameBuffer();
 		}
 
+		//! Linear blend color bit
 		inline static void TransferColorBit(uint32_t src, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_w, uint32_t dest_h)
 		{
 			s_RendererAPI->TransferColorBit(src, src_w, src_h, dest, dest_w, dest_h);
 		}
 
+		//! Linear blend color bit
 		inline static void TransferColorBit(uint32_t src, uint32_t src_tex, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_tex, uint32_t dest_w, uint32_t dest_h)
 		{
 			s_RendererAPI->TransferColorBit(src, src_tex, src_w, src_h, dest, dest_tex, dest_w, dest_h);
 		}
 
+		//! Nearest blend depth bit
 		inline static void TransferDepthBit(uint32_t src, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_w, uint32_t dest_h)
 		{
 			s_RendererAPI->TransferDepthBit(src, src_w, src_h, dest, dest_w, dest_h);
 		}
 
+		//! Nearest blend stencil bit
 		inline static void TransferStencilBit(uint32_t src, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_w, uint32_t dest_h)
 		{
 			s_RendererAPI->TransferStencilBit(src, src_w, src_h, dest, dest_w, dest_h);

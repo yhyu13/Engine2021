@@ -64,6 +64,10 @@ void longmarch::LightCom::JsonSerialize(Json::Value& value)
 			{
 				val2["enable_guassian_blur"] = shadow.bEnableGaussianBlur;
 			}
+			if (shadow.bEnableTransparentShadow != _default.shadow.bEnableTransparentShadow)
+			{
+				val2["enable_transparent_shadow"] = shadow.bEnableTransparentShadow;
+			}
 			if (shadow.gaussianKernal != _default.shadow.gaussianKernal)
 			{
 				val2["guassian_kernel_size"] = shadow.gaussianKernal;
@@ -231,6 +235,13 @@ void longmarch::LightCom::JsonDeserialize(const Json::Value& value)
 					if (!val2.isNull())
 					{
 						shadow.bEnableGaussianBlur = val2.asBool();
+					}
+				}
+				{
+					auto& val2 = val["enable_transparent_shadow"];
+					if (!val2.isNull())
+					{
+						shadow.bEnableTransparentShadow = val2.asBool();
 					}
 				}
 				{
@@ -575,6 +586,15 @@ void longmarch::LightCom::ImGuiRender()
 				}
 			}
 			{
+				bool v = shadow.bEnableTransparentShadow;
+				if (ImGui::Checkbox("Enable Transparent Shadow", &v))
+				{
+					shadow.bEnableTransparentShadow = v;
+					ReleaseShadowBuffer();
+					AllocateShadowBuffer();
+				}
+			}
+			{
 				bool v = shadow.bEnableGaussianBlur;
 				if (ImGui::Checkbox("Enable Gaussian Blur", &v))
 				{
@@ -618,7 +638,7 @@ void longmarch::LightCom::ImGuiRender()
 
 void longmarch::LightCom::AllocateShadowBuffer()
 {
-	if (!shadow.bInit && shadow.bCastShadow)
+	if (!shadow.bInit)
 	{
 		shadow.bInit = true;
 		switch (type)
@@ -680,29 +700,66 @@ void longmarch::LightCom::AllocateShadowBuffer()
 				break;
 			}
 		}
+		if (shadow.bEnableTransparentShadow)
+		{
+			switch (type)
+			{
+			case longmarch::LightCom::LIGHT_TYPE::DIRECTIONAL:
+				shadow.shadowBuffer3 = ShadowBuffer::CreateArray(
+					shadow.backBufferDimension, shadow.backBufferDimension,
+					directionalLight.numOfCSM,
+					ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
+				break;
+			case longmarch::LightCom::LIGHT_TYPE::POINT:
+#ifdef POINT_LIGHT_ARRAY_SHADOW_MAP
+				shadow.shadowBuffer3 = ShadowBuffer::CreateArray(
+					shadow.dimension, shadow.dimension,
+					6,
+					ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
+#else
+				shadow.shadowBuffer2 = ShadowBuffer::Create(
+					shadow.dimension, shadow.dimension,
+					ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE);
+#endif
+				shadow.shadowBuffer3 = ShadowBuffer::CreateArray(
+					shadow.dimension, shadow.dimension,
+					6,
+					ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
+				break;
+			case longmarch::LightCom::LIGHT_TYPE::SPOT:
+				shadow.shadowBuffer3 = ShadowBuffer::Create(
+					shadow.backBufferDimension, shadow.backBufferDimension,
+					ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4);
+				break;
+			}
+		}
 	}
 }
 
 void longmarch::LightCom::ReleaseShadowBuffer()
 {
+	shadow.bInit = false;
 	shadow.shadowBuffer.reset();
 	shadow.shadowBuffer2.reset();
-	shadow.bInit = false;
+	shadow.shadowBuffer3.reset();
 }
 
 bool longmarch::LightCom::HandleShadowBufferDropOff(float distance)
 {
-	constexpr uint32_t drop_off_ratio = 4;
-	float drop_off_ratio_distance = shadow.dropOffDistance / static_cast<float>(drop_off_ratio);
-	if (distance > drop_off_ratio_distance)
+	constexpr uint32_t minimum_shadow_map_size = 128u;
+	constexpr uint32_t drop_off_max_ratio = 4u;
+	float drop_off_threshold_distance = shadow.dropOffDistance / static_cast<float>(drop_off_max_ratio);
+	if (distance > drop_off_threshold_distance)
 	{
-		uint32_t ratio = glm::max(static_cast<uint32_t>(glm::roundEven(distance / drop_off_ratio_distance)), 2u);
-		if (ratio > drop_off_ratio)
+		// Apply drop off when distance to camera is greater than threshold
+		uint32_t ratio = glm::max(static_cast<uint32_t>(glm::roundEven(distance / drop_off_threshold_distance)), 2u);
+		if (ratio > drop_off_max_ratio)
 		{
+			// Early quit on exceeding maximum drop off ratio
 			return true;
 		}
-		uint32_t target1 = (glm::max)(shadow.origin_dimension / ratio, 128u);
-		uint32_t target2 = (glm::max)(shadow.origin_backBufferDimension / ratio, 128u);
+		uint32_t target1 = (glm::max)(shadow.origin_dimension / ratio, minimum_shadow_map_size);
+		uint32_t target2 = (glm::max)(shadow.origin_backBufferDimension / ratio, minimum_shadow_map_size);
 		if (shadow.dimension != target1 || shadow.backBufferDimension != target2)
 		{
 			shadow.dimension = target1;
@@ -713,8 +770,8 @@ bool longmarch::LightCom::HandleShadowBufferDropOff(float distance)
 	}
 	else if (shadow.dimension != shadow.origin_dimension || shadow.backBufferDimension != shadow.origin_backBufferDimension)
 	{
-		shadow.dimension = (glm::max)(shadow.origin_dimension, 128u);
-		shadow.backBufferDimension = (glm::max)(shadow.origin_backBufferDimension, 128u);
+		shadow.dimension = (glm::max)(shadow.origin_dimension, minimum_shadow_map_size);
+		shadow.backBufferDimension = (glm::max)(shadow.origin_backBufferDimension, minimum_shadow_map_size);
 		ReleaseShadowBuffer();
 		AllocateShadowBuffer();
 	}

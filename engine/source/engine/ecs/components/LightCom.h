@@ -18,11 +18,11 @@ namespace longmarch
 		};
 	public:
 		LightCom() = default;
-		//! Allocate shadow maps on GPU
+		//! Allocate shadow maps on GPU, avoids re-initialization internally
 		void AllocateShadowBuffer();
 		//! Release shadow maps on GPU
 		void ReleaseShadowBuffer();
-		//! Return true if buffer drop out determine to disable the shadow mapping
+		//! Return true if drop off execeed maximum distance (which implies that shadow would rather be turn off)
 		bool HandleShadowBufferDropOff(float distance);
 
 		virtual void JsonSerialize(Json::Value& value) override;
@@ -52,6 +52,7 @@ namespace longmarch
 			bool bInit = { false };
 			bool bCastShadow = { false };
 			bool bEnableGaussianBlur = { false };
+			bool bEnableTransparentShadow = { false };
 			uint32_t shadowAlgorithmMode = { 1u }; //<! Direct = 0, PCF = 1, Possion = 2, M2M = 3, M4M = 4
 			float depthBiasHigherBound = { 20.0f };
 			float depthBiasMultiplier = { 10.0f };
@@ -67,6 +68,7 @@ namespace longmarch
 			uint32_t origin_backBufferDimension = { 256u };
 			std::shared_ptr<ShadowBuffer> shadowBuffer = { nullptr };
 			std::shared_ptr<ShadowBuffer> shadowBuffer2 = { nullptr }; //<! Secondary shadow buffer used for gaussian blur
+			std::shared_ptr<ShadowBuffer> shadowBuffer3 = { nullptr }; //<! Third shadow buffer used for shadow of transparent objects
 		}shadow;
 		float collisionRadius = { 0.1f }; //<! Object samller than this distance should not be lit by this light
 		Vec4f attenuation{1.0f, 0.7f, 0.01f, 1.0f }; //<! Light attenuation: w / ( x + 1/d * y + 1/d^2 * z)

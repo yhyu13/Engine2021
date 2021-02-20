@@ -73,19 +73,13 @@ void longmarch::_3DEditorLayer::BuildRenderPipeline()
 			std::function<void(const std::string&)> f_setRenderShaderName = std::bind(&Scene3DComSys::SetRenderShaderName, scene3DComSys, std::placeholders::_1);
 
 			{
-				Renderer3D::BeginRendering();
+				Renderer3D::BeginRendering(cam);
 				{
-					ENG_TIME("Opaque Shadow pass");
+					ENG_TIME("Shadow pass");
 					scene3DComSys->SetRenderMode(Scene3DComSys::RenderMode::SHADOW);
-					Renderer3D::BeginOpaqueShadowing(cam, f_render_opaque, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
-					Renderer3D::EndOpaqueShadowing();
+					Renderer3D::BeginShadowing(cam, f_render_opaque, f_render_translucent, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
+					Renderer3D::EndShadowing();
 				} 
-				{
-					ENG_TIME("Transparent Shadow pass");
-					scene3DComSys->SetRenderMode(Scene3DComSys::RenderMode::SHADOW);
-					Renderer3D::BeginTransparentShadowing(cam, f_render_translucent, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
-					Renderer3D::EndTransparentShadowing();
-				}
 				{
 					ENG_TIME("Opaque Scene pass");
 					scene3DComSys->SetRenderMode(Scene3DComSys::RenderMode::SCENE);

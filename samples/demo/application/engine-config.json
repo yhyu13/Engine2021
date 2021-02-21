@@ -49,8 +49,10 @@
 		// Render passes
 		"Multi-draw" : true,
 		"Deferred-shading": true,
+
 		"Clustered-shading": false,
 		"Debug-cluster-light" : false,
+
 		"Motion-blur":true, /* only take effects under deffered shading */
 		"Motion-blur-shutter-speed": 45, /* higher this value, lower the motion blur effect */
 		"TAA":true, /* only take effects under deffered shading */

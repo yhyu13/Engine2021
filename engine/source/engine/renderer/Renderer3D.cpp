@@ -132,6 +132,13 @@ void longmarch::Renderer3D::Init()
 			RenderCommand::Reverse_Z(s_Data.enable_reverse_z);
 		}
 
+		{
+			s_Data.ClusterData.gridSizeX = 16;
+			s_Data.ClusterData.gridSizeY = 9;
+			s_Data.ClusterData.gridSizeZ = 24;
+			s_Data.ClusterData.numClusters = s_Data.ClusterData.gridSizeX * s_Data.ClusterData.gridSizeY * s_Data.ClusterData.gridSizeZ;
+		}
+
 		if (s_Data.enable_motionblur && !s_Data.enable_deferredShading)
 		{
 			ENGINE_INFO("Motion Blur requires Deferred Renderering as 'True' in the engine configuration file!");
@@ -149,12 +156,13 @@ void longmarch::Renderer3D::Init()
 		*	Init Shader
 		*
 		**************************************************************/
-		// Cluster
 		s_Data.ShaderMap["BuildAABBGridCompShader"] = Shader::Create("$shader:cluster_grid.comp");
 		s_Data.ShaderMap["CullLightsCompShader"] = Shader::Create("$shader:cluster_cull_light.comp");
-		s_Data.ShaderMap["ClusterDebugShader"] = Shader::Create("$shader:debug_clusters.vert", "$shader:debug_clusters.frag", "$shader:debug_clusters.geom");
+		s_Data.ShaderMap["ClusterDebugShader"] = Shader::Create("$shader:cluster_debug_vis.vert", "$shader:cluster_debug_vis.frag");
+
 		s_Data.ShaderMap["TransparentForwardShader"] = Shader::Create("$shader:forward_shader.vert", "$shader:forward_shader.frag");
 		s_Data.ShaderMap["MSMShadowBuffer_Transparent"] = Shader::Create("$shader:momentShadowMap_shader.vert", "$shader:momentShadowMap_shader.frag");
+
 		s_Data.ShaderMap["DeferredShader"] = Shader::Create("$shader:deferred_shader.vert", "$shader:deferred_shader.frag");
 		s_Data.ShaderMap["DynamicAOShader"] = Shader::Create("$shader:dynamic_ao_shader.vert", "$shader:dynamic_ao_shader.frag");
 
@@ -207,6 +215,21 @@ void longmarch::Renderer3D::Init()
 			break;
 		}
 
+		// Assign default shader
+		switch (s_Data.RENDER_PIPE)
+		{
+		case RENDER_PIPE::CLUSTER:
+			s_Data.ShaderMap["OpaqueRenderShader"] = s_Data.ShaderMap["ClusterShader"];
+			break;
+		case RENDER_PIPE::DEFERRED:
+			s_Data.ShaderMap["OpaqueRenderShader"] = s_Data.ShaderMap["GBufferShader"];
+			break;
+		case RENDER_PIPE::FORWARD:
+			s_Data.ShaderMap["OpaqueRenderShader"] = s_Data.ShaderMap["ForwardShader"];
+			break;
+		}
+		s_Data.CurrentShader = s_Data.ShaderMap["OpaqueRenderShader"];
+
 		for (auto it = s_Data.ShaderMap.begin(); it != s_Data.ShaderMap.end(); ++it)
 		{
 			it->second->Bind();
@@ -239,23 +262,8 @@ void longmarch::Renderer3D::Init()
 			it->second->SetInt("searchTex", s_Data.fragTexture_empty_slot + 2);
 		}
 
-		// Assign default shader
-		switch (s_Data.RENDER_PIPE)
-		{
-		case RENDER_PIPE::CLUSTER:
-			s_Data.ShaderMap["OpaqueRenderShader"] = s_Data.ShaderMap["ClusterShader"];
-			break;
-		case RENDER_PIPE::DEFERRED:
-			s_Data.ShaderMap["OpaqueRenderShader"] = s_Data.ShaderMap["GBufferShader"];
-			break;
-		case RENDER_PIPE::FORWARD:
-			s_Data.ShaderMap["OpaqueRenderShader"] = s_Data.ShaderMap["ForwardShader"];
-			break;
-		}
-		s_Data.CurrentShader = s_Data.ShaderMap["OpaqueRenderShader"];
-
 		LongMarch_Vector<std::string> forwardShader = { "ForwardShader", "TransparentForwardShader" };
-		LongMarch_Vector<std::string> clusteredShader = { "BuildAABBGridCompShader", "CullLightsCompShader","ClusterShader", "ClusterDebugShader" };
+		LongMarch_Vector<std::string> clusteredShader = { "BuildAABBGridCompShader", "CullLightsCompShader","ClusterShader", "ClusterDebugShader"};
 		LongMarch_Vector<std::string> deferredShader = { "GBufferShader", "DeferredShader" };
 
 		s_Data.ListRenderShadersToPopulateData.insert(s_Data.ListRenderShadersToPopulateData.end(), forwardShader.begin(), forwardShader.end());
@@ -296,7 +304,7 @@ void longmarch::Renderer3D::Init()
 
 			s_Data.gpuBuffer.AABBvolumeGridBuffer = ShaderStorageBuffer::Create(nullptr, s_Data.ClusterData.numClusters * sizeof(s_Data.ClusterData.frustrum));
 			s_Data.gpuBuffer.ScreenToViewBuffer = ShaderStorageBuffer::Create(nullptr, sizeof(s_Data.ClusterData.screenToView));
-			s_Data.gpuBuffer.ClusterColorBuffer = ShaderStorageBuffer::Create(nullptr, s_Data.ClusterData.gridSizeX * s_Data.ClusterData.gridSizeY * s_Data.ClusterData.gridSizeZ * sizeof(glm::vec4));
+			s_Data.gpuBuffer.ClusterColorBuffer = ShaderStorageBuffer::Create(nullptr, s_Data.ClusterData.gridSizeX * s_Data.ClusterData.gridSizeY * s_Data.ClusterData.gridSizeZ * sizeof(Vec4f));
 			s_Data.gpuBuffer.LightIndexListBuffer = ShaderStorageBuffer::Create(nullptr, (s_Data.ClusterData.numClusters * s_Data.ClusterData.maxLightsPerCluster) * sizeof(unsigned int));
 			s_Data.gpuBuffer.LightGridBuffer = ShaderStorageBuffer::Create(nullptr, s_Data.ClusterData.numClusters * 2 * sizeof(unsigned int));
 			s_Data.gpuBuffer.LightIndexGlobalCountBuffer = ShaderStorageBuffer::Create(nullptr, sizeof(unsigned int));
@@ -767,6 +775,18 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 		s_Data.gpuBuffer.CurrentDynamicAOBuffer->Bind();
 		RenderCommand::Clear();
 		s_Data.gpuBuffer.CurrentBloomBuffer->Bind();
+		RenderCommand::Clear();
+	}	
+	if (s_Data.RENDER_PIPE == RENDER_PIPE::DEFERRED)
+	{
+		// Resize GBuffer if necessary
+		if (s_Data.gpuBuffer.CurrentGBuffer->GetBufferSize() != s_Data.resolution)
+		{
+			s_Data.gpuBuffer.CurrentGBuffer = GBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, GBuffer::GBUFFER_TYPE::DEFAULT);
+		}
+		// GBuffer should be cleared with black color instead of a custom clear color
+		RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0));
+		s_Data.gpuBuffer.CurrentGBuffer->Bind();
 		RenderCommand::Clear();
 	}
 	// Populate shading parameters
@@ -1256,7 +1276,7 @@ void longmarch::Renderer3D::BeginShadowing(
 							ENG_TIME("Shadow phase: POINT LOOPING");
 							f_setRenderShaderName("MSMShadowBuffer");
 							f_setVFCullingParam(true, Geommath::Frustum::FromProjection(light_projection_mat), light_view_mat);
-							f_setDistanceCullingParam(true, light_pos, Near, Far);
+							f_setDistanceCullingParam(false, light_pos, Near, Far);
 							f_render_opaque();
 						}
 						{
@@ -1697,39 +1717,21 @@ void longmarch::Renderer3D::BeginOpaqueScene(
 	const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
 	const std::function<void(const std::string&)>& f_setRenderShaderName)
 {
+	// Populate shading parameters
+	{
+		ENG_TIME("Scene phase (Opaque): Populate Shadow Data");
+		_PopulateShadowPassVariables();
+	}
+
 	{
 		ENG_TIME("Scene phase (Opaque): BEGIN");
 		s_Data.RENDER_PASS = RENDER_PASS::SCENE;
-
-		if (s_Data.RENDER_PIPE == RENDER_PIPE::DEFERRED)
-		{
-			// Resize GBuffer if necessary
-			if (s_Data.gpuBuffer.CurrentGBuffer->GetBufferSize() != s_Data.resolution)
-			{
-				s_Data.gpuBuffer.CurrentGBuffer = GBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, GBuffer::GBUFFER_TYPE::DEFAULT);
-			}
-			// GBuffer should be cleared with black color instead of a custom clear color
-			RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0));
-			s_Data.gpuBuffer.CurrentGBuffer->Bind();
-			RenderCommand::Clear();
-		}
 
 		// Assign current frame buffer
 		{
 			s_Data.gpuBuffer.CurrentFrameBuffer = s_Data.gpuBuffer.FrameBuffer_1;
 		}
 
-		// Populate shading parameters
-		{
-			ENG_TIME("Scene phase (Opaque): Populate Shadow Data");
-			_PopulateShadingPassUniformsVariables(camera);
-			_PopulateShadowPassVariables();
-		}
-		if (s_Data.enable_debug_cluster_light) {
-			Renderer3D::_BeginClusterBuildGrid(camera);
-			Renderer3D::_BeginDebugCluster(s_Data.gpuBuffer.CurrentFrameBuffer);
-			return;
-		}
 		// Begin geomtry passes
 		{
 			switch (s_Data.RENDER_PIPE)
@@ -1778,8 +1780,7 @@ void longmarch::Renderer3D::_BeginLightCullingPass(const PerspectiveCamera* came
 {
 	s_Data.CurrentShader = s_Data.ShaderMap["CullLightsCompShader"];
 	s_Data.CurrentShader->Bind();
-	s_Data.CurrentShader->SetMat4("u_ViewMatrix", camera->GetViewMatrix());
-	RenderCommand::DispatchCompute(1, 1, 24);
+	RenderCommand::DispatchCompute(1, 1, 4);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 
@@ -1806,8 +1807,7 @@ void longmarch::Renderer3D::_BeginDebugCluster(const std::shared_ptr<FrameBuffer
 		RenderCommand::Blend(true);			// Enable blending
 		RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ADDITION);
 		RenderCommand::DepthTest(false, false);	// Disable depth test
-		RenderCommand::DepthFunc(RendererAPI::CompareEnum::LEQUAL);
-		RenderCommand::CullFace(true, false);
+		RenderCommand::CullFace(false, false);
 		{
 			s_Data.CurrentShader = s_Data.ShaderMap["ClusterDebugShader"];
 			s_Data.CurrentShader->Bind();
@@ -1817,7 +1817,6 @@ void longmarch::Renderer3D::_BeginDebugCluster(const std::shared_ptr<FrameBuffer
 		}
 	}
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
-	s_Data.gpuBuffer.FinalFrameBuffer = s_Data.gpuBuffer.CurrentFrameBuffer;
 }
 
 void longmarch::Renderer3D::_BeginForwardGeomtryPass(const PerspectiveCamera* camera, const std::shared_ptr<FrameBuffer>& framebuffer_out)
@@ -1916,20 +1915,19 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 
 			shaderProg->SetFloat("u_zNear", camera->cameraSettings.nearZ);
 			shaderProg->SetFloat("u_zFar", camera->cameraSettings.farZ);
-			shaderProg->SetInt("b_debug_cluster_light", s_Data.enable_debug_cluster_light);
 		}
 	}
 	if (s_Data.RENDER_PIPE == RENDER_PIPE::CLUSTER)
 	{
 		s_Data.gpuBuffer.AABBvolumeGridBuffer->Bind(14);
-
+		
 		auto width = s_Data.resolution.x;
 		auto height = s_Data.resolution.y;
 		auto gridX = s_Data.ClusterData.gridSizeX;
 		auto gridY = s_Data.ClusterData.gridSizeY;
 		auto gridZ = s_Data.ClusterData.gridSizeZ;
 		auto sizeX = (unsigned int)std::ceilf(width / gridX);
-		auto inverseProjectionMat = glm::inverse(camera->GetProjectionMatrix());
+		auto inverseProjectionMat = Geommath::SmartInverse(Geommath::ProjectionMatrixZeroOne(camera->cameraSettings.fovy_rad, camera->cameraSettings.aspectRatioWbyH, camera->cameraSettings.nearZ, camera->cameraSettings.farZ));
 		s_Data.ClusterData.screenToView.inverseProjectionMat = inverseProjectionMat;
 		s_Data.ClusterData.screenToView.tileSizes[0] = gridX;
 		s_Data.ClusterData.screenToView.tileSizes[1] = gridY;
@@ -1950,7 +1948,7 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 			for (int i = 0; i < size; ++i) {
 				s_Data.ClusterData.clusterColors[i] = Vec4f(_HSVtoRGB(glm::linearRand(0.0f, 360.0f), glm::linearRand(0.0f, 1.0f), 1.0f), 1.0f);
 			}
-			s_Data.gpuBuffer.ClusterColorBuffer->UpdateBufferData(&s_Data.ClusterData.clusterColors, sizeof(s_Data.ClusterData.clusterColors));
+			s_Data.gpuBuffer.ClusterColorBuffer->UpdateBufferData(&s_Data.ClusterData.clusterColors, sizeof(Vec4f) * s_Data.ClusterData.clusterColors.size());
 			s_Data.gpuBuffer.ClusterColorBuffer->Bind(19);
 		}
 	}
@@ -1959,16 +1957,13 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 void longmarch::Renderer3D::_PopulateShadowPassVariables()
 {
 	// CRITICAL: Create placeholder texture (must have)
-	static const auto& placeholder_shadowBuffer_array =
-		ShadowBuffer::CreateArray(1, 1, 1, ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
+	static const auto placeholder_shadowBuffer_array = ShadowBuffer::CreateArray(1, 1, 4, ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
 
 	// CRITICAL: Create placeholder texture (must have)
-	static const auto& placeholder_shadowBuffer_cube =
-		ShadowBuffer::Create(1, 1, ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE);
+	static const auto placeholder_shadowBuffer_cube = ShadowBuffer::CreateArray(1, 1, 6, ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4); // ShadowBuffer::Create(1, 1, ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE);
 
 	// CRITICAL: Create placeholder texture (must have)
-	static const auto& placeholder_shadowBuffer =
-		ShadowBuffer::Create(1, 1, ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4);
+	static const auto placeholder_shadowBuffer = ShadowBuffer::Create(1, 1, ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4);
 
 	{
 		// Shadow texture offset needs to be larger than the sum of empty slots and scene texture slots.
@@ -2158,7 +2153,6 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 		Renderer3D::_BeginForwardLightingPass(s_Data.gpuBuffer.CurrentFrameBuffer);
 		break;
 	}
-	if (!s_Data.enable_debug_cluster_light)
 	{
 		Renderer3D::_BeginSkyBoxPass(s_Data.gpuBuffer.CurrentFrameBuffer);
 	}
@@ -2352,10 +2346,6 @@ void longmarch::Renderer3D::_BeginClusterLightingPass(const std::shared_ptr<Fram
 		}
 	}
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
-	if (s_Data.enable_debug_cluster_light) 
-	{
-		s_Data.gpuBuffer.FinalFrameBuffer = s_Data.gpuBuffer.CurrentFrameBuffer;
-	}
 }
 
 void longmarch::Renderer3D::_BeginSkyBoxPass(const std::shared_ptr<FrameBuffer>& framebuffer_out)
@@ -2497,10 +2487,6 @@ void longmarch::Renderer3D::EndTransparentSceneAndLighting()
 **************************************************************/
 void longmarch::Renderer3D::BeginPostProcessing()
 {
-	if (s_Data.enable_debug_cluster_light)
-	{
-		return;
-	}
 	RenderCommand::PolyModeFill();			// Draw full model
 	RenderCommand::DepthTest(false, false);	// Disable depth testing
 	RenderCommand::CullFace(false, false);	// Disable face culling
@@ -2535,6 +2521,10 @@ void longmarch::Renderer3D::BeginPostProcessing()
 	{
 		Renderer3D::_BeginBloomPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_3, s_Data.gpuBuffer.FrameBuffer_4, s_Data.gpuBuffer.FrameBuffer_2);
 		Renderer3D::_BeginToneMappingPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FinalFrameBuffer);
+	}
+	if (s_Data.enable_debug_cluster_light)
+	{
+		Renderer3D::_BeginDebugCluster(s_Data.gpuBuffer.CurrentFrameBuffer);
 	}
 }
 

@@ -450,14 +450,13 @@ namespace longmarch
 					unsigned int screenHeight;
 				}screenToView;
 
-				// 16x9x24 subdivision
-				const unsigned int gridSizeX = 16;
-				const unsigned int gridSizeY = 9;
-				const unsigned int gridSizeZ = 24;
-				const unsigned int numClusters = gridSizeX * gridSizeY * gridSizeZ;
+				unsigned int gridSizeX;
+				unsigned int gridSizeY;
+				unsigned int gridSizeZ;
+				unsigned int numClusters;// = gridSizeX * gridSizeY * gridSizeZ;
 				unsigned int maxLightsPerCluster = 50;
 				LongMarch_Vector<Vec4f> clusterColors;
-			}ClusterData;
+			} ClusterData;
 		};
 
 		static void Init();

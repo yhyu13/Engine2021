@@ -18,7 +18,7 @@ longmarch::OOBB::OOBB(const Vec3f& min, const Vec3f& max)
 	o_max = Max = max;
 }
 
-longmarch::OOBB::OOBB(MeshData* mesh)
+longmarch::OOBB::OOBB(const std::shared_ptr<MeshData>& mesh)
 	:
 	Shape(SHAPE_TYPE::OOBB)
 {
@@ -26,7 +26,7 @@ longmarch::OOBB::OOBB(MeshData* mesh)
 	InitWithMeshData(mesh->vertices, mesh->indices);
 }
 
-longmarch::OOBB::OOBB(const LongMarch_Vector<MeshData*>& meshs)
+longmarch::OOBB::OOBB(const LongMarch_Vector<std::shared_ptr<MeshData>>& meshs)
 	:
 	Shape(SHAPE_TYPE::OOBB)
 {

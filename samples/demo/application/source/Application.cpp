@@ -32,6 +32,7 @@ namespace longmarch
 			// Make window visible in the end of construction
 			GetWindow()->SetVisible(true);
 
+			// Switch to the intializing layer
 			switch (Engine::GetEngineMode())
 			{
 			case Engine::ENGINE_MODE::EDITING: 

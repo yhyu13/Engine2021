@@ -14,17 +14,17 @@ std::shared_ptr<Scene3DNode> longmarch::Scene3DNode::Copy() const
 	return ret;
 }
 
-const LongMarch_Vector<MeshData*> longmarch::Scene3DNode::GetAllMesh() const
+const LongMarch_Vector<std::shared_ptr<MeshData>> longmarch::Scene3DNode::GetAllMesh() const
 {
-	LongMarch_Vector<MeshData*> ret;
-	std::transform(meshTree.begin(), meshTree.end(), std::back_inserter(ret), [](const auto& item) {return item.second->meshData.get(); });
+	LongMarch_Vector<std::shared_ptr<MeshData>> ret;
+	std::transform(meshTree.begin(), meshTree.end(), std::back_inserter(ret), [](const auto& item) {return item.second->meshData; });
 	return ret;
 }
 
-const LongMarch_Vector<Material*> longmarch::Scene3DNode::GetAllMaterial() const
+const LongMarch_Vector<std::shared_ptr<Material>> longmarch::Scene3DNode::GetAllMaterial() const
 {
-	LongMarch_Vector<Material*> ret;
-	std::transform(meshTree.begin(), meshTree.end(), std::back_inserter(ret), [](const auto& item) {return item.second->material.get(); });
+	LongMarch_Vector<std::shared_ptr<Material>> ret;
+	std::transform(meshTree.begin(), meshTree.end(), std::back_inserter(ret), [](const auto& item) {return item.second->material; });
 	return ret;
 }
 

@@ -4,8 +4,6 @@
 
 namespace longmarch
 {
-	const float GRAVITY = -50.0f;
-
 	struct Particle3D
 	{
 		Particle3D() = default;

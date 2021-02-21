@@ -47,6 +47,7 @@ namespace longmarch
 		PerspectiveCamera m_pickingCam;
 		Entity m_pickedEntity;
 		GameWorld* m_parentWorld{ nullptr };
+		std::shared_ptr<Scene3DNode> m_particlePickingMesh{ nullptr };
 		std::shared_ptr<FrameBuffer> m_renderTarget{ nullptr };
 		std::shared_ptr<Texture2D> m_renderTexture{ nullptr };
 		std::uint8_t m_blitData[texture_dim * texture_dim * 4u]{ 0u };

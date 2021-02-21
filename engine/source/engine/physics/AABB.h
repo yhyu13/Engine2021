@@ -10,8 +10,8 @@ namespace longmarch
 		NONCOPYABLE(AABB);
 		AABB();
 		explicit AABB(const Vec3f& min, const Vec3f& max);
-		explicit AABB(MeshData* mesh);
-		explicit AABB(const LongMarch_Vector<MeshData*>& meshs);
+		explicit AABB(const std::shared_ptr<MeshData>& mesh);
+		explicit AABB(const LongMarch_Vector<std::shared_ptr<MeshData>>& meshs);
 		void InitWithMeshData(const MeshData::VertexList& vertex_data, const MeshData::IndexList& index_data);
 
 		const std::vector<Vec3f> GetAllVertex();

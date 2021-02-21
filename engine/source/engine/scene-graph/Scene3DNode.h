@@ -31,9 +31,8 @@ namespace longmarch
 		//! Copy a scene3DNode is preferred with new copies of all materials
 		std::shared_ptr<Scene3DNode> Copy() const;
 
-		const LongMarch_Vector<MeshData*> GetAllMesh() const;
-
-		const LongMarch_Vector<Material*> GetAllMaterial() const;
+		const LongMarch_Vector<std::shared_ptr<MeshData>> GetAllMesh() const;
+		const LongMarch_Vector<std::shared_ptr<Material>> GetAllMaterial() const;
 
 		void ModifyAllMaterial(const std::function<void(Material*)>& callback) const;
 

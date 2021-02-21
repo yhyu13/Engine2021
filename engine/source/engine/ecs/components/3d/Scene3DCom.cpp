@@ -15,7 +15,14 @@ longmarch::Scene3DCom::Scene3DCom(const EntityDecorator& _this)
 void longmarch::Scene3DCom::SetSceneData(const Scene3DCom::SceneDataRef& obj)
 {
 	LOCK_GUARD2();
-	m_objDatasRef = obj->Copy();
+	if (obj)
+	{
+		m_objDatasRef = obj->Copy();
+	}
+	else
+	{
+		m_objDatasRef = nullptr;
+	}
 }
 
 void longmarch::Scene3DCom::SetSceneData(const ResourceManager<Scene3DNode>::ResourceHandle& handle)
@@ -145,7 +152,7 @@ void longmarch::Scene3DCom::Draw()
 		{
 			const auto trans = EntityDecorator{ m_this , m_world }.GetComponent<Transform3DCom>();
 			const auto& shaderName = m_shaderName;
-			Renderer3D::Draw(m_this, m_objDatasRef.get(), trans->GetModelTr(), trans->GetPrevModelTr(), shaderName);
+			Renderer3D::Draw(m_this, m_objDatasRef, trans->GetModelTr(), trans->GetPrevModelTr(), shaderName);
 		}
 		// Automatically retset the drawable flag on render completion (always set shouldDraw before Render)
 		m_shoudlDraw = true;
@@ -165,7 +172,7 @@ void longmarch::Scene3DCom::Draw(const std::function<void(const Renderer3D::Rend
 			{
 				auto& mesh = data->meshData;
 				auto& mat = data->material;
-				drawFunc(Renderer3D::RenderData_CPU{ (Entity)m_this, mesh.get(), mat.get(), trans->GetModelTr(), trans->GetPrevModelTr() });
+				drawFunc(Renderer3D::RenderData_CPU{ (Entity)m_this, mesh, mat, trans->GetModelTr(), trans->GetPrevModelTr() });
 			}
 		}
 		// Automatically retset the drawable flag on render completion (always set shouldDraw before Render)

@@ -10,12 +10,8 @@ namespace longmarch
 		m_avgSpeed(0.0f),
 		m_gravityCompliance(0.0f),
 		m_avgLifeLength(0.0f),
-		m_avgScale(0.0f),
-		m_randDevice(),
-		m_generator(m_randDevice()),
-		m_distribution(0.0, 1.0)
+		m_avgScale(0.0f)
 	{
-		std::srand((unsigned)time(NULL));
 	}
 
 	ParticleSystem3D::ParticleSystem3D(float _pps, float _avgSpeed, float _gravityCompliance, float _avgLifeLength, float _avgScale, const std::string& texturename)
@@ -23,13 +19,8 @@ namespace longmarch
 		m_avgSpeed(_avgSpeed),
 		m_gravityCompliance(_gravityCompliance),
 		m_avgLifeLength(_avgLifeLength),
-		m_avgScale(_avgScale),
-		m_randDevice(),
-		m_generator(m_randDevice()),
-		m_distribution(0.0, 1.0)
+		m_avgScale(_avgScale)
 	{
-		std::srand((unsigned)time(NULL));
-
 		m_texture = ResourceManager<Texture2D>::GetInstance()->TryGet(texturename)->Get();
 	}
 
@@ -93,7 +84,7 @@ namespace longmarch
 		float particlesToCreate = m_particlePerSecond * frametime;
 		int count = std::floor(particlesToCreate);
 
-		for (int i = 0; i < count; i++)
+		for (int i = 0; i < count; ++i)
 		{
 			Vec3f velocity;
 			if (m_direction.x != 0.0f || m_direction.y != 0.0f || m_direction.z != 0.0f)
@@ -109,8 +100,7 @@ namespace longmarch
 			velocity *= GenerateValue(m_avgSpeed, m_speedVariation);
 			float scale = GenerateValue(m_avgScale, m_scaleVariation);
 			float lifeLength = GenerateValue(m_avgLifeLength, m_lifeLengthVariation);
-			Particle3D particle(m_center + m_center_offset, velocity, m_gravityCompliance, lifeLength, GenerateRotation(), scale, m_texture->GetTextureRowCount());
-			m_particles.push_back(particle);
+			m_particles.emplace_back(m_center + m_center_offset, velocity, m_gravityCompliance, lifeLength, GenerateRotation(), scale, m_texture->GetTextureRowCount());
 		}
 	}
 
@@ -124,12 +114,9 @@ namespace longmarch
 		return m_texture;
 	}
 
-	/*
-		Get the next pseudo-random float, uniformly distributed float value between 0.0 and 1.0
-	*/
 	float ParticleSystem3D::NextRandomFloat()
 	{
-		return m_distribution(m_generator);
+		return RAND_F(0,1);
 	}
 
 	float ParticleSystem3D::GenerateValue(const float average, const float errorMargin)

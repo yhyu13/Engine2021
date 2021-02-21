@@ -17,6 +17,9 @@ void longmarch::PickingPass::Init()
 		setting.float_type = false;
 		m_renderTexture = Texture2D::Create(setting);
 		m_renderTarget = FrameBuffer::Create(texture_dim, texture_dim, FrameBuffer::BUFFER_FORMAT::UINT8);
+
+		auto rm = ResourceManager<Scene3DNode>::GetInstance();
+		m_particlePickingMesh = rm->TryGet("unit_sphere")->Get()->Copy();
 	}
 	// Create picking gpu buffer
 	{
@@ -31,6 +34,17 @@ void longmarch::PickingPass::Init()
 		m_clearBatchBind = std::move(std::bind(&PickingPass::ClearBatch, this));
 		m_camera = &m_pickingCam;
 	}
+	{
+		switch (Renderer3D::s_Data.RENDER_MODE)
+		{
+		case Renderer3D::RENDER_MODE::CANONICAL:
+			Renderer3D::s_Data.ShaderMap["PickingSystemShader"] = Shader::Create("$shader:picking_entity_id_shader.vert", "$shader:picking_entity_id_shader.frag");
+			break;
+		case Renderer3D::RENDER_MODE::MULTIDRAW:
+			Renderer3D::s_Data.ShaderMap["PickingSystemShader"] = Shader::Create("$shader:picking_entity_id_shader_MultiDraw.vert", "$shader:picking_entity_id_shader_MultiDraw.frag");
+			break;
+		}
+	}
 }
 
 void longmarch::PickingPass::BeginRenderPass()
@@ -43,10 +57,11 @@ void longmarch::PickingPass::BeginRenderPass()
 		// Bind FBO before read pixel
 		m_renderTarget->Bind();
 		m_renderTexture->ReadTexture(m_blitData);
-		// We must unbind here such that further rendering like UI would work
+		// We must unbind here such that things would not render to this render target
 		m_renderTarget->Unbind();
 		// Interpret data
-		if (uint32_t id; GetPickedResult(&id))
+		uint32_t id;
+		if (GetPickedResult(&id))
 		{
 			DEBUG_PRINT("Get picking result : " + Str(id) + " data : " + Str((uint32_t)m_blitData[0]) + " " + Str((uint32_t)m_blitData[1])
 				+ " " + Str((uint32_t)m_blitData[2]) + " " + Str((uint32_t)m_blitData[3]));
@@ -97,7 +112,6 @@ void longmarch::PickingPass::BeginRenderPass()
 			m_pickingCam.OnUpdate();
 
 			Render();
-
 			m_shouldRead = true;
 		}
 	}
@@ -132,7 +146,7 @@ bool longmarch::PickingPass::GetPickedResult(uint32_t* id) const
 void longmarch::PickingPass::Render()
 {
 	// Config render settings
-	Renderer3D::s_Data.RENDER_PASS = Renderer3D::RENDER_PASS::EMPTY;
+	Renderer3D::s_Data.RENDER_PASS = Renderer3D::RENDER_PASS::PICKING;
 	RenderCommand::PolyModeFill();
 	RenderCommand::Blend(false);
 	RenderCommand::DepthTest(true, true);
@@ -174,20 +188,6 @@ void longmarch::PickingPass::UpdateShader()
 			pv = m_camera->GetViewProjectionMatrix();
 		}
 		shader->SetMat4("u_PVMatrix", pv);
-	}
-	{
-		auto shader = Renderer3D::s_Data.ShaderMap["PickingSystemShader_Particle"];
-		shader->Bind();
-		Mat4 p;
-		if (Renderer3D::s_Data.enable_reverse_z)
-		{
-			p = m_camera->GetReverseZProjectionMatrix();
-		}
-		else
-		{
-			p = m_camera->GetProjectionMatrix();
-		}
-		shader->SetMat4("u_ProjectionMatrix", p);
 	}
 }
 
@@ -242,46 +242,16 @@ void longmarch::PickingPass::Draw(const Renderer3D::RenderData_CPU& data)
 
 void longmarch::PickingPass::DrawParticle(const Renderer3D::ParticleInstanceDrawData& data)
 {
-	auto shader = Renderer3D::s_Data.ShaderMap["PickingSystemShader_Particle"];
+	auto shader = Renderer3D::s_Data.ShaderMap["PickingSystemShader"];
 	shader->Bind();
+
+	auto world = GameWorld::GetCurrent();
 	for (auto& [texture, instanceData] : data)
 	{
-		texture->BindTexture(0);
-		shader->SetFloat("rows", instanceData.textureRows);
-		shader->SetInt("u_EntityId", instanceData.entity.m_id);
-
-		int pointer = 0;
-		float* data = new float[instanceData.models.size() * Renderer3D::PARTICLE_INSTANCED_DATA_LENGTH];
-		for (size_t i = 0; i < instanceData.models.size(); ++i)
-		{
-			const auto& matrix = instanceData.models[i];
-			data[pointer++] = matrix[0][0];
-			data[pointer++] = matrix[0][1];
-			data[pointer++] = matrix[0][2];
-			data[pointer++] = matrix[0][3];
-			data[pointer++] = matrix[1][0];
-			data[pointer++] = matrix[1][1];
-			data[pointer++] = matrix[1][2];
-			data[pointer++] = matrix[1][3];
-			data[pointer++] = matrix[2][0];
-			data[pointer++] = matrix[2][1];
-			data[pointer++] = matrix[2][2];
-			data[pointer++] = matrix[2][3];
-			data[pointer++] = matrix[3][0];
-			data[pointer++] = matrix[3][1];
-			data[pointer++] = matrix[3][2];
-			data[pointer++] = matrix[3][3];
-
-			const Vec4f& offsets = instanceData.textureOffsets[i];
-			data[pointer++] = offsets.x;
-			data[pointer++] = offsets.y;
-			data[pointer++] = offsets.z;
-			data[pointer++] = offsets.w;
-
-			const float blendFactor = instanceData.blendFactors[i];
-			data[pointer++] = blendFactor;
-		}
-		Renderer3D::DrawParticlesInstance(data, instanceData.models.size());
-		delete[] data;
+		auto entity = instanceData.entity;
+		auto scene = world->GetComponent<Scene3DCom>(entity);
+		scene->SetSceneData(m_particlePickingMesh);
+		scene->Draw(m_drawBind);
+		scene->SetSceneData(nullptr);
 	}
 }

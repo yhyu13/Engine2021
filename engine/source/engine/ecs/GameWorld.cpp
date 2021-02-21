@@ -586,6 +586,7 @@ void longmarch::GameWorld::_ParEach2(const LongMarch_Vector<Entity>& es, typenam
 	try {
 		if (es.empty())
 		{
+			// Early return on empty entities
 			return;
 		}
 		int num_e = es.size();
@@ -619,6 +620,7 @@ void longmarch::GameWorld::_ParEach2(const LongMarch_Vector<Entity>& es, typenam
 					});
 			})));
 		}
+		// Check entities left
 		if (num_e_left <= 0)
 		{
 			split_size += num_e_left;

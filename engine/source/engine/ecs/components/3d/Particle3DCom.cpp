@@ -51,6 +51,7 @@ namespace longmarch
 		{
 			Renderer3D::DrawParticles(m_instancedDataList);
 		}
+		m_render = true;
 	}
 
 	void Particle3DCom::Draw(const std::function<void(const Renderer3D::ParticleInstanceDrawData&)>& drawFunc)
@@ -60,6 +61,7 @@ namespace longmarch
 		{
 			drawFunc(m_instancedDataList);
 		}
+		m_render = true;
 	}
 
 	void Particle3DCom::SetCenter(const Vec3f& center)
@@ -102,7 +104,7 @@ namespace longmarch
 		m_render = data["enable"].asBool();
 		std::string type = data["type"].asString();
 
-		float pps = data["pps"].asFloat();
+		float pps = data["particle_per_second"].asFloat();
 		float speed = data["avg_speed"].asFloat();
 		float gravity = data["gravity_compliance"].asFloat();
 		float life = data["avg_life"].asFloat();
@@ -137,7 +139,7 @@ namespace longmarch
 		if (ImGui::TreeNode("Particle"))
 		{
 			ImGui::PushItemWidth(200);
-			ImGui::InputFloat("##pps", &m_particleSystem->m_particlePerSecond, 10.0f, 50.0f, "pps = %.2f");
+			ImGui::InputFloat("##particle_per_second", &m_particleSystem->m_particlePerSecond, 10.0f, 50.0f, "pps = %.2f");
 
 			ImGui::InputFloat("##life", &m_particleSystem->m_avgLifeLength, 0.01, 0.1, "life = %.2f");
 			ImGui::SliderFloat("##life_deviation", &m_particleSystem->m_lifeLengthVariation, 0.0f, 1.0f, "life deviation = %.2f");

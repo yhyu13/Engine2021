@@ -41,7 +41,7 @@ namespace longmarch
 	inline ComponentDecorator<ComponentType> GameWorld::GetComponent(const Entity& entity) const
 	{
 		ComponentManager<ComponentType>* manager = _GetComponentManager<ComponentType>();
-		return ComponentDecorator<ComponentType>(EntityDecorator{ entity,this }, manager->GetComponentByEntity(entity));
+		return ComponentDecorator<ComponentType>(EntityDecorator{ entity, this }, manager->GetComponentByEntity(entity));
 	}
 
 	template<class ...Components>
@@ -126,6 +126,7 @@ namespace longmarch
 			auto es = EntityView<Components...>();
 			if (es.empty())
 			{
+				// Early return on empty entities
 				return;
 			}
 			int num_e = es.size();
@@ -159,6 +160,7 @@ namespace longmarch
 					});
 				})));
 			}
+			// Check entities left
 			if (num_e_left <= 0)
 			{
 				split_size += num_e_left;

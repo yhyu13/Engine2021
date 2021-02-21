@@ -35,6 +35,7 @@ namespace longmarch
 		Vec3f GenerateRandomUnitVector();
 
 		float GenerateValue(const float average, const float errorMargin);
+		//! Get the next pseudo - random float, uniformly distributed float value between 0.0 and 1.0
 		float NextRandomFloat();
 		float GenerateRotation();
 		void SortDepth();
@@ -55,10 +56,6 @@ namespace longmarch
 		float m_directionVariation{ 0.f };
 		Vec3f m_center_offset{ 0.f };
 		Vec3f m_center{ 0.f };
-
-		std::random_device m_randDevice;
-		std::mt19937 m_generator;
-		std::uniform_real_distribution<double> m_distribution;
 
 		std::shared_ptr<Texture2D> m_texture = { nullptr };
 		LongMarch_Vector<Particle3D> m_particles;

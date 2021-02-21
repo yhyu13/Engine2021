@@ -20,10 +20,8 @@ namespace longmarch
 
 	bool Particle3D::Update(const float frametime, const Vec3f& cameraPosition)
 	{
-		m_velocity.z += GRAVITY * m_gravityEffect * frametime; // frame-time in seconds
-		Vec3f change(m_velocity);
-		change *= frametime;
-		m_position += change;
+		m_velocity.z += -9.8f * m_gravityEffect * frametime; // frame-time in seconds
+		m_position += m_velocity * frametime;
 		m_distance = Geommath::Distance(cameraPosition, m_position);
 		UpdateTextureCoordinateInfo();
 		m_elapseTime += frametime;

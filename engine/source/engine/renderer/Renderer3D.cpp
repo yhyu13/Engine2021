@@ -155,7 +155,6 @@ void longmarch::Renderer3D::Init()
 		s_Data.ShaderMap["ClusterDebugShader"] = Shader::Create("$shader:debug_clusters.vert", "$shader:debug_clusters.frag", "$shader:debug_clusters.geom");
 		s_Data.ShaderMap["TransparentForwardShader"] = Shader::Create("$shader:forward_shader.vert", "$shader:forward_shader.frag");
 		s_Data.ShaderMap["MSMShadowBuffer_Transparent"] = Shader::Create("$shader:momentShadowMap_shader.vert", "$shader:momentShadowMap_shader.frag");
-		s_Data.ShaderMap["PickingSystemShader_Particle"] = Shader::Create("$shader:picking_entity_id_shader_particle.vert", "$shader:picking_entity_id_shader_particle.frag");
 		s_Data.ShaderMap["DeferredShader"] = Shader::Create("$shader:deferred_shader.vert", "$shader:deferred_shader.frag");
 		s_Data.ShaderMap["DynamicAOShader"] = Shader::Create("$shader:dynamic_ao_shader.vert", "$shader:dynamic_ao_shader.frag");
 
@@ -198,7 +197,6 @@ void longmarch::Renderer3D::Init()
 			s_Data.ShaderMap["GBufferShader"] = Shader::Create("$shader:gBuffer_shader.vert", "$shader:gBuffer_shader.frag");
 			s_Data.ShaderMap["MSMShadowBuffer"] = Shader::Create("$shader:momentShadowMap_shader.vert", "$shader:momentShadowMap_shader.frag");
 			s_Data.ShaderMap["MSMShadowBuffer_Cube"] = Shader::Create("$shader:momentShadowMap_shader_cube.vert", "$shader:momentShadowMap_shader_cube.frag", "$shader:cubemap_geomtry_shader.geom");
-			s_Data.ShaderMap["PickingSystemShader"] = Shader::Create("$shader:picking_entity_id_shader.vert", "$shader:picking_entity_id_shader.frag");
 			break;
 		case RENDER_MODE::MULTIDRAW:
 			s_Data.ShaderMap["ClusterShader"] = Shader::Create("$shader:cluster_shader_MultiDraw.vert", "$shader:cluster_shader_MultiDraw.frag");
@@ -206,7 +204,6 @@ void longmarch::Renderer3D::Init()
 			s_Data.ShaderMap["GBufferShader"] = Shader::Create("$shader:gBuffer_shader_MultiDraw.vert", "$shader:gBuffer_shader_MultiDraw.frag");
 			s_Data.ShaderMap["MSMShadowBuffer"] = Shader::Create("$shader:momentShadowMap_shader_MultiDraw.vert", "$shader:momentShadowMap_shader.frag");
 			s_Data.ShaderMap["MSMShadowBuffer_Cube"] = Shader::Create("$shader:momentShadowMap_shader_cube_MultiDraw.vert", "$shader:momentShadowMap_shader_cube.frag", "$shader:cubemap_geomtry_shader.geom");
-			s_Data.ShaderMap["PickingSystemShader"] = Shader::Create("$shader:picking_entity_id_shader_MultiDraw.vert", "$shader:picking_entity_id_shader_MultiDraw.frag");
 			break;
 		}
 
@@ -2982,7 +2979,7 @@ void longmarch::Renderer3D::Draw(const RenderData_CPU& data)
 *   This Draw function is for mesh drawing with/without
 *   the multidraw pipeline
 **************************************************************/
-void longmarch::Renderer3D::Draw(Entity entity, MeshData* Mesh, Material* Mat, const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName)
+void longmarch::Renderer3D::Draw(Entity entity, const std::shared_ptr<MeshData>& Mesh, const std::shared_ptr<Material>& Mat, const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName)
 {
 	LOCK_GUARD_NI();	// Lock the drawing or pushing draw commends
 	if (auto it = s_Data.ShaderMap.find(shaderName); it == s_Data.ShaderMap.end()) [[unlikely]]
@@ -3042,7 +3039,7 @@ void longmarch::Renderer3D::Draw(Entity entity, MeshData* Mesh, Material* Mat, c
 			LongMarch_Vector<std::pair<uint32_t, Material::MAT_TEXTURE_TYPE>> textures_to_bind;
 			if (Mat->textures.has_albedo())
 			{
-				auto& offset = uniqueTextureLut[Mat->textures.albedo_texture->Get().get()];
+				auto& offset = uniqueTextureLut[Mat->textures.albedo_texture->Get()];
 				if (offset == 0) // only emplace new unique texture
 				{
 					offset = texture_offset++;
@@ -3053,7 +3050,7 @@ void longmarch::Renderer3D::Draw(Entity entity, MeshData* Mesh, Material* Mat, c
 			}
 			if (Mat->textures.has_normal())
 			{
-				auto& offset = uniqueTextureLut[Mat->textures.normal_texture->Get().get()];
+				auto& offset = uniqueTextureLut[Mat->textures.normal_texture->Get()];
 				if (offset == 0) // only emplace new unique texture
 				{
 					offset = texture_offset++;
@@ -3064,7 +3061,7 @@ void longmarch::Renderer3D::Draw(Entity entity, MeshData* Mesh, Material* Mat, c
 			}
 			if (Mat->textures.has_metallic())
 			{
-				auto& offset = uniqueTextureLut[Mat->textures.metallic_texture->Get().get()];
+				auto& offset = uniqueTextureLut[Mat->textures.metallic_texture->Get()];
 				if (offset == 0) // only emplace new unique texture
 				{
 					offset = texture_offset++;
@@ -3075,7 +3072,7 @@ void longmarch::Renderer3D::Draw(Entity entity, MeshData* Mesh, Material* Mat, c
 			}
 			if (Mat->textures.has_roughness())
 			{
-				auto& offset = uniqueTextureLut[Mat->textures.roughness_texture->Get().get()];
+				auto& offset = uniqueTextureLut[Mat->textures.roughness_texture->Get()];
 				if (offset == 0) // only emplace new unique texture
 				{
 					offset = texture_offset++;
@@ -3086,7 +3083,7 @@ void longmarch::Renderer3D::Draw(Entity entity, MeshData* Mesh, Material* Mat, c
 			}
 			if (Mat->textures.has_ao())
 			{
-				auto& offset = uniqueTextureLut[Mat->textures.ao_texture->Get().get()];
+				auto& offset = uniqueTextureLut[Mat->textures.ao_texture->Get()];
 				if (offset == 0) // only emplace new unique texture
 				{
 					offset = texture_offset++;
@@ -3148,7 +3145,7 @@ void longmarch::Renderer3D::Draw(Entity entity, MeshData* Mesh, Material* Mat, c
 	}
 }
 
-void longmarch::Renderer3D::Draw(Entity entity, Scene3DNode* sceneNode, const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName)
+void longmarch::Renderer3D::Draw(Entity entity, const std::shared_ptr<Scene3DNode>& sceneNode, const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName)
 {
 	const auto& _sceneData = *sceneNode;
 	const auto& boneTransform = _sceneData.GetInverseFinalBoneTransform();
@@ -3160,9 +3157,9 @@ void longmarch::Renderer3D::Draw(Entity entity, Scene3DNode* sceneNode, const Ma
 		const auto offset = _multiDrawBuffer.MultiDraw_BoneTransformMatrix.size();
 		for (const auto& [level, data] : _sceneData)
 		{
-			auto& mesh = data->meshData;
-			auto& mat = data->material;
-			Renderer3D::Draw(entity, mesh.get(), mat.get(), transform, PrevTransform, shaderName);
+			const auto& mesh = data->meshData;
+			const auto& mat = data->material;
+			Renderer3D::Draw(entity, mesh, mat, transform, PrevTransform, shaderName);
 			_multiDrawBuffer.MultiDraw_BoneBaseOffset.emplace_back(offset);
 		}
 		std::copy(boneTransform.begin(), boneTransform.end(), std::back_inserter(_multiDrawBuffer.MultiDraw_BoneTransformMatrix));
@@ -3192,7 +3189,7 @@ void longmarch::Renderer3D::Draw(Entity entity, Scene3DNode* sceneNode, const Ma
 					gpubuffer.BoneTransformMatrixBuffer->Bind(5); // TODO use serialized binding location
 				}
 			}
-			Renderer3D::Draw(entity, mesh.get(), mat.get(), transform, PrevTransform, shaderName);
+			Renderer3D::Draw(entity, mesh, mat, transform, PrevTransform, shaderName);
 		}
 	}
 	break;
@@ -3216,7 +3213,18 @@ void longmarch::Renderer3D::DrawMesh(const std::shared_ptr<VertexArray>& MeshVer
 **************************************************************/
 void longmarch::Renderer3D::DrawParticles(const ParticleInstanceDrawData& particleData)
 {
-	s_Data.CurrentShader = s_Data.ShaderMap["ParticleShader"];
+	switch (s_Data.RENDER_PASS)
+	{
+	case RENDER_PASS::SHADOW:
+		return;
+		break;
+	case RENDER_PASS::SCENE:
+		s_Data.CurrentShader = s_Data.ShaderMap["ParticleShader"];
+		break;
+	default:
+		ENGINE_EXCEPT(L"Particles are not avaiable for other render passes.");
+		break;
+	}
 	s_Data.CurrentShader->Bind();
 
 	for (auto& [texture, instanceData] : particleData)
@@ -3488,7 +3496,7 @@ void longmarch::Renderer3D::BuildAllMesh()
 	case RENDER_MODE::MULTIDRAW:
 	{
 		const auto& allnodes = ResourceManager<Scene3DNode>::GetInstance()->GetAllResources();
-		LongMarch_Vector<MeshData*> allMeshData;
+		LongMarch_Vector<std::shared_ptr<MeshData>> allMeshData;
 		allMeshData.reserve(allnodes.size() * 2);
 		for (const auto& node : allnodes)
 		{
@@ -3969,10 +3977,10 @@ void longmarch::Renderer3D::BuildAllTexture()
 	}
 }
 
-void longmarch::Renderer3D::UpdateMeshToMultiDraw(const LongMarch_Vector<MeshData*>& Meshs)
+void longmarch::Renderer3D::UpdateMeshToMultiDraw(const LongMarch_Vector<std::shared_ptr<MeshData>>& Meshs)
 {
 	// Prevent uploading the same mesh data sequences
-	static LongMarch_Vector<MeshData*> _Mesh_duplicat_guard;
+	static LongMarch_Vector<std::shared_ptr<MeshData>> _Mesh_duplicat_guard;
 	if (_Mesh_duplicat_guard == Meshs)
 	{
 		return;
@@ -4006,7 +4014,7 @@ void longmarch::Renderer3D::UpdateMeshToMultiDraw(const LongMarch_Vector<MeshDat
 	}
 }
 
-void longmarch::Renderer3D::AppendMeshToMultiDraw(MeshData* Mesh)
+void longmarch::Renderer3D::AppendMeshToMultiDraw(std::shared_ptr<MeshData> Mesh)
 {
 	auto& _multiDrawBuffer = s_Data.multiDrawBuffer;
 	auto& cmd_map = _multiDrawBuffer.MeshData_CmdBuffer_Map;

@@ -23,7 +23,7 @@ longmarch::AABB::AABB(const Vec3f& min, const Vec3f& max)
 	UpdateOriginal(max);
 }
 
-longmarch::AABB::AABB(MeshData* mesh)
+longmarch::AABB::AABB(const std::shared_ptr<MeshData>& mesh)
 	:
 	Shape(SHAPE_TYPE::AABB)
 {
@@ -31,7 +31,7 @@ longmarch::AABB::AABB(MeshData* mesh)
 	InitWithMeshData(mesh->vertices, mesh->indices);
 }
 
-longmarch::AABB::AABB(const LongMarch_Vector<MeshData*>& meshs)
+longmarch::AABB::AABB(const LongMarch_Vector<std::shared_ptr<MeshData>>& meshs)
 	:
 	Shape(SHAPE_TYPE::AABB)
 {

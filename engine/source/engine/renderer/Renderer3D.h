@@ -103,7 +103,7 @@ namespace longmarch
 		};
 		struct CACHE_ALIGN8 RenderData_CPU
 		{
-			explicit RenderData_CPU(const Entity& e, MeshData* mesh, Material* mat, const Mat4& Tr, const Mat4& prevTr)
+			explicit RenderData_CPU(const Entity& e, std::shared_ptr<MeshData> mesh, std::shared_ptr<Material> mat, const Mat4& Tr, const Mat4& prevTr)
 				:
 				entity(e),
 				mesh(mesh),
@@ -112,8 +112,8 @@ namespace longmarch
 				prevTransform(prevTr)
 			{}
 			Entity entity;
-			MeshData* mesh{ nullptr };
-			Material* mat{ nullptr };
+			std::shared_ptr<MeshData> mesh{ nullptr };
+			std::shared_ptr<Material> mat{ nullptr };
 			Mat4 transform;
 			Mat4 prevTransform;
 		};
@@ -200,7 +200,7 @@ namespace longmarch
 		};
 		struct MaterialBuffer_GPU
 		{
-			explicit MaterialBuffer_GPU(Material* Mat)
+			explicit MaterialBuffer_GPU(const std::shared_ptr<Material>& Mat)
 			{
 				Albedo_Emissive.xyz = Mat->Kd;
 				Albedo_Emissive.w = Mat->emissive;
@@ -292,14 +292,14 @@ namespace longmarch
 			LongMarch_Vector<ModelBuffer_GPU> MultiDraw_ModelBuffer; // scene
 			LongMarch_Vector<MaterialBuffer_GPU> MultiDraw_MaterialBuffer; // scene
 			LongMarch_Vector<int> MultiDraw_TextureId; // scene
-			LongMarch_UnorderedMap_flat<Texture2D*, uint32_t> MultiDraw_UniqueTextureLUT; // scene
-			LongMarch_Vector<std::pair<Material*, LongMarch_Vector<std::pair<uint32_t, Material::MAT_TEXTURE_TYPE>>>> MultiDraw_MaterialTexToBind; // scene
+			LongMarch_UnorderedMap_flat<std::shared_ptr<Texture2D>, uint32_t> MultiDraw_UniqueTextureLUT; // scene
+			LongMarch_Vector<std::pair<std::shared_ptr<Material>, LongMarch_Vector<std::pair<uint32_t, Material::MAT_TEXTURE_TYPE>>>> MultiDraw_MaterialTexToBind; // scene
 
 			LongMarch_Vector<Mat4> MultiDraw_BoneTransformMatrix; // animation
 			LongMarch_Vector<uint32_t> MultiDraw_BoneBaseOffset; // animation
 			LongMarch_Vector<DrawIndexedIndirectCommand> MultiDraw_CmdBuffer; // Multidraw shared
-			LongMarch_UnorderedMap_Par_flat<MeshData*, LongMarch_Vector<uint32_t>> MultiDraw_MeshDataToDraw; // Multidraw shared
-			LongMarch_UnorderedMap_Par_flat<MeshData*, CmdBufferSimplified> MeshData_CmdBuffer_Map; // Multidraw shared
+			LongMarch_UnorderedMap_Par_flat<std::shared_ptr<MeshData>, LongMarch_Vector<uint32_t>> MultiDraw_MeshDataToDraw; // Multidraw shared
+			LongMarch_UnorderedMap_Par_flat<std::shared_ptr<MeshData>, CmdBufferSimplified> MeshData_CmdBuffer_Map; // Multidraw shared
 
 			// GPU buffers
 			std::shared_ptr<ShaderStorageBuffer> MultiDraw_ssbo_ShadowModelTrsBuffer; // Shadow
@@ -520,8 +520,8 @@ namespace longmarch
 		//! For custom render pass
 		static void Draw(const RenderData_CPU& data);
 		//! For lighting, shadow pass
-		static void Draw(Entity entity, MeshData* Mesh, Material* Mat, const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName);
-		static void Draw(Entity entity, Scene3DNode* sceneNode, const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName);
+		static void Draw(Entity entity, const std::shared_ptr<MeshData>& Mesh, const std::shared_ptr<Material>& Mat, const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName);
+		static void Draw(Entity entity, const std::shared_ptr<Scene3DNode>& sceneNode, const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName);
 
 		//! For canonical drawing
 		static void DrawMesh(const std::shared_ptr<VertexArray>& MeshVertexArray);
@@ -542,8 +542,8 @@ namespace longmarch
 		static void BuildAllMaterial();
 		static void BuildAllTexture();
 
-		static void UpdateMeshToMultiDraw(const LongMarch_Vector<MeshData*>& Meshs);
-		static void AppendMeshToMultiDraw(MeshData* Mesh);
+		static void UpdateMeshToMultiDraw(const LongMarch_Vector<std::shared_ptr<MeshData>>& Meshs);
+		static void AppendMeshToMultiDraw(std::shared_ptr<MeshData> Mesh);
 		/**************************************************************
 		*	Render3D inline API
 		*

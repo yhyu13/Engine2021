@@ -17,6 +17,8 @@ namespace longmarch
 		//! Pass in particle system wanted. Example, fire, smoke ,etc.
 		void SetParticleSystem(const std::shared_ptr<ParticleSystem3D>& particleSystem);
 		void Update(const double frametime, const PerspectiveCamera* camera);
+		//! Prepare to draw particles with a given view matrix
+		void PrepareDrawWithViewMatrix(const Mat4& viewMatrix);
 
 		void Draw();
 		void Draw(const std::function<void(const Renderer3D::ParticleInstanceDrawData&)>& drawFunc);
@@ -32,7 +34,7 @@ namespace longmarch
 		virtual void ImGuiRender() override;
 
 	private:
-		Mat4 GetModelViewMatrix(const Particle3D& particle, const PerspectiveCamera* camera);
+		Mat4 GetModelViewMatrix(const Particle3D& particle, const Mat4& viewMatrix);
 
 	private:
 		Renderer3D::ParticleInstanceDrawData m_instancedDataList;

@@ -3204,7 +3204,6 @@ void longmarch::Renderer3D::DrawParticles(const ParticleInstanceDrawData& partic
 	{
 	case RENDER_PASS::SHADOW:
 		return;
-		break;
 	case RENDER_PASS::SCENE:
 		s_Data.CurrentShader = s_Data.ShaderMap["ParticleShader"];
 		break;

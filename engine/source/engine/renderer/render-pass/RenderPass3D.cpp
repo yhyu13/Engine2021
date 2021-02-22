@@ -86,6 +86,7 @@ void longmarch::RenderPass3D::RenderWithModeTransparent(Renderer3D::RenderObj_CP
 	{
 		if (const auto& bv = body->GetBoundingVolume(); bv)
 		{
+			scene->SetShouldDraw(true);
 			if (DistanceCullingTest(bv))
 			{
 				scene->SetShouldDraw(false, false);
@@ -102,6 +103,7 @@ void longmarch::RenderPass3D::RenderWithModeTransparent(Renderer3D::RenderObj_CP
 	}
 	if (isParticle)
 	{
+		particle->PrepareDrawWithViewMatrix(m_vfcParam.WorldSpaceToViewSpace);
 		particle->Draw(m_drawBind_Particle);
 	}
 	else

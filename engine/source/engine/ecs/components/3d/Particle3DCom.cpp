@@ -21,27 +21,34 @@ namespace longmarch
 	void Particle3DCom::Update(const double frametime, const PerspectiveCamera* camera)
 	{
 		LOCK_GUARD2();
-		
 		m_particleSystem->Update(frametime, camera->GetWorldPosition());
+	}
 
-		m_instancedDataList.clear();
-		// Draw calls for particle systems
-		// Collect data for all particles in a map [texture, vector of particle instanced data]	
-		Renderer3D::ParticleInstanceData_CPU instanceData;
-		for (auto& particle : m_particleSystem->GetParticles())
+	void Particle3DCom::PrepareDrawWithViewMatrix(const Mat4& viewMatrix)
+	{
+		LOCK_GUARD2();
+		// Quite expensive matrix calculation on CPU
+		if (m_render)
 		{
-			instanceData.models.push_back(GetModelViewMatrix(particle, camera));
+			m_instancedDataList.clear();
+			// Draw calls for particle systems
+			// Collect data for all particles in a map [texture, vector of particle instanced data]	
+			Renderer3D::ParticleInstanceData_CPU instanceData;
+			for (auto& particle : m_particleSystem->GetParticles())
+			{
+				instanceData.models.push_back(GetModelViewMatrix(particle, viewMatrix));
 
-			Vec4f textureOffsets(particle.m_currentTextureOffset.xy, particle.m_nextTextureOffset.xy);
-			instanceData.textureOffsets.push_back(textureOffsets);
+				Vec4f textureOffsets(particle.m_currentTextureOffset.xy, particle.m_nextTextureOffset.xy);
+				instanceData.textureOffsets.push_back(textureOffsets);
 
-			instanceData.blendFactors.push_back(particle.m_blendFactor);
+				instanceData.blendFactors.push_back(particle.m_blendFactor);
+			}
+			auto texture = m_particleSystem->GetTexture();
+			instanceData.textureRows = texture->GetTextureRowCount();
+			instanceData.entity = m_this;
+
+			m_instancedDataList.emplace_back(texture, instanceData);
 		}
-		auto texture = m_particleSystem->GetTexture();
-		instanceData.textureRows = texture->GetTextureRowCount();
-		instanceData.entity = m_this;
-
-		m_instancedDataList.emplace_back(texture, instanceData);
 	}
 
 	void Particle3DCom::Draw()
@@ -175,9 +182,9 @@ namespace longmarch
 		}
 	}
 
-	Mat4 Particle3DCom::GetModelViewMatrix(const Particle3D& particle, const PerspectiveCamera* camera)
+	Mat4 Particle3DCom::GetModelViewMatrix(const Particle3D& particle, const Mat4& viewMatrix)
 	{
-		Mat4 view = camera->GetViewMatrix();
+		const auto& view = viewMatrix;
 		Mat4 model(1.0f);
 		model[0][0] = view[0][0];
 		model[0][1] = view[1][0];

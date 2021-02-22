@@ -221,6 +221,31 @@ void longmarch::Scene3DComSys::RenderTransparentObj()
 	}
 }
 
+void longmarch::Scene3DComSys::SetRenderMode(RenderMode mode)
+{
+	m_RenderMode = mode;
+}
+
+void longmarch::Scene3DComSys::SetVFCullingParam(bool enable, const ViewFrustum& VF, const Mat4& WorldSpaceToViewFrustum)
+{
+	m_vfcParam.enableVFCulling = enable;
+	m_vfcParam.VFinViewSpace = VF;
+	m_vfcParam.WorldSpaceToViewSpace = WorldSpaceToViewFrustum;
+}
+
+void longmarch::Scene3DComSys::SetDistanceCullingParam(bool enable, const Vec3f& center, float Near, float Far)
+{
+	m_distanceCParam.enableDistanceCulling = enable;
+	m_distanceCParam.center = center;
+	m_distanceCParam.Near = Near;
+	m_distanceCParam.Far = Far;
+}
+
+void longmarch::Scene3DComSys::SetRenderShaderName(const std::string& shaderName)
+{
+	m_RenderShaderName = shaderName;
+}
+
 void longmarch::Scene3DComSys::RenderWithModeOpaque(Renderer3D::RenderObj_CPU& renderObj)
 {
 	auto scene = renderObj.entity.GetComponent<Scene3DCom>();
@@ -273,6 +298,7 @@ void longmarch::Scene3DComSys::RenderWithModeTransparent(Renderer3D::RenderObj_C
 	{
 		if (const auto& bv = body->GetBoundingVolume(); bv)
 		{
+			scene->SetShouldDraw(true);
 			if (DistanceCullingTest(bv))
 			{
 				scene->SetShouldDraw(false, false);
@@ -295,6 +321,7 @@ void longmarch::Scene3DComSys::RenderWithModeTransparent(Renderer3D::RenderObj_C
 		{
 			if (isParticle)
 			{
+				particle->PrepareDrawWithViewMatrix(m_vfcParam.WorldSpaceToViewSpace);
 				particle->Draw();
 			}
 			else
@@ -308,10 +335,42 @@ void longmarch::Scene3DComSys::RenderWithModeTransparent(Renderer3D::RenderObj_C
 	{
 		if (!scene->IsHideInGame() && scene->IsCastShadow())
 		{
-			scene->Draw();
+			if (isParticle)
+			{
+				particle->PrepareDrawWithViewMatrix(m_vfcParam.WorldSpaceToViewSpace);
+				particle->Draw();
+			}
+			else
+			{
+				scene->Draw();
+			}
 		}
 	}
 	break;
+	}
+}
+
+bool longmarch::Scene3DComSys::ViewFustrumCullingTest(const std::shared_ptr<Shape>& BoudingVolume)
+{
+	if (!m_vfcParam.enableVFCulling)
+	{
+		return false;
+	}
+	else
+	{
+		return BoudingVolume->VFCTest(m_vfcParam.VFinViewSpace, m_vfcParam.WorldSpaceToViewSpace);
+	}
+}
+
+bool longmarch::Scene3DComSys::DistanceCullingTest(const std::shared_ptr<Shape>& BoudingVolume)
+{
+	if (!m_distanceCParam.enableDistanceCulling)
+	{
+		return false;
+	}
+	else
+	{
+		return BoudingVolume->DistanceTest(m_distanceCParam.center, m_distanceCParam.Near, m_distanceCParam.Far);
 	}
 }
 

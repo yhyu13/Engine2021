@@ -96,11 +96,11 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 
 	if (input->IsKeyTriggered(KEY_F1))
 	{
-		Renderer3D::ToggleWireFrameMode();
+		Renderer3D::s_Data.enable_wireframe = !Renderer3D::s_Data.enable_wireframe;
 	}
 	if (input->IsKeyTriggered(KEY_F2))
 	{
-		Renderer3D::ToggleDrawBoundingVolumeMode();
+		Renderer3D::s_Data.enable_drawingBoundingVolume = !Renderer3D::s_Data.enable_drawingBoundingVolume;
 	}
 	if (input->IsKeyTriggered(KEY_F3))
 	{
@@ -525,7 +525,7 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			lua.set_function("beep", [&x] { ++x; DEBUG_PRINT("LUA is up!"); });
 			lua.script("beep()");
 			ASSERT(x == 1, "Lua test failed!");
-			lua.script("print(\"LUA2 is up!\")");
+			lua.script("print(\"LUA is up from LUA!!!!!!!!!!!!!!!!!!!!!!!!!!!!\")");
 		}
 
 		/*

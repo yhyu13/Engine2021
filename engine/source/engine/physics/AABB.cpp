@@ -87,7 +87,7 @@ void longmarch::AABB::InitWithMeshData(const MeshData::VertexList& vertex_data, 
 void longmarch::AABB::ResetOriginal()
 {
 	o_min = Vec3f((std::numeric_limits<float>::max)());
-	o_max = -o_min;
+	o_max = Vec3f((std::numeric_limits<float>::lowest)());
 }
 
 void longmarch::AABB::UpdateOriginal(const Vec3f& point)
@@ -137,7 +137,7 @@ Vec3f longmarch::AABB::GetOriginalMin() const
 void longmarch::AABB::SetModelTrAndUpdate(const Mat4& transform)
 {
 	LOCK_GUARD_NC();
-	Reset(); // TODO: PRolem
+	Reset();
 	m_ObjectTr = transform;
 	for (const auto& v : GetAllVertexOriginal())
 	{
@@ -148,7 +148,7 @@ void longmarch::AABB::SetModelTrAndUpdate(const Mat4& transform)
 void longmarch::AABB::Reset()
 {
 	Min = Vec3f((std::numeric_limits<float>::max)());
-	Max = -Min;
+	Max = Vec3f((std::numeric_limits<float>::lowest)());
 }
 
 const std::vector<Vec3f> longmarch::AABB::GetAllVertexOriginal()

@@ -2522,7 +2522,7 @@ void longmarch::Renderer3D::BeginPostProcessing()
 		Renderer3D::_BeginBloomPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_3, s_Data.gpuBuffer.FrameBuffer_4, s_Data.gpuBuffer.FrameBuffer_2);
 		Renderer3D::_BeginToneMappingPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FinalFrameBuffer);
 	}
-	if (s_Data.enable_debug_cluster_light)
+	if (s_Data.enable_debug_cluster_light && s_Data.RENDER_PIPE == Renderer3D::RENDER_PIPE::CLUSTER)
 	{
 		Renderer3D::_BeginDebugCluster(s_Data.gpuBuffer.CurrentFrameBuffer);
 	}
@@ -2933,11 +2933,8 @@ void longmarch::Renderer3D::_RenderFullScreenCube()
 void longmarch::Renderer3D::RenderBoundingBox(const Mat4& transform)
 {
 	LOCK_GUARD_NI();
-	if (s_Data.enable_drawingBoundingVolume)
-	{
-		// Storing transformation matrix for delayed renderering
-		s_Data.cpuBuffer.InstancedDraw_BVModelTr.emplace_back(transform);
-	}
+	// Storing transformation matrix for delayed renderering
+	s_Data.cpuBuffer.InstancedDraw_BVModelTr.emplace_back(transform);
 }
 
 /**************************************************************
@@ -4034,6 +4031,17 @@ void longmarch::Renderer3D::AppendMeshToMultiDraw(std::shared_ptr<MeshData> Mesh
 		vbo->AppendBufferData(Mesh->GetVertexDataPtr(), _vbo_size);
 		ibo->AppendBufferData(Mesh->GetIndexDataPtr(), _ibo_size);
 	}
+}
+
+void longmarch::Renderer3D::ToggleReverseZ(bool enable) 
+{ 
+	LOCK_GUARD_NI(); 
+	s_Data.enable_reverse_z = enable; RenderCommand::Reverse_Z(enable); 
+}
+
+RendererAPI::API longmarch::Renderer3D::GetAPI() 
+{ 
+	return RendererAPI::GetAPI(); 
 }
 
 // Convert HSV to RGB:

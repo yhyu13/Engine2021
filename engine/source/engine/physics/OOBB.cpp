@@ -82,7 +82,7 @@ void longmarch::OOBB::InitWithMeshData(const MeshData::VertexList& vertex_data, 
 void longmarch::OOBB::ResetOriginal()
 {
 	o_min = Vec3f((std::numeric_limits<float>::max)());
-	o_max = Vec3f((std::numeric_limits<float>::lowest)());;
+	o_max = Vec3f((std::numeric_limits<float>::lowest)());
 }
 
 void longmarch::OOBB::UpdateOriginal(const Vec3f& point)

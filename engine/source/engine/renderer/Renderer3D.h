@@ -19,15 +19,15 @@ namespace longmarch
 #endif
 
 #ifndef MAX_SPOT_LIGHT_SHADOWS
-#define MAX_SPOT_LIGHT_SHADOWS 16 // Must match "./asset/shader/include/LighStruch.h"
+#define MAX_SPOT_LIGHT_SHADOWS 8 // Must match "./asset/shader/include/LighStruch.h"
 #endif
 
 #ifndef MAX_POINT_LIGHT_SHADOWS
-#define MAX_POINT_LIGHT_SHADOWS 16 // Must match "./asset/shader/include/LighStruch.h"
+#define MAX_POINT_LIGHT_SHADOWS 8 // Must match "./asset/shader/include/LighStruch.h"
 #endif
 
 #ifndef LongMarch_MAX_NUM_DIRECTIONAL_SHADOW
-#define LongMarch_MAX_NUM_DIRECTIONAL_SHADOW 4 // Must match "./asset/shader/include/LighStruch.h"
+#define LongMarch_MAX_NUM_DIRECTIONAL_SHADOW 2 // Must match "./asset/shader/include/LighStruch.h"
 #endif
 
 #ifndef LongMarch_MAX_SHADOW_PASS_BATCH
@@ -83,7 +83,7 @@ namespace longmarch
 
 		constexpr static int MAX_PARTICLE_INSTANCES = 1024;
 		constexpr static int PARTICLE_INSTANCED_DATA_LENGTH = 21;
-		struct CACHE_ALIGN8 ParticleInstanceData_CPU
+		struct ParticleInstanceData_CPU
 		{
 			LongMarch_Vector<Mat4> models; // model matrix for each particle in the particle-system
 			LongMarch_Vector<Vec4f> textureOffsets; // texture offsets for each particle in the particle-system
@@ -93,7 +93,7 @@ namespace longmarch
 		};
 		using ParticleInstanceDrawData = LongMarch_Vector<std::pair<std::shared_ptr<Texture2D>, Renderer3D::ParticleInstanceData_CPU>>;
 
-		struct CACHE_ALIGN8 RenderObj_CPU
+		struct RenderObj_CPU
 		{
 			explicit RenderObj_CPU(const EntityDecorator& e)
 				:
@@ -101,7 +101,7 @@ namespace longmarch
 			{}
 			EntityDecorator entity;
 		};
-		struct CACHE_ALIGN8 RenderData_CPU
+		struct RenderData_CPU
 		{
 			explicit RenderData_CPU(const Entity& e, std::shared_ptr<MeshData> mesh, std::shared_ptr<Material> mat, const Mat4& Tr, const Mat4& prevTr)
 				:
@@ -121,7 +121,7 @@ namespace longmarch
 		*	Light buffer data stored on CPU side
 		*	This buffer is meant to be universal for all types of lights
 		**************************************************************/
-		struct CACHE_ALIGN32 LightBuffer_CPU
+		struct LightBuffer_CPU
 		{
 			LightBuffer_CPU() = default;
 			LightBuffer_CPU(const LightBuffer_CPU& other) = default;
@@ -219,7 +219,7 @@ namespace longmarch
 			Vec4f AlbedoTexIndex_NormalTexIndex_MetallicTexIndex_RoughnessTexIndex;
 		};
 
-		struct CACHE_ALIGN32 GPUBuffer
+		struct GPUBuffer
 		{
 			LongMarch_Vector<std::shared_ptr<ShadowBuffer>> DirectionalLightShadowBuffer;
 			LongMarch_Vector<std::shared_ptr<ShadowBuffer>> PointLightShadowBuffer;
@@ -277,7 +277,7 @@ namespace longmarch
 			std::shared_ptr<VertexBuffer> particleInstBO;
 		};
 
-		struct CACHE_ALIGN32 MultiDrawBuffer
+		struct MultiDrawBuffer
 		{
 			struct CmdBufferSimplified
 			{
@@ -321,7 +321,7 @@ namespace longmarch
 				std::function<void()>* clearCallback;  // Multidraw shared
 			} multiDrawRenderPassCallback;
 		};
-		struct CACHE_ALIGN32 CPUBuffer
+		struct CPUBuffer
 		{
 			friend Renderer3D;
 		public:
@@ -343,7 +343,7 @@ namespace longmarch
 		*	Render3D Status class
 		*
 		**************************************************************/
-		struct CACHE_ALIGN32 Renderer3DStorage
+		struct Renderer3DStorage
 		{
 			// CPU buffers
 			CPUBuffer cpuBuffer;
@@ -461,7 +461,6 @@ namespace longmarch
 
 		static void Init();
 		static void Shutdown() {};
-		inline static void OnWindowResize(uint32_t width, uint32_t height) { RenderCommand::SetViewport(0, 0, width, height); }
 
 		/**************************************************************
 		*	Render3D highlevel API
@@ -547,12 +546,8 @@ namespace longmarch
 		*	Render3D inline API
 		*
 		**************************************************************/
-		inline static RENDER_MODE GetRenderMode() { return s_Data.RENDER_MODE; }
-		inline static void ToggleWireFrameMode() { s_Data.enable_wireframe = !s_Data.enable_wireframe; }
-		inline static void ToggleDrawBoundingVolumeMode() { s_Data.enable_drawingBoundingVolume = !s_Data.enable_drawingBoundingVolume; }
-		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
-		inline static void ToggleReverseZ(bool enable) { s_Data.enable_reverse_z = enable; RenderCommand::Reverse_Z(enable); }
-		inline static std::shared_ptr<FrameBuffer> GetFinalFrameBuffer() { return s_Data.gpuBuffer.FinalFrameBuffer; }
+		static RendererAPI::API GetAPI();
+		static void ToggleReverseZ(bool enable);
 
 		template<typename Func>
 		static void RenderFullScreenQuad(Func& renderCommend)

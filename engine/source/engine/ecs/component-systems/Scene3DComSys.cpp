@@ -97,6 +97,9 @@ void longmarch::Scene3DComSys::PreRenderUpdate(double dt)
 		{
 		case Engine::ENGINE_MODE::EDITING:
 			e_type = (EntityType)EngineEntityType::EDITOR_CAMERA;
+			break; 
+		case Engine::ENGINE_MODE::INGAME:
+			e_type = (EntityType)EngineEntityType::PLAYER_CAMERA;
 			break;
 		default:
 			return;
@@ -138,8 +141,9 @@ void longmarch::Scene3DComSys::PrepareScene(double dt)
 		{
 			bool active = GetComponent<ActiveCom>(child)->IsActive();
 			auto trans = GetComponent<Transform3DCom>(child);
-			trans->SetParentModelTr(parentTrCom->GetSuccessionModelTr(trans));
 			auto scene = GetComponent<Scene3DCom>(child);
+
+			trans->SetParentModelTr(parentTrCom->GetSuccessionModelTr(trans));
 			scene->SetShouldDraw(active, true);
 			if (scene->IsVisible())
 			{
@@ -179,8 +183,9 @@ void longmarch::Scene3DComSys::RecursivePrepareScene(double dt, const Entity& pa
 	{
 		bool active = GetComponent<ActiveCom>(child)->IsActive();
 		auto trans = GetComponent<Transform3DCom>(child);
-		trans->SetParentModelTr(parentTr->GetSuccessionModelTr(trans));
 		auto scene = GetComponent<Scene3DCom>(child);
+
+		trans->SetParentModelTr(parentTr->GetSuccessionModelTr(trans));
 		scene->SetShouldDraw(active, true);
 		if (scene->IsVisible())
 		{
@@ -249,9 +254,12 @@ void longmarch::Scene3DComSys::SetRenderShaderName(const std::string& shaderName
 void longmarch::Scene3DComSys::RenderWithModeOpaque(Renderer3D::RenderObj_CPU& renderObj)
 {
 	auto scene = renderObj.entity.GetComponent<Scene3DCom>();
+	auto body = renderObj.entity.GetComponent<Body3DCom>();
+
 	scene->SetShaderName(m_RenderShaderName);
-		
-	if (auto body = renderObj.entity.GetComponent<Body3DCom>(); body.Valid())
+	bool hasBody = body.Valid();
+
+	if (hasBody)
 	{
 		if (const auto& bv = body->GetBoundingVolume(); bv)
 		{
@@ -290,15 +298,17 @@ void longmarch::Scene3DComSys::RenderWithModeOpaque(Renderer3D::RenderObj_CPU& r
 void longmarch::Scene3DComSys::RenderWithModeTransparent(Renderer3D::RenderObj_CPU& renderObj)
 {
 	auto particle = renderObj.entity.GetComponent<Particle3DCom>();
-	bool isParticle = particle.Valid();
 	auto scene = renderObj.entity.GetComponent<Scene3DCom>();
-	scene->SetShaderName(m_RenderShaderName);
+	auto body = renderObj.entity.GetComponent<Body3DCom>();
 
-	if (auto body = renderObj.entity.GetComponent<Body3DCom>(); body.Valid())
+	scene->SetShaderName(m_RenderShaderName);
+	bool isParticle = particle.Valid();
+	bool hasBody = body.Valid();
+
+	if (hasBody)
 	{
 		if (const auto& bv = body->GetBoundingVolume(); bv)
 		{
-			scene->SetShouldDraw(true);
 			if (DistanceCullingTest(bv))
 			{
 				scene->SetShouldDraw(false, false);
@@ -322,7 +332,7 @@ void longmarch::Scene3DComSys::RenderWithModeTransparent(Renderer3D::RenderObj_C
 			if (isParticle)
 			{
 				particle->PrepareDrawWithViewMatrix(m_vfcParam.WorldSpaceToViewSpace);
-				particle->Draw();
+				scene->Draw(particle.GetPtr());
 			}
 			else
 			{
@@ -338,7 +348,7 @@ void longmarch::Scene3DComSys::RenderWithModeTransparent(Renderer3D::RenderObj_C
 			if (isParticle)
 			{
 				particle->PrepareDrawWithViewMatrix(m_vfcParam.WorldSpaceToViewSpace);
-				particle->Draw();
+				scene->Draw(particle.GetPtr());
 			}
 			else
 			{
@@ -376,6 +386,7 @@ bool longmarch::Scene3DComSys::DistanceCullingTest(const std::shared_ptr<Shape>&
 
 void longmarch::Scene3DComSys::Render()
 {
+	// Debug draw view frustum test bounding volume for each renderable objects
 	if (m_enableDebugDraw)
 	{
 		LongMarch_ForEach([](const Renderer3D::RenderObj_CPU& renderObj) {

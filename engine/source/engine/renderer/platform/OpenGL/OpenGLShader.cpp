@@ -125,12 +125,12 @@ namespace longmarch {
 
 			std::vector<GLchar> infoLog(maxLength);
 			glGetShaderInfoLog(fragmentShader, maxLength, &maxLength, &infoLog[0]);
-
+			
 			glDeleteShader(fragmentShader);
 
 			ENGINE_ERROR("{0}", infoLog.data());
 			ASSERT(false, "Fragment shader compilation failure: " + fragmentShaderPath.string());
-
+			
 			return;
 		}
 

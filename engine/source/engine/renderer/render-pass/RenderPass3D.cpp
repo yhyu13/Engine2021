@@ -79,14 +79,16 @@ void longmarch::RenderPass3D::RenderWithModeOpaque(Renderer3D::RenderObj_CPU& re
 void longmarch::RenderPass3D::RenderWithModeTransparent(Renderer3D::RenderObj_CPU& renderObj)
 {
 	auto particle = renderObj.entity.GetComponent<Particle3DCom>();
-	bool isParticle = particle.Valid();
 	auto scene = renderObj.entity.GetComponent<Scene3DCom>();
 	auto body = renderObj.entity.GetComponent<Body3DCom>();
-	if (body.Valid())
+
+	bool isParticle = particle.Valid();
+	bool hasBody = body.Valid();
+
+	if (hasBody)
 	{
 		if (const auto& bv = body->GetBoundingVolume(); bv)
 		{
-			scene->SetShouldDraw(true);
 			if (DistanceCullingTest(bv))
 			{
 				scene->SetShouldDraw(false, false);
@@ -104,7 +106,7 @@ void longmarch::RenderPass3D::RenderWithModeTransparent(Renderer3D::RenderObj_CP
 	if (isParticle)
 	{
 		particle->PrepareDrawWithViewMatrix(m_vfcParam.WorldSpaceToViewSpace);
-		particle->Draw(m_drawBind_Particle);
+		scene->Draw(particle.GetPtr(), m_drawBind_Particle);
 	}
 	else
 	{

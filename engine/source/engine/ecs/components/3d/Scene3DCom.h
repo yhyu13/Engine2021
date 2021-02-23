@@ -49,6 +49,20 @@ namespace longmarch
 		void Draw();
 		void Draw(const std::function<void(const Renderer3D::RenderData_CPU&)>& drawFunc);
 
+		template<class T, typename... Arguments>
+		void Draw(T* drawable, Arguments&&... args)
+		{
+			Lock2();
+			if (m_shoudlDraw)
+			{
+				Unlock2();
+				drawable->Draw(args...);
+				Lock2();
+			}
+			m_shoudlDraw = true;
+			Unlock2();
+		}
+
 		virtual void JsonSerialize(Json::Value& value) override;
 		virtual void JsonDeserialize(const Json::Value& value) override;
 		virtual void ImGuiRender() override;

@@ -17,7 +17,7 @@ namespace longmarch
 		//! Pass in particle system wanted. Example, fire, smoke ,etc.
 		void SetParticleSystem(const std::shared_ptr<ParticleSystem3D>& particleSystem);
 		void Update(const double frametime, const PerspectiveCamera* camera);
-		//! Prepare to draw particles with a given view matrix
+		//! Prepare to draw particles with a given view matrix, call before calling Draw()
 		void PrepareDrawWithViewMatrix(const Mat4& viewMatrix);
 
 		void Draw();

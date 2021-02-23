@@ -46,7 +46,7 @@ void longmarch::LightCom::JsonSerialize(Json::Value& value)
 			}
 			if (shadow.shadowAlgorithmMode != _default.shadow.shadowAlgorithmMode)
 			{
-				val2["algorithm"] = shadow.shadowAlgorithmMode;
+				val2["algorithm"] = s_shadowAlgorithmModes[shadow.shadowAlgorithmMode];
 			}
 			if (shadow.depthBiasHigherBound != _default.shadow.depthBiasHigherBound)
 			{
@@ -206,7 +206,14 @@ void longmarch::LightCom::JsonDeserialize(const Json::Value& value)
 					auto& val2 = val["algorithm"];
 					if (!val2.isNull())
 					{
-						shadow.shadowAlgorithmMode = (glm::clamp)(val2.asUInt(), 0u, 4u);
+						auto algo = val2.asCString();
+						for (int i = 0; i < IM_ARRAYSIZE(s_shadowAlgorithmModes); ++i)
+						{
+							if (strcmp(s_shadowAlgorithmModes[i], algo) == 0)
+							{
+								shadow.shadowAlgorithmMode = i;
+							}
+						}
 					}
 				}
 				{
@@ -512,12 +519,11 @@ void longmarch::LightCom::ImGuiRender()
 				}
 			}
 			{
-				static const char* shadowAlgorithmModes[]{ "Direct", "PCF", "Poisson", "2MSM", "4MSM" };
 				int v = shadow.shadowAlgorithmMode;
-				if (ImGui::Combo("Shadow Algorithm", &v, shadowAlgorithmModes, IM_ARRAYSIZE(shadowAlgorithmModes)))
+				if (ImGui::Combo("Shadow Algorithm", &v, s_shadowAlgorithmModes, IM_ARRAYSIZE(s_shadowAlgorithmModes)))
 				{
 					shadow.shadowAlgorithmMode = v;
-					if (v < 3)
+					if (v <= 3)
 					{
 						shadow.bEnableGaussianBlur = false;
 					}

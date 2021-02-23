@@ -53,7 +53,7 @@ namespace longmarch
 			bool bCastShadow = { false };
 			bool bEnableGaussianBlur = { false };
 			bool bEnableTransparentShadow = { false };
-			uint32_t shadowAlgorithmMode = { 1u }; //<! Direct = 0, PCF = 1, Possion = 2, M2M = 3, M4M = 4
+			uint32_t shadowAlgorithmMode = { 0u };
 			float depthBiasHigherBound = { 20.0f };
 			float depthBiasMultiplier = { 10.0f };
 			float nrmBiasMultiplier = { -1.0f };
@@ -74,6 +74,6 @@ namespace longmarch
 		Vec4f attenuation{1.0f, 0.7f, 0.01f, 1.0f }; //<! Light attenuation: w / ( x + 1/d * y + 1/d^2 * z)
 		LIGHT_TYPE type;
 	public:
-		inline constexpr static uint32_t shadowMapSizeLowerBound = { 128u };
+		inline static const char* s_shadowAlgorithmModes[]{ "Direct", "PCF", "Vogel", "Poisson", "MSM2", "MSM4" };
 	};
 }

@@ -162,6 +162,7 @@ void longmarch::Renderer3D::Init()
 
 		s_Data.ShaderMap["TransparentForwardShader"] = Shader::Create("$shader:forward_shader.vert", "$shader:forward_shader.frag");
 		s_Data.ShaderMap["MSMShadowBuffer_Transparent"] = Shader::Create("$shader:momentShadowMap_shader.vert", "$shader:momentShadowMap_shader.frag");
+		s_Data.ShaderMap["MSMShadowBuffer_Particle"] = Shader::Create("$shader:momentShadowMap_shader_particle.vert", "$shader:momentShadowMap_shader_particle.frag");
 
 		s_Data.ShaderMap["DeferredShader"] = Shader::Create("$shader:deferred_shader.vert", "$shader:deferred_shader.frag");
 		s_Data.ShaderMap["DynamicAOShader"] = Shader::Create("$shader:dynamic_ao_shader.vert", "$shader:dynamic_ao_shader.frag");
@@ -915,6 +916,7 @@ void longmarch::Renderer3D::BeginShadowing(
 
 	static const auto& msm_shader = s_Data.ShaderMap["MSMShadowBuffer"];
 	static const auto& msm_shader_transparent = s_Data.ShaderMap["MSMShadowBuffer_Transparent"];
+	static const auto& msm_shader_particle = s_Data.ShaderMap["MSMShadowBuffer_Particle"];
 	static const auto& msm_cube_shader = s_Data.ShaderMap["MSMShadowBuffer_Cube"];
 
 	static const auto& transparent_shader = s_Data.ShaderMap["TransparentForwardShader"];
@@ -1009,6 +1011,7 @@ void longmarch::Renderer3D::BeginShadowing(
 
 					for (auto i(0u); i < num_CSM; ++i)
 					{
+						// Build directional's orthographic camera from the corners of the view camera
 						float split_Near = CSMSplitPlaneHelper(vf_near, vf_far, i, num_CSM, lambda);
 						float split_Far = CSMSplitPlaneHelper(vf_near, vf_far, i + 1, num_CSM, lambda);
 
@@ -1017,7 +1020,8 @@ void longmarch::Renderer3D::BeginShadowing(
 							Geommath::ProjectionMatrixZeroOne(foyz, aspect, split_Near, split_Far);
 						const auto& pv = p * v;
 
-						// Calculate the pesudo light view matrix for directional light
+						// Since directional light does not have a world position,
+						// we calculate the pesudo light view matrix for directional light
 						Vec3f split_world_NDCCentroid;
 						ViewFrustumCorners split_world_NDCCorners;
 						Geommath::Frustum::GetCornersAndCentroid(pv, s_Data.enable_reverse_z, split_world_NDCCorners, split_world_NDCCentroid);
@@ -1026,7 +1030,7 @@ void longmarch::Renderer3D::BeginShadowing(
 						const auto& look_at_pos = split_world_NDCCentroid;
 						const auto& light_view_mat = Geommath::LookAtWorld(light_pos, look_at_pos);
 
-						// Find VF conrners in light's view space for the the ortho bounding
+						// Find view camera's frustum conrners in light's view space for the the ortho bounding
 						Vec3f Min((std::numeric_limits<float>::max)());
 						Vec3f Max((std::numeric_limits<float>::lowest)());
 						for (int i = 0; i < 8; ++i)
@@ -1040,16 +1044,17 @@ void longmarch::Renderer3D::BeginShadowing(
 						float Far = -Min.z;
 
 						// Build a loosely bounded projection matrix for clipping test
-						auto light_projection_mat = (s_Data.enable_reverse_z) ?
+						auto light_projection_mat_clipping = (s_Data.enable_reverse_z) ?
 							Geommath::OrthogonalReverseZProjectionMatrixZeroOne(Min.x, Max.x, Min.y, Max.y, Near - vf_far, Far) :
 							Geommath::OrthogonalProjectionMatrixZeroOne(Min.x, Max.x, Min.y, Max.y, Near - vf_far, Far);
+						auto clipping_vf = Geommath::Frustum::FromProjection(light_projection_mat_clipping);
 
 						// Build a tightly bounded projection matrix for shadow mapping
-						auto light_projection_mat2 = (s_Data.enable_reverse_z) ?
+						auto light_projection_mat = (s_Data.enable_reverse_z) ?
 							Geommath::OrthogonalReverseZProjectionMatrixZeroOne(Min.x, Max.x, Min.y, Max.y, Near, Far) :
 							Geommath::OrthogonalProjectionMatrixZeroOne(Min.x, Max.x, Min.y, Max.y, Near, Far);
-						light_projection_mat2 = OvercomeShadowShimmering(lightCom->shadow.dimension, light_projection_mat2, light_view_mat);
-						const auto& light_pv = light_projection_mat2 * light_view_mat;
+						light_projection_mat = OvercomeShadowShimmering(lightCom->shadow.dimension, light_projection_mat, light_view_mat);
+						const auto& light_pv = light_projection_mat * light_view_mat;
 
 						// Update shadow matrix
 						{
@@ -1084,7 +1089,7 @@ void longmarch::Renderer3D::BeginShadowing(
 						{
 							ENG_TIME("Shadow phase: DIRECTIONAL LOOPING");
 							f_setRenderShaderName("MSMShadowBuffer");
-							f_setVFCullingParam(true, Geommath::Frustum::FromProjection(light_projection_mat), light_view_mat);
+							f_setVFCullingParam(true, clipping_vf, light_view_mat);
 							f_setDistanceCullingParam(false, Vec3f(), 0, 0);
 							f_render_opaque();
 						}
@@ -1097,12 +1102,16 @@ void longmarch::Renderer3D::BeginShadowing(
 							BeginTransparentShadow();
 							{
 								ENG_TIME("Shadow phase: DIRECTIONAL LOOPING (transparent)");
+								s_Data.CurrentShader = msm_shader_particle;
+								s_Data.CurrentShader->Bind();
+								s_Data.CurrentShader->SetMat4("u_ProjectionMatrix", light_projection_mat);
+								s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
 								s_Data.CurrentShader = msm_shader_transparent;
 								s_Data.CurrentShader->Bind();
 								s_Data.CurrentShader->SetMat4("u_PVMatrix", light_pv);
 								s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
 								f_setRenderShaderName("MSMShadowBuffer_Transparent");
-								f_setVFCullingParam(true, Geommath::Frustum::FromProjection(light_projection_mat), light_view_mat);
+								f_setVFCullingParam(true, clipping_vf, light_view_mat);
 								f_setDistanceCullingParam(false, Vec3f(), 0, 0);
 								f_render_trasparent();
 							}
@@ -1231,7 +1240,8 @@ void longmarch::Renderer3D::BeginShadowing(
 						const auto& light_projection_mat = (s_Data.enable_reverse_z) ?
 							Geommath::ReverseZProjectionMatrixZeroOne(90 * DEG2RAD, 1, Near, Far) :
 							Geommath::ProjectionMatrixZeroOne(90 * DEG2RAD, 1, Near, Far);
-						const auto& light_pv = light_projection_mat * light_view_mat;
+						const auto& light_pv = light_projection_mat * light_view_mat; 
+						auto clipping_vf = Geommath::Frustum::FromProjection(light_projection_mat);
 
 						// Update shadow matrix
 						{
@@ -1275,7 +1285,7 @@ void longmarch::Renderer3D::BeginShadowing(
 						{
 							ENG_TIME("Shadow phase: POINT LOOPING");
 							f_setRenderShaderName("MSMShadowBuffer");
-							f_setVFCullingParam(true, Geommath::Frustum::FromProjection(light_projection_mat), light_view_mat);
+							f_setVFCullingParam(true, clipping_vf, light_view_mat);
 							f_setDistanceCullingParam(false, light_pos, Near, Far);
 							f_render_opaque();
 						}
@@ -1288,12 +1298,16 @@ void longmarch::Renderer3D::BeginShadowing(
 							BeginTransparentShadow();
 							{
 								ENG_TIME("Shadow phase: POINT LOOPING (transparent)");
+								s_Data.CurrentShader = msm_shader_particle;
+								s_Data.CurrentShader->Bind();
+								s_Data.CurrentShader->SetMat4("u_ProjectionMatrix", light_projection_mat);
+								s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
 								s_Data.CurrentShader = msm_shader_transparent;
 								s_Data.CurrentShader->Bind();
 								s_Data.CurrentShader->SetMat4("u_PVMatrix", light_pv);
 								s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
 								f_setRenderShaderName("MSMShadowBuffer_Transparent");
-								f_setVFCullingParam(true, Geommath::Frustum::FromProjection(light_projection_mat), light_view_mat);
+								f_setVFCullingParam(true, clipping_vf, light_view_mat);
 								f_setDistanceCullingParam(true, light_pos, Near, Far);
 								f_render_trasparent();
 							}
@@ -1452,6 +1466,7 @@ void longmarch::Renderer3D::BeginShadowing(
 					Geommath::ReverseZProjectionMatrixZeroOne(fov, ratio, Near, Far) :
 					Geommath::ProjectionMatrixZeroOne(fov, ratio, Near, Far);
 				const auto& light_pv = light_projection_mat * light_view_mat;
+				auto clipping_vf = Geommath::Frustum::FromProjection(light_projection_mat);
 
 				// Calculate the 1st approximate light view matrix
 				Vec3f split_world_NDCCentroid;
@@ -1522,7 +1537,7 @@ void longmarch::Renderer3D::BeginShadowing(
 					{
 						ENG_TIME("Shadow phase: SPOT LOOPING");
 						f_setRenderShaderName("MSMShadowBuffer");
-						f_setVFCullingParam(true, Geommath::Frustum::FromProjection(light_projection_mat), light_view_mat);
+						f_setVFCullingParam(true, clipping_vf, light_view_mat);
 						f_setDistanceCullingParam(false, Vec3f(), 0, 0);
 						f_render_opaque();
 					}
@@ -1535,12 +1550,16 @@ void longmarch::Renderer3D::BeginShadowing(
 						BeginTransparentShadow();
 						{
 							ENG_TIME("Shadow phase: SPOT LOOPING (transparent)");
+							s_Data.CurrentShader = msm_shader_particle;
+							s_Data.CurrentShader->Bind();
+							s_Data.CurrentShader->SetMat4("u_ProjectionMatrix", light_projection_mat);
+							s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
 							s_Data.CurrentShader = msm_shader_transparent;
 							s_Data.CurrentShader->Bind();
 							s_Data.CurrentShader->SetMat4("u_PVMatrix", light_pv);
 							s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
 							f_setRenderShaderName("MSMShadowBuffer_Transparent");
-							f_setVFCullingParam(true, Geommath::Frustum::FromProjection(light_projection_mat), light_view_mat);
+							f_setVFCullingParam(true, clipping_vf, light_view_mat);
 							f_render_trasparent();
 						}
 						EndTransparentShadow();
@@ -3203,7 +3222,8 @@ void longmarch::Renderer3D::DrawParticles(const ParticleInstanceDrawData& partic
 	switch (s_Data.RENDER_PASS)
 	{
 	case RENDER_PASS::SHADOW:
-		return;
+		s_Data.CurrentShader = s_Data.ShaderMap["MSMShadowBuffer_Particle"];
+		break;
 	case RENDER_PASS::SCENE:
 		s_Data.CurrentShader = s_Data.ShaderMap["ParticleShader"];
 		break;

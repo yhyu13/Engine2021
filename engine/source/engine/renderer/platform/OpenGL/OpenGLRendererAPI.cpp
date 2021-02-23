@@ -3,7 +3,8 @@
 
 #include <glad/glad.h>
 
-namespace longmarch {
+namespace longmarch 
+{
 	void OpenGLRendererAPI::Init()
 	{
 		// Use [0,1] in NDC for depth values
@@ -12,31 +13,30 @@ namespace longmarch {
 		// Enable depth test
 		glDepthMask(GL_TRUE);
 		glEnable(GL_DEPTH_TEST);
-		
-		//glEnable(GL_SCISSOR_TEST); // Scissor test wouldn't allow variable resolution rendering
 
 		// Enable stencil test
 		glStencilMask(GL_TRUE);
 		glEnable(GL_STENCIL_TEST);
 
 		// Enable facing culling
-		// Culling back face
-		// Front face as counter clock wise
 		glEnable(GL_CULL_FACE);
+		// Culling back face
 		glCullFace(GL_BACK);
+		// Define front face as counter clock wise
 		glFrontFace(GL_CCW);
 
 		// Blending
 		glEnable(GL_BLEND);
 		
-
 		// Cubemap semaless
 		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	}
+
 	void OpenGLRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 	{
 		glViewport(x, y, width, height);
 	}
+
 	void OpenGLRendererAPI::SetClearColor(const glm::vec4& color)
 	{
 		glClearColor(color.r, color.g, color.b, color.a);
@@ -262,6 +262,7 @@ namespace longmarch {
 		);
 		GLCHECKERROR;
 	}
+
 	void OpenGLRendererAPI::Reverse_Z(bool enabled)
 	{
 		static auto b = !enabled;
@@ -371,6 +372,7 @@ namespace longmarch {
 			glStencilMask(GL_FALSE);
 		}
 	}
+
 	void OpenGLRendererAPI::CullFace(bool enabled, bool front)
 	{
 		static auto b1 = !enabled;
@@ -399,6 +401,7 @@ namespace longmarch {
 			glCullFace(GL_BACK);
 		}
 	}
+
 	void OpenGLRendererAPI::Blend(bool enabled)
 	{
 		static auto b = !enabled;
@@ -417,6 +420,7 @@ namespace longmarch {
 			glDisable(GL_BLEND);
 		}
 	}
+
 	void OpenGLRendererAPI::BlendFunc(longmarch::RendererAPI::BlendFuncEnum e)
 	{
 		switch (e)
@@ -442,6 +446,7 @@ namespace longmarch {
 			break;
 		}
 	}
+
 	void OpenGLRendererAPI::DepthClamp(bool enabled)
 	{
 		static auto b = !enabled;

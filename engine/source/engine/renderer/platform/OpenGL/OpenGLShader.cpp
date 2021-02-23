@@ -5,7 +5,8 @@
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
 
-namespace longmarch {
+namespace longmarch 
+{
 	OpenGLShader::OpenGLShader(const fs::path& computeShaderPath)
 	{
 		GLint isCompiled = 0;
@@ -58,6 +59,7 @@ namespace longmarch {
 		}
 		glDetachShader(program, computeShader);
 	}
+
 	OpenGLShader::OpenGLShader(const fs::path& vertexShaderPath, const fs::path& fragmentShaderPath, const fs::path& geomtryShaderPath)
 	{
 		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -127,7 +129,7 @@ namespace longmarch {
 			glGetShaderInfoLog(fragmentShader, maxLength, &maxLength, &infoLog[0]);
 			
 			glDeleteShader(fragmentShader);
-
+			
 			ENGINE_ERROR("{0}", infoLog.data());
 			ASSERT(false, "Fragment shader compilation failure: " + fragmentShaderPath.string());
 			
@@ -318,6 +320,7 @@ namespace longmarch {
 			glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
 		}
 	}
+
 	GLint OpenGLShader::GetUniformLocationCached(const std::string& name)
 	{
 		GLint location;
@@ -332,6 +335,7 @@ namespace longmarch {
 		}
 		return location;
 	}
+
 	std::string OpenGLShader::GetShaderString(const fs::path& shaderSourcePath)
 	{
 		std::string shaderCode;

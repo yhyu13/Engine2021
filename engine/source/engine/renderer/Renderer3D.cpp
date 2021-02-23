@@ -353,7 +353,7 @@ void longmarch::Renderer3D::Init()
 		{
 			// Quad buffer - specialized for triangle drawing
 			s_Data.gpuBuffer.FullScreenQuadVAO = VertexArray::Create();
-			constexpr float quadVertices[] = {
+			float quadVertices[] = {
 				-1.f, -1.f, 0.0f, 0.0f, 0.0f,
 				 1.f, -1.f, 0.0f, 1.0f, 0.0f,
 				 1.f,  1.f, 0.0f, 1.0f, 1.0f,
@@ -366,7 +366,7 @@ void longmarch::Renderer3D::Init()
 				});
 			s_Data.gpuBuffer.FullScreenQuadVAO->AddVertexBuffer(QuadVertexBuffer);
 			// The quad indices will be used to draw as triangles
-			constexpr uint8_t squareIndices[6] = {
+			uint8_t squareIndices[6] = {
 				0, 1, 2, 2, 3, 0
 			};
 			auto QuadIndexBuffer = IndexBuffer::Create(squareIndices, sizeof(squareIndices), sizeof(uint8_t));
@@ -376,7 +376,7 @@ void longmarch::Renderer3D::Init()
 		{
 			// BBox buffer - specialized for line drawing
 			s_Data.gpuBuffer.BBoxVAO = VertexArray::Create();
-			constexpr float cubeVertices[] = {
+			float cubeVertices[] = {
 				-0.5, -0.5, -0.5,
 				 0.5, -0.5, -0.5,
 				 0.5,  0.5, -0.5,
@@ -400,7 +400,7 @@ void longmarch::Renderer3D::Init()
 				});
 			s_Data.gpuBuffer.BBoxVAO->AddVertexBuffer(s_Data.gpuBuffer.BBoxInstBO);
 			// The BBox indices will be used to draw as lines
-			constexpr uint8_t cubeIndices[] = {
+			uint8_t cubeIndices[] = {
 				0, 1, 2, 3,
 				4, 5, 6, 7,
 				0, 4, 1, 5,
@@ -415,7 +415,7 @@ void longmarch::Renderer3D::Init()
 		// particle VAO
 		{
 			s_Data.gpuBuffer.particleVAO = VertexArray::Create();
-			constexpr float quadVertices[] = {
+			float quadVertices[] = {
 				-0.5f,  0.5f,	0.0f, 1.0f,
 				-0.5f, -0.5f,	0.0f, 0.0f,
 				 0.5f,  0.5f,	1.0f, 1.0f,
@@ -428,7 +428,7 @@ void longmarch::Renderer3D::Init()
 				{ ShaderDataType::Float2, "uv" }
 				});
 			s_Data.gpuBuffer.particleVAO->AddVertexBuffer(quadVBO);
-			constexpr uint8_t squareIndices[6] = {
+			uint8_t squareIndices[6] = {
 				0, 1, 3, 3, 2, 0
 			};
 			auto QuadIndexBuffer = IndexBuffer::Create(squareIndices, sizeof(squareIndices), sizeof(uint8_t));
@@ -448,7 +448,7 @@ void longmarch::Renderer3D::Init()
 		{
 			// Cube buffer - specialized for triangle drawing
 			s_Data.gpuBuffer.FullScreenCubeVAO = VertexArray::Create();
-			constexpr float cubeVertices[] = {
+			float cubeVertices[] = {
 				// The following indexes are in OpenGL Coordinate!
 				// back face
 			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
@@ -501,7 +501,7 @@ void longmarch::Renderer3D::Init()
 				});
 			s_Data.gpuBuffer.FullScreenCubeVAO->AddVertexBuffer(CubeVertexBuffer);
 			// Cbe indices will be used to draw triangles
-			constexpr uint8_t cubeIndices[] = {
+			uint8_t cubeIndices[] = {
 				 0,1,2,3,4,5,
 				 6,7,8,9,10,11,
 				 12,13,14,15,16,17,
@@ -2919,7 +2919,7 @@ void longmarch::Renderer3D::EndRendering()
 		Blit FinalFrameBuffer to have the same size as the back buffer.
 		This allows us to render with a smaller resolution thant the screen
 	*/
-	constexpr int default_framebuffer_rendererID = 0;
+	int default_framebuffer_rendererID = 0;
 	RenderCommand::TransferColorBit(
 		s_Data.gpuBuffer.FinalFrameBuffer->GetRendererID(),
 		s_Data.resolution.x,

@@ -136,7 +136,7 @@ namespace longmarch {
 
 		m_RendererID = glCreateProgram();
 		GLuint program = m_RendererID;
-
+		
 		glAttachShader(program, vertexShader);
 		if (geomtryShaderPath != "")
 		{

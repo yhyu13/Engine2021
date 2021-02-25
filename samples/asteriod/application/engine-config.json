@@ -63,15 +63,6 @@
 		"Sky-box":["skybox_14"],
 		"BRDF-lut":"ggx_integrate_lut",
 
-		"Bloom":
-		{
-			"Enable": true,
-			"Threshold" : -20, /* negative value use a exp s-curve, lower this value, higher the bloom effect */
-							   /* positive value use as the cutoff value of a step function, ranges from 0~1, the closer to 0, higher the bloom effect */
-			"Strength" : 0.25, /* Bloom strength range of 0 to 1 */
-			"Gaussian-kernel": 15,
-		},
-
 		"AO":
 		{
 			"Enable": true,
@@ -84,6 +75,24 @@
 			"Indirect-bounce":false
 		}
 		,
+				,
+
+		"SSR":
+		{
+			"Enable": true,
+			"Gaussian-kernel": 3,
+			"Res-down-scale": 2
+		},
+
+		"Bloom":
+		{
+			"Enable": true,
+			"Threshold" : -30, /* negative value serves as the power of a exponent s-curve in [-40,0], the greater this value, the greater the bloom coverage */
+							   /* positive value serves as the cutoff value of a step function in [0,1], the the lower this value, the greater the bloom coverage */
+			"Strength" : 1.0, /* Bloom strength range of 0 to 1 */
+			"Gaussian-kernel": 3,
+			"Res-down-scale": 1
+		}
 	},
 	"shader":
 	{

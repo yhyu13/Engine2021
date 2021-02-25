@@ -37,7 +37,7 @@
 	{
 		// Lighting & material tests
 		"Reset-random-seed" : false,
-		"Test-material-number" : 0,
+		"Test-material-number" : 25,
 		"Test-light-number" : 0,
 		"Test-skeletal-animation-number" : 0
 	},
@@ -65,15 +65,6 @@
 		"Env-mapping": false,
 		"BRDF-lut":"ggx_integrate_lut",
 
-		"Bloom":
-		{
-			"Enable": true,
-			"Threshold" : -20, /* negative value serves as the power of a exponent s-curve in [-40,0], the greater this value, the greater the bloom coverage */
-							   /* positive value serves as the cutoff value of a step function in [0,1], the the lower this value, the greater the bloom coverage */
-			"Strength" : 1.0, /* Bloom strength range of 0 to 1 */
-			"Gaussian-kernel": 7,
-		},
-
 		"AO":
 		{
 			"Enable": true,
@@ -86,6 +77,23 @@
 			"Indirect-bounce":false
 		}
 		,
+
+		"SSR":
+		{
+			"Enable": true,
+			"Gaussian-kernel": 3,
+			"Res-down-scale": 2
+		},
+
+		"Bloom":
+		{
+			"Enable": true,
+			"Threshold" : -30, /* negative value serves as the power of a exponent s-curve in [-40,0], the greater this value, the greater the bloom coverage */
+							   /* positive value serves as the cutoff value of a step function in [0,1], the the lower this value, the greater the bloom coverage */
+			"Strength" : 1.0, /* Bloom strength range of 0 to 1 */
+			"Gaussian-kernel": 3,
+			"Res-down-scale": 1
+		}
 	},
 	"shader":
 	{

@@ -133,12 +133,12 @@ namespace longmarch {
 			}
 			else if (m_channels == 2)
 			{
-				m_InternalFormat = (m_float_type) ? GL_RG16F : GL_RG8;
+				m_InternalFormat = GL_RG16F;
 				m_DataFormat = GL_RG;
 			}
 			else if (m_channels == 1)
 			{
-				m_InternalFormat = (m_float_type) ? GL_R16F : GL_R8;
+				m_InternalFormat = GL_R16F;
 				m_DataFormat = GL_R;
 			}
 			else
@@ -190,12 +190,12 @@ namespace longmarch {
 			}
 			else if (m_channels == 2)
 			{
-				m_InternalFormat = (m_float_type) ? GL_RG16F : GL_RG8;
+				m_InternalFormat = GL_RG8;
 				m_DataFormat = GL_RG;
 			}
 			else if (m_channels == 1)
 			{
-				m_InternalFormat = (m_float_type) ? GL_R16F : GL_R8;
+				m_InternalFormat = GL_R8;
 				m_DataFormat = GL_R;
 			}
 			else
@@ -237,12 +237,13 @@ namespace longmarch {
 		glBindTextureUnit(slot, m_RendererID);
 		GLCHECKERROR;
 	}
+
 	void OpenGLTexture2D::WriteToPNG(const fs::path& path) const
 	{
 		auto _path = path.string();
 		if (IsFloatType())
 		{
-			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Trying to a float type texture to PNG file format!");
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Trying to write a float type texture to PNG file format!");
 		}
 		uint32_t   output_width, output_height;
 
@@ -263,7 +264,7 @@ namespace longmarch {
 		{
 			EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Fail to open file location: " + str2wstr(_path) + L"!"));
 		}
-		PRINT("Writing .HDR to : " + _path);
+		PRINT("Writing .PNG to : " + _path);
 		PRINT("width: " + Str(output_width) + " Height: " + Str(output_height) + " Channel: " + Str(m_channels));
 		fclose(output_image);
 		int result;
@@ -278,12 +279,13 @@ namespace longmarch {
 		}
 		free(pixels);
 	}
+
 	void OpenGLTexture2D::WriteToHDR(const fs::path& path) const
 	{
 		auto _path = path.string();
 		if (!IsFloatType())
 		{
-			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Trying to a non float type texture to HDR file format!");
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Trying to write a non-float type texture to HDR file format!");
 		}
 		uint32_t   output_width, output_height;
 
@@ -319,6 +321,7 @@ namespace longmarch {
 		}
 		free(pixels);
 	}
+
 	void OpenGLTexture2D::ReadTexture(void* tex) const
 	{
 		/// READ THE CONTENT FROM THE FBO

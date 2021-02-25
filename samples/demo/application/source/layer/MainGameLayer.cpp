@@ -217,7 +217,6 @@ void TEST_BRDF_Materials()
 					sphere_mesh->ModifyAllMaterial([&](Material* material)
 					{
 						material->Kd = Vec3f(0.2);
-						//material->Ks = 1.f * Vec3f( glm::clamp(float(y + slice) / float(2 * slice), 0.01f, .99f));
 						material->roughness = 1.0f * glm::clamp(float(x + slice) / float(2 * slice), 0.01f, .99f);
 						material->metallic = 1.0f * glm::clamp(float(z + slice) / float(2 * slice), 0.01f, .99f);
 						material->emissive = false;

@@ -183,7 +183,11 @@ void longmarch::Image2D::WriteToPNG(const fs::path& _path) const
 	auto path = _path.string();
 	if (IsFloatType())
 	{
-		EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Trying to write a float type texture to PNG file format!"));
+		EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Trying to write a float type image data to PNG file format!"));
+	}
+	if (!m_data)
+	{
+		EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Trying to write null image data!"));
 	}
 	uint32_t   output_width, output_height;
 
@@ -199,7 +203,7 @@ void longmarch::Image2D::WriteToPNG(const fs::path& _path) const
 	{
 		EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Fail to open file location: " + str2wstr(path) + L"!"));
 	}
-	PRINT("Writing .HDR to : " + path);
+	PRINT("Writing .PNG to : " + path);
 	PRINT("width: " + Str(output_width) + " Height: " + Str(output_height) + " Channel: " + Str(m_Channels));
 	fclose(output_image);
 	int result;
@@ -219,14 +223,18 @@ void longmarch::Image2D::WriteToHDR(const fs::path& _path) const
 	auto path = _path.string();
 	if (!IsFloatType())
 	{
-		EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Trying to a non float type texture to HDR file format!"));
+		EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Trying to write a non-float type image data to HDR file format!"));
 	}
+	if (!m_data)
+	{
+		EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Trying to write null image data!"));
+	}
+
 	uint32_t   output_width, output_height;
 
 	output_width = m_Width;
 	output_height = m_Height;
 
-	/// READ THE PIXELS VALUES from FBO AND SAVE TO A .HDR FILE
 	float* pixels = (float*)m_data;
 
 	FILE* output_image;

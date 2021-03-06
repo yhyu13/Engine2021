@@ -169,9 +169,6 @@ void longmarch::Renderer3D::Init()
 		s_Data.ShaderMap["ClusterDebugShader"] = Shader::Create("$shader:cluster_debug_vis.vert", "$shader:cluster_debug_vis.frag");
 
 		s_Data.ShaderMap["TransparentForwardShader"] = Shader::Create("$shader:forward_shader.vert", "$shader:forward_shader.frag");
-		s_Data.ShaderMap["MSMShadowBuffer_Transparent"] = Shader::Create("$shader:momentShadowMap_shader.vert", "$shader:momentShadowMap_shader.frag");
-		s_Data.ShaderMap["MSMShadowBuffer_Particle"] = Shader::Create("$shader:momentShadowMap_shader_particle.vert", "$shader:momentShadowMap_shader_particle.frag");
-
 		s_Data.ShaderMap["DeferredShader"] = Shader::Create("$shader:deferred_shader.vert", "$shader:deferred_shader.frag");
 		s_Data.ShaderMap["DynamicAOShader"] = Shader::Create("$shader:dynamic_ao_shader.vert", "$shader:dynamic_ao_shader.frag");
 		s_Data.ShaderMap["DynamicSSRShader"] = Shader::Create("$shader:dynamic_ssr_shader.vert", "$shader:dynamic_ssr_shader.frag");
@@ -192,7 +189,6 @@ void longmarch::Renderer3D::Init()
 		s_Data.ShaderMap["BBoxShader"] = Shader::Create("$shader:bbox_shader.vert", "$shader:bbox_shader.frag");
 		s_Data.ShaderMap["ToneMapping"] = Shader::Create("$shader:tone_mapping.vert", "$shader:tone_mapping.frag");
 
-		s_Data.ShaderMap["BasicShadowBuffer"] = Shader::Create("$shader:shadowMap_shader.vert", "$shader:shadowMap_shader.frag");
 		s_Data.ShaderMap["GaussianBlur"] = Shader::Create("$shader:guassian_blur.vert", "$shader:guassian_blur.frag");
 		s_Data.ShaderMap["GaussianBlur_CSM"] = Shader::Create("$shader:guassian_blur_CSM.vert", "$shader:guassian_blur_CSM.frag");
 		s_Data.ShaderMap["GaussianBlur_Cube_PointLight"] = Shader::Create("$shader:guassian_blur_cube_point_light.vert", "$shader:guassian_blur_cube_point_light.frag", "$shader:cubemap_geomtry_shader.geom");
@@ -208,21 +204,31 @@ void longmarch::Renderer3D::Init()
 		s_Data.ShaderMap["Cubemap_Irradiance"] = Shader::Create("$shader:cubemap_irradiance_shader.vert", "$shader:cubemap_irradiance_shader.frag", "$shader:cubemap_geomtry_shader.geom");
 		s_Data.ShaderMap["Cubemap_Radiance"] = Shader::Create("$shader:cubemap_radiance_shader.vert", "$shader:cubemap_radiance_shader.frag", "$shader:cubemap_geomtry_shader.geom");
 
+		{
+			s_Data.ShaderMap["MSMShadowBuffer_Transparent"] = Shader::Create("$shader:shadow/momentShadowMap_shader.vert", "$shader:shadow/momentShadowMap_shader.frag");
+			s_Data.ShaderMap["MSMShadowBuffer_Particle"] = Shader::Create("$shader:shadow/momentShadowMap_shader_particle.vert", "$shader:shadow/momentShadowMap_shader_particle.frag");
+
+			//s_Data.ShaderMap["ShadowBuffer_Transparent"] = Shader::Create("$shader:shadow/ShadowMap_shader.vert", "$shader:shadow/ShadowMap_shader.frag");
+			//s_Data.ShaderMap["ShadowBuffer_Particle"] = Shader::Create("$shader:shadow/ShadowMap_shader_particle.vert", "$shader:shadow/ShadowMap_shader_particle.frag");
+		}
+
 		switch (s_Data.RENDER_MODE)
 		{
 		case RENDER_MODE::CANONICAL:
 			s_Data.ShaderMap["ClusterShader"] = Shader::Create("$shader:cluster_shader.vert", "$shader:cluster_shader.frag");
 			s_Data.ShaderMap["ForwardShader"] = Shader::Create("$shader:forward_shader.vert", "$shader:forward_shader.frag");
 			s_Data.ShaderMap["GBufferShader"] = Shader::Create("$shader:gBuffer_shader.vert", "$shader:gBuffer_shader.frag");
-			s_Data.ShaderMap["MSMShadowBuffer"] = Shader::Create("$shader:momentShadowMap_shader.vert", "$shader:momentShadowMap_shader.frag");
-			s_Data.ShaderMap["MSMShadowBuffer_Cube"] = Shader::Create("$shader:momentShadowMap_shader_cube.vert", "$shader:momentShadowMap_shader_cube.frag", "$shader:cubemap_geomtry_shader.geom");
+			//s_Data.ShaderMap["ShadowBuffer"] = Shader::Create("$shader:shadow/ShadowMap_shader.vert", "$shader:shadow/ShadowMap_shader.frag");
+			s_Data.ShaderMap["MSMShadowBuffer"] = Shader::Create("$shader:shadow/momentShadowMap_shader.vert", "$shader:shadow/momentShadowMap_shader.frag");
+			//s_Data.ShaderMap["MSMShadowBuffer_Cube"] = Shader::Create("$shader:shadow/momentShadowMap_shader_cube.vert", "$shader:shadow/momentShadowMap_shader_cube.frag", "$shader:cubemap_geomtry_shader.geom");
 			break;
 		case RENDER_MODE::MULTIDRAW:
 			s_Data.ShaderMap["ClusterShader"] = Shader::Create("$shader:cluster_shader_MultiDraw.vert", "$shader:cluster_shader_MultiDraw.frag");
 			s_Data.ShaderMap["ForwardShader"] = Shader::Create("$shader:forward_shader_MultiDraw.vert", "$shader:forward_shader_MultiDraw.frag");
 			s_Data.ShaderMap["GBufferShader"] = Shader::Create("$shader:gBuffer_shader_MultiDraw.vert", "$shader:gBuffer_shader_MultiDraw.frag");
-			s_Data.ShaderMap["MSMShadowBuffer"] = Shader::Create("$shader:momentShadowMap_shader_MultiDraw.vert", "$shader:momentShadowMap_shader.frag");
-			s_Data.ShaderMap["MSMShadowBuffer_Cube"] = Shader::Create("$shader:momentShadowMap_shader_cube_MultiDraw.vert", "$shader:momentShadowMap_shader_cube.frag", "$shader:cubemap_geomtry_shader.geom");
+			//s_Data.ShaderMap["ShadowBuffer"] = Shader::Create("$shader:shadow/ShadowMap_shader_MultiDraw.vert", "$shader:shadow/ShadowMap_shader.frag");
+			s_Data.ShaderMap["MSMShadowBuffer"] = Shader::Create("$shader:shadow/momentShadowMap_shader_MultiDraw.vert", "$shader:shadow/momentShadowMap_shader.frag");
+			//s_Data.ShaderMap["MSMShadowBuffer_Cube"] = Shader::Create("$shader:shadow/momentShadowMap_shader_cube_MultiDraw.vert", "$shader:shadow/momentShadowMap_shader_cube.frag", "$shader:cubemap_geomtry_shader.geom");
 			break;
 		}
 

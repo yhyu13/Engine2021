@@ -27,11 +27,10 @@ void longmarch::PerspectiveCamera::SetProjection(float fovy_rad, float aspectRat
 void longmarch::PerspectiveCamera::RecalculateProjectionMatrix()
 {
 	m_PrevProjectionMatrix = m_ProjectionMatrix;
-	m_ProjectionMatrix = Geommath::ProjectionMatrixZeroOne(cameraSettings.fovy_rad, cameraSettings.aspectRatioWbyH, cameraSettings.nearZ, cameraSettings.farZ);
+	m_ProjectionMatrix = Geommath::ProjectionMatrixZeroOne(cameraSettings.fovy_rad, cameraSettings.aspectRatioWbyH, cameraSettings.nearZ, cameraSettings.farZ, false);
 
 	m_PrevReverseZProjectionMatrix = m_ReverseZProjectionMatrix;
-	// Reverse Z project could adopt infinite far plane
-	m_ReverseZProjectionMatrix = Geommath::ReverseZProjectionMatrixZeroOne(cameraSettings.fovy_rad, cameraSettings.aspectRatioWbyH, cameraSettings.nearZ, cameraSettings.farZ, true);
+	m_ReverseZProjectionMatrix = Geommath::ReverseZProjectionMatrixZeroOne(cameraSettings.fovy_rad, cameraSettings.aspectRatioWbyH, cameraSettings.nearZ, cameraSettings.farZ, false);
 }
 
 void longmarch::PerspectiveCamera::RecalculateViewMatrix()

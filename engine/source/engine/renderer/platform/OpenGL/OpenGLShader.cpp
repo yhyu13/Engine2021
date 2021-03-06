@@ -58,6 +58,8 @@ namespace longmarch
 			return;
 		}
 		glDetachShader(program, computeShader);
+
+		ENGINE_INFO("Compoute shader compilation success: " + computeShaderPath.string());
 	}
 
 	OpenGLShader::OpenGLShader(const fs::path& vertexShaderPath, const fs::path& fragmentShaderPath, const fs::path& geomtryShaderPath)
@@ -177,6 +179,8 @@ namespace longmarch
 			glDetachShader(program, geomtryShader);
 		}
 		glDetachShader(program, fragmentShader);
+
+		ENGINE_INFO("Fragment shader compilation success: " + fragmentShaderPath.string());
 	}
 
 	OpenGLShader::~OpenGLShader()

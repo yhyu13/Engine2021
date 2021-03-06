@@ -606,11 +606,12 @@ namespace longmarch
 		static void _BeginForwardLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginClusterLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _RenderBoundingBox(const std::shared_ptr<FrameBuffer>& framebuffer_out);
-
+		
 		static void _BeginTAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginFXAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginSMAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_edge, const std::shared_ptr<FrameBuffer>& framebuffer_blend, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginMotionBlurPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
+		static void _BeginSSRPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginBloomPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_bright, const std::shared_ptr<FrameBuffer>& framebuffer_blend, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginToneMappingPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 
@@ -623,18 +624,19 @@ namespace longmarch
 		static void _RestBatchTextureList();
 
 	private:
-		static void _ON_TOGGLE_SLICES(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
+		static void _ON_TOGGLE_DEBUG_CLUSTER(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
 		static void _ON_TOGGLE_ENV_MAPPING(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
 		static void _ON_TOGGLE_SHADOW(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
 		static void _ON_SWITCH_GBUFFER_MODE(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
 		static void _ON_TOGGLE_MOTION_BLUR(EventQueue<EngineGraphicsEventType>::EventPtr e);
-		static void _ON_TOGGLE_BLOOM(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_TOGGLE_TAA(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_TOGGLE_FXAA(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_TOGGLE_SMAA(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_SWITCH_TONEMAP_MODE(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_SET_GAMMA_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_SET_AO_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e);
+		static void _ON_SET_SSR_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e);
+		static void _ON_SET_BLOOM_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e);
 	public:
 		inline static Renderer3DStorage s_Data;
 	};

@@ -153,7 +153,7 @@ namespace longmarch
 	struct ToggleSlicesEvent : public Event<EngineGraphicsDebugEventType> {
 		explicit ToggleSlicesEvent(bool b)
 			:
-			Event(EngineGraphicsDebugEventType::TOGGLE_DEBUG_SLICES),
+			Event(EngineGraphicsDebugEventType::TOGGLE_DEBUG_CLUSTER),
 			m_enable(b)
 		{
 		}
@@ -211,20 +211,6 @@ namespace longmarch
 		}
 		bool m_enable;
 		int m_shutterSpeed;
-	};
-
-	struct ToggleBloomEvent : public Event<EngineGraphicsEventType> {
-		explicit ToggleBloomEvent(bool b, float threshold, float strength)
-			:
-			Event(EngineGraphicsEventType::TOGGLE_BLOOM),
-			m_enable(b),
-			m_threshold(threshold),
-			m_strength(strength)
-		{
-		}
-		bool m_enable;
-		float m_threshold;
-		float m_strength;
 	};
 
 	struct ToggleTAAEvent : public Event<EngineGraphicsEventType> {
@@ -300,4 +286,33 @@ namespace longmarch
 		float m_power;
 		bool m_enable_indirect_bounce;
 	};
+
+	struct SetSSRValueEvent : public Event<EngineGraphicsEventType> {
+		explicit SetSSRValueEvent(bool enable, int gaussKernel, float sameleResDownSacle)
+			:
+			Event(EngineGraphicsEventType::SET_SSR_VALUE),
+			m_enable(enable),
+			m_gaussKernel(gaussKernel),
+			m_sampleResolutionDownScale(sameleResDownSacle)
+		{
+		}
+		bool m_enable;
+		int m_gaussKernel;
+		int m_sampleResolutionDownScale;
+	};
+
+	struct SetBloomEvent : public Event<EngineGraphicsEventType> {
+		explicit SetBloomEvent(bool b, float threshold, float strength)
+			:
+			Event(EngineGraphicsEventType::SET_BLOOM_VALUE),
+			m_enable(b),
+			m_threshold(threshold),
+			m_strength(strength)
+		{
+		}
+		bool m_enable;
+		float m_threshold;
+		float m_strength;
+	};
+
 }

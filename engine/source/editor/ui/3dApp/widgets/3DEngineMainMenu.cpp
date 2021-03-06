@@ -129,7 +129,9 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static auto windowConfig = engineConfiguration["window"];
 		static auto graphicsConfig = engineConfiguration["graphics"];
 		static auto AOConfig = graphicsConfig["AO"];
+		static auto SSRConfig = graphicsConfig["SSR"];
 		static auto BloomConfig = graphicsConfig["Bloom"];
+
 		// 1. Window mode
 		static const char* windowModes[]{ "Fullscreen", "Borderless Windowed", "Windowed" };
 		static int selected_windowModes = windowConfig["Full-screen"].asInt();
@@ -158,17 +160,13 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static bool checkDeferredShading = graphicsConfig["Deferred-shading"].asBool();
 		// Clustered shading
 		static bool checkClusteredShading = graphicsConfig["Clustered-shading"].asBool();
-		// FXAA
-		static bool checkSMAA = graphicsConfig["SMAA"].asBool();
-		// FXAA
-		static bool checkFXAA = graphicsConfig["FXAA"].asBool();
 		// Motion Blur
 		static bool checkMotionBlur = graphicsConfig["Motion-blur"].asBool();
 		static int valueMotionblurShutterSpeed = graphicsConfig["Motion-blur-shutter-speed"].asInt();
-		// Bloom
-		static bool checkBloom = BloomConfig["Enable"].asBool();
-		static float valueBloomThreshold = BloomConfig["Threshold"].asFloat();
-		static float valueBloomStrength = BloomConfig["Strength"].asFloat();
+		// SMAA
+		static bool checkSMAA = graphicsConfig["SMAA"].asBool();
+		// FXAA
+		static bool checkFXAA = graphicsConfig["FXAA"].asBool();
 		// TAA
 		static bool checkTAA = graphicsConfig["TAA"].asBool();
 		// Tone mapping
@@ -176,6 +174,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static int selected_toneMap = 0;
 		// Gamma
 		static float valueGamma = 2.2f;
+
 		// AO
 		static bool checkAO = AOConfig["Enable"].asBool();
 		static int valueAOSample = AOConfig["Num-samples"].asInt();
@@ -186,6 +185,16 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static float valueAOPower = AOConfig["Power"].asFloat();
 		// Indirect Bounce of light
 		static bool checkIndBonLit = AOConfig["Indirect-bounce"].asBool();
+
+		// SSR
+		static bool checkSSR = SSRConfig["Enable"].asBool();
+		static int valueSSRBlurKernel = SSRConfig["Gaussian-kernel"].asInt();
+		static int valueSSRSampleResDownScale = SSRConfig["Res-down-scale"].asInt();
+
+		// Bloom
+		static bool checkBloom = BloomConfig["Enable"].asBool();
+		static float valueBloomThreshold = BloomConfig["Threshold"].asFloat();
+		static float valueBloomStrength = BloomConfig["Strength"].asFloat();
 
 		constexpr int yoffset_item = 5;
 
@@ -208,12 +217,6 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				valueGamma = 2.2f;
 			}
 			{
-				// Bloom
-				checkBloom = BloomConfig["Enable"].asBool();
-				valueBloomThreshold = BloomConfig["Threshold"].asFloat();
-				valueBloomStrength = BloomConfig["Strength"].asFloat();
-			}
-			{
 				// AO
 				checkAO = AOConfig["Enable"].asBool();
 				valueAOSample = AOConfig["Num-samples"].asInt();
@@ -224,6 +227,18 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				valueAOPower = AOConfig["Power"].asFloat();
 				// Indirect Bounce of light
 				checkIndBonLit = AOConfig["Indirect-bounce"].asBool();
+			}
+			{
+				// SSR
+				checkSSR = SSRConfig["Enable"].asBool();
+				valueSSRBlurKernel = SSRConfig["Gaussian-kernel"].asFloat();
+				valueSSRSampleResDownScale = SSRConfig["Res-down-scale"].asFloat();
+			}
+			{
+				// Bloom
+				checkBloom = BloomConfig["Enable"].asBool();
+				valueBloomThreshold = BloomConfig["Threshold"].asFloat();
+				valueBloomStrength = BloomConfig["Strength"].asFloat();
 			}
 			{
 				auto e = MemoryManager::Make_shared<ToggleVSyncEvent>(checkVSync);
@@ -251,10 +266,6 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				graphicEventQueue->Publish(e);
 			}
 			{
-				auto e = MemoryManager::Make_shared<ToggleBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength);
-				graphicEventQueue->Publish(e);
-			}
-			{
 				auto e = MemoryManager::Make_shared<ToggleTAAEvent>(checkTAA);
 				graphicEventQueue->Publish(e);
 			}
@@ -276,6 +287,14 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 			}
 			{
 				auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
+				graphicEventQueue->Publish(e);
+			}
+			{
+				auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale);
+				graphicEventQueue->Publish(e);
+			}
+			{
+				auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength);
 				graphicEventQueue->Publish(e);
 			}
 		}
@@ -378,23 +397,95 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 					}
 				}
 				ImGui::Dummy(ImVec2(0, yoffset_item));
-				// Bloom
+				// AO
+				if (ImGui::TreeNode("SSAO"))
 				{
-					if (ImGui::Checkbox("Bloom", &checkBloom))
+					if (ImGui::Checkbox("Enable", &checkAO))
 					{
-						auto e = MemoryManager::Make_shared<ToggleBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength);
+						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
 						graphicEventQueue->Publish(e);
 					}
-					if (ImGui::DragFloat("Bloom Threshold", &valueBloomThreshold, 0.05, -50, 1, "%.2f"))
+					if (ImGui::SliderInt("Samples", &valueAOSample, 5, 80, "%d"))
 					{
-						auto e = MemoryManager::Make_shared<ToggleBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength);
+						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
 						graphicEventQueue->Publish(e);
 					}
-					if (ImGui::DragFloat("Bloom Strength", &valueBloomStrength, 0.01, 0, 1, "%.2f"))
+					if (ImGui::SliderInt("Resolution Down Scale", &valueAOSampleResDownScale, 1, 4, "%d"))
 					{
-						auto e = MemoryManager::Make_shared<ToggleBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength);
+						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
 						graphicEventQueue->Publish(e);
 					}
+					if (ImGui::SliderInt("Gauss Kernel", &valueAOBlurKernel, 3, 30, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderFloat("Sample Radius", &valueAOSampleRadius, 0.01f, 20.0f, "%.2f"))
+					{
+						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderFloat("Scale", &valueAOScale, 0.1f, 10.0f, "%.1f"))
+					{
+						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderFloat("Power", &valueAOPower, 0.1f, 10.0f, "%.1f"))
+					{
+						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::Checkbox("Indirect Bounce", &checkIndBonLit))
+					{
+						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
+						graphicEventQueue->Publish(e);
+					}
+					ImGui::Separator();
+					ImGui::TreePop();
+				}
+				ImGui::Dummy(ImVec2(0, yoffset_item));
+				// SSR
+				if (ImGui::TreeNode("SSR"))
+				{
+					if (ImGui::Checkbox("Enable", &checkSSR))
+					{
+						auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Resolution Down Scale", &valueSSRSampleResDownScale, 1, 4, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Gauss Kernel", &valueSSRBlurKernel, 3, 30, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale);
+						graphicEventQueue->Publish(e);
+					}
+					ImGui::Separator();
+					ImGui::TreePop();
+				}
+				ImGui::Dummy(ImVec2(0, yoffset_item));
+				// Bloom
+				if (ImGui::TreeNode("Bloom"))
+				{
+					if (ImGui::Checkbox("Enable", &checkBloom))
+					{
+						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::DragFloat("Threshold", &valueBloomThreshold, 0.05, -60, 1, "%.2f"))
+					{
+						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength);
+						graphicEventQueue->Publish(e);
+					} ImGuiUtil::InlineHelpMarker("Negative value serves as the power of a exponent s-curve in [-40,0], the greater this value, the greater the bloom coverage. Positive value serves as the cutoff value of a step function in [0,1], the the lower this value, the greater the bloom coverage ");
+					if (ImGui::DragFloat("Strength", &valueBloomStrength, 0.01, 0, 1, "%.2f"))
+					{
+						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength);
+						graphicEventQueue->Publish(e);
+					}
+					ImGui::Separator();
+					ImGui::TreePop();
 				}
 				ImGui::Dummy(ImVec2(0, yoffset_item));
 				// TAA
@@ -440,56 +531,6 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 						auto e = MemoryManager::Make_shared<SetGammaValueEvent>(valueGamma);
 						graphicEventQueue->Publish(e);
 					}
-				}
-				ImGui::EndTabItem();
-			}
-			if (ImGui::BeginTabItem("SSAO"))
-			{
-				constexpr int yoffset_item = 5;
-				if (ImGui::Checkbox("Enable", &checkAO))
-				{
-					auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
-					graphicEventQueue->Publish(e);
-				}
-				if (ImGui::SliderInt("Samples", &valueAOSample, 5, 80, "%d"))
-				{
-					auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
-					graphicEventQueue->Publish(e);
-				}
-				if (ImGui::SliderInt("Resolution Down Scale", &valueAOSampleResDownScale, 1, 4, "%d"))
-				{
-					auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
-					graphicEventQueue->Publish(e);
-				}
-				ImGui::Dummy(ImVec2(0, yoffset_item));
-				if (ImGui::SliderInt("Gauss Kernel", &valueAOBlurKernel, 3, 30, "%d"))
-				{
-					auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
-					graphicEventQueue->Publish(e);
-				}
-				ImGui::Dummy(ImVec2(0, yoffset_item));
-				if (ImGui::SliderFloat("Sample Radius", &valueAOSampleRadius, 0.01f, 20.0f, "%.2f"))
-				{
-					auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
-					graphicEventQueue->Publish(e);
-				}
-				ImGui::Dummy(ImVec2(0, yoffset_item));
-				if (ImGui::SliderFloat("Scale", &valueAOScale, 0.1f, 10.0f, "%.1f"))
-				{
-					auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
-					graphicEventQueue->Publish(e);
-				}
-				ImGui::Dummy(ImVec2(0, yoffset_item));
-				if (ImGui::SliderFloat("Power", &valueAOPower, 0.1f, 10.0f, "%.1f"))
-				{
-					auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
-					graphicEventQueue->Publish(e);
-				}
-				ImGui::Dummy(ImVec2(0, yoffset_item));
-				if (ImGui::Checkbox("Indirect Bounce", &checkIndBonLit))
-				{
-					auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
-					graphicEventQueue->Publish(e);
 				}
 				ImGui::EndTabItem();
 			}

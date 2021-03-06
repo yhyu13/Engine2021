@@ -799,11 +799,11 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 		s_Data.gpuBuffer.CurrentWindowFrameBuffer->Bind();
 		RenderCommand::Clear(); 
 
-		// Don't clear prev frame buffer as we need it in the current frame
+		// CRITICAL : Don't clear prev frame buffer as we need it in the current frame
 		/*s_Data.gpuBuffer.PrevWindowFrameBuffer->Bind();
 		RenderCommand::Clear();*/
 
-		// Don't clear prev frame buffer as we need it in the current frame
+		// CRITICAL : Don't clear prev frame buffer as we need it in the current frame
 		/*s_Data.gpuBuffer.PrevFrameBuffer->Bind();
 		RenderCommand::Clear();*/
 
@@ -2213,7 +2213,6 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 		break;
 	case RENDER_PIPE::DEFERRED:
 		Renderer3D::_BeginDynamicAOPass(s_Data.gpuBuffer.CurrentGBuffer);
-		//Renderer3D::_BeginDynamicSSRPass(s_Data.gpuBuffer.CurrentGBuffer);
 		Renderer3D::_BeginDeferredLightingPass(
 			camera,
 			f_render,
@@ -2326,7 +2325,15 @@ void longmarch::Renderer3D::_BeginDynamicSSRPass(const std::shared_ptr<GBuffer>&
 	s_Data.CurrentShader->SetInt("enabled", s_Data.SSRSettings.enable);
 	SSRBuffer->Bind();
 	// Bind Prev frame buffer
-	s_Data.gpuBuffer.PrevFrameBuffer->BindTexture(s_Data.fragTexture_1_slot);	
+	s_Data.gpuBuffer.PrevFrameBuffer->BindTexture(s_Data.fragTexture_0_slot);	
+	// Bind Skybox
+	if (s_Data.CurrentEnvMapName != "")
+	{
+		const auto& radiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["radiance"];
+		s_Data.CurrentShader->SetFloat("u_max_radiance_map_lod", radiance->GetMaxMipMapLevel());
+		// Bind radiance map
+		radiance->BindTexture(s_Data.fragTexture_1_slot);
+	}
 	// Bind brdf LUT
 	s_Data.gpuBuffer.BrdfIntegrateLUT->BindTexture(s_Data.fragTexture_2_slot);
 	// Bind g buffer content
@@ -3302,14 +3309,17 @@ void longmarch::Renderer3D::Draw(Entity entity, const std::shared_ptr<MeshData>&
 				gpubuffer.CurrentMaterialBuffer->UpdateBufferData(material_Buffer.GetPtr(), sizeof(material_Buffer));
 				gpubuffer.CurrentMaterialBuffer->Bind(2);
 			}
-			if (s_Data.CurrentEnvMapName != "")
+			// Bind Skybox
+			if (s_Data.enable_env_mapping && s_Data.CurrentEnvMapName != "")
 			{
-				// bind env map
 				const auto& irradiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["irradiance"];
 				const auto& radiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["radiance"];
 				s_Data.CurrentShader->SetFloat("u_max_radiance_map_lod", radiance->GetMaxMipMapLevel());
+				// Bind irradiance map
 				irradiance->BindTexture(s_Data.fragTexture_0_slot);
+				// Bind radiance map
 				radiance->BindTexture(s_Data.fragTexture_1_slot);
+				// Bind brdf LUT
 				s_Data.gpuBuffer.BrdfIntegrateLUT->BindTexture(s_Data.fragTexture_2_slot);
 			}
 			{
@@ -3605,13 +3615,17 @@ bool longmarch::Renderer3D::_BeginRenderBatch()
 				s_Data.CurrentShader->SetIntV("u_materialTextureList", size, ptr);
 			}
 			{
-				if (s_Data.CurrentEnvMapName != "")
+				// Bind Skybox
+				if (s_Data.enable_env_mapping && s_Data.CurrentEnvMapName != "")
 				{
 					const auto& irradiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["irradiance"];
 					const auto& radiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["radiance"];
 					s_Data.CurrentShader->SetFloat("u_max_radiance_map_lod", radiance->GetMaxMipMapLevel());
+					// Bind irradiance map
 					irradiance->BindTexture(s_Data.fragTexture_0_slot);
+					// Bind radiance map
 					radiance->BindTexture(s_Data.fragTexture_1_slot);
+					// Bind brdf LUT
 					s_Data.gpuBuffer.BrdfIntegrateLUT->BindTexture(s_Data.fragTexture_2_slot);
 				}
 			}

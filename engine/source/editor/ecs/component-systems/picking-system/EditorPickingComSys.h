@@ -17,6 +17,8 @@ namespace longmarch
 
 		EditorPickingComSys() = default;
 		virtual void Init() override;
+		virtual void Render() override;
+		virtual void Render2() override;
 		virtual void RenderUI() override;
 
 	private:
@@ -24,5 +26,6 @@ namespace longmarch
 
 	private:
 		PickingPass m_renderPass;
+		std::shared_ptr<FrameBuffer> OutlineFrameBuffer;
 	};
 }

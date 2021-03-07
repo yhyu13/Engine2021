@@ -9,6 +9,7 @@ namespace longmarch
 	{
 	public:
 		NONINSTANTIABLE(RenderCommand);
+
 		inline static void Init()
 		{
 			s_RendererAPI->Init();
@@ -133,9 +134,19 @@ namespace longmarch
 			s_RendererAPI->DepthFunc(e);
 		}
 
+		inline static void DepthClamp(bool enabled)
+		{
+			s_RendererAPI->DepthClamp(enabled);
+		}
+
 		inline static void StencilTest(bool test, bool write)
 		{
 			s_RendererAPI->StencilTest(test, write);
+		}
+
+		inline static void StencilFunc(longmarch::RendererAPI::CompareEnum e)
+		{
+			s_RendererAPI->StencilFunc(e);
 		}
 
 		inline static void CullFace(bool enabled, bool front)
@@ -151,11 +162,6 @@ namespace longmarch
 		inline static void BlendFunc(longmarch::RendererAPI::BlendFuncEnum e)
 		{
 			s_RendererAPI->BlendFunc(e);
-		}
-
-		inline static void DepthClamp(bool enabled)
-		{
-			s_RendererAPI->DepthClamp(enabled);
 		}
 
 	private:

@@ -47,11 +47,13 @@ namespace longmarch {
 
 		virtual void DepthTest(bool test, bool write) override;
 		virtual void DepthFunc(longmarch::RendererAPI::CompareEnum e) override;
+		virtual void DepthClamp(bool enabled) override;
+
 		virtual void StencilTest(bool test, bool write) override;
+		virtual void StencilFunc(longmarch::RendererAPI::CompareEnum e) override;
 
 		virtual void CullFace(bool enabled, bool front) override;
 		virtual void Blend(bool enabled) override;
 		virtual void BlendFunc(longmarch::RendererAPI::BlendFuncEnum e) override;
-		virtual void DepthClamp(bool enabled) override;
 	};
 }

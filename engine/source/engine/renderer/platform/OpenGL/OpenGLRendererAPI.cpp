@@ -15,8 +15,9 @@ namespace longmarch
 		glEnable(GL_DEPTH_TEST);
 
 		// Enable stencil test
-		glStencilMask(GL_TRUE);
-		glEnable(GL_STENCIL_TEST);
+		glDisable(GL_STENCIL_TEST);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+		glStencilMask(0x00);
 
 		// Enable facing culling
 		glEnable(GL_CULL_FACE);
@@ -26,7 +27,7 @@ namespace longmarch
 		glFrontFace(GL_CCW);
 
 		// Blending
-		glEnable(GL_BLEND);
+		glDisable(GL_BLEND);
 		
 		// Cubemap semaless
 		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -305,6 +306,7 @@ namespace longmarch
 		{
 			glDisable(GL_DEPTH_TEST);
 		}
+
 		if (write)
 		{
 			if (!test)
@@ -316,6 +318,25 @@ namespace longmarch
 		else
 		{
 			glDepthMask(GL_FALSE);
+		}
+	}
+
+	void OpenGLRendererAPI::DepthClamp(bool enabled)
+	{
+		static auto b = !enabled;
+		if (b == enabled)
+		{
+			return;
+		}
+		b = enabled;
+
+		if (enabled)
+		{
+			glEnable(GL_DEPTH_CLAMP);
+		}
+		else
+		{
+			glDisable(GL_DEPTH_CLAMP);
 		}
 	}
 
@@ -363,13 +384,34 @@ namespace longmarch
 		{
 			glDisable(GL_STENCIL_TEST);
 		}
+
 		if (write)
 		{
-			glStencilMask(GL_TRUE);
+			if (!test)
+			{
+				throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Write to stencil buffer requires stencil testing to be enabled!");
+			}
+			glStencilMask(0xFF);
 		}
 		else
 		{
-			glStencilMask(GL_FALSE);
+			glStencilMask(0x00);
+		}
+	}
+
+	void OpenGLRendererAPI::StencilFunc(longmarch::RendererAPI::CompareEnum e)
+	{
+		switch (e)
+		{
+		case longmarch::RendererAPI::CompareEnum::NEQUAL:
+			glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+			break;
+		case longmarch::RendererAPI::CompareEnum::ALWAYS:
+			glStencilFunc(GL_ALWAYS, 1, 0xFF);
+			break;
+		default:
+			ENGINE_EXCEPT(L"Unkown RendererAPI::CompareEnum!");
+			break;
 		}
 	}
 
@@ -392,6 +434,7 @@ namespace longmarch
 		{
 			glDisable(GL_CULL_FACE);
 		}
+
 		if (front)
 		{
 			glCullFace(GL_FRONT);
@@ -444,25 +487,6 @@ namespace longmarch
 		default:
 			ENGINE_EXCEPT(L"Unkown RendererAPI::BlendFuncEnum!");
 			break;
-		}
-	}
-
-	void OpenGLRendererAPI::DepthClamp(bool enabled)
-	{
-		static auto b = !enabled;
-		if (b == enabled)
-		{
-			return;
-		}
-		b = enabled;
-		
-		if (enabled)
-		{
-			glEnable(GL_DEPTH_CLAMP);
-		}
-		else
-		{
-			glDisable(GL_DEPTH_CLAMP);
 		}
 	}
 }

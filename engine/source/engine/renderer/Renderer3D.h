@@ -62,7 +62,7 @@ namespace longmarch
 			EMPTY = 0,
 			SHADOW,
 			SCENE,
-			PICKING,
+			CUSTOM,
 		};
 		enum class RENDER_MODE : int32_t
 		{

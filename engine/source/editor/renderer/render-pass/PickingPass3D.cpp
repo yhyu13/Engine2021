@@ -146,7 +146,7 @@ bool longmarch::PickingPass::GetPickedResult(uint32_t* id) const
 void longmarch::PickingPass::Render()
 {
 	// Config render settings
-	Renderer3D::s_Data.RENDER_PASS = Renderer3D::RENDER_PASS::PICKING;
+	Renderer3D::s_Data.RENDER_PASS = Renderer3D::RENDER_PASS::CUSTOM;
 	RenderCommand::PolyModeFill();
 	RenderCommand::Blend(false);
 	RenderCommand::DepthTest(true, true);

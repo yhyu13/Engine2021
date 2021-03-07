@@ -202,8 +202,8 @@ void longmarch::_3DEditorLayer::PreRenderUpdate(double ts)
 void longmarch::_3DEditorLayer::Render(double ts)
 {
 	GameWorld::GetCurrent()->Render(ts);
-	GameWorld::GetCurrent()->Render2(ts);
 	m_Data.mainRenderPipeline(ts);
+	GameWorld::GetCurrent()->Render2(ts);
 }
 
 void longmarch::_3DEditorLayer::PostRenderUpdate(double ts)

@@ -187,6 +187,7 @@ void longmarch::Renderer3D::Init()
 		s_Data.ShaderMap["MotionBlur"] = Shader::Create("$shader:motion_blur.vert", "$shader:motion_blur.frag");
 		s_Data.ShaderMap["DepthCopyShader"] = Shader::Create("$shader:depth_copy_shader.vert", "$shader:depth_copy_shader.frag");
 		s_Data.ShaderMap["BBoxShader"] = Shader::Create("$shader:bbox_shader.vert", "$shader:bbox_shader.frag");
+		s_Data.ShaderMap["OutlineShader"] = Shader::Create("$shader:outline_shader.vert", "$shader:outline_shader.frag");
 		s_Data.ShaderMap["ToneMapping"] = Shader::Create("$shader:tone_mapping.vert", "$shader:tone_mapping.frag");
 
 		s_Data.ShaderMap["GaussianBlur"] = Shader::Create("$shader:guassian_blur.vert", "$shader:guassian_blur.frag");
@@ -207,9 +208,8 @@ void longmarch::Renderer3D::Init()
 		{
 			s_Data.ShaderMap["MSMShadowBuffer_Transparent"] = Shader::Create("$shader:shadow/momentShadowMap_shader.vert", "$shader:shadow/momentShadowMap_shader.frag");
 			s_Data.ShaderMap["MSMShadowBuffer_Particle"] = Shader::Create("$shader:shadow/momentShadowMap_shader_particle.vert", "$shader:shadow/momentShadowMap_shader_particle.frag");
-
-			//s_Data.ShaderMap["ShadowBuffer_Transparent"] = Shader::Create("$shader:shadow/ShadowMap_shader.vert", "$shader:shadow/ShadowMap_shader.frag");
-			//s_Data.ShaderMap["ShadowBuffer_Particle"] = Shader::Create("$shader:shadow/ShadowMap_shader_particle.vert", "$shader:shadow/ShadowMap_shader_particle.frag");
+			
+			s_Data.ShaderMap["ShadowBuffer"] = Shader::Create("$shader:shadow/ShadowMap_shader.vert", "$shader:shadow/ShadowMap_shader.frag");
 		}
 
 		switch (s_Data.RENDER_MODE)
@@ -218,7 +218,6 @@ void longmarch::Renderer3D::Init()
 			s_Data.ShaderMap["ClusterShader"] = Shader::Create("$shader:cluster_shader.vert", "$shader:cluster_shader.frag");
 			s_Data.ShaderMap["ForwardShader"] = Shader::Create("$shader:forward_shader.vert", "$shader:forward_shader.frag");
 			s_Data.ShaderMap["GBufferShader"] = Shader::Create("$shader:gBuffer_shader.vert", "$shader:gBuffer_shader.frag");
-			//s_Data.ShaderMap["ShadowBuffer"] = Shader::Create("$shader:shadow/ShadowMap_shader.vert", "$shader:shadow/ShadowMap_shader.frag");
 			s_Data.ShaderMap["MSMShadowBuffer"] = Shader::Create("$shader:shadow/momentShadowMap_shader.vert", "$shader:shadow/momentShadowMap_shader.frag");
 			//s_Data.ShaderMap["MSMShadowBuffer_Cube"] = Shader::Create("$shader:shadow/momentShadowMap_shader_cube.vert", "$shader:shadow/momentShadowMap_shader_cube.frag", "$shader:cubemap_geomtry_shader.geom");
 			break;
@@ -226,7 +225,6 @@ void longmarch::Renderer3D::Init()
 			s_Data.ShaderMap["ClusterShader"] = Shader::Create("$shader:cluster_shader_MultiDraw.vert", "$shader:cluster_shader_MultiDraw.frag");
 			s_Data.ShaderMap["ForwardShader"] = Shader::Create("$shader:forward_shader_MultiDraw.vert", "$shader:forward_shader_MultiDraw.frag");
 			s_Data.ShaderMap["GBufferShader"] = Shader::Create("$shader:gBuffer_shader_MultiDraw.vert", "$shader:gBuffer_shader_MultiDraw.frag");
-			//s_Data.ShaderMap["ShadowBuffer"] = Shader::Create("$shader:shadow/ShadowMap_shader_MultiDraw.vert", "$shader:shadow/ShadowMap_shader.frag");
 			s_Data.ShaderMap["MSMShadowBuffer"] = Shader::Create("$shader:shadow/momentShadowMap_shader_MultiDraw.vert", "$shader:shadow/momentShadowMap_shader.frag");
 			//s_Data.ShaderMap["MSMShadowBuffer_Cube"] = Shader::Create("$shader:shadow/momentShadowMap_shader_cube_MultiDraw.vert", "$shader:shadow/momentShadowMap_shader_cube.frag", "$shader:cubemap_geomtry_shader.geom");
 			break;
@@ -976,7 +974,7 @@ void longmarch::Renderer3D::BeginShadowing(
 	static const auto& msm_shader = s_Data.ShaderMap["MSMShadowBuffer"];
 	static const auto& msm_shader_transparent = s_Data.ShaderMap["MSMShadowBuffer_Transparent"];
 	static const auto& msm_shader_particle = s_Data.ShaderMap["MSMShadowBuffer_Particle"];
-	static const auto& msm_cube_shader = s_Data.ShaderMap["MSMShadowBuffer_Cube"];
+	//static const auto& msm_cube_shader = s_Data.ShaderMap["MSMShadowBuffer_Cube"];
 
 	static const auto& transparent_shader = s_Data.ShaderMap["TransparentForwardShader"];
 

@@ -10,6 +10,7 @@ namespace longmarch {
 	public:
 		NONCOPYABLE(RendererAPI);
 		RendererAPI() = default;
+
 		enum class API : uint8_t
 		{
 			None = 0, OpenGL = 1
@@ -20,8 +21,11 @@ namespace longmarch {
 			LESS = 0,
 			LEQUAL,
 			EQUAL,
+			NEQUAL,
 			GEQUAL,
 			GREATER,
+			ALWAYS,
+			NEVER
 		};
 
 		enum class DataTypeEnum : uint8_t
@@ -64,14 +68,17 @@ namespace longmarch {
 		virtual void TransferStencilBit(uint32_t src, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_w, uint32_t dest_h) = 0;
 
 		virtual void Reverse_Z(bool b) = 0;
+
 		virtual void DepthTest(bool test, bool write) = 0;
 		virtual void DepthFunc(longmarch::RendererAPI::CompareEnum e) = 0;
+		virtual void DepthClamp(bool enabled) = 0;
+
 		virtual void StencilTest(bool test, bool write) = 0;
+		virtual void StencilFunc(longmarch::RendererAPI::CompareEnum e) = 0;
 
 		virtual void CullFace(bool enabled, bool front) = 0;
 		virtual void Blend(bool enabled) = 0;
 		virtual void BlendFunc(longmarch::RendererAPI::BlendFuncEnum e) = 0;
-		virtual void DepthClamp(bool enabled) = 0;
 
 		inline static API GetAPI() { return s_API; }
 

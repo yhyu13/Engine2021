@@ -48,7 +48,7 @@ void longmarch::EditorPickingComSys::Render2()
 			auto render_pipe_original = Renderer3D::s_Data.RENDER_PIPE;
 			auto render_mode_original = Renderer3D::s_Data.RENDER_MODE;
 			// Config render settings
-			Renderer3D::s_Data.RENDER_PASS = Renderer3D::RENDER_PASS::SHADOW;
+			Renderer3D::s_Data.RENDER_PASS = Renderer3D::RENDER_PASS::SHADOW; // use shadow render pass to draw to stencil buffer
 			Renderer3D::s_Data.RENDER_PIPE = Renderer3D::RENDER_PIPE::FORWARD;
 			Renderer3D::s_Data.RENDER_MODE = Renderer3D::RENDER_MODE::CANONICAL;
 
@@ -71,7 +71,7 @@ void longmarch::EditorPickingComSys::Render2()
 			auto shader_name = "ShadowBuffer";
 			Renderer3D::s_Data.CurrentShader = Renderer3D::s_Data.ShaderMap[shader_name];
 			Renderer3D::s_Data.CurrentShader->Bind();
-			Renderer3D::s_Data.CurrentShader->SetMat4("u_PVMatrix", cam->GetReverseZViewProjectionMatrix());
+			Renderer3D::s_Data.CurrentShader->SetMat4("u_PVMatrix", cam->GetPrevReverseZViewProjectionMatrix());
 			m_parentWorld->ForEach(
 				es,
 				[&shader_name, &cam](EntityDecorator e)
@@ -80,13 +80,14 @@ void longmarch::EditorPickingComSys::Render2()
 				bool isParticle = particle.Valid();
 
 				auto scene = e.GetComponent<Scene3DCom>();
-				scene->SetShaderName(shader_name);	
+				scene->SetShaderName(shader_name);
 				scene->SetShouldDraw(true, true);
 
 				if (!scene->IsHideInGame() && scene->IsCastShadow())
 				{
 					if (isParticle)
 					{
+						// TODO : outline particle
 						/*particle->SetRendering(scene->GetShouldDraw());
 						particle->PrepareDrawWithViewMatrix(cam->GetViewMatrix());
 						scene->Draw(particle.GetPtr());*/
@@ -123,7 +124,7 @@ void longmarch::EditorPickingComSys::Render2()
 			shader_name = "OutlineShader";
 			Renderer3D::s_Data.CurrentShader = Renderer3D::s_Data.ShaderMap[shader_name];
 			Renderer3D::s_Data.CurrentShader->Bind();
-			Renderer3D::s_Data.CurrentShader->SetMat4("u_PVMatrix", cam->GetReverseZViewProjectionMatrix());
+			Renderer3D::s_Data.CurrentShader->SetMat4("u_PVMatrix", cam->GetPrevReverseZViewProjectionMatrix());
 			m_parentWorld->ForEach(
 				es,
 				[&shader_name, &cam](EntityDecorator e)
@@ -144,6 +145,7 @@ void longmarch::EditorPickingComSys::Render2()
 				{
 					if (isParticle)
 					{
+						// TODO : outline particle
 						/*particle->SetRendering(scene->GetShouldDraw());
 						particle->PrepareDrawWithViewMatrix(cam->GetViewMatrix());
 						scene->Draw(particle.GetPtr());*/

@@ -288,7 +288,7 @@ namespace longmarch
 	};
 
 	struct SetSSRValueEvent : public Event<EngineGraphicsEventType> {
-		explicit SetSSRValueEvent(bool enable, int gaussKernel, float sameleResDownSacle)
+		explicit SetSSRValueEvent(bool enable, int gaussKernel, int sameleResDownSacle)
 			:
 			Event(EngineGraphicsEventType::SET_SSR_VALUE),
 			m_enable(enable),

@@ -19,7 +19,7 @@ namespace longmarch
 			m_systemSignature.AddComponent<PerspectiveCameraCom>();
 		}
 
-		virtual void Update(double dt) override
+		virtual void PreRenderUpdate(double dt) override
 		{
 			EARLY_RETURN(dt);
 			ForEach(

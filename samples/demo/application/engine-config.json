@@ -74,7 +74,7 @@
 			"Radius":2.0,
 			"Scale":1.4,
 			"Power":1.4,
-			"Indirect-bounce":false
+			"Indirect-bounce":true
 		}
 		,
 

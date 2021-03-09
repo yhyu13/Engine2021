@@ -152,6 +152,7 @@ IncludeDir["phmap"]     	= "%{EngineDir.vendors}/phmap/include"
 IncludeDir["blaze"]     	= "%{EngineDir.vendors}/blaze/include"
 IncludeDir["sol2"]     		= "%{EngineDir.vendors}/sol2/include"
 IncludeDir["FastBVH"]     	= "%{EngineDir.vendors}/Fast-BVH/include"
+IncludeDir["miniz_cpp"]     = "%{EngineDir.vendors}/miniz-cpp"
 
 LibDir = {}
 LibDir["assimp"] 			= "%{EngineDir.vendors}/assimp/lib/x64"
@@ -224,6 +225,7 @@ project "engine"
 		"%{IncludeDir.lua}",
 		"%{IncludeDir.sol2}",
 		"%{IncludeDir.FastBVH}",
+		"%{IncludeDir.miniz_cpp}",
 	}
 
 	libdirs
@@ -362,6 +364,7 @@ project "application"
 		"%{IncludeDir.lua}",
 		"%{IncludeDir.sol2}",
 		"%{IncludeDir.FastBVH}",
+		"%{IncludeDir.miniz_cpp}",
 	}
 
 	links

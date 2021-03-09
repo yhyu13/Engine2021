@@ -40,10 +40,6 @@ void longmarch::EditorPickingComSys::Render2()
 
 			auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
 			auto es = manager->GetAllSelectedEntityBuffered();
-			if (es.empty())
-			{
-				break;
-			}
 
 			auto render_pipe_original = Renderer3D::s_Data.RENDER_PIPE;
 			auto render_mode_original = Renderer3D::s_Data.RENDER_MODE;
@@ -71,7 +67,7 @@ void longmarch::EditorPickingComSys::Render2()
 			auto shader_name = "ShadowBuffer";
 			Renderer3D::s_Data.CurrentShader = Renderer3D::s_Data.ShaderMap[shader_name];
 			Renderer3D::s_Data.CurrentShader->Bind();
-			Renderer3D::s_Data.CurrentShader->SetMat4("u_PVMatrix", cam->GetPrevReverseZViewProjectionMatrix());
+			Renderer3D::s_Data.CurrentShader->SetMat4("u_PVMatrix", cam->GetReverseZViewProjectionMatrix());
 			m_parentWorld->ForEach(
 				es,
 				[&shader_name, &cam](EntityDecorator e)
@@ -101,7 +97,7 @@ void longmarch::EditorPickingComSys::Render2()
 			);
 
 			// 2. Transfer stencil buffer to default frame buffer
-			int default_framebuffer_rendererID = 0;
+			constexpr int default_framebuffer_rendererID = 0;
 			RenderCommand::TransferStencilBit(
 				OutlineFrameBuffer->GetRendererID(),
 				OutlineFrameBuffer->GetBufferSize().x,
@@ -124,7 +120,7 @@ void longmarch::EditorPickingComSys::Render2()
 			shader_name = "OutlineShader";
 			Renderer3D::s_Data.CurrentShader = Renderer3D::s_Data.ShaderMap[shader_name];
 			Renderer3D::s_Data.CurrentShader->Bind();
-			Renderer3D::s_Data.CurrentShader->SetMat4("u_PVMatrix", cam->GetPrevReverseZViewProjectionMatrix());
+			Renderer3D::s_Data.CurrentShader->SetMat4("u_PVMatrix", cam->GetReverseZViewProjectionMatrix());
 			m_parentWorld->ForEach(
 				es,
 				[&shader_name, &cam](EntityDecorator e)

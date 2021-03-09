@@ -643,6 +643,20 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			DEBUG_PRINT(Str("Built BVH (%u nodes, with %u leafs) in %.02f ms", (unsigned int)bvh.getNodes().size(),
 				(unsigned int)bvh.countLeafs(), 1e-3 * constructionTime));
 		}
+
+		/*
+			miniz-cpp
+		*/
+		{
+			miniz_cpp::zip_file file;
+			file.writestr("file1.txt", "this is file 1!");
+			file.writestr("file2.txt", "this is file 2!");
+			file.writestr("file3.txt", "this is file 3!");
+			file.writestr("file4.txt", "this is file 4!");
+			file.writestr("file5.txt", "this is file 5!");
+			file.save("test_miniz-cpp.zip");
+			DEBUG_PRINT(Str("Test miniz-cpp : Write to %s", "./test_miniz-cpp.zip"));
+		}
 	}
 
 	/******************************************************************************

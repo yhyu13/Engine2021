@@ -236,6 +236,7 @@ namespace longmarch
 
 			std::shared_ptr<FrameBuffer> PrevWindowFrameBuffer;
 			std::shared_ptr<FrameBuffer> CurrentWindowFrameBuffer;
+			std::shared_ptr<FrameBuffer> PrevFinalFrameBuffer;
 			std::shared_ptr<FrameBuffer> FinalFrameBuffer;
 			std::shared_ptr<FrameBuffer> PrevFrameBuffer;
 			std::shared_ptr<FrameBuffer> CurrentFrameBuffer;

@@ -235,7 +235,8 @@ namespace longmarch
 			inline static LongMarch_Vector<Mat4> s_default_bone_transform{ Mat4(1.0f) };
 
 			std::shared_ptr<FrameBuffer> PrevFinalFrameBuffer; // Previous frame's final frame buffer
-			std::shared_ptr<FrameBuffer> FinalFrameBuffer; // Frame buffer just before tone mapping
+			std::shared_ptr<FrameBuffer> CurrentFinalFrameBuffer; // Frame buffer just before tone mapping
+			std::shared_ptr<FrameBuffer> PrevOpaqueLightingFrameBuffer; // Stores opaque lighting color
 			std::shared_ptr<FrameBuffer> CurrentFrameBuffer;
 			std::shared_ptr<FrameBuffer> FrameBuffer_1;
 			std::shared_ptr<FrameBuffer> FrameBuffer_2;
@@ -590,6 +591,7 @@ namespace longmarch
 		static void _PopulateShadingPassUniformsVariables(const PerspectiveCamera* camera); 
 		static void _PopulateShadowPassVariables();
 
+		static void _BindSkyBoxTexture();
 		static void _BeginSkyBoxPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginDynamicAOPass(const std::shared_ptr<GBuffer>& gbuffer_in);
 		static void _BeginDynamicSSRPass(const std::shared_ptr<GBuffer>& gbuffer_in);

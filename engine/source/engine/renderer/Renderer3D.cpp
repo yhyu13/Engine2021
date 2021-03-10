@@ -171,7 +171,7 @@ void longmarch::Renderer3D::Init()
 		s_Data.ShaderMap["TransparentForwardShader"] = Shader::Create("$shader:forward_shader.vert", "$shader:forward_shader.frag");
 		s_Data.ShaderMap["DeferredShader"] = Shader::Create("$shader:deferred_shader.vert", "$shader:deferred_shader.frag");
 		s_Data.ShaderMap["DynamicAOShader"] = Shader::Create("$shader:dynamic_ao_shader.vert", "$shader:dynamic_ao_shader.frag");
-		s_Data.ShaderMap["DynamicAOColorShader"] = Shader::Create("$shader:dynamic_ao_color_shader.vert", "$shader:dynamic_ao_color_shader.frag");
+		//s_Data.ShaderMap["DynamicAOColorShader"] = Shader::Create("$shader:dynamic_ao_color_shader.vert", "$shader:dynamic_ao_color_shader.frag");
 		s_Data.ShaderMap["DynamicSSRShader"] = Shader::Create("$shader:dynamic_ssr_shader.vert", "$shader:dynamic_ssr_shader.frag");
 		s_Data.ShaderMap["DynamicSSRColorShader"] = Shader::Create("$shader:dynamic_ssr_color_shader.vert", "$shader:dynamic_ssr_color_shader.frag");
 		s_Data.ShaderMap["Bloom_Brightness_Filter"] = Shader::Create("$shader:bloom_brightness_filter.vert", "$shader:bloom_brightness_filter.frag");
@@ -208,7 +208,7 @@ void longmarch::Renderer3D::Init()
 			s_Data.ShaderMap["MSMShadowBuffer_Transparent"] = Shader::Create("$shader:shadow/momentShadowMap_shader.vert", "$shader:shadow/momentShadowMap_shader.frag");
 			s_Data.ShaderMap["MSMShadowBuffer_Particle"] = Shader::Create("$shader:shadow/momentShadowMap_shader_particle.vert", "$shader:shadow/momentShadowMap_shader_particle.frag");
 			
-			s_Data.ShaderMap["ShadowBuffer"] = Shader::Create("$shader:shadow/ShadowMap_shader.vert", "$shader:shadow/ShadowMap_shader.frag");
+			s_Data.ShaderMap["ShadowBuffer"] = Shader::Create("$shader:shadow/ShadowMap_shader.vert", "$shader:shadow/ShadowMap_shader.frag"); // used in outlining pass as a cheap way to draw objects
 		}
 
 		switch (s_Data.RENDER_MODE)
@@ -218,14 +218,14 @@ void longmarch::Renderer3D::Init()
 			s_Data.ShaderMap["ForwardShader"] = Shader::Create("$shader:forward_shader.vert", "$shader:forward_shader.frag");
 			s_Data.ShaderMap["GBufferShader"] = Shader::Create("$shader:gBuffer_shader.vert", "$shader:gBuffer_shader.frag");
 			s_Data.ShaderMap["MSMShadowBuffer"] = Shader::Create("$shader:shadow/momentShadowMap_shader.vert", "$shader:shadow/momentShadowMap_shader.frag");
-			//s_Data.ShaderMap["MSMShadowBuffer_Cube"] = Shader::Create("$shader:shadow/momentShadowMap_shader_cube.vert", "$shader:shadow/momentShadowMap_shader_cube.frag", "$shader:cubemap_geomtry_shader.geom");
+			//s_Data.ShaderMap["MSMShadowBuffer_Cube"] = Shader::Create("$shader:shadow/momentShadowMap_shader_cube.vert", "$shader:shadow/momentShadowMap_shader_cube.frag", "$shader:cubemap_geomtry_shader.geom"); // Point light shadows use 6 array texture instead
 			break;
 		case RENDER_MODE::MULTIDRAW:
 			s_Data.ShaderMap["ClusterShader"] = Shader::Create("$shader:cluster_shader_MultiDraw.vert", "$shader:cluster_shader_MultiDraw.frag");
 			s_Data.ShaderMap["ForwardShader"] = Shader::Create("$shader:forward_shader_MultiDraw.vert", "$shader:forward_shader_MultiDraw.frag");
 			s_Data.ShaderMap["GBufferShader"] = Shader::Create("$shader:gBuffer_shader_MultiDraw.vert", "$shader:gBuffer_shader_MultiDraw.frag");
 			s_Data.ShaderMap["MSMShadowBuffer"] = Shader::Create("$shader:shadow/momentShadowMap_shader_MultiDraw.vert", "$shader:shadow/momentShadowMap_shader.frag");
-			//s_Data.ShaderMap["MSMShadowBuffer_Cube"] = Shader::Create("$shader:shadow/momentShadowMap_shader_cube_MultiDraw.vert", "$shader:shadow/momentShadowMap_shader_cube.frag", "$shader:cubemap_geomtry_shader.geom");
+			//s_Data.ShaderMap["MSMShadowBuffer_Cube"] = Shader::Create("$shader:shadow/momentShadowMap_shader_cube_MultiDraw.vert", "$shader:shadow/momentShadowMap_shader_cube.frag", "$shader:cubemap_geomtry_shader.geom"); // Point light shadows use 6 array texture instead
 			break;
 		}
 
@@ -335,7 +335,8 @@ void longmarch::Renderer3D::Init()
 			// Frame buffer
 			s_Data.gpuBuffer.CurrentFrameBuffer = nullptr;
 			s_Data.gpuBuffer.PrevFinalFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
-			s_Data.gpuBuffer.FinalFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
+			s_Data.gpuBuffer.CurrentFinalFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
+			s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
 			s_Data.gpuBuffer.FrameBuffer_1 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
 			s_Data.gpuBuffer.FrameBuffer_2 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
 			s_Data.gpuBuffer.FrameBuffer_3 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
@@ -747,10 +748,15 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 			s_Data.window_size_changed_this_frame = true;
 			s_Data.gpuBuffer.PrevFinalFrameBuffer = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
 		}
-		if (s_Data.gpuBuffer.FinalFrameBuffer->GetBufferSize() != s_Data.resolution)
+		if (s_Data.gpuBuffer.CurrentFinalFrameBuffer->GetBufferSize() != s_Data.resolution)
 		{
 			s_Data.window_size_changed_this_frame = true;
-			s_Data.gpuBuffer.FinalFrameBuffer = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
+			s_Data.gpuBuffer.CurrentFinalFrameBuffer = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
+		}
+		if (s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer->GetBufferSize() != s_Data.resolution)
+		{
+			s_Data.window_size_changed_this_frame = true;
+			s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
 		}
 		if (s_Data.gpuBuffer.FrameBuffer_1->GetBufferSize() != s_Data.resolution)
 		{
@@ -781,13 +787,17 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 
 		// Enable depth testing and wirte to depth buffer just for the clearing commend
 		RenderCommand::DepthTest(true, true);
-		RenderCommand::SetClearColor(Vec4f(0,0,0,0));
+		RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0));
 		
 		// CRITICAL : Don't clear prev frame buffer as we need it in the current frame
 		/*s_Data.gpuBuffer.PrevFinalFrameBuffer->Bind();
 		RenderCommand::Clear();*/
 
-		s_Data.gpuBuffer.FinalFrameBuffer->Bind();
+		// CRITICAL : Don't clear prev frame buffer as we need it in the current frame
+		/*s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer->Bind();
+		RenderCommand::Clear();*/
+
+		s_Data.gpuBuffer.CurrentFinalFrameBuffer->Bind();
 		RenderCommand::Clear();
 
 		s_Data.gpuBuffer.FrameBuffer_1->Bind();
@@ -816,7 +826,7 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 		{
 			s_Data.gpuBuffer.CurrentGBuffer = GBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, GBuffer::GBUFFER_TYPE::DEFAULT);
 		}
-		// GBuffer should be cleared with black color instead of a custom clear color
+		// CRITICAL GBuffer should be cleared with all zeros
 		RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0));
 		s_Data.gpuBuffer.CurrentGBuffer->Bind();
 		RenderCommand::Clear();
@@ -2186,6 +2196,10 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 		Renderer3D::_BeginClusterLightingPass(s_Data.gpuBuffer.CurrentFrameBuffer);
 		break;
 	case RENDER_PIPE::DEFERRED:
+		{
+			// Perform SSAO/SSDO after rendering all opaques, ignore transparents and particles.
+			Renderer3D::_BeginDynamicAOPass(s_Data.gpuBuffer.CurrentGBuffer);
+		}
 		Renderer3D::_BeginDeferredLightingPass(
 			camera,
 			f_render,
@@ -2199,6 +2213,43 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 		Renderer3D::_BeginForwardLightingPass(s_Data.gpuBuffer.CurrentFrameBuffer);
 		break;
 	}
+
+	// Fill in prev frame buffer from current frame buffer before skybox pass
+	RenderCommand::TransferColorBit(
+		s_Data.gpuBuffer.CurrentFrameBuffer->GetRendererID(),
+		s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().x,
+		s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().y,
+
+		s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer->GetRendererID(),
+		s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer->GetBufferSize().x,
+		s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer->GetBufferSize().y
+	);
+	s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer->GenerateMipmaps();
+
+	if (s_Data.RENDER_PIPE == Renderer3D::RENDER_PIPE::DEFERRED)
+	{
+		{
+			// Perform SSR after rendering all opaques, ignore transparents and particles for now
+			Renderer3D::_BeginDynamicSSRPass(s_Data.gpuBuffer.CurrentGBuffer);
+			auto old = s_Data.gpuBuffer.CurrentFrameBuffer;
+			Renderer3D::_BeginSSRPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_2);
+			RenderCommand::TransferDepthBit(
+				old->GetRendererID(),
+				old->GetBufferSize().x,
+				old->GetBufferSize().y,
+
+				s_Data.gpuBuffer.CurrentFrameBuffer->GetRendererID(),
+				s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().x,
+				s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().y
+			);
+		}
+	}
+	{
+		Renderer3D::_BeginSkyBoxPass(s_Data.gpuBuffer.CurrentFrameBuffer);
+	}
+	{
+		Renderer3D::_RenderBoundingBox(s_Data.gpuBuffer.CurrentFrameBuffer);
+	}
 }
 
 void longmarch::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<GBuffer>& gbuffer_in)
@@ -2211,7 +2262,7 @@ void longmarch::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<GBuffer>& 
 	}
 
 	RenderCommand::DepthTest(true, true);
-	RenderCommand::SetClearColor(Vec4f(0, 0, 0, 1));
+	RenderCommand::SetClearColor(Vec4f(0, 0, 0, 1)); // Clear w component to 1 as it stores the AO value, and 1 stands for no occlusion
 
 	s_Data.gpuBuffer.CurrentDynamicAOBuffer->Bind();
 	RenderCommand::Clear();
@@ -2237,20 +2288,9 @@ void longmarch::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<GBuffer>& 
 		s_Data.CurrentShader->SetFloat("scale_s", s_Data.AOSettings.ao_scale);
 		s_Data.CurrentShader->SetFloat("power_k", s_Data.AOSettings.ao_power);
 		AOBuffer->Bind();
-		// Bind Prev frame buffer
-		s_Data.gpuBuffer.CurrentFrameBuffer->BindTexture(s_Data.fragTexture_3_slot);
-		if (s_Data.CurrentEnvMapName != "")
-		{
-			const auto& irradiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["irradiance"];
-			const auto& radiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["radiance"];
-			s_Data.CurrentShader->SetFloat("u_max_radiance_map_lod", radiance->GetMaxMipMapLevel());
-			// Bind irradiance map
-			irradiance->BindTexture(s_Data.fragTexture_0_slot);
-			// Bind radiance map
-			radiance->BindTexture(s_Data.fragTexture_1_slot);
-			// Bind brdf LUT
-			s_Data.gpuBuffer.BrdfIntegrateLUT->BindTexture(s_Data.fragTexture_2_slot);
-		}
+
+		// Bind skybox
+		_BindSkyBoxTexture();
 		// Bind g buffer content
 		s_Data.gpuBuffer.CurrentGBuffer->BindTextures(
 			{
@@ -2259,6 +2299,11 @@ void longmarch::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<GBuffer>& 
 			},
 			s_Data.fragTexture_empty_slot
 			);
+		{
+			// Bind prev frame buffer
+			s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer->BindTexture(s_Data.fragTexture_3_slot);
+		}
+
 		// Render quad
 		Renderer3D::_RenderFullScreenQuad();
 
@@ -2337,18 +2382,9 @@ void longmarch::Renderer3D::_BeginDynamicSSRPass(const std::shared_ptr<GBuffer>&
 		s_Data.CurrentShader->Bind();
 		s_Data.CurrentShader->SetInt("enabled", s_Data.SSRSettings.enable);
 		SSRBuffer->Bind();
-		// Bind Prev frame buffer
-		s_Data.gpuBuffer.CurrentFrameBuffer->BindTexture(s_Data.fragTexture_0_slot);
+
 		// Bind Skybox
-		if (s_Data.CurrentEnvMapName != "")
-		{
-			const auto& radiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["radiance"];
-			s_Data.CurrentShader->SetFloat("u_max_radiance_map_lod", radiance->GetMaxMipMapLevel());
-			// Bind radiance map
-			radiance->BindTexture(s_Data.fragTexture_1_slot);
-			// Bind brdf LUT
-			s_Data.gpuBuffer.BrdfIntegrateLUT->BindTexture(s_Data.fragTexture_2_slot);
-		}
+		_BindSkyBoxTexture();
 		// Bind g buffer content
 		s_Data.gpuBuffer.CurrentGBuffer->BindTextures(
 			{
@@ -2359,6 +2395,11 @@ void longmarch::Renderer3D::_BeginDynamicSSRPass(const std::shared_ptr<GBuffer>&
 			},
 			s_Data.fragTexture_empty_slot
 			);
+		{
+			// Bind prev frame buffer
+			s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer->BindTexture(s_Data.fragTexture_3_slot);
+		}
+
 		// Render quad
 		Renderer3D::_RenderFullScreenQuad();
 
@@ -2406,23 +2447,6 @@ void longmarch::Renderer3D::_BeginDeferredLightingPass(
 	const std::function<void(const std::string&)>& f_setRenderShaderName,
 	const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
-	static auto BindEvnMap = []()
-	{
-		// Bind Skybox
-		if (s_Data.enable_env_mapping && s_Data.CurrentEnvMapName != "")
-		{
-			const auto& irradiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["irradiance"];
-			const auto& radiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["radiance"];
-			s_Data.CurrentShader->SetFloat("u_max_radiance_map_lod", radiance->GetMaxMipMapLevel());
-			// Bind irradiance map
-			irradiance->BindTexture(s_Data.fragTexture_0_slot);
-			// Bind radiance map
-			radiance->BindTexture(s_Data.fragTexture_1_slot);
-			// Bind brdf LUT
-			s_Data.gpuBuffer.BrdfIntegrateLUT->BindTexture(s_Data.fragTexture_2_slot);
-		}
-	};
-
 	{
 		// bind framebuffer to store frag color
 		if (framebuffer_out)
@@ -2451,7 +2475,7 @@ void longmarch::Renderer3D::_BeginDeferredLightingPass(
 			s_Data.CurrentShader->Bind();
 			
 			// Bind env mapping
-			BindEvnMap();
+			_BindSkyBoxTexture();
 			// Bind GBuffer
 			s_Data.gpuBuffer.CurrentGBuffer->BindTextures(
 				{
@@ -2521,6 +2545,23 @@ void longmarch::Renderer3D::_BeginClusterLightingPass(const std::shared_ptr<Fram
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
+void longmarch::Renderer3D::_BindSkyBoxTexture()
+{
+	// Bind Skybox
+	if (s_Data.CurrentEnvMapName != "")
+	{
+		const auto& irradiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["irradiance"];
+		const auto& radiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["radiance"];
+		s_Data.CurrentShader->SetFloat("u_max_radiance_map_lod", radiance->GetMaxMipMapLevel());
+		// Bind irradiance map
+		irradiance->BindTexture(s_Data.fragTexture_0_slot);
+		// Bind radiance map
+		radiance->BindTexture(s_Data.fragTexture_1_slot);
+		// Bind brdf LUT
+		s_Data.gpuBuffer.BrdfIntegrateLUT->BindTexture(s_Data.fragTexture_2_slot);
+	}
+}
+
 void longmarch::Renderer3D::_BeginSkyBoxPass(const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
 	{
@@ -2566,6 +2607,12 @@ void longmarch::Renderer3D::_RenderBoundingBox(const std::shared_ptr<FrameBuffer
 	size_t num_instance = s_Data.cpuBuffer.InstancedDraw_BVModelTr.size();
 	if (s_Data.enable_drawingBoundingVolume && num_instance > 0)
 	{
+		RenderCommand::PolyModeFill();			// Draw full mode;
+		RenderCommand::CullFace(true, false);	// Cull back faces
+		RenderCommand::Blend(true);				// Enable blending
+		RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ALPHA_BLEND_2);
+		RenderCommand::DepthTest(true, true);	// Enable depth testing and writing
+
 		{
 			if (framebuffer_out)
 			{
@@ -2581,11 +2628,6 @@ void longmarch::Renderer3D::_RenderBoundingBox(const std::shared_ptr<FrameBuffer
 			}
 		}
 
-		RenderCommand::PolyModeFill();			// Draw full mode;
-		RenderCommand::CullFace(true, false);	// Cull back faces
-		RenderCommand::Blend(true);				// Enable blending
-		RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ALPHA_BLEND_2);
-		RenderCommand::DepthTest(true, true);	// Enable depth testing and writing
 		s_Data.CurrentShader = s_Data.ShaderMap["BBoxShader"];
 		s_Data.CurrentShader->Bind();
 		s_Data.gpuBuffer.BBoxInstBO->UpdateBufferData(&(s_Data.cpuBuffer.InstancedDraw_BVModelTr[0][0][0]), num_instance * sizeof(Mat4));
@@ -2605,25 +2647,6 @@ void longmarch::Renderer3D::_RenderBoundingBox(const std::shared_ptr<FrameBuffer
 **************************************************************/
 void longmarch::Renderer3D::EndOpaqueLighting()
 {
-	if (s_Data.RENDER_PIPE == Renderer3D::RENDER_PIPE::DEFERRED)
-	{
-		{
-			// Perform SSAO/SSDO after rendering all opaques, ignore transparents and particles.
-			Renderer3D::_BeginDynamicAOPass(s_Data.gpuBuffer.CurrentGBuffer);
-			Renderer3D::_BeginSSAOPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_2);
-		}
-		{
-			// Perform SSR after rendering all opaques, ignore transparents and particles.
-			Renderer3D::_BeginDynamicSSRPass(s_Data.gpuBuffer.CurrentGBuffer);
-			Renderer3D::_BeginSSRPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_1);
-		}
-	}
-	{
-		Renderer3D::_BeginSkyBoxPass(s_Data.gpuBuffer.CurrentFrameBuffer);
-	}
-	{
-		Renderer3D::_RenderBoundingBox(s_Data.gpuBuffer.CurrentFrameBuffer);
-	}
 }
 
 /**************************************************************
@@ -2730,7 +2753,7 @@ void longmarch::Renderer3D::BeginPostProcessing()
 		s_Data.gpuBuffer.PrevFinalFrameBuffer->GenerateMipmaps();
 	}
 
-	Renderer3D::_BeginToneMappingPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FinalFrameBuffer);
+	Renderer3D::_BeginToneMappingPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.CurrentFinalFrameBuffer);
 
 	if (s_Data.enable_debug_cluster_light && s_Data.RENDER_PIPE == Renderer3D::RENDER_PIPE::CLUSTER)
 	{
@@ -2785,46 +2808,46 @@ void longmarch::Renderer3D::_BeginSSRPass(const std::shared_ptr<FrameBuffer>& fr
 
 void longmarch::Renderer3D::_BeginSSAOPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
-	if (s_Data.SSRSettings.enable)
-	{
-		RenderCommand::PolyModeFill();			// Draw full model
-		RenderCommand::DepthTest(false, false);	// Disable depth testing
-		RenderCommand::CullFace(false, false);	// Disable face culling
-		RenderCommand::Blend(false);
+	//if (s_Data.SSRSettings.enable)
+	//{
+	//	RenderCommand::PolyModeFill();			// Draw full model
+	//	RenderCommand::DepthTest(false, false);	// Disable depth testing
+	//	RenderCommand::CullFace(false, false);	// Disable face culling
+	//	RenderCommand::Blend(false);
 
-		if (framebuffer_out)
-		{
-			framebuffer_out->Bind();
-			Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
-			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-		}
-		else
-		{
-			RenderCommand::BindDefaultFrameBuffer();
-			Vec2u traget_resoluation = s_Data.window_size;
-			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-		}
+	//	if (framebuffer_out)
+	//	{
+	//		framebuffer_out->Bind();
+	//		Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
+	//		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+	//	}
+	//	else
+	//	{
+	//		RenderCommand::BindDefaultFrameBuffer();
+	//		Vec2u traget_resoluation = s_Data.window_size;
+	//		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+	//	}
 
-		s_Data.CurrentShader = s_Data.ShaderMap["DynamicAOColorShader"];
-		s_Data.CurrentShader->Bind();
-		framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
-		s_Data.gpuBuffer.CurrentDynamicAOBuffer->BindTexture(s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM));
-		// Render quad
-		Renderer3D::_RenderFullScreenQuad();
-	}
-	else
-	{
-		RenderCommand::TransferColorBit(
-			framebuffer_in->GetRendererID(),
-			framebuffer_in->GetBufferSize().x,
-			framebuffer_in->GetBufferSize().y,
+	//	s_Data.CurrentShader = s_Data.ShaderMap["DynamicAOColorShader"];
+	//	s_Data.CurrentShader->Bind();
+	//	framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
+	//	s_Data.gpuBuffer.CurrentDynamicAOBuffer->BindTexture(s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM));
+	//	// Render quad
+	//	Renderer3D::_RenderFullScreenQuad();
+	//}
+	//else
+	//{
+	//	RenderCommand::TransferColorBit(
+	//		framebuffer_in->GetRendererID(),
+	//		framebuffer_in->GetBufferSize().x,
+	//		framebuffer_in->GetBufferSize().y,
 
-			framebuffer_out->GetRendererID(),
-			framebuffer_out->GetBufferSize().x,
-			framebuffer_out->GetBufferSize().y
-		);
-	}
-	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
+	//		framebuffer_out->GetRendererID(),
+	//		framebuffer_out->GetBufferSize().x,
+	//		framebuffer_out->GetBufferSize().y
+	//	);
+	//}
+	//s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
 void longmarch::Renderer3D::_BeginTAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
@@ -3214,15 +3237,15 @@ void longmarch::Renderer3D::EndPostProcessing()
 void longmarch::Renderer3D::EndRendering()
 {
 	/*
-		Blit FinalFrameBuffer to have the same size as the back buffer.
+		Blit CurrentFinalFrameBuffer to have the same size as the back buffer.
 		This allows us to render with a smaller resolution thant the screen
 	*/
 
 	constexpr int default_framebuffer_rendererID = 0;
 	RenderCommand::TransferColorBit(
-		s_Data.gpuBuffer.FinalFrameBuffer->GetRendererID(),
-		s_Data.gpuBuffer.FinalFrameBuffer->GetBufferSize().x,
-		s_Data.gpuBuffer.FinalFrameBuffer->GetBufferSize().y,
+		s_Data.gpuBuffer.CurrentFinalFrameBuffer->GetRendererID(),
+		s_Data.gpuBuffer.CurrentFinalFrameBuffer->GetBufferSize().x,
+		s_Data.gpuBuffer.CurrentFinalFrameBuffer->GetBufferSize().y,
 
 		default_framebuffer_rendererID,
 		s_Data.window_size.x,
@@ -3420,26 +3443,13 @@ void longmarch::Renderer3D::Draw(Entity entity, const std::shared_ptr<MeshData>&
 					});
 			}
 			auto& gpubuffer = s_Data.gpuBuffer;
-			{
-				// upload model and material ubo
-				gpubuffer.CurrentModelBuffer->UpdateBufferData(model_Buffer.GetPtr(), sizeof(model_Buffer));
-				gpubuffer.CurrentModelBuffer->Bind(1);
-				gpubuffer.CurrentMaterialBuffer->UpdateBufferData(material_Buffer.GetPtr(), sizeof(material_Buffer));
-				gpubuffer.CurrentMaterialBuffer->Bind(2);
-			}
+			// upload model and material ubo
+			gpubuffer.CurrentModelBuffer->UpdateBufferData(model_Buffer.GetPtr(), sizeof(model_Buffer));
+			gpubuffer.CurrentModelBuffer->Bind(1);
+			gpubuffer.CurrentMaterialBuffer->UpdateBufferData(material_Buffer.GetPtr(), sizeof(material_Buffer));
+			gpubuffer.CurrentMaterialBuffer->Bind(2);
 			// Bind Skybox
-			if (s_Data.enable_env_mapping && s_Data.CurrentEnvMapName != "")
-			{
-				const auto& irradiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["irradiance"];
-				const auto& radiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["radiance"];
-				s_Data.CurrentShader->SetFloat("u_max_radiance_map_lod", radiance->GetMaxMipMapLevel());
-				// Bind irradiance map
-				irradiance->BindTexture(s_Data.fragTexture_0_slot);
-				// Bind radiance map
-				radiance->BindTexture(s_Data.fragTexture_1_slot);
-				// Bind brdf LUT
-				s_Data.gpuBuffer.BrdfIntegrateLUT->BindTexture(s_Data.fragTexture_2_slot);
-			}
+			_BindSkyBoxTexture();
 			{
 				// set transparent alpha
 				s_Data.CurrentShader->SetFloat("u_Alpha", Mat->alpha);
@@ -3734,18 +3744,7 @@ bool longmarch::Renderer3D::_BeginRenderBatch()
 			}
 			{
 				// Bind Skybox
-				if (s_Data.enable_env_mapping && s_Data.CurrentEnvMapName != "")
-				{
-					const auto& irradiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["irradiance"];
-					const auto& radiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["radiance"];
-					s_Data.CurrentShader->SetFloat("u_max_radiance_map_lod", radiance->GetMaxMipMapLevel());
-					// Bind irradiance map
-					irradiance->BindTexture(s_Data.fragTexture_0_slot);
-					// Bind radiance map
-					radiance->BindTexture(s_Data.fragTexture_1_slot);
-					// Bind brdf LUT
-					s_Data.gpuBuffer.BrdfIntegrateLUT->BindTexture(s_Data.fragTexture_2_slot);
-				}
+				_BindSkyBoxTexture();
 			}
 		}
 		break;

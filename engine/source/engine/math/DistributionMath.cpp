@@ -54,7 +54,7 @@ std::pair<ArrayF32, ArrayF32> longmarch::DistributionMath::Gaussian1DHalfBilinea
 {
 	auto [offsets, weights] = Gaussian1DHalf(sampleNum, mean, std);
 	int new_size = (weights.X()-1) / 2 + 1;
-	if (new_size == 1)
+	if (new_size <= 1)
 	{
 		return std::pair<ArrayF32, ArrayF32>(offsets, weights);
 	}

@@ -2,9 +2,33 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <climits>
 #include <ctime>
 #include <math.h>
 #include <random>
+
+namespace replacement
+{
+
+    constexpr int rand_max{
+  #ifdef RAND_MAX
+        RAND_MAX
+  #else
+        INT_MAX
+  #endif
+    };
+
+    namespace detail
+    {
+        std::default_random_engine& get_engine() noexcept;
+        std::uniform_int_distribution<int>& get_distribution() noexcept;
+    }  // namespace detail
+
+    int rand() noexcept;
+    void srand(const unsigned seed) noexcept;
+    void srand() noexcept;
+
+}  // namespace replacement
 
 #ifndef PI
 #define PI 3.14159265359f
@@ -30,9 +54,9 @@
 #define RAD2DEG 57.2957795131f
 #endif // !PI
 //
-#define RAND_SEED_SET_TIME {std::srand((unsigned int)std::time(NULL));};
-#define RAND_I(LO, HI) int(LO) + int(rand()) / (int(RAND_MAX / (int(HI) - int(LO))))
-#define RAND_F(LO, HI) float(LO) + float(rand()) / (float(RAND_MAX / (float(HI) - float(LO))))
+#define RAND_SEED_SET_TIME {replacement::srand((unsigned int)std::time(NULL));};
+#define RAND_I(LO, HI) int(LO) + int(replacement::rand()) / (int(int(RAND_MAX) / (int(HI) - int(LO))))
+#define RAND_F(LO, HI) float(LO) + float(replacement::rand()) / (float(float(RAND_MAX) / (float(HI) - float(LO))))
 #define IN_RANGE(a, x, y) (a >= x && a <= y)
 
 #define MAX(x, y) ((x)>(y))?(x):(y)

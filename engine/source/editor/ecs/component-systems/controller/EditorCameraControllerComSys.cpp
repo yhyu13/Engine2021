@@ -2,9 +2,10 @@
 #include "EditorCameraControllerComSys.h"
 
 #include "engine/core/thread/BaseJob.h"
-#include "engine//core/thread/coroutine.h"
+#include "engine/core/thread/coroutine.h"
 #include "engine/ecs/header/header.h"
 #include "engine/math/Quaternion.h"
+#include "engine/math/EncryptMath.h"
 #include "engine/ui/ImGuiUtil.h"
 #include "editor/events/EditorCustomEvent.h"
 
@@ -656,6 +657,23 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			file.writestr("file5.txt", "this is file 5!");
 			file.save("test_miniz-cpp.zip");
 			DEBUG_PRINT(Str("Test miniz-cpp : Write to %s", "./test_miniz-cpp.zip"));
+		}
+
+		/*
+			Encrypt value
+		*/
+		{
+			LongMarch_EncryptValue a(10);
+			LongMarch_EncryptValue b(2.0f);
+			LongMarch_EncryptValue c(22l);
+			LongMarch_EncryptValue d(256ull);
+			LongMarch_EncryptValue e('a');
+
+			DEBUG_PRINT(Str("Encryption : %d", a.getValue()));
+			DEBUG_PRINT(Str("Encryption : %f", b.getValue()));
+			DEBUG_PRINT(Str("Encryption : %ld", c.getValue()));
+			DEBUG_PRINT(Str("Encryption : %u", d.getValue()));
+			DEBUG_PRINT(Str("Encryption : %c", e.getValue()));
 		}
 	}
 

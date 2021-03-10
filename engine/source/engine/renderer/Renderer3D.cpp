@@ -1228,7 +1228,7 @@ void longmarch::Renderer3D::BeginShadowing(
 							const auto& shadowBuffer2 = lightCom->shadow.shadowBuffer2;
 							Vec2u traget_resoluation2 = shadowBuffer2->GetBufferSize();
 							auto kernel_size = lightCom->shadow.gaussianKernal;
-							auto [length, offsets, weights] = s_Data.gpuBuffer.GuassinKernelHalf[kernel_size];
+							auto [length, offsets, weights] = s_Data.gpuBuffer.GuassinKernelHalfBilinear[kernel_size];
 							BeginGaussianBlur();
 							{
 								s_Data.CurrentShader = guassian_CSM_shader;
@@ -1389,7 +1389,7 @@ void longmarch::Renderer3D::BeginShadowing(
 							const auto& shadowBuffer2 = lightCom->shadow.shadowBuffer2;
 							Vec2u traget_resoluation2 = shadowBuffer2->GetBufferSize();
 							auto kernel_size = lightCom->shadow.gaussianKernal;
-							auto [length, offsets, weights] = s_Data.gpuBuffer.GuassinKernelHalf[kernel_size];
+							auto [length, offsets, weights] = s_Data.gpuBuffer.GuassinKernelHalfBilinear[kernel_size];
 							BeginGaussianBlur();
 							{
 								s_Data.CurrentShader = guassian_CSM_shader;
@@ -1481,7 +1481,7 @@ void longmarch::Renderer3D::BeginShadowing(
 					//	const auto& shadowBuffer2 = lightCom->shadow.shadowBuffer2;
 					//	Vec2u traget_resoluation2 = shadowBuffer2->GetBufferSize();
 					//	auto kernel_size = lightCom->shadow.gaussianKernal;
-					//	auto [length, offsets, weights] = s_Data.gpuBuffer.GuassinKernelHalf[kernel_size];
+					//	auto [length, offsets, weights] = s_Data.gpuBuffer.GuassinKernelHalfBilinear[kernel_size];
 					//	BeginGaussianBlur();
 					//	{
 					//		s_Data.CurrentShader = guassian_cube_shader;
@@ -1640,7 +1640,7 @@ void longmarch::Renderer3D::BeginShadowing(
 						const auto& shadowBuffer2 = lightCom->shadow.shadowBuffer2;
 						Vec2u traget_resoluation2 = shadowBuffer2->GetBufferSize();
 						auto kernel_size = lightCom->shadow.gaussianKernal;
-						auto [length, offsets, weights] = s_Data.gpuBuffer.GuassinKernelHalf[kernel_size];
+						auto [length, offsets, weights] = s_Data.gpuBuffer.GuassinKernelHalfBilinear[kernel_size];
 						BeginGaussianBlur();
 						{
 							s_Data.CurrentShader = guassian_shader;

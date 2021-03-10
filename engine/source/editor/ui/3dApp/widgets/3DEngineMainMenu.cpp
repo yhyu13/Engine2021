@@ -185,6 +185,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static float valueAOPower = AOConfig["Power"].asFloat();
 		// Indirect Bounce of light
 		static bool checkIndBonLit = AOConfig["Indirect-bounce"].asBool();
+		static float valueIndBonLitScale = AOConfig["Indirect-bounce-strength"].asFloat();
 
 		// SSR
 		static bool checkSSR = SSRConfig["Enable"].asBool();
@@ -229,6 +230,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				valueAOPower = AOConfig["Power"].asFloat();
 				// Indirect Bounce of light
 				checkIndBonLit = AOConfig["Indirect-bounce"].asBool();
+				valueIndBonLitScale = AOConfig["Indirect-bounce-strength"].asFloat();
 			}
 			{
 				// SSR
@@ -290,7 +292,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				graphicEventQueue->Publish(e);
 			}
 			{
-				auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
+				auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
 				graphicEventQueue->Publish(e);
 			}
 			{
@@ -406,42 +408,47 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				{
 					if (ImGui::Checkbox("Enable", &checkAO))
 					{
-						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
+						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
 						graphicEventQueue->Publish(e);
 					}
 					if (ImGui::SliderInt("Resolution Down Scale", &valueAOSampleResDownScale, 1, 4, "%d"))
 					{
-						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
+						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
 						graphicEventQueue->Publish(e);
 					}
 					if (ImGui::SliderInt("Samples", &valueAOSample, 5, 80, "%d"))
 					{
-						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
+						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
 						graphicEventQueue->Publish(e);
 					}
 					if (ImGui::SliderInt("Gauss Kernel", &valueAOBlurKernel, 3, 30, "%d"))
 					{
-						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
+						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
 						graphicEventQueue->Publish(e);
 					}
 					if (ImGui::SliderFloat("Sample Radius", &valueAOSampleRadius, 0.01f, 20.0f, "%.2f"))
 					{
-						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
+						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
 						graphicEventQueue->Publish(e);
 					}
 					if (ImGui::SliderFloat("Scale", &valueAOScale, 0.1f, 10.0f, "%.1f"))
 					{
-						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
+						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
 						graphicEventQueue->Publish(e);
 					}
 					if (ImGui::SliderFloat("Power", &valueAOPower, 0.1f, 10.0f, "%.1f"))
 					{
-						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
+						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
 						graphicEventQueue->Publish(e);
 					}
 					if (ImGui::Checkbox("Indirect Bounce", &checkIndBonLit))
 					{
-						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
+						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderFloat("Indirect Bounce Strength", &valueIndBonLitScale, 0.1f, 10.0f, "%.1f"))
+					{
+						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
 						graphicEventQueue->Publish(e);
 					}
 					ImGui::Separator();

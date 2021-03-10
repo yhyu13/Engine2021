@@ -112,17 +112,34 @@ void longmarch::Renderer3D::Init()
 			const auto& ao_settings = graphicsConfiguration["AO"];
 			s_Data.AOSettings.enable = ao_settings["Enable"].asBool();
 			s_Data.AOSettings.ao_gaussian_kernal = ao_settings["Gaussian-kernel"].asUInt();
+			{
+				if (s_Data.AOSettings.ao_gaussian_kernal % 2u == 0)
+				{
+					++s_Data.AOSettings.ao_gaussian_kernal;
+				}
+				s_Data.AOSettings.ao_gaussian_kernal = (glm::clamp)(s_Data.AOSettings.ao_gaussian_kernal, 3u, 51u);
+			}
 			s_Data.AOSettings.ao_samples = ao_settings["Num-samples"].asUInt();
 			s_Data.AOSettings.ao_sample_resolution_downScale = ao_settings["Res-down-scale"].asUInt();
 			s_Data.AOSettings.ao_sample_radius = ao_settings["Radius"].asFloat();
 			s_Data.AOSettings.ao_scale = ao_settings["Scale"].asFloat();
 			s_Data.AOSettings.ao_power = ao_settings["Power"].asFloat();
 			s_Data.AOSettings.enable_indirect_light_bounce = ao_settings["Indirect-bounce"].asBool();
+			s_Data.AOSettings.indirect_light_bounce_scale = ao_settings["Indirect-bounce-strength"].asFloat();
 		}
 		{
 			const auto& ssr_settings = graphicsConfiguration["SSR"];
 			s_Data.SSRSettings.enable = ssr_settings["Enable"].asBool();
 			s_Data.SSRSettings.ssr_gaussian_kernal = ssr_settings["Gaussian-kernel"].asUInt();
+			{
+				{
+					if (s_Data.SSRSettings.ssr_gaussian_kernal % 2u == 0)
+					{
+						++s_Data.SSRSettings.ssr_gaussian_kernal;
+					}
+					s_Data.SSRSettings.ssr_gaussian_kernal = (glm::clamp)(s_Data.SSRSettings.ssr_gaussian_kernal, 3u, 51u);
+				}
+			}
 			s_Data.SSRSettings.ssr_sample_resolution_downScale = ssr_settings["Res-down-scale"].asUInt();
 		}
 		{
@@ -131,6 +148,15 @@ void longmarch::Renderer3D::Init()
 			s_Data.BloomSettings.bloom_threshold = bloom_settings["Threshold"].asFloat();
 			s_Data.BloomSettings.bloom_blend_strength = bloom_settings["Strength"].asFloat();
 			s_Data.BloomSettings.bloom_gaussian_kernal = bloom_settings["Gaussian-kernel"].asUInt();
+			{
+				{
+					if (s_Data.BloomSettings.bloom_gaussian_kernal % 2u == 0)
+					{
+						++s_Data.BloomSettings.bloom_gaussian_kernal;
+					}
+					s_Data.BloomSettings.bloom_gaussian_kernal = (glm::clamp)(s_Data.BloomSettings.bloom_gaussian_kernal, 3u, 51u);
+				}
+			}
 			s_Data.BloomSettings.bloom_sample_resolution_downScale = bloom_settings["Res-down-scale"].asUInt();
 		}
 
@@ -684,6 +710,7 @@ void longmarch::Renderer3D::_ON_SET_AO_VALUE(EventQueue<EngineGraphicsEventType>
 	s_Data.AOSettings.ao_scale = event->m_scale;
 	s_Data.AOSettings.ao_power = event->m_power;
 	s_Data.AOSettings.enable_indirect_light_bounce = event->m_enable_indirect_bounce;
+	s_Data.AOSettings.indirect_light_bounce_scale= event->m_indirect_bounce_scale;
 }
 
 void longmarch::Renderer3D::_ON_SET_SSR_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e)
@@ -2283,6 +2310,7 @@ void longmarch::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<GBuffer>& 
 		s_Data.CurrentShader->Bind();
 		s_Data.CurrentShader->SetInt("enabled", s_Data.AOSettings.enable);
 		s_Data.CurrentShader->SetInt("enabled_indirect_bounce", s_Data.AOSettings.enable_indirect_light_bounce);
+		s_Data.CurrentShader->SetFloat("scale_indirect_bounce", s_Data.AOSettings.indirect_light_bounce_scale);
 		s_Data.CurrentShader->SetInt("num_sample", s_Data.AOSettings.ao_samples);
 		s_Data.CurrentShader->SetFloat("sample_radius", s_Data.AOSettings.ao_sample_radius);
 		s_Data.CurrentShader->SetFloat("scale_s", s_Data.AOSettings.ao_scale);

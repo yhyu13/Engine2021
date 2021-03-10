@@ -264,7 +264,7 @@ namespace longmarch
 	};
 
 	struct SetAOValueEvent : public Event<EngineGraphicsEventType> {
-		explicit SetAOValueEvent(bool enable, int sample, int sameleResDownSacle, int gaussKernel, float radius, float scale, float power, bool bounce)
+		explicit SetAOValueEvent(bool enable, int sample, int sameleResDownSacle, int gaussKernel, float radius, float scale, float power, bool bounce, float bounce_strength)
 			:
 			Event(EngineGraphicsEventType::SET_AO_VALUE),
 			m_enable(enable),
@@ -274,7 +274,8 @@ namespace longmarch
 			m_sampleRadius(radius),
 			m_scale(scale),
 			m_power(power),
-			m_enable_indirect_bounce(bounce)
+			m_enable_indirect_bounce(bounce),
+			m_indirect_bounce_scale(bounce_strength)
 		{
 		}
 		bool m_enable;
@@ -285,6 +286,7 @@ namespace longmarch
 		float m_scale;
 		float m_power;
 		bool m_enable_indirect_bounce;
+		float m_indirect_bounce_scale;
 	};
 
 	struct SetSSRValueEvent : public Event<EngineGraphicsEventType> {

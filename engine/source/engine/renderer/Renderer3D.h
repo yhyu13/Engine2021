@@ -406,6 +406,7 @@ namespace longmarch
 				float ao_scale;
 				float ao_power;
 				bool enable_indirect_light_bounce;
+				float indirect_light_bounce_scale;
 			} AOSettings;
 
 			struct

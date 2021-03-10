@@ -66,13 +66,14 @@
 		"AO":
 		{
 			"Enable": true,
-			"Gaussian-kernel":15,
+			"Gaussian-kernel":30,
 			"Num-samples":40,
 			"Res-down-scale":2,
-			"Radius":2.0,
+			"Radius":2.5,
 			"Scale":1.4,
 			"Power":1.4,
-			"Indirect-bounce":true
+			"Indirect-bounce":false,
+			"Indirect-bounce-strength":9.0
 		}
 		,
 

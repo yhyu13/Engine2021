@@ -409,7 +409,7 @@ void longmarch::Scene3DCom::JsonDeserialize(const Json::Value& value)
 			{
 				auto value = val2.asString();
 				sceneData.ModifyAllMaterial([&value](Material* mat) {
-					mat->SetTexture(value, value, Material::MAT_TEXTURE_TYPE::AO);
+					mat->SetTexture(value, value, Material::MAT_TEXTURE_TYPE::BACKEDAO);
 				});
 			}
 		}
@@ -591,11 +591,11 @@ void longmarch::Scene3DCom::ImGuiRender()
 								auto name = vs[index];
 								if (name != "None")
 								{
-									mat->SetTexture(name, name, Material::MAT_TEXTURE_TYPE::AO);
+									mat->SetTexture(name, name, Material::MAT_TEXTURE_TYPE::BACKEDAO);
 								}
 								else
 								{
-									mat->UnsetTexture(Material::MAT_TEXTURE_TYPE::AO);
+									mat->UnsetTexture(Material::MAT_TEXTURE_TYPE::BACKEDAO);
 								}
 							}
 							ImGuiUtil::TextureViewerWithZoom(mat->textures.ao_texture->TryGet());

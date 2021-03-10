@@ -302,17 +302,21 @@ namespace longmarch
 	};
 
 	struct SetBloomEvent : public Event<EngineGraphicsEventType> {
-		explicit SetBloomEvent(bool b, float threshold, float strength)
+		explicit SetBloomEvent(bool b, float threshold, float strength, int gaussKernel, int sameleResDownSacle)
 			:
 			Event(EngineGraphicsEventType::SET_BLOOM_VALUE),
 			m_enable(b),
 			m_threshold(threshold),
-			m_strength(strength)
+			m_strength(strength),
+			m_gaussKernel(gaussKernel),
+			m_sampleResolutionDownScale(sameleResDownSacle)
 		{
 		}
 		bool m_enable;
 		float m_threshold;
 		float m_strength;
+		int m_gaussKernel;
+		int m_sampleResolutionDownScale;
 	};
 
 }

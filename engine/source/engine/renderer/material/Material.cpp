@@ -59,7 +59,7 @@ void longmarch::Material::BindAllTexture(const LongMarch_Vector<std::pair<uint32
 		case Material::MAT_TEXTURE_TYPE::ROUGHNESS:
 			_resolveTexture(textures.roughness_texture)->BindTexture(slot);
 			break;
-		case Material::MAT_TEXTURE_TYPE::AO:
+		case Material::MAT_TEXTURE_TYPE::BACKEDAO:
 			_resolveTexture(textures.ao_texture)->BindTexture(slot);
 			break;
 		default:
@@ -140,7 +140,7 @@ void longmarch::Material::SetTexture(const std::string& name, const fs::path& fi
 			AsyncLoadMaterial(name, filepath);
 		}
 		break;
-	case Material::MAT_TEXTURE_TYPE::AO:
+	case Material::MAT_TEXTURE_TYPE::BACKEDAO:
 		textures.ao_texture = resourceManager->TryGet(name);
 		if (!textures.ao_texture->TryGet() && textures.ao_texture->IsFutureValid())
 		{
@@ -190,7 +190,7 @@ void longmarch::Material::UnsetTexture(Material::MAT_TEXTURE_TYPE type)
 	case Material::MAT_TEXTURE_TYPE::ROUGHNESS:
 		textures.roughness_texture = s_placeholder_Texture2D;
 		break;
-	case Material::MAT_TEXTURE_TYPE::AO:
+	case Material::MAT_TEXTURE_TYPE::BACKEDAO:
 		textures.ao_texture = s_placeholder_Texture2D;
 		break;
 	default:

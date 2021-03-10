@@ -83,7 +83,7 @@ void longmarch::EditorPickingComSys::Render2()
 				{
 					if (isParticle)
 					{
-						// TODO : outline particle
+						// TODO : outline particle, need to write a specialized shader
 						/*particle->SetRendering(scene->GetShouldDraw());
 						particle->PrepareDrawWithViewMatrix(cam->GetViewMatrix());
 						scene->Draw(particle.GetPtr());*/
@@ -141,7 +141,7 @@ void longmarch::EditorPickingComSys::Render2()
 				{
 					if (isParticle)
 					{
-						// TODO : outline particle
+						// TODO : outline particle, need to write a specialized shader
 						/*particle->SetRendering(scene->GetShouldDraw());
 						particle->PrepareDrawWithViewMatrix(cam->GetViewMatrix());
 						scene->Draw(particle.GetPtr());*/

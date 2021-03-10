@@ -178,12 +178,26 @@ namespace longmarch
 
 	void OpenGLRendererAPI::PolyModeFill() 
 	{ 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); 
+		switch (s_polyMode)
+		{
+		case longmarch::RendererAPI::PolyMode::FILL:
+			break;
+		default:
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			break;
+		}
 	}
 
 	void OpenGLRendererAPI::PolyModeLine() 
 	{ 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); 
+		switch (s_polyMode)
+		{
+		case longmarch::RendererAPI::PolyMode::LINE:
+			break;
+		default:
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			break;
+		} 
 	}
 
 	void OpenGLRendererAPI::BindDefaultFrameBuffer() 

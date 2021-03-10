@@ -15,7 +15,7 @@ namespace longmarch
 			NORMAL,
 			METALLIC,
 			ROUGHNESS,
-			AO,
+			BACKEDAO,
 			NUM
 		};
 	public:

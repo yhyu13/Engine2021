@@ -195,6 +195,8 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static bool checkBloom = BloomConfig["Enable"].asBool();
 		static float valueBloomThreshold = BloomConfig["Threshold"].asFloat();
 		static float valueBloomStrength = BloomConfig["Strength"].asFloat();
+		static int valueBloomBlurKernel = BloomConfig["Gaussian-kernel"].asInt();
+		static int valueBloomSampleResDownScale = BloomConfig["Res-down-scale"].asFloat();
 
 		constexpr int yoffset_item = 5;
 
@@ -239,6 +241,8 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				checkBloom = BloomConfig["Enable"].asBool();
 				valueBloomThreshold = BloomConfig["Threshold"].asFloat();
 				valueBloomStrength = BloomConfig["Strength"].asFloat();
+				valueBloomBlurKernel = BloomConfig["Gaussian-kernel"].asInt();
+				valueBloomSampleResDownScale = BloomConfig["Res-down-scale"].asFloat();
 			}
 			{
 				auto e = MemoryManager::Make_shared<ToggleVSyncEvent>(checkVSync);
@@ -294,7 +298,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				graphicEventQueue->Publish(e);
 			}
 			{
-				auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength);
+				auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength, valueBloomBlurKernel, valueBloomSampleResDownScale);
 				graphicEventQueue->Publish(e);
 			}
 		}
@@ -405,12 +409,12 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
 						graphicEventQueue->Publish(e);
 					}
-					if (ImGui::SliderInt("Samples", &valueAOSample, 5, 80, "%d"))
+					if (ImGui::SliderInt("Resolution Down Scale", &valueAOSampleResDownScale, 1, 4, "%d"))
 					{
 						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
 						graphicEventQueue->Publish(e);
 					}
-					if (ImGui::SliderInt("Resolution Down Scale", &valueAOSampleResDownScale, 1, 4, "%d"))
+					if (ImGui::SliderInt("Samples", &valueAOSample, 5, 80, "%d"))
 					{
 						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit);
 						graphicEventQueue->Publish(e);
@@ -471,17 +475,27 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				{
 					if (ImGui::Checkbox("Enable", &checkBloom))
 					{
-						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength);
+						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength, valueBloomBlurKernel, valueBloomSampleResDownScale);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Resolution Down Scale", &valueBloomSampleResDownScale, 1, 4, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength, valueBloomBlurKernel, valueBloomSampleResDownScale);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Gauss Kernel", &valueBloomBlurKernel, 3, 30, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength, valueBloomBlurKernel, valueBloomSampleResDownScale);
 						graphicEventQueue->Publish(e);
 					}
 					if (ImGui::DragFloat("Threshold", &valueBloomThreshold, 0.05, -60, 1, "%.2f"))
 					{
-						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength);
+						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength, valueBloomBlurKernel, valueBloomSampleResDownScale);
 						graphicEventQueue->Publish(e);
 					} ImGuiUtil::InlineHelpMarker("Negative value serves as the power of a exponent s-curve in [-40,0], the greater this value, the greater the bloom coverage. Positive value serves as the cutoff value of a step function in [0,1], the the lower this value, the greater the bloom coverage ");
 					if (ImGui::DragFloat("Strength", &valueBloomStrength, 0.01, 0, 1, "%.2f"))
 					{
-						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength);
+						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength, valueBloomBlurKernel, valueBloomSampleResDownScale);
 						graphicEventQueue->Publish(e);
 					}
 					ImGui::Separator();

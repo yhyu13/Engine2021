@@ -972,7 +972,7 @@ namespace longmarch {
 		case longmarch::GBuffer::GBUFFER_TEXTURE_TYPE::ALBEDO_EMSSIVE:
 			return m_RenderAlbedo_EmssiveID;
 			break;
-		case longmarch::GBuffer::GBUFFER_TEXTURE_TYPE::AO_METALLIC_ROUGHNESS:
+		case longmarch::GBuffer::GBUFFER_TEXTURE_TYPE::BAKEDAO_METALLIC_ROUGHNESS:
 			return m_RenderAO_Metallic_RoughnessID;
 			break;
 		default:

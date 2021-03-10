@@ -16,6 +16,13 @@ namespace longmarch {
 			None = 0, OpenGL = 1
 		};
 
+		enum class PolyMode : uint8_t
+		{
+			NONE = 0, 
+			FILL,
+			LINE
+		};
+
 		enum class CompareEnum : uint8_t
 		{
 			LESS = 0,

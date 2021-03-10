@@ -171,12 +171,11 @@ void longmarch::Renderer3D::Init()
 		s_Data.ShaderMap["TransparentForwardShader"] = Shader::Create("$shader:forward_shader.vert", "$shader:forward_shader.frag");
 		s_Data.ShaderMap["DeferredShader"] = Shader::Create("$shader:deferred_shader.vert", "$shader:deferred_shader.frag");
 		s_Data.ShaderMap["DynamicAOShader"] = Shader::Create("$shader:dynamic_ao_shader.vert", "$shader:dynamic_ao_shader.frag");
+		s_Data.ShaderMap["DynamicAOColorShader"] = Shader::Create("$shader:dynamic_ao_color_shader.vert", "$shader:dynamic_ao_color_shader.frag");
 		s_Data.ShaderMap["DynamicSSRShader"] = Shader::Create("$shader:dynamic_ssr_shader.vert", "$shader:dynamic_ssr_shader.frag");
 		s_Data.ShaderMap["DynamicSSRColorShader"] = Shader::Create("$shader:dynamic_ssr_color_shader.vert", "$shader:dynamic_ssr_color_shader.frag");
 		s_Data.ShaderMap["Bloom_Brightness_Filter"] = Shader::Create("$shader:bloom_brightness_filter.vert", "$shader:bloom_brightness_filter.frag");
 		s_Data.ShaderMap["Bloom_Blend"] = Shader::Create("$shader:bloom_blend_shader.vert", "$shader:bloom_blend_shader.frag");
-
-		s_Data.ShaderMap["ColorCopyShader"] = Shader::Create("$shader:color_copy_shader.vert", "$shader:color_copy_shader.frag");
 
 		s_Data.ShaderMap["SMAAShader_edge"] = Shader::Create("$shader:smaa/smaa-edges.vert", "$shader:smaa/smaa-edges-color.frag");
 		s_Data.ShaderMap["SMAAShader_weight"] = Shader::Create("$shader:smaa/smaa-weights.vert", "$shader:smaa/smaa-weights.frag");
@@ -254,18 +253,19 @@ void longmarch::Renderer3D::Init()
 			it->second->SetInt("u_NormalTexture", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::NORMAL));
 			it->second->SetInt("u_MetallicTexture", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::METALLIC));
 			it->second->SetInt("u_RoughnessTexture", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::ROUGHNESS));
-			it->second->SetInt("u_AOTexture", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::AO));
+			it->second->SetInt("u_AOTexture", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::BACKEDAO));
 
 			it->second->SetInt("g_Depth", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::DEPTH));
 			it->second->SetInt("g_Normal_Velocity", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NORMAL_VELOCITY));
 			it->second->SetInt("g_Albedo_Emssive", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::ALBEDO_EMSSIVE));
-			it->second->SetInt("g_BackedAO_Metallic_Roughness", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::AO_METALLIC_ROUGHNESS));
+			it->second->SetInt("g_BackedAO_Metallic_Roughness", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::BAKEDAO_METALLIC_ROUGHNESS));
 			it->second->SetInt("u_DynamicAO_IndirectLight", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM));
 			it->second->SetInt("u_DynamicSSR", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM) + 1);
 
 			it->second->SetInt("u_FragTexture", s_Data.fragTexture_0_slot);
 			it->second->SetInt("u_FragTexture2", s_Data.fragTexture_1_slot);
 			it->second->SetInt("u_FragTexture3", s_Data.fragTexture_2_slot);
+			it->second->SetInt("u_FragTexture4", s_Data.fragTexture_3_slot);
 
 			it->second->SetInt("u_IrradianceMap", s_Data.fragTexture_0_slot);
 			it->second->SetInt("u_RadianceMap", s_Data.fragTexture_1_slot);
@@ -295,7 +295,7 @@ void longmarch::Renderer3D::Init()
 		*
 		**************************************************************/
 		{
-			for (uint32_t i(3); i < 51; i += 2)
+			for (uint32_t i(3); i <= 51u; i += 2u)
 			{
 				{
 					auto [offsets, weights] = DistributionMath::Gaussian1DHalf(i, 0, i * 0.5f);
@@ -334,9 +334,6 @@ void longmarch::Renderer3D::Init()
 
 			// Frame buffer
 			s_Data.gpuBuffer.CurrentFrameBuffer = nullptr;
-			s_Data.gpuBuffer.PrevFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
-			s_Data.gpuBuffer.PrevWindowFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
-			s_Data.gpuBuffer.CurrentWindowFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
 			s_Data.gpuBuffer.PrevFinalFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
 			s_Data.gpuBuffer.FinalFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
 			s_Data.gpuBuffer.FrameBuffer_1 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
@@ -705,8 +702,15 @@ void longmarch::Renderer3D::_ON_SET_BLOOM_VALUE(EventQueue<EngineGraphicsEventTy
 {
 	auto event = std::static_pointer_cast<SetBloomEvent>(e);
 	s_Data.BloomSettings.enable = event->m_enable;
+	s_Data.BloomSettings.bloom_gaussian_kernal = event->m_gaussKernel;
+	if (s_Data.BloomSettings.bloom_gaussian_kernal % 2u == 0)
+	{
+		++s_Data.BloomSettings.bloom_gaussian_kernal;
+	}
+	s_Data.BloomSettings.bloom_gaussian_kernal = (glm::clamp)(s_Data.BloomSettings.bloom_gaussian_kernal, 3u, 51u);
 	s_Data.BloomSettings.bloom_threshold = event->m_threshold;
 	s_Data.BloomSettings.bloom_blend_strength = event->m_strength;
+	s_Data.BloomSettings.bloom_sample_resolution_downScale = event->m_sampleResolutionDownScale;
 }
 
 /**************************************************************
@@ -738,21 +742,6 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 	// Prepare buffers
 	{
 		// Resize FrameBuffer if necessary
-		if (s_Data.gpuBuffer.CurrentWindowFrameBuffer->GetBufferSize() != s_Data.window_size)
-		{
-			s_Data.window_size_changed_this_frame = true;
-			s_Data.gpuBuffer.CurrentWindowFrameBuffer = FrameBuffer::Create(s_Data.window_size.x, s_Data.window_size.y, FrameBuffer::BUFFER_FORMAT::Float16);
-		}
-		if (s_Data.gpuBuffer.PrevWindowFrameBuffer->GetBufferSize() != s_Data.window_size)
-		{
-			s_Data.window_size_changed_this_frame = true;
-			s_Data.gpuBuffer.PrevWindowFrameBuffer = FrameBuffer::Create(s_Data.window_size.x, s_Data.window_size.y, FrameBuffer::BUFFER_FORMAT::Float16);
-		}
-		if (s_Data.gpuBuffer.PrevFrameBuffer->GetBufferSize() != s_Data.resolution)
-		{
-			s_Data.window_size_changed_this_frame = true;
-			s_Data.gpuBuffer.PrevFrameBuffer = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
-		}
 		if (s_Data.gpuBuffer.PrevFinalFrameBuffer->GetBufferSize() != s_Data.resolution)
 		{
 			s_Data.window_size_changed_this_frame = true;
@@ -783,18 +772,6 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 			s_Data.window_size_changed_this_frame = true;
 			s_Data.gpuBuffer.FrameBuffer_4 = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
 		}
-		if (auto downscale = s_Data.AOSettings.ao_sample_resolution_downScale; 
-			s_Data.gpuBuffer.CurrentDynamicAOBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the AO with potentially downscaled resolution
-		{
-			s_Data.window_size_changed_this_frame = true;
-			s_Data.gpuBuffer.CurrentDynamicAOBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::Float16);
-		}		
-		if (auto downscale = s_Data.SSRSettings.ssr_sample_resolution_downScale;
-			s_Data.gpuBuffer.CurrentDynamicSSRBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the SSR with potentially downscaled resolution
-		{
-			s_Data.window_size_changed_this_frame = true;
-			s_Data.gpuBuffer.CurrentDynamicSSRBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::Float16);
-		}
 		if (auto downscale = s_Data.BloomSettings.bloom_sample_resolution_downScale;
 			s_Data.gpuBuffer.CurrentDynamicBloomBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the Bloom with potentially downscaled resolution
 		{
@@ -806,19 +783,8 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 		RenderCommand::DepthTest(true, true);
 		RenderCommand::SetClearColor(Vec4f(0,0,0,0));
 		
-		s_Data.gpuBuffer.CurrentWindowFrameBuffer->Bind();
-		RenderCommand::Clear(); 
-
-		// CRITICAL : Don't clear prev frame buffer as we need it in the current frame
-		/*s_Data.gpuBuffer.PrevWindowFrameBuffer->Bind();
-		RenderCommand::Clear();*/
-
 		// CRITICAL : Don't clear prev frame buffer as we need it in the current frame
 		/*s_Data.gpuBuffer.PrevFinalFrameBuffer->Bind();
-		RenderCommand::Clear();*/
-
-		// CRITICAL : Don't clear prev frame buffer as we need it in the current frame
-		/*s_Data.gpuBuffer.PrevFrameBuffer->Bind();
 		RenderCommand::Clear();*/
 
 		s_Data.gpuBuffer.FinalFrameBuffer->Bind();
@@ -834,12 +800,6 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 		RenderCommand::Clear();
 
 		s_Data.gpuBuffer.FrameBuffer_4->Bind();
-		RenderCommand::Clear();
-
-		s_Data.gpuBuffer.CurrentDynamicAOBuffer->Bind();
-		RenderCommand::Clear();
-
-		s_Data.gpuBuffer.CurrentDynamicSSRBuffer->Bind();
 		RenderCommand::Clear();
 
 		s_Data.gpuBuffer.CurrentDynamicBloomBuffer->Bind();
@@ -2226,7 +2186,6 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 		Renderer3D::_BeginClusterLightingPass(s_Data.gpuBuffer.CurrentFrameBuffer);
 		break;
 	case RENDER_PIPE::DEFERRED:
-		Renderer3D::_BeginDynamicAOPass(s_Data.gpuBuffer.CurrentGBuffer);
 		Renderer3D::_BeginDeferredLightingPass(
 			camera,
 			f_render,
@@ -2244,53 +2203,55 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 
 void longmarch::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<GBuffer>& gbuffer_in)
 {
-	RenderCommand::PolyModeFill();			// Draw full model
-	RenderCommand::Blend(false);			// Disable blend
-	RenderCommand::DepthTest(false, false);	// Disable depth test
-	RenderCommand::CullFace(false, false);
-
-	auto& AOBuffer = s_Data.gpuBuffer.CurrentDynamicAOBuffer;
-	Vec2u traget_resoluation = AOBuffer->GetBufferSize();
-	RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-
-	static const auto& ao_shader = s_Data.ShaderMap["DynamicAOShader"];
-	s_Data.CurrentShader = ao_shader;
-	s_Data.CurrentShader->Bind();
-	s_Data.CurrentShader->SetInt("enabled", s_Data.AOSettings.enable);
-	s_Data.CurrentShader->SetInt("enabled_indirect_bounce", s_Data.AOSettings.enable_indirect_light_bounce);
-	s_Data.CurrentShader->SetInt("num_sample", s_Data.AOSettings.ao_samples);
-	s_Data.CurrentShader->SetFloat("sample_radius", s_Data.AOSettings.ao_sample_radius);
-	s_Data.CurrentShader->SetFloat("scale_s", s_Data.AOSettings.ao_scale);
-	s_Data.CurrentShader->SetFloat("power_k", s_Data.AOSettings.ao_power);
-	AOBuffer->Bind();
-	// Bind Prev frame buffer
-	s_Data.gpuBuffer.PrevFrameBuffer->BindTexture(s_Data.fragTexture_1_slot);
-	// Bind g buffer content
-	s_Data.gpuBuffer.CurrentGBuffer->BindTextures(
-		{
-			GBuffer::GBUFFER_TEXTURE_TYPE::DEPTH,
-			GBuffer::GBUFFER_TEXTURE_TYPE::NORMAL_VELOCITY,
-		},
-		s_Data.fragTexture_empty_slot
-		);
-	// Render quad
-	Renderer3D::_RenderFullScreenQuad();
-
-	// Bilaterl blurring
-	static const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur_AO"];
-	Vec2u traget_resoluation2(traget_resoluation);
-	static auto AOBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::Float16);
-	if (AOBackBuffer->GetBufferSize() != traget_resoluation2)
+	if (auto downscale = s_Data.AOSettings.ao_sample_resolution_downScale;
+		s_Data.gpuBuffer.CurrentDynamicAOBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the AO with potentially downscaled resolution
 	{
-		AOBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::Float16);
+		s_Data.window_size_changed_this_frame = true;
+		s_Data.gpuBuffer.CurrentDynamicAOBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::Float16);
 	}
-	auto kernel_size = s_Data.AOSettings.ao_gaussian_kernal;
-	auto [length, offset, weight] = s_Data.gpuBuffer.GuassinKernelHalfBilinear[kernel_size];
+
+	RenderCommand::DepthTest(true, true);
+	RenderCommand::SetClearColor(Vec4f(0, 0, 0, 1));
+
+	s_Data.gpuBuffer.CurrentDynamicAOBuffer->Bind();
+	RenderCommand::Clear();
+
+	if (s_Data.AOSettings.enable)
 	{
-		s_Data.CurrentShader = guassian_shader;
+		RenderCommand::PolyModeFill();			// Draw full model
+		RenderCommand::Blend(false);			// Disable blend
+		RenderCommand::DepthTest(false, false);	// Disable depth test
+		RenderCommand::CullFace(false, false);
+
+		auto& AOBuffer = s_Data.gpuBuffer.CurrentDynamicAOBuffer;
+		Vec2u traget_resoluation = AOBuffer->GetBufferSize();
+		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+
+		static const auto& ao_shader = s_Data.ShaderMap["DynamicAOShader"];
+		s_Data.CurrentShader = ao_shader;
 		s_Data.CurrentShader->Bind();
 		s_Data.CurrentShader->SetInt("enabled", s_Data.AOSettings.enable);
-		s_Data.CurrentShader->SetInt("u_length", length);
+		s_Data.CurrentShader->SetInt("enabled_indirect_bounce", s_Data.AOSettings.enable_indirect_light_bounce);
+		s_Data.CurrentShader->SetInt("num_sample", s_Data.AOSettings.ao_samples);
+		s_Data.CurrentShader->SetFloat("sample_radius", s_Data.AOSettings.ao_sample_radius);
+		s_Data.CurrentShader->SetFloat("scale_s", s_Data.AOSettings.ao_scale);
+		s_Data.CurrentShader->SetFloat("power_k", s_Data.AOSettings.ao_power);
+		AOBuffer->Bind();
+		// Bind Prev frame buffer
+		s_Data.gpuBuffer.CurrentFrameBuffer->BindTexture(s_Data.fragTexture_3_slot);
+		if (s_Data.CurrentEnvMapName != "")
+		{
+			const auto& irradiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["irradiance"];
+			const auto& radiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["radiance"];
+			s_Data.CurrentShader->SetFloat("u_max_radiance_map_lod", radiance->GetMaxMipMapLevel());
+			// Bind irradiance map
+			irradiance->BindTexture(s_Data.fragTexture_0_slot);
+			// Bind radiance map
+			radiance->BindTexture(s_Data.fragTexture_1_slot);
+			// Bind brdf LUT
+			s_Data.gpuBuffer.BrdfIntegrateLUT->BindTexture(s_Data.fragTexture_2_slot);
+		}
+		// Bind g buffer content
 		s_Data.gpuBuffer.CurrentGBuffer->BindTextures(
 			{
 				GBuffer::GBUFFER_TEXTURE_TYPE::DEPTH,
@@ -2298,99 +2259,141 @@ void longmarch::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<GBuffer>& 
 			},
 			s_Data.fragTexture_empty_slot
 			);
-		weight->Bind(1);
-		offset->Bind(2);
+		// Render quad
+		Renderer3D::_RenderFullScreenQuad();
+
+		// Bilaterl blurring
+		static const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur_AO"];
+		Vec2u traget_resoluation2(traget_resoluation);
+		static auto AOBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::Float16);
+		if (AOBackBuffer->GetBufferSize() != traget_resoluation2)
 		{
-			RenderCommand::SetViewport(0, 0, traget_resoluation2.x, traget_resoluation2.y);
-			// Bind shadow buffer
-			AOBackBuffer->Bind();
-			s_Data.CurrentShader->SetInt("u_Horizontal", 1);
-			AOBuffer->BindTexture(s_Data.fragTexture_0_slot);
-			_RenderFullScreenQuad();
+			AOBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::Float16);
 		}
+		auto kernel_size = s_Data.AOSettings.ao_gaussian_kernal;
+		auto [length, offset, weight] = s_Data.gpuBuffer.GuassinKernelHalfBilinear[kernel_size];
 		{
-			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-			// Bind shadow buffer
-			AOBuffer->Bind();
-			s_Data.CurrentShader->SetInt("u_Horizontal", 0);
-			AOBackBuffer->BindTexture(s_Data.fragTexture_0_slot);
-			_RenderFullScreenQuad();
+			s_Data.CurrentShader = guassian_shader;
+			s_Data.CurrentShader->Bind();
+			s_Data.CurrentShader->SetInt("enabled", s_Data.AOSettings.enable);
+			s_Data.CurrentShader->SetInt("u_length", length);
+			s_Data.gpuBuffer.CurrentGBuffer->BindTextures(
+				{
+					GBuffer::GBUFFER_TEXTURE_TYPE::DEPTH,
+					GBuffer::GBUFFER_TEXTURE_TYPE::NORMAL_VELOCITY,
+				},
+				s_Data.fragTexture_empty_slot
+				);
+			weight->Bind(1);
+			offset->Bind(2);
+			{
+				RenderCommand::SetViewport(0, 0, traget_resoluation2.x, traget_resoluation2.y);
+				// Bind shadow buffer
+				AOBackBuffer->Bind();
+				s_Data.CurrentShader->SetInt("u_Horizontal", 1);
+				AOBuffer->BindTexture(s_Data.fragTexture_0_slot);
+				_RenderFullScreenQuad();
+			}
+			{
+				RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+				// Bind shadow buffer
+				AOBuffer->Bind();
+				s_Data.CurrentShader->SetInt("u_Horizontal", 0);
+				AOBackBuffer->BindTexture(s_Data.fragTexture_0_slot);
+				_RenderFullScreenQuad();
+			}
 		}
 	}
 }
 
 void longmarch::Renderer3D::_BeginDynamicSSRPass(const std::shared_ptr<GBuffer>& gbuffer_in)
 {
-	RenderCommand::PolyModeFill();			// Draw full model
-	RenderCommand::Blend(false);			// Disable blend
-	RenderCommand::DepthTest(false, false);	// Disable depth test
-	RenderCommand::CullFace(false, false);
-
-	auto& SSRBuffer = s_Data.gpuBuffer.CurrentDynamicSSRBuffer;
-	Vec2u traget_resoluation = SSRBuffer->GetBufferSize();
-	RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-
-	static const auto& ssr_shader = s_Data.ShaderMap["DynamicSSRShader"];
-	s_Data.CurrentShader = ssr_shader;
-	s_Data.CurrentShader->Bind();
-	s_Data.CurrentShader->SetInt("enabled", s_Data.SSRSettings.enable);
-	SSRBuffer->Bind();
-	// Bind Prev frame buffer
-	s_Data.gpuBuffer.CurrentFrameBuffer->BindTexture(s_Data.fragTexture_0_slot);	
-	// Bind Skybox
-	if (s_Data.CurrentEnvMapName != "")
+	if (auto downscale = s_Data.SSRSettings.ssr_sample_resolution_downScale;
+		s_Data.gpuBuffer.CurrentDynamicSSRBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the SSR with potentially downscaled resolution
 	{
-		const auto& radiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["radiance"];
-		s_Data.CurrentShader->SetFloat("u_max_radiance_map_lod", radiance->GetMaxMipMapLevel());
-		// Bind radiance map
-		radiance->BindTexture(s_Data.fragTexture_1_slot);
+		s_Data.window_size_changed_this_frame = true;
+		s_Data.gpuBuffer.CurrentDynamicSSRBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::Float16);
 	}
-	// Bind brdf LUT
-	s_Data.gpuBuffer.BrdfIntegrateLUT->BindTexture(s_Data.fragTexture_2_slot);
-	// Bind g buffer content
-	s_Data.gpuBuffer.CurrentGBuffer->BindTextures(
-		{
-			GBuffer::GBUFFER_TEXTURE_TYPE::DEPTH,
-			GBuffer::GBUFFER_TEXTURE_TYPE::NORMAL_VELOCITY,
-			GBuffer::GBUFFER_TEXTURE_TYPE::ALBEDO_EMSSIVE,
-			GBuffer::GBUFFER_TEXTURE_TYPE::AO_METALLIC_ROUGHNESS,
-		},
-		s_Data.fragTexture_empty_slot
-		);
-	// Render quad
-	Renderer3D::_RenderFullScreenQuad();
 
-	// Bilaterl blurring
-	static const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur"];
-	Vec2u traget_resoluation2(traget_resoluation);
-	static auto SSRBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::Float16);
-	if (SSRBackBuffer->GetBufferSize() != traget_resoluation2)
+	RenderCommand::DepthTest(true, true);
+	RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0));
+
+	s_Data.gpuBuffer.CurrentDynamicSSRBuffer->Bind();
+	RenderCommand::Clear();
+
+	if (s_Data.SSRSettings.enable)
 	{
-		SSRBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::Float16);
-	}
-	auto kernel_size = s_Data.SSRSettings.ssr_gaussian_kernal;
-	auto [length, offset, weight] = s_Data.gpuBuffer.GuassinKernelHalfBilinear[kernel_size];
-	{
-		s_Data.CurrentShader = guassian_shader;
+		RenderCommand::PolyModeFill();			// Draw full model
+		RenderCommand::Blend(false);			// Disable blend
+		RenderCommand::DepthTest(false, false);	// Disable depth test
+		RenderCommand::CullFace(false, false);
+
+		auto& SSRBuffer = s_Data.gpuBuffer.CurrentDynamicSSRBuffer;
+		Vec2u traget_resoluation = SSRBuffer->GetBufferSize();
+		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+
+		static const auto& ssr_shader = s_Data.ShaderMap["DynamicSSRShader"];
+		s_Data.CurrentShader = ssr_shader;
 		s_Data.CurrentShader->Bind();
-		s_Data.CurrentShader->SetInt("u_length", length);
-		weight->Bind(1);
-		offset->Bind(2);
+		s_Data.CurrentShader->SetInt("enabled", s_Data.SSRSettings.enable);
+		SSRBuffer->Bind();
+		// Bind Prev frame buffer
+		s_Data.gpuBuffer.CurrentFrameBuffer->BindTexture(s_Data.fragTexture_0_slot);
+		// Bind Skybox
+		if (s_Data.CurrentEnvMapName != "")
 		{
-			RenderCommand::SetViewport(0, 0, traget_resoluation2.x, traget_resoluation2.y);
-			// Bind shadow buffer
-			SSRBackBuffer->Bind();
-			s_Data.CurrentShader->SetInt("u_Horizontal", 1);
-			SSRBuffer->BindTexture(s_Data.fragTexture_0_slot);
-			_RenderFullScreenQuad();
+			const auto& radiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["radiance"];
+			s_Data.CurrentShader->SetFloat("u_max_radiance_map_lod", radiance->GetMaxMipMapLevel());
+			// Bind radiance map
+			radiance->BindTexture(s_Data.fragTexture_1_slot);
+			// Bind brdf LUT
+			s_Data.gpuBuffer.BrdfIntegrateLUT->BindTexture(s_Data.fragTexture_2_slot);
 		}
+		// Bind g buffer content
+		s_Data.gpuBuffer.CurrentGBuffer->BindTextures(
+			{
+				GBuffer::GBUFFER_TEXTURE_TYPE::DEPTH,
+				GBuffer::GBUFFER_TEXTURE_TYPE::NORMAL_VELOCITY,
+				GBuffer::GBUFFER_TEXTURE_TYPE::ALBEDO_EMSSIVE,
+				GBuffer::GBUFFER_TEXTURE_TYPE::BAKEDAO_METALLIC_ROUGHNESS,
+			},
+			s_Data.fragTexture_empty_slot
+			);
+		// Render quad
+		Renderer3D::_RenderFullScreenQuad();
+
+		// Bilaterl blurring
+		static const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur"];
+		Vec2u traget_resoluation2(traget_resoluation);
+		static auto SSRBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::Float16);
+		if (SSRBackBuffer->GetBufferSize() != traget_resoluation2)
 		{
-			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-			// Bind shadow buffer
-			SSRBuffer->Bind();
-			s_Data.CurrentShader->SetInt("u_Horizontal", 0);
-			SSRBackBuffer->BindTexture(s_Data.fragTexture_0_slot);
-			_RenderFullScreenQuad();
+			SSRBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::Float16);
+		}
+		auto kernel_size = s_Data.SSRSettings.ssr_gaussian_kernal;
+		auto [length, offset, weight] = s_Data.gpuBuffer.GuassinKernelHalfBilinear[kernel_size];
+		{
+			s_Data.CurrentShader = guassian_shader;
+			s_Data.CurrentShader->Bind();
+			s_Data.CurrentShader->SetInt("u_length", length);
+			weight->Bind(1);
+			offset->Bind(2);
+			{
+				RenderCommand::SetViewport(0, 0, traget_resoluation2.x, traget_resoluation2.y);
+				// Bind shadow buffer
+				SSRBackBuffer->Bind();
+				s_Data.CurrentShader->SetInt("u_Horizontal", 1);
+				SSRBuffer->BindTexture(s_Data.fragTexture_0_slot);
+				_RenderFullScreenQuad();
+			}
+			{
+				RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+				// Bind shadow buffer
+				SSRBuffer->Bind();
+				s_Data.CurrentShader->SetInt("u_Horizontal", 0);
+				SSRBackBuffer->BindTexture(s_Data.fragTexture_0_slot);
+				_RenderFullScreenQuad();
+			}
 		}
 	}
 }
@@ -2455,14 +2458,11 @@ void longmarch::Renderer3D::_BeginDeferredLightingPass(
 					GBuffer::GBUFFER_TEXTURE_TYPE::DEPTH,
 					GBuffer::GBUFFER_TEXTURE_TYPE::NORMAL_VELOCITY,
 					GBuffer::GBUFFER_TEXTURE_TYPE::ALBEDO_EMSSIVE,
-					GBuffer::GBUFFER_TEXTURE_TYPE::AO_METALLIC_ROUGHNESS,
+					GBuffer::GBUFFER_TEXTURE_TYPE::BAKEDAO_METALLIC_ROUGHNESS,
 				},
 				s_Data.fragTexture_empty_slot // offsets to be after all frame buffers
 				);
-			// Bind AO buffer in some slot other than the gbuffer types
 			s_Data.gpuBuffer.CurrentDynamicAOBuffer->BindTexture(s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM));
-			// Bind AO buffer in some slot other than the gbuffer types
-			s_Data.gpuBuffer.CurrentDynamicSSRBuffer->BindTexture(s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM) + 1);
 			// Render quad
 			Renderer3D::_RenderFullScreenQuad();
 		}
@@ -2499,7 +2499,6 @@ void longmarch::Renderer3D::_BeginForwardLightingPass(const std::shared_ptr<Fram
 			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 		}
 	}
-
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
@@ -2592,10 +2591,12 @@ void longmarch::Renderer3D::_RenderBoundingBox(const std::shared_ptr<FrameBuffer
 		s_Data.gpuBuffer.BBoxInstBO->UpdateBufferData(&(s_Data.cpuBuffer.InstancedDraw_BVModelTr[0][0][0]), num_instance * sizeof(Mat4));
 		s_Data.gpuBuffer.BBoxVAO->Bind();
 		RenderCommand::DrawLineIndexedInstanced(s_Data.gpuBuffer.BBoxVAO, num_instance);
-
-		s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 	}
-	s_Data.cpuBuffer.InstancedDraw_BVModelTr.clear();
+	if (num_instance > 0)
+	{
+		s_Data.cpuBuffer.InstancedDraw_BVModelTr.clear();
+	}
+	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
 /**************************************************************
@@ -2604,30 +2605,18 @@ void longmarch::Renderer3D::_RenderBoundingBox(const std::shared_ptr<FrameBuffer
 **************************************************************/
 void longmarch::Renderer3D::EndOpaqueLighting()
 {
+	if (s_Data.RENDER_PIPE == Renderer3D::RENDER_PIPE::DEFERRED)
 	{
-		// Perform SSR after rendering all opaques, ignore transparents and particles.
-		Renderer3D::_BeginDynamicSSRPass(s_Data.gpuBuffer.CurrentGBuffer);
-		// Render color to framebuffer 2 and transfer depth and stencil too
-		auto temp_framebuffer = s_Data.gpuBuffer.CurrentFrameBuffer;
-		Renderer3D::_BeginSSRPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_2);
-		RenderCommand::TransferDepthBit(
-			temp_framebuffer->GetRendererID(),
-			temp_framebuffer->GetBufferSize().x,
-			temp_framebuffer->GetBufferSize().y,
-
-			s_Data.gpuBuffer.CurrentFrameBuffer->GetRendererID(),
-			s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().x,
-			s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().y
-		);		
-		RenderCommand::TransferStencilBit(
-			temp_framebuffer->GetRendererID(),
-			temp_framebuffer->GetBufferSize().x,
-			temp_framebuffer->GetBufferSize().y,
-
-			s_Data.gpuBuffer.CurrentFrameBuffer->GetRendererID(),
-			s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().x,
-			s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().y
-		);
+		{
+			// Perform SSAO/SSDO after rendering all opaques, ignore transparents and particles.
+			Renderer3D::_BeginDynamicAOPass(s_Data.gpuBuffer.CurrentGBuffer);
+			Renderer3D::_BeginSSAOPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_2);
+		}
+		{
+			// Perform SSR after rendering all opaques, ignore transparents and particles.
+			Renderer3D::_BeginDynamicSSRPass(s_Data.gpuBuffer.CurrentGBuffer);
+			Renderer3D::_BeginSSRPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_1);
+		}
 	}
 	{
 		Renderer3D::_BeginSkyBoxPass(s_Data.gpuBuffer.CurrentFrameBuffer);
@@ -2734,11 +2723,11 @@ void longmarch::Renderer3D::BeginPostProcessing()
 			s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().x,
 			s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().y,
 
-			s_Data.gpuBuffer.PrevFrameBuffer->GetRendererID(),
-			s_Data.gpuBuffer.PrevFrameBuffer->GetBufferSize().x,
-			s_Data.gpuBuffer.PrevFrameBuffer->GetBufferSize().y
+			s_Data.gpuBuffer.PrevFinalFrameBuffer->GetRendererID(),
+			s_Data.gpuBuffer.PrevFinalFrameBuffer->GetBufferSize().x,
+			s_Data.gpuBuffer.PrevFinalFrameBuffer->GetBufferSize().y
 		);
-		s_Data.gpuBuffer.PrevFrameBuffer->GenerateMipmaps();
+		s_Data.gpuBuffer.PrevFinalFrameBuffer->GenerateMipmaps();
 	}
 
 	Renderer3D::_BeginToneMappingPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FinalFrameBuffer);
@@ -2749,23 +2738,117 @@ void longmarch::Renderer3D::BeginPostProcessing()
 	}
 }
 
-void longmarch::Renderer3D::_BeginTAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
+
+void longmarch::Renderer3D::_BeginSSRPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
-	if (framebuffer_out)
+	if (s_Data.SSRSettings.enable)
 	{
-		framebuffer_out->Bind();
-		Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
-		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+		RenderCommand::PolyModeFill();			// Draw full model
+		RenderCommand::DepthTest(false, false);	// Disable depth testing
+		RenderCommand::CullFace(false, false);	// Disable face culling
+		RenderCommand::Blend(false);
+
+		if (framebuffer_out)
+		{
+			framebuffer_out->Bind();
+			Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
+			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+		}
+		else
+		{
+			RenderCommand::BindDefaultFrameBuffer();
+			Vec2u traget_resoluation = s_Data.window_size;
+			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+		}
+
+		s_Data.CurrentShader = s_Data.ShaderMap["DynamicSSRColorShader"];
+		s_Data.CurrentShader->Bind();
+		framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
+		s_Data.gpuBuffer.CurrentDynamicSSRBuffer->BindTexture(s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM) + 1);
+		// Render quad
+		Renderer3D::_RenderFullScreenQuad();
 	}
 	else
 	{
-		RenderCommand::BindDefaultFrameBuffer();
-		Vec2u traget_resoluation = s_Data.window_size;
-		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-	}
+		RenderCommand::TransferColorBit(
+			framebuffer_in->GetRendererID(),
+			framebuffer_in->GetBufferSize().x,
+			framebuffer_in->GetBufferSize().y,
 
+			framebuffer_out->GetRendererID(),
+			framebuffer_out->GetBufferSize().x,
+			framebuffer_out->GetBufferSize().y
+		);
+	}
+	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
+}
+
+void longmarch::Renderer3D::_BeginSSAOPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
+{
+	if (s_Data.SSRSettings.enable)
+	{
+		RenderCommand::PolyModeFill();			// Draw full model
+		RenderCommand::DepthTest(false, false);	// Disable depth testing
+		RenderCommand::CullFace(false, false);	// Disable face culling
+		RenderCommand::Blend(false);
+
+		if (framebuffer_out)
+		{
+			framebuffer_out->Bind();
+			Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
+			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+		}
+		else
+		{
+			RenderCommand::BindDefaultFrameBuffer();
+			Vec2u traget_resoluation = s_Data.window_size;
+			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+		}
+
+		s_Data.CurrentShader = s_Data.ShaderMap["DynamicAOColorShader"];
+		s_Data.CurrentShader->Bind();
+		framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
+		s_Data.gpuBuffer.CurrentDynamicAOBuffer->BindTexture(s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM));
+		// Render quad
+		Renderer3D::_RenderFullScreenQuad();
+	}
+	else
+	{
+		RenderCommand::TransferColorBit(
+			framebuffer_in->GetRendererID(),
+			framebuffer_in->GetBufferSize().x,
+			framebuffer_in->GetBufferSize().y,
+
+			framebuffer_out->GetRendererID(),
+			framebuffer_out->GetBufferSize().x,
+			framebuffer_out->GetBufferSize().y
+		);
+	}
+	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
+}
+
+void longmarch::Renderer3D::_BeginTAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
+{
 	if (s_Data.enable_taa)
 	{
+		RenderCommand::PolyModeFill();			// Draw full model
+		RenderCommand::DepthTest(false, false);	// Disable depth testing
+		RenderCommand::CullFace(false, false);	// Disable face culling
+		RenderCommand::Blend(false);
+
+		if (framebuffer_out)
+		{
+			framebuffer_out->Bind();
+			Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
+			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+		}
+		else
+		{
+			RenderCommand::BindDefaultFrameBuffer();
+			Vec2u traget_resoluation = s_Data.window_size;
+			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+		}
+
 		s_Data.CurrentShader = s_Data.ShaderMap["TAAShader"];
 		s_Data.CurrentShader->Bind();
 
@@ -2774,7 +2857,7 @@ void longmarch::Renderer3D::_BeginTAAPass(const std::shared_ptr<FrameBuffer>& fr
 		s_Data.CurrentShader->SetFloat2("u_ScreenSize", framebuffer_in->GetBufferSize());
 		s_Data.CurrentShader->SetFloat2("u_VelocityScreenSize", s_Data.gpuBuffer.CurrentGBuffer->GetBufferSize());
 		framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
-		s_Data.gpuBuffer.PrevFrameBuffer->BindTexture(s_Data.fragTexture_1_slot);
+		s_Data.gpuBuffer.PrevFinalFrameBuffer->BindTexture(s_Data.fragTexture_1_slot);
 		s_Data.gpuBuffer.CurrentGBuffer->BindTextures(
 			{
 				GBuffer::GBUFFER_TEXTURE_TYPE::DEPTH,
@@ -2787,32 +2870,41 @@ void longmarch::Renderer3D::_BeginTAAPass(const std::shared_ptr<FrameBuffer>& fr
 	}
 	else
 	{
-		s_Data.CurrentShader = s_Data.ShaderMap["ColorCopyShader"];
-		s_Data.CurrentShader->Bind();
-		framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
-		// Render quad
-		Renderer3D::_RenderFullScreenQuad();
-	}
+		RenderCommand::TransferColorBit(
+			framebuffer_in->GetRendererID(),
+			framebuffer_in->GetBufferSize().x,
+			framebuffer_in->GetBufferSize().y,
 
+			framebuffer_out->GetRendererID(),
+			framebuffer_out->GetBufferSize().x,
+			framebuffer_out->GetBufferSize().y
+		);
+	}
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
 void longmarch::Renderer3D::_BeginFXAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
-	if (framebuffer_out)
-	{
-		framebuffer_out->Bind();
-		Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
-		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-	}
-	else
-	{
-		RenderCommand::BindDefaultFrameBuffer();
-		Vec2u traget_resoluation = s_Data.window_size;
-		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-	}
 	if (s_Data.enable_fxaa)
 	{
+		RenderCommand::PolyModeFill();			// Draw full model
+		RenderCommand::DepthTest(false, false);	// Disable depth testing
+		RenderCommand::CullFace(false, false);	// Disable face culling
+		RenderCommand::Blend(false);
+
+		if (framebuffer_out)
+		{
+			framebuffer_out->Bind();
+			Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
+			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+		}
+		else
+		{
+			RenderCommand::BindDefaultFrameBuffer();
+			Vec2u traget_resoluation = s_Data.window_size;
+			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+		}
+
 		s_Data.CurrentShader = s_Data.ShaderMap["FXAAShader"];
 		s_Data.CurrentShader->Bind();
 
@@ -2825,13 +2917,16 @@ void longmarch::Renderer3D::_BeginFXAAPass(const std::shared_ptr<FrameBuffer>& f
 	}
 	else
 	{
-		s_Data.CurrentShader = s_Data.ShaderMap["ColorCopyShader"];
-		s_Data.CurrentShader->Bind();
-		framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
-		// Render quad
-		Renderer3D::_RenderFullScreenQuad();
-	}
+		RenderCommand::TransferColorBit(
+			framebuffer_in->GetRendererID(),
+			framebuffer_in->GetBufferSize().x,
+			framebuffer_in->GetBufferSize().y,
 
+			framebuffer_out->GetRendererID(),
+			framebuffer_out->GetBufferSize().x,
+			framebuffer_out->GetBufferSize().y
+		);
+	}
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
@@ -2839,6 +2934,11 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 {
 	if (s_Data.enable_smaa)
 	{
+		RenderCommand::PolyModeFill();			// Draw full model
+		RenderCommand::DepthTest(false, false);	// Disable depth testing
+		RenderCommand::CullFace(false, false);	// Disable face culling
+		RenderCommand::Blend(false);
+
 		// Edge detection
 		{
 			framebuffer_edge->Bind();
@@ -2899,6 +2999,28 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 	}
 	else
 	{
+		RenderCommand::TransferColorBit(
+			framebuffer_in->GetRendererID(),
+			framebuffer_in->GetBufferSize().x,
+			framebuffer_in->GetBufferSize().y,
+
+			framebuffer_out->GetRendererID(),
+			framebuffer_out->GetBufferSize().x,
+			framebuffer_out->GetBufferSize().y
+		);
+	}
+	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
+}
+
+void longmarch::Renderer3D::_BeginMotionBlurPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
+{
+	if (s_Data.enable_motionblur)
+	{
+		RenderCommand::PolyModeFill();			// Draw full model
+		RenderCommand::DepthTest(false, false);	// Disable depth testing
+		RenderCommand::CullFace(false, false);	// Disable face culling
+		RenderCommand::Blend(false);
+
 		if (framebuffer_out)
 		{
 			framebuffer_out->Bind();
@@ -2911,33 +3033,7 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 			Vec2u traget_resoluation = s_Data.window_size;
 			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 		}
-		{
-			s_Data.CurrentShader = s_Data.ShaderMap["ColorCopyShader"];
-			s_Data.CurrentShader->Bind();
-			framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
-			// Render quad
-			Renderer3D::_RenderFullScreenQuad();
-		}
-	}
-	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
-}
 
-void longmarch::Renderer3D::_BeginMotionBlurPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
-{
-	if (framebuffer_out)
-	{
-		framebuffer_out->Bind();
-		Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
-		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-	}
-	else
-	{
-		RenderCommand::BindDefaultFrameBuffer();
-		Vec2u traget_resoluation = s_Data.window_size;
-		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-	}
-	if (s_Data.enable_motionblur)
-	{
 		s_Data.CurrentShader = s_Data.ShaderMap["MotionBlur"];
 		s_Data.CurrentShader->Bind();
 		s_Data.CurrentShader->SetInt("enabled", s_Data.enable_motionblur);
@@ -2958,54 +3054,16 @@ void longmarch::Renderer3D::_BeginMotionBlurPass(const std::shared_ptr<FrameBuff
 	}
 	else
 	{
-		s_Data.CurrentShader = s_Data.ShaderMap["ColorCopyShader"];
-		s_Data.CurrentShader->Bind();
-		framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
-		// Render quad
-		Renderer3D::_RenderFullScreenQuad();
-	}
+		RenderCommand::TransferColorBit(
+			framebuffer_in->GetRendererID(),
+			framebuffer_in->GetBufferSize().x,
+			framebuffer_in->GetBufferSize().y,
 
-	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
-}
-
-void longmarch::Renderer3D::_BeginSSRPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
-{
-	RenderCommand::PolyModeFill();			// Draw full model
-	RenderCommand::DepthTest(false, false);	// Disable depth testing
-	RenderCommand::CullFace(false, false);	// Disable face culling
-	RenderCommand::Blend(false);
-
-	if (framebuffer_out)
-	{
-		framebuffer_out->Bind();
-		Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
-		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+			framebuffer_out->GetRendererID(),
+			framebuffer_out->GetBufferSize().x,
+			framebuffer_out->GetBufferSize().y
+		);
 	}
-	else
-	{
-		RenderCommand::BindDefaultFrameBuffer();
-		Vec2u traget_resoluation = s_Data.window_size;
-		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-	}
-
-	if (s_Data.SSRSettings.enable)
-	{
-		s_Data.CurrentShader = s_Data.ShaderMap["DynamicSSRColorShader"];
-		s_Data.CurrentShader->Bind();
-		framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
-		s_Data.gpuBuffer.CurrentDynamicSSRBuffer->BindTexture(s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM) + 1);
-		// Render quad
-		Renderer3D::_RenderFullScreenQuad();
-	}
-	else
-	{
-		s_Data.CurrentShader = s_Data.ShaderMap["ColorCopyShader"];
-		s_Data.CurrentShader->Bind();
-		framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
-		// Render quad
-		Renderer3D::_RenderFullScreenQuad();
-	}
-
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
@@ -3013,6 +3071,11 @@ void longmarch::Renderer3D::_BeginBloomPass(const std::shared_ptr<FrameBuffer>& 
 {
 	if (s_Data.BloomSettings.enable)
 	{
+		RenderCommand::PolyModeFill();			// Draw full model
+		RenderCommand::DepthTest(false, false);	// Disable depth testing
+		RenderCommand::CullFace(false, false);	// Disable face culling
+		RenderCommand::Blend(false);
+
 		// Extract brightness map
 		auto& BrightnessBuffer = s_Data.gpuBuffer.CurrentDynamicBloomBuffer;
 		Vec2u traget_resoluation = BrightnessBuffer->GetBufferSize();
@@ -3093,23 +3156,15 @@ void longmarch::Renderer3D::_BeginBloomPass(const std::shared_ptr<FrameBuffer>& 
 	}
 	else
 	{
-		if (framebuffer_out)
-		{
-			framebuffer_out->Bind();
-			Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
-			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-		}
-		else
-		{
-			RenderCommand::BindDefaultFrameBuffer();
-			Vec2u traget_resoluation = s_Data.window_size;
-			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-		}
-		s_Data.CurrentShader = s_Data.ShaderMap["ColorCopyShader"];
-		s_Data.CurrentShader->Bind();
-		framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
-		// Render quad
-		Renderer3D::_RenderFullScreenQuad();
+		RenderCommand::TransferColorBit(
+			framebuffer_in->GetRendererID(),
+			framebuffer_in->GetBufferSize().x,
+			framebuffer_in->GetBufferSize().y,
+
+			framebuffer_out->GetRendererID(),
+			framebuffer_out->GetBufferSize().x,
+			framebuffer_out->GetBufferSize().y
+		);
 	}
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
@@ -3169,27 +3224,9 @@ void longmarch::Renderer3D::EndRendering()
 		s_Data.gpuBuffer.FinalFrameBuffer->GetBufferSize().x,
 		s_Data.gpuBuffer.FinalFrameBuffer->GetBufferSize().y,
 
-		s_Data.gpuBuffer.PrevFinalFrameBuffer->GetRendererID(),
-		s_Data.gpuBuffer.PrevFinalFrameBuffer->GetBufferSize().x,
-		s_Data.gpuBuffer.PrevFinalFrameBuffer->GetBufferSize().y
-	);
-	RenderCommand::TransferColorBit(
-		s_Data.gpuBuffer.FinalFrameBuffer->GetRendererID(),
-		s_Data.gpuBuffer.FinalFrameBuffer->GetBufferSize().x,
-		s_Data.gpuBuffer.FinalFrameBuffer->GetBufferSize().y,
-
 		default_framebuffer_rendererID,
 		s_Data.window_size.x,
 		s_Data.window_size.y
-	);
-	RenderCommand::TransferColorBit(
-		default_framebuffer_rendererID,
-		s_Data.window_size.x,
-		s_Data.window_size.y,
-
-		s_Data.gpuBuffer.PrevWindowFrameBuffer->GetRendererID(),
-		s_Data.gpuBuffer.PrevWindowFrameBuffer->GetBufferSize().x,
-		s_Data.gpuBuffer.PrevWindowFrameBuffer->GetBufferSize().y
 	);
 }
 
@@ -3356,7 +3393,7 @@ void longmarch::Renderer3D::Draw(Entity entity, const std::shared_ptr<MeshData>&
 				{
 					offset = texture_offset++;
 					textureIds.emplace_back(s_Data.fragTexture_empty_slot + offset);
-					textures_to_bind.emplace_back(s_Data.fragTexture_empty_slot + offset, Material::MAT_TEXTURE_TYPE::AO);
+					textures_to_bind.emplace_back(s_Data.fragTexture_empty_slot + offset, Material::MAT_TEXTURE_TYPE::BACKEDAO);
 				}
 				material_Buffer.Metallic_Roughness_IsAlbedoSRBG_AOTextureIndex.w = offset;
 			}
@@ -3377,7 +3414,7 @@ void longmarch::Renderer3D::Draw(Entity entity, const std::shared_ptr<MeshData>&
 				Mat->BindAllTexture({
 				{s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::ALBEDO),Material::MAT_TEXTURE_TYPE::ALBEDO},
 				{s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::NORMAL),Material::MAT_TEXTURE_TYPE::NORMAL},
-				{s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::AO),Material::MAT_TEXTURE_TYPE::AO},
+				{s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::BACKEDAO),Material::MAT_TEXTURE_TYPE::BACKEDAO},
 				{s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::METALLIC),Material::MAT_TEXTURE_TYPE::METALLIC},
 				{s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::ROUGHNESS),Material::MAT_TEXTURE_TYPE::ROUGHNESS},
 					});

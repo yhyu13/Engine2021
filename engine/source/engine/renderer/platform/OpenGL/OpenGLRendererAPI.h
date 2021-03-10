@@ -55,5 +55,8 @@ namespace longmarch {
 		virtual void CullFace(bool enabled, bool front) override;
 		virtual void Blend(bool enabled) override;
 		virtual void BlendFunc(longmarch::RendererAPI::BlendFuncEnum e) override;
+
+	private:
+		inline static PolyMode s_polyMode = PolyMode::NONE;
 	};
 }

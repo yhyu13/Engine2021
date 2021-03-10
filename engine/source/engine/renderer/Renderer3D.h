@@ -234,11 +234,8 @@ namespace longmarch
 			LongMarch_UnorderedMap<std::string, std::shared_ptr<Texture2D>> EnvMaps;
 			inline static LongMarch_Vector<Mat4> s_default_bone_transform{ Mat4(1.0f) };
 
-			std::shared_ptr<FrameBuffer> PrevWindowFrameBuffer;
-			std::shared_ptr<FrameBuffer> CurrentWindowFrameBuffer;
-			std::shared_ptr<FrameBuffer> PrevFinalFrameBuffer;
-			std::shared_ptr<FrameBuffer> FinalFrameBuffer;
-			std::shared_ptr<FrameBuffer> PrevFrameBuffer;
+			std::shared_ptr<FrameBuffer> PrevFinalFrameBuffer; // Previous frame's final frame buffer
+			std::shared_ptr<FrameBuffer> FinalFrameBuffer; // Frame buffer just before tone mapping
 			std::shared_ptr<FrameBuffer> CurrentFrameBuffer;
 			std::shared_ptr<FrameBuffer> FrameBuffer_1;
 			std::shared_ptr<FrameBuffer> FrameBuffer_2;
@@ -386,7 +383,8 @@ namespace longmarch
 			const uint32_t fragTexture_0_slot = { 0u };
 			const uint32_t fragTexture_1_slot = { 1u };
 			const uint32_t fragTexture_2_slot = { 2u };
-			const uint32_t fragTexture_empty_slot = { 3u }; //<! Slots before this slot are reserved for uniform texture bindings, you can bind custom textures (including gbuffer textures) after this slot
+			const uint32_t fragTexture_3_slot = { 3u };
+			const uint32_t fragTexture_empty_slot = { 4u }; //<! Slots before this slot are reserved for uniform texture bindings, you can bind custom textures (including gbuffer textures) after this slot
 
 			Vec2u window_size;
 			Vec2u resolution;
@@ -607,12 +605,14 @@ namespace longmarch
 		static void _BeginForwardLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginClusterLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _RenderBoundingBox(const std::shared_ptr<FrameBuffer>& framebuffer_out);
-		
+
+		static void _BeginSSRPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
+		static void _BeginSSAOPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
+
 		static void _BeginTAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginFXAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginSMAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_edge, const std::shared_ptr<FrameBuffer>& framebuffer_blend, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginMotionBlurPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
-		static void _BeginSSRPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginBloomPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_bright, const std::shared_ptr<FrameBuffer>& framebuffer_blend, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginToneMappingPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 

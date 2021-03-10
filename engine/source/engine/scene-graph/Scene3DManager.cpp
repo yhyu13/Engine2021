@@ -144,7 +144,7 @@ void longmarch::Scene3DManager::RecurseLoad(Scene3DNode& sceneData, const std::s
 					|| AI_SUCCESS == mtl->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &texPath))
 				{
 					auto filename = texPath.C_Str();
-					material->SetTexture(filename, sceneDir / filename, Material::MAT_TEXTURE_TYPE::AO);
+					material->SetTexture(filename, sceneDir / filename, Material::MAT_TEXTURE_TYPE::BACKEDAO);
 				}
 			}
 

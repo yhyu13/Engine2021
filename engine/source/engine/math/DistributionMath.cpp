@@ -3,9 +3,14 @@
 
 ArrayF32 longmarch::DistributionMath::Gaussian1D(int sampleNum, float mean, float std)
 {
+	if (sampleNum % 2)
+	{
+		// Must be odd number
+		++sampleNum;
+	}
 	float totalSum = 0;
 	ArrayF32 weightValueVec(sampleNum);
-	int half = (sampleNum / 2);
+	int half = (sampleNum) / 2;
 	float inv_std = 1.0f / std;
 	float inv_std_pi = inv_std / sqrtf(2 * PI);
 	for (int i = 0; i < sampleNum; ++i)
@@ -26,9 +31,13 @@ ArrayF32 longmarch::DistributionMath::Gaussian1D(int sampleNum, float mean, floa
 
 std::pair<ArrayF32, ArrayF32> longmarch::DistributionMath::Gaussian1DHalf(int sampleNum, float mean, float std)
 {
+	if (sampleNum % 2)
+	{
+		// Must be odd number
+		++sampleNum;
+	}
 	float totalSum = 0;
-	int half = (sampleNum / 2);
-	int size = half + 1;
+	int size = (sampleNum + 1) / 2;
 	ArrayF32 weightValueVec(size);
 	ArrayF32 offsets(size);
 	float inv_std = 1.0f / std;

@@ -649,14 +649,48 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			miniz-cpp
 		*/
 		{
+			std::string temp_name = "test_miniz-cpp.zip";
+			// Remove file if exists
+			std::remove(temp_name.c_str());
+
 			miniz_cpp::zip_file file;
 			file.writestr("file1.txt", "this is file 1!");
 			file.writestr("file2.txt", "this is file 2!");
 			file.writestr("file3.txt", "this is file 3!");
 			file.writestr("file4.txt", "this is file 4!");
 			file.writestr("file5.txt", "this is file 5!");
-			file.save("test_miniz-cpp.zip");
-			DEBUG_PRINT(Str("Test miniz-cpp : Write to %s", "./test_miniz-cpp.zip"));
+			file.save(temp_name);
+			DEBUG_PRINT(Str("Test miniz-cpp : Write to %s", temp_name.c_str()));
+			for (auto& name : file.namelist())
+			{
+				DEBUG_PRINT(Str("Test miniz-cpp : Write entry %s", name.c_str()));
+				DEBUG_PRINT(Str("Test miniz-cpp : Write content %s", file.read(name).c_str()));
+			}
+			{
+				std::stringstream ss;
+				file.printdir(ss);
+				auto str = ss.str();
+				DEBUG_PRINT("Test miniz-cpp : Write zip entries : ");
+				DEBUG_PRINT(str);
+			}
+
+			miniz_cpp::zip_file file2;
+			file2.load(temp_name);
+			DEBUG_PRINT(Str("Test miniz-cpp : Read from %s", temp_name.c_str()));
+			for (auto& name : file2.namelist())
+			{
+				DEBUG_PRINT(Str("Test miniz-cpp : Read entry %s", name.c_str()));
+				DEBUG_PRINT(Str("Test miniz-cpp : Read content %s", file.read(name).c_str()));
+			} 
+			{
+				std::stringstream ss;
+				file2.printdir(ss);
+				auto str = ss.str();
+				DEBUG_PRINT("Test miniz-cpp : Read zip entries : ");
+				DEBUG_PRINT(str);
+			}
+
+
 		}
 
 		/*

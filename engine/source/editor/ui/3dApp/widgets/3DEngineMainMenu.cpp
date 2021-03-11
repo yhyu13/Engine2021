@@ -421,7 +421,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
 						graphicEventQueue->Publish(e);
 					}
-					if (ImGui::SliderInt("Gauss Kernel", &valueAOBlurKernel, 3, 30, "%d"))
+					if (ImGui::SliderInt("Gauss Kernel", &valueAOBlurKernel, 3, 51, "%d"))
 					{
 						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
 						graphicEventQueue->Publish(e);
@@ -468,7 +468,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 						auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale);
 						graphicEventQueue->Publish(e);
 					}
-					if (ImGui::SliderInt("Gauss Kernel", &valueSSRBlurKernel, 3, 30, "%d"))
+					if (ImGui::SliderInt("Gauss Kernel", &valueSSRBlurKernel, 3, 51, "%d"))
 					{
 						auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale);
 						graphicEventQueue->Publish(e);
@@ -490,7 +490,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength, valueBloomBlurKernel, valueBloomSampleResDownScale);
 						graphicEventQueue->Publish(e);
 					}
-					if (ImGui::SliderInt("Gauss Kernel", &valueBloomBlurKernel, 3, 30, "%d"))
+					if (ImGui::SliderInt("Gauss Kernel", &valueBloomBlurKernel, 3, 51, "%d"))
 					{
 						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength, valueBloomBlurKernel, valueBloomSampleResDownScale);
 						graphicEventQueue->Publish(e);

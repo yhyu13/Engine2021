@@ -69,10 +69,10 @@
 			"Gaussian-kernel":30,
 			"Num-samples":40,
 			"Res-down-scale":2,
-			"Radius":2.5,
+			"Radius":1.0,
 			"Scale":1.4,
 			"Power":1.4,
-			"Indirect-bounce":false,
+			"Indirect-bounce":true,
 			"Indirect-bounce-strength":9.0
 		}
 		,
@@ -91,7 +91,7 @@
 							   /* positive value serves as the cutoff value of a step function in [0,1], the the lower this value, the greater the bloom coverage */
 			"Strength" : 1.0, /* Bloom strength range of 0 to 1 */
 			"Gaussian-kernel": 3,
-			"Res-down-scale": 1
+			"Res-down-scale": 2
 		}
 	},
 	"shader":

@@ -225,9 +225,9 @@ namespace longmarch
 			LongMarch_Vector<std::shared_ptr<ShadowBuffer>> PointLightShadowBuffer;
 			LongMarch_Vector<std::shared_ptr<ShadowBuffer>> SpotLightShadowBuffer;
 
-			// Gaussian kernel are samples from Gaussian distribution with mean = 0 and std = width / 2
+			// Gaussian kernel are samples from Gaussian distribution with mean = 0 and std = width / 6 such that the whole kernel covers -/+3sigma 
 			LongMarch_UnorderedMap<uint32_t, std::tuple<int, std::shared_ptr<ShaderStorageBuffer>, std::shared_ptr<ShaderStorageBuffer>>> GuassinKernelHalf;
-			// Gaussian kernel are samples from Gaussian distribution with mean = 0 and std = width / 2 (This version should only apply to 2D bilinear filtered texture/textureArray (cubemap would not work))
+			// Gaussian kernel are samples from Gaussian distribution with mean = 0 and std = width / 6 such that the whole kernel covers -/+3sigma  (This version should only apply to 2D bilinear filtered texture/textureArray (cubemap would not work))
 			LongMarch_UnorderedMap<uint32_t, std::tuple<int, std::shared_ptr<ShaderStorageBuffer>, std::shared_ptr<ShaderStorageBuffer>>> GuassinKernelHalfBilinear;
 
 			LongMarch_UnorderedMap<std::string, LongMarch_UnorderedMap<std::string, std::shared_ptr<SkyBoxBuffer>>> EnvCubeMaps;

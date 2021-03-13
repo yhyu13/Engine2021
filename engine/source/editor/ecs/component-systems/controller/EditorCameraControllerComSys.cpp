@@ -689,8 +689,6 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 				DEBUG_PRINT("Test miniz-cpp : Read zip entries : ");
 				DEBUG_PRINT(str);
 			}
-
-
 		}
 
 		/*

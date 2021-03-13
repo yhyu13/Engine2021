@@ -324,13 +324,13 @@ void longmarch::Renderer3D::Init()
 			for (uint32_t i(3); i <= 51u; i += 2u)
 			{
 				{
-					auto [offsets, weights] = DistributionMath::Gaussian1DHalf(i, 0, i / 6.0f);
+					auto [offsets, weights] = DistributionMath::Gaussian1DHalf(i, 0, (i / 2) / 3.0f);
 					auto weight = ShaderStorageBuffer::Create(&weights[0], weights.X() * sizeof(float));
 					auto offset = ShaderStorageBuffer::Create(&offsets[0], offsets.X() * sizeof(float));
 					s_Data.gpuBuffer.GuassinKernelHalf.try_emplace(i, weights.X(), offset, weight);
 				}
 				{
-					auto [offsets, weights] = DistributionMath::Gaussian1DHalfBilinear(i, 0, i / 6.0f);
+					auto [offsets, weights] = DistributionMath::Gaussian1DHalfBilinear(i, 0, (i / 2) / 3.0f);
 					auto weight = ShaderStorageBuffer::Create(&weights[0], weights.X() * sizeof(float));
 					auto offset = ShaderStorageBuffer::Create(&offsets[0], offsets.X() * sizeof(float));
 					s_Data.gpuBuffer.GuassinKernelHalfBilinear.try_emplace(i, weights.X(), offset, weight);

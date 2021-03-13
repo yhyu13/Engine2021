@@ -68,14 +68,14 @@
 		"AO":
 		{
 			"Enable": true,
-			"Gaussian-kernel":30,
-			"Num-samples":64,
-			"Res-down-scale":2,
-			"Radius":1.0,
+			"Gaussian-kernel":40,
+			"Num-samples":50,
+			"Res-down-scale":3,
+			"Radius":2.0,
 			"Scale":1.4,
 			"Power":1.4,
 			"Indirect-bounce":true,
-			"Indirect-bounce-strength":9.0
+			"Indirect-bounce-strength":10.0
 		}
 		,
 
@@ -83,7 +83,7 @@
 		{
 			"Enable": true,
 			"Gaussian-kernel": 3,
-			"Res-down-scale": 2
+			"Res-down-scale": 4
 		},
 
 		"Bloom":

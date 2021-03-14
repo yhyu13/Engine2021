@@ -369,7 +369,8 @@ void longmarch::Renderer3D::Init()
 			s_Data.gpuBuffer.FrameBuffer_4 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
 			s_Data.gpuBuffer.CurrentDynamicAOBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
 			s_Data.gpuBuffer.CurrentDynamicSSRBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
-			s_Data.gpuBuffer.CurrentDynamicBloomBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
+			s_Data.gpuBuffer.CurrentDynamicBloomBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16); 
+			s_Data.gpuBuffer.CurrentDynamicDOFBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
 
 			// GBuffer
 			s_Data.gpuBuffer.CurrentGBuffer = GBuffer::Create(1, 1, GBuffer::GBUFFER_TYPE::DEFAULT);

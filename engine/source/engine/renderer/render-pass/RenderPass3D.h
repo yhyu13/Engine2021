@@ -16,13 +16,13 @@ namespace longmarch
 	protected:
 		struct VFCParam
 		{
-			bool enableVFCulling = { false };
+			bool enableVFCulling{ false };
 			ViewFrustum VFinViewSpace;
 			Mat4 WorldSpaceToViewSpace;
 		};
 		struct DistanceCParam
 		{
-			bool enableDistanceCulling = { false };
+			bool enableDistanceCulling{ false };
 			Vec3f center;
 			float Near;
 			float Far;
@@ -32,17 +32,22 @@ namespace longmarch
 		NONCOPYABLE(RenderPass3D);
 		RenderPass3D() = default;
 
+		inline void SetParentWorld(GameWorld* world)
+		{
+			m_parentWorld = world;
+		}
+
 		virtual void Init() = 0;
 		virtual void BeginRenderPass() = 0;
 		virtual void EndRenderPass() = 0;
 
 	protected:
-		virtual void UpdateShader() = 0;
-		virtual void Render() = 0;
-		virtual void SubmitBatch() = 0;
-		virtual void ClearBatch() = 0;
-		virtual void Draw(const Renderer3D::RenderData_CPU& data) = 0;
-		virtual void DrawParticle(const Renderer3D::ParticleInstanceDrawData& data) = 0;
+		virtual void UpdateShader() { throw NotImplementedException(); };
+		virtual void Render() { throw NotImplementedException(); };
+		virtual void SubmitBatch() { throw NotImplementedException(); };
+		virtual void ClearBatch() { throw NotImplementedException(); };
+		virtual void Draw(const Renderer3D::RenderData_CPU& data) { throw NotImplementedException(); };
+		virtual void DrawParticle(const Renderer3D::ParticleInstanceDrawData& data) { throw NotImplementedException(); };
 
 		virtual void SetVFCullingParam(bool enable, const ViewFrustum& VFinViewSpace, const Mat4& WorldSpaceToViewSpace);
 		virtual void SetDistanceCullingParam(bool enable, const Vec3f& center, float Near, float Far);
@@ -60,7 +65,7 @@ namespace longmarch
 		std::function<void(const Renderer3D::ParticleInstanceDrawData&)> m_drawBind_Particle;
 		std::function<void()> m_submitBatchBind;
 		std::function<void()> m_clearBatchBind;
-		PerspectiveCamera* m_camera;
-		size_t m_max_batch = { 1024u };
+		GameWorld* m_parentWorld{ nullptr };
+		size_t m_max_batch{ 1024u };
 	};
 }

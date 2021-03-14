@@ -22,25 +22,29 @@ namespace longmarch {
 		virtual void BeginFrame() override;
 		virtual void EndFrame() override;
 
-		void CaptureMouseAndKeyboardOnMenu();	//<! Capture Mouse and Kyeboard on menu being clicked
+		//! Capture Mouse and Kyeboard on menu being clicked
+		void CaptureMouseAndKeyboardOnMenu();	
 
-		void PushBackSelectedEntity(const Entity& e); //!< UI side of picking system
-		const LongMarch_Vector<Entity> GetAllSelectedEntity(); //!< UI side of picking system
-
-		void AddNewGameWorldLevel(const std::string& name);	//!< Game world level tab system
+		//! UI side of picking system (add entity to picked entity buffer)
+		void PushBackSelectedEntityBuffered(const Entity& e); 
+		//! UI side of picking system (use this inside any ImGui's Render() function)
+		const LongMarch_Vector<Entity> GetAllSelectedEntity(); 
+		//! UI side of picking system (use this anywhere outside ImGui's Render() function)
+		const LongMarch_Vector<Entity> GetAllSelectedEntityBuffered(); 
+		//! Game world level tab system
+		void AddNewGameWorldLevel(const std::string& name);	
 
 	private:
-		void UpdateGameWorldTabs();	//!< Game world level tab system
-		void UpdateSelectedEntity();	//!< UI side of picking system
+		//! Game world level tab system
+		void UpdateGameWorldTabs();	
+		//! UI side of picking system
+		void UpdateSelectedEntity();
 
-		const LongMarch_Vector<Entity> GetAllSelectedEntityBuffered(); // UI side of picking system
-
-		friend EditorPickingComSys;
 		friend EngineEditorDock;
 	protected:
 		LongMarch_Vector<Entity> m_SelectedEntity;
 		LongMarch_Vector<Entity> m_SelectedEntityBuffer;
-		//! name, isSelected, isVisible, shouldRemove
+		//! Key : name | Value : isSelected, isVisible, shouldRemove
 		LongMarch_Vector<std::tuple<std::string, bool, bool, bool>> m_gameWorldLevels;
 	};
 }

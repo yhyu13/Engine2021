@@ -13,10 +13,6 @@ namespace longmarch
 	public:
 		NONCOPYABLE(PickingPass);
 		PickingPass() = default;
-		inline void SetParentWorld(GameWorld* world)
-		{
-			m_parentWorld = world;
-		}
 		virtual void Init() override;
 		virtual void BeginRenderPass() override;
 		virtual void EndRenderPass() override;
@@ -46,7 +42,6 @@ namespace longmarch
 
 		PerspectiveCamera m_pickingCam;
 		Entity m_pickedEntity;
-		GameWorld* m_parentWorld{ nullptr };
 		std::shared_ptr<Scene3DNode> m_particlePickingMesh{ nullptr };
 		std::shared_ptr<FrameBuffer> m_renderTarget{ nullptr };
 		std::shared_ptr<Texture2D> m_renderTexture{ nullptr };

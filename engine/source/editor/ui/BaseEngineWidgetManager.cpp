@@ -25,7 +25,7 @@ void longmarch::BaseEngineWidgetManager::CaptureMouseAndKeyboardOnMenu()
 	}
 }
 
-void longmarch::BaseEngineWidgetManager::PushBackSelectedEntity(const Entity& e)
+void longmarch::BaseEngineWidgetManager::PushBackSelectedEntityBuffered(const Entity& e)
 {
 	if (!LongMarch_Contains(m_SelectedEntityBuffer, e))
 	{

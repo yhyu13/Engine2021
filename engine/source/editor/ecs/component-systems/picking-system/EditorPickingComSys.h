@@ -1,6 +1,7 @@
 #pragma once
 #include "engine/ecs/BaseComponentSystem.h"
 #include "editor/renderer/render-pass/PickingPass3D.h"
+#include "editor/renderer/render-pass/OutlinePass3D.h"
 
 namespace longmarch
 {
@@ -25,7 +26,7 @@ namespace longmarch
 		void ManipulatePickedEntityGizmos(const Entity& e);
 
 	private:
-		PickingPass m_renderPass;
-		std::shared_ptr<FrameBuffer> OutlineFrameBuffer;
+		PickingPass m_pickingPass;
+		OutlinePass m_outlinePass;
 	};
 }

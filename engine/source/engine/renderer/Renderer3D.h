@@ -245,6 +245,7 @@ namespace longmarch
 			std::shared_ptr<FrameBuffer> CurrentDynamicAOBuffer;
 			std::shared_ptr<FrameBuffer> CurrentDynamicSSRBuffer;
 			std::shared_ptr<FrameBuffer> CurrentDynamicBloomBuffer;
+			std::shared_ptr<FrameBuffer> CurrentDynamicDOFBuffer;
 			std::shared_ptr<GBuffer> CurrentGBuffer;
 			std::shared_ptr<GBuffer> CurrentThinGBuffer;
 			std::shared_ptr<UniformBuffer> CurrentModelTrBuffer;
@@ -424,6 +425,17 @@ namespace longmarch
 				float bloom_threshold;
 				float bloom_blend_strength;
 			} BloomSettings;
+
+			struct
+			{
+				bool enable;
+				uint32_t dof_gaussian_kernal;
+				uint32_t dof_sample_resolution_downScale;
+				float dof_refocus_rate;
+				float dof_blend_strength;
+
+				float dof_target_depth{ 0.5f };
+			} DOFSettings;
 
 			bool enable_deferredShading;
 			bool enable_reverse_z;

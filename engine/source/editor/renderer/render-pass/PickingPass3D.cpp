@@ -32,7 +32,6 @@ void longmarch::PickingPass::Init()
 		m_drawBind_Particle = std::move(std::bind(&PickingPass::DrawParticle, this, std::placeholders::_1));
 		m_submitBatchBind = std::move(std::bind(&PickingPass::SubmitBatch, this));
 		m_clearBatchBind = std::move(std::bind(&PickingPass::ClearBatch, this));
-		m_camera = &m_pickingCam;
 	}
 	{
 		switch (Renderer3D::s_Data.RENDER_MODE)
@@ -181,11 +180,11 @@ void longmarch::PickingPass::UpdateShader()
 		Mat4 pv;
 		if (Renderer3D::s_Data.enable_reverse_z)
 		{
-			pv = m_camera->GetReverseZViewProjectionMatrix();
+			pv = m_pickingCam.GetReverseZViewProjectionMatrix();
 		}
 		else
 		{
-			pv = m_camera->GetViewProjectionMatrix();
+			pv = m_pickingCam.GetViewProjectionMatrix();
 		}
 		shader->SetMat4("u_PVMatrix", pv);
 	}

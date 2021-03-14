@@ -166,7 +166,7 @@ void longmarch::SceneHierarchyDock::GenerateTreeNode(const Entity& e)
 				Update seleted items to widget manager which communicate with ECS
 			*/
 			node_flags |= ImGuiTreeNodeFlags_Selected;
-			manager->PushBackSelectedEntity(e);
+			manager->PushBackSelectedEntityBuffered(e);
 		}
 
 		// Handle entity with children

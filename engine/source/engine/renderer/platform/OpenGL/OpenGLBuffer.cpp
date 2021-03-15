@@ -252,7 +252,7 @@ namespace longmarch {
 		glNamedBufferData(m_RendererID, size, data, GL_DYNAMIC_DRAW);
 		GLCHECKERROR;
 	}
-	void* OpenGLUniformBuffer::GL_GetUniformBufferMapping(size_t size, size_t offset)
+	void* OpenGLUniformBuffer::GetUniformBufferMapping(size_t size, size_t offset)
 	{
 		/*
 			Reference: https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glMapBufferRange.xhtml
@@ -261,7 +261,7 @@ namespace longmarch {
 		GLCHECKERROR;
 		return ret;
 	}
-	void OpenGLUniformBuffer::GL_EndUniformBufferMapping()
+	void OpenGLUniformBuffer::EndUniformBufferMapping()
 	{
 		glUnmapBuffer(GL_UNIFORM_BUFFER);
 		GLCHECKERROR;
@@ -297,7 +297,7 @@ namespace longmarch {
 		glNamedBufferData(m_RendererID, size, data, GL_DYNAMIC_DRAW);
 		GLCHECKERROR;
 	}
-	void* OpenGLShaderStorageBuffer::GL_GetShaderStorageBufferMapping(size_t size, size_t offset)
+	void* OpenGLShaderStorageBuffer::GetShaderStorageBufferMapping(size_t size, size_t offset)
 	{
 		/*
 			Reference: https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glMapBufferRange.xhtml
@@ -306,7 +306,7 @@ namespace longmarch {
 		GLCHECKERROR;
 		return ret;
 	}
-	void OpenGLShaderStorageBuffer::GL_EndShaderStorageBufferMapping()
+	void OpenGLShaderStorageBuffer::EndShaderStorageBufferMapping()
 	{
 		glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 		GLCHECKERROR;
@@ -322,15 +322,18 @@ namespace longmarch {
 		m_format = type;
 
 		uint32_t format;
+		uint32_t channel;
 		uint32_t data_type;
 		switch (type)
 		{
 		case longmarch::FrameBuffer::BUFFER_FORMAT::UINT8:
 			format = GL_RGBA8;
+			channel = GL_RGBA;
 			data_type = GL_UNSIGNED_BYTE;
 			break;
 		case longmarch::FrameBuffer::BUFFER_FORMAT::Float16:
 			format = GL_RGBA16F;
+			channel = GL_RGBA;
 			data_type = GL_FLOAT;
 			break;
 		default:
@@ -358,7 +361,7 @@ namespace longmarch {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RGBA, data_type, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, channel, data_type, NULL);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_RenderTargetID, 0);
 		glGenerateMipmap(GL_TEXTURE_2D);
 

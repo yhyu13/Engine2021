@@ -98,16 +98,14 @@ void longmarch::PickingPass::BeginRenderPass()
 			auto camera_ptr = m_parentWorld->GetComponent<PerspectiveCameraCom>(camera)->GetCamera();
 
 			auto cursor_pos = input->GetCursorPositionXY();
-			Vec3f pick_eye;
-			Vec3f pick_at;
-			Vec3f pick_dir;
-
-			camera_ptr->GenerateRayFromScreenSpace(cursor_pos, true, true, pick_eye, pick_dir);
-			pick_at = pick_eye + pick_dir;
+			Vec3f pick_eye_world;
+			Vec3f pick_dir_wprld;
+			camera_ptr->GenerateRayFromCursorSpace(cursor_pos, true, true, pick_eye_world, pick_dir_wprld);
+			Vec3f pick_at_world = pick_eye_world + pick_dir_wprld;
 
 			m_pickingCam.type = PerspectiveCameraType::FIRST_PERSON;
 			m_pickingCam.SetProjection(1.0 * DEG2RAD, 1.0, camera_ptr->cameraSettings.nearZ, camera_ptr->cameraSettings.farZ);
-			m_pickingCam.SetLookAt(pick_eye, pick_at);
+			m_pickingCam.SetLookAt(pick_eye_world, pick_at_world);
 			m_pickingCam.OnUpdate();
 
 			Render();

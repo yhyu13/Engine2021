@@ -246,6 +246,8 @@ namespace longmarch
 			std::shared_ptr<FrameBuffer> CurrentDynamicSSRBuffer;
 			std::shared_ptr<FrameBuffer> CurrentDynamicBloomBuffer;
 			std::shared_ptr<FrameBuffer> CurrentDynamicDOFBuffer;
+			std::shared_ptr<FrameBuffer> CurrentDynamicDOFDepthBuffer_1;
+			std::shared_ptr<FrameBuffer> CurrentDynamicDOFDepthBuffer_2;
 			std::shared_ptr<GBuffer> CurrentGBuffer;
 			std::shared_ptr<GBuffer> CurrentThinGBuffer;
 			std::shared_ptr<UniformBuffer> CurrentModelTrBuffer;
@@ -413,6 +415,7 @@ namespace longmarch
 			struct
 			{
 				bool enable;
+				bool enable_debug{ false };
 				uint32_t ssr_gaussian_kernal;
 				uint32_t ssr_sample_resolution_downScale;
 			} SSRSettings;
@@ -429,12 +432,16 @@ namespace longmarch
 			struct
 			{
 				bool enable;
+				bool enable_debug{ false };
 				uint32_t dof_gaussian_kernal;
 				uint32_t dof_sample_resolution_downScale;
 				float dof_refocus_rate;
 				float dof_blend_strength;
 
-				float dof_target_depth{ 0.5f };
+				bool use_ss_target{ true };
+				Vec2f ss_target;
+				bool use_ws_target{ false };
+				Vec3f ws_target;
 			} DOFSettings;
 
 			bool enable_deferredShading;
@@ -606,8 +613,8 @@ namespace longmarch
 
 		static void _BindSkyBoxTexture();
 		static void _BeginSkyBoxPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
-		static void _BeginDynamicAOPass(const std::shared_ptr<GBuffer>& gbuffer_in);
-		static void _BeginDynamicSSRPass(const std::shared_ptr<GBuffer>& gbuffer_in);
+		static void _BeginDynamicAOPass(const std::shared_ptr<FrameBuffer>& colorBuffer_in);
+		static void _BeginDynamicSSRPass(const std::shared_ptr<FrameBuffer>& colorBuffer_in);
 
 		static void _BeginDeferredLightingPass(
 			const PerspectiveCamera* camera,
@@ -628,7 +635,8 @@ namespace longmarch
 		static void _BeginFXAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginSMAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_edge, const std::shared_ptr<FrameBuffer>& framebuffer_blend, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginMotionBlurPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
-		static void _BeginBloomPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_bright, const std::shared_ptr<FrameBuffer>& framebuffer_blend, const std::shared_ptr<FrameBuffer>& framebuffer_out);
+		static void _BeginBloomPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
+		static void _BeginDOFPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginToneMappingPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 
 		static void _RenderFullScreenQuad();
@@ -653,6 +661,9 @@ namespace longmarch
 		static void _ON_SET_AO_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_SET_SSR_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_SET_BLOOM_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e);
+		static void _ON_SET_DOF_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e);
+		static void _ON_SET_DOF_TARGET(EventQueue<EngineGraphicsEventType>::EventPtr e);
+
 	public:
 		inline static Renderer3DStorage s_Data;
 	};

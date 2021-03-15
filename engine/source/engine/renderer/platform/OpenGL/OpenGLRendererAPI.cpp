@@ -200,6 +200,32 @@ namespace longmarch
 		} 
 	}
 
+	void OpenGLRendererAPI::PolyOffset(bool enabled, float factor, float units)
+	{
+		static auto b1 = !enabled;
+		static float factor1 = 0.f;
+		static float units1 = 0.f;
+		if (b1 == enabled && factor1 == factor && units1 == units)
+		{
+			return;
+		}
+		b1 = enabled;
+		if (enabled)
+		{
+			glEnable(GL_POLYGON_OFFSET_FILL);
+			glPolygonOffset(factor, units);
+			factor1 = factor;
+			units1 = units;
+		}
+		else
+		{
+			glDisable(GL_POLYGON_OFFSET_FILL);
+			glPolygonOffset(0.f, 0.f);
+			factor1 = 0.f;
+			units1 = 0.f;
+		}
+	}
+
 	void OpenGLRendererAPI::BindDefaultFrameBuffer() 
 	{ 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0); 
@@ -301,18 +327,18 @@ namespace longmarch
 		}
 	}
 
-	void OpenGLRendererAPI::DepthTest(bool test, bool write)
+	void OpenGLRendererAPI::DepthTest(bool enabled, bool write)
 	{
-		static auto b1 = !test;
+		static auto b1 = !enabled;
 		static auto b2 = !write;
-		if (b1 == test && b2 == write)
+		if (b1 == enabled && b2 == write)
 		{
 			return;
 		}
-		b1 = test;
+		b1 = enabled;
 		b2 = write;
 
-		if (test)
+		if (enabled)
 		{
 			glEnable(GL_DEPTH_TEST);
 		}
@@ -323,7 +349,7 @@ namespace longmarch
 
 		if (write)
 		{
-			if (!test)
+			if (!enabled)
 			{
 				throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Write to depth buffer requires depth testing to be enabled!");
 			}
@@ -379,18 +405,18 @@ namespace longmarch
 		}
 	}
 
-	void OpenGLRendererAPI::StencilTest(bool test, bool write)
+	void OpenGLRendererAPI::StencilTest(bool enabled, bool write)
 	{
-		static auto b1 = !test;
+		static auto b1 = !enabled;
 		static auto b2 = !write;
-		if (b1 == test && b2 == write)
+		if (b1 == enabled && b2 == write)
 		{
 			return;
 		}
-		b1 = test;
+		b1 = enabled;
 		b2 = write;
 
-		if (test)
+		if (enabled)
 		{
 			glEnable(GL_STENCIL_TEST);
 		}
@@ -401,7 +427,7 @@ namespace longmarch
 
 		if (write)
 		{
-			if (!test)
+			if (!enabled)
 			{
 				throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Write to stencil buffer requires stencil testing to be enabled!");
 			}

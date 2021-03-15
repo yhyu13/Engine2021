@@ -31,9 +31,15 @@ namespace longmarch
 		void RecalculateViewMatrix();
 		void RecalculateViewFrustum();
 		void SetViewPort(const Vec2u& origin, const Vec2u& size);
-		bool ScreenSpaceToWorldSpace(const Vec2u& in_ss_pos, bool clip_viewport, bool invert_y, const Vec4f& in_plane, Vec3f& out_world_pos) const;
-		bool GenerateRayFromScreenSpace(const Vec2u& in_ss_pos, bool clip_viewport, bool invert_y, Vec3f& out_ray_origin, Vec3f& out_ray_dir) const;
-		bool WorldSpaceToScreenSpace(const Vec3f& in_world_pos, Vec2u& out_ss_pos, bool invert_y) const;
+		bool GenerateRayFromCursorSpace(const Vec2u& in_cursor_pos, bool clip_viewport, bool invert_y, Vec3f& out_ray_origin, Vec3f& out_ray_dir) const;
+		//! Given a contact plane equation, output the world space location of the ray shoot from cursor position
+		bool CursorSpaceToWorldSpace(const Vec2u& in_cursor_pos, const Vec4f& in_plane, bool clip_viewport, bool invert_y, Vec3f& out_world_pos) const;
+		//! Cursor space is defined as : origin at top left or bottom left, and dimension equals to resolution. If you defined top left as the origin, then invert_y must be true
+		bool WorldSpaceToCursorSpace(const Vec3f& in_world_pos, bool invert_y, Vec2u& out_cursor_pos) const;
+		//! Screen space is simply the clip space xy coordinates
+		bool WorldSpaceToScreenSpace(const Vec3f& in_world_pos, Vec2f& out_ss_pos) const;
+		//! Cursor space is defined as : origin at top left or bottom left, and dimension equals to resolution.If you defined top left as the origin, then invert_y must be true. Screen space is simply the clip space xy coordinates
+		bool CursorSpaceToScreenSpace(const Vec2u& in_cursor_pos, bool clip_viewport, bool invert_y, Vec2f& out_ss_pos) const;
 		const ViewFrustum GetViewFrustumInWorldSpace() const;
 
 		void SetZoom(float z)

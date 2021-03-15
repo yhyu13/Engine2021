@@ -46,6 +46,8 @@ namespace longmarch
 		SET_AO_VALUE,
 		SET_SSR_VALUE,
 		SET_BLOOM_VALUE,
+		SET_DOF_VALUE,
+		SET_DOF_TARGET,
 		NUM
 	};
 

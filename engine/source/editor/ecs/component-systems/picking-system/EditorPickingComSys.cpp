@@ -6,7 +6,7 @@
 
 #include <imgui/addons/ImGuizmo/ImGuizmo.h>
 
-#define USE_IMGUIZMO_CAM 1
+//#define USE_IMGUIZMO_CAM
 
 void longmarch::EditorPickingComSys::Init()
 {
@@ -118,7 +118,7 @@ void longmarch::EditorPickingComSys::ManipulatePickedEntityGizmos(const Entity& 
 		auto trans_mat = trans->GetModelTr();
 		Mat4 cam_view = current_camera->GetViewMatrix();
 		Mat4 cam_proj = current_camera->GetProjectionMatrix();
-#if USE_IMGUIZMO_CAM == 1
+#ifdef USE_IMGUIZMO_CAM
 		auto cam_location = current_camera->GetWorldPosition();
 		auto cam_rotation = current_camera->GetGlobalRotation();
 		auto cam_lookat = cam_location + cam_rotation * Geommath::WorldFront;

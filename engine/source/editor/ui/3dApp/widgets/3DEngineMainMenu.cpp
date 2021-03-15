@@ -131,6 +131,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static auto AOConfig = graphicsConfig["AO"];
 		static auto SSRConfig = graphicsConfig["SSR"];
 		static auto BloomConfig = graphicsConfig["Bloom"];
+		static auto DOFConfig = graphicsConfig["DOF"];
 
 		// 1. Window mode
 		static const char* windowModes[]{ "Fullscreen", "Borderless Windowed", "Windowed" };
@@ -191,6 +192,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static bool checkSSR = SSRConfig["Enable"].asBool();
 		static int valueSSRBlurKernel = SSRConfig["Gaussian-kernel"].asInt();
 		static int valueSSRSampleResDownScale = SSRConfig["Res-down-scale"].asInt();
+		static bool checkSSRDebug = false;
 
 		// Bloom
 		static bool checkBloom = BloomConfig["Enable"].asBool();
@@ -198,6 +200,14 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static float valueBloomStrength = BloomConfig["Strength"].asFloat();
 		static int valueBloomBlurKernel = BloomConfig["Gaussian-kernel"].asInt();
 		static int valueBloomSampleResDownScale = BloomConfig["Res-down-scale"].asFloat();
+
+		// DOF
+		static bool checkDOF = DOFConfig["Enable"].asBool();
+		static float valueDOFStrength = DOFConfig["Strength"].asFloat();
+		static int valueDOFBlurKernel = DOFConfig["Gaussian-kernel"].asInt();
+		static int valueDOFSampleResDownScale = DOFConfig["Res-down-scale"].asFloat();
+		static float valueDOFRefocusRate = DOFConfig["Refocus-rate"].asFloat();
+		static bool checkDOFDebug = false;
 
 		constexpr int yoffset_item = 5;
 
@@ -237,6 +247,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				checkSSR = SSRConfig["Enable"].asBool();
 				valueSSRBlurKernel = SSRConfig["Gaussian-kernel"].asFloat();
 				valueSSRSampleResDownScale = SSRConfig["Res-down-scale"].asFloat();
+				checkSSRDebug = false;
 			}
 			{
 				// Bloom
@@ -245,6 +256,15 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				valueBloomStrength = BloomConfig["Strength"].asFloat();
 				valueBloomBlurKernel = BloomConfig["Gaussian-kernel"].asInt();
 				valueBloomSampleResDownScale = BloomConfig["Res-down-scale"].asFloat();
+			}
+			{
+				// DOF
+				checkDOF = DOFConfig["Enable"].asBool();
+				valueDOFStrength = DOFConfig["Strength"].asFloat();
+				valueDOFBlurKernel = DOFConfig["Gaussian-kernel"].asInt();
+				valueDOFSampleResDownScale = DOFConfig["Res-down-scale"].asFloat();
+				valueDOFRefocusRate = DOFConfig["Refocus-rate"].asFloat();
+				checkDOFDebug = false;
 			}
 			{
 				auto e = MemoryManager::Make_shared<ToggleVSyncEvent>(checkVSync);
@@ -296,11 +316,15 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				graphicEventQueue->Publish(e);
 			}
 			{
-				auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale);
+				auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale, checkSSRDebug);
 				graphicEventQueue->Publish(e);
 			}
 			{
 				auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength, valueBloomBlurKernel, valueBloomSampleResDownScale);
+				graphicEventQueue->Publish(e);
+			}
+			{
+				auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
 				graphicEventQueue->Publish(e);
 			}
 		}
@@ -460,17 +484,22 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				{
 					if (ImGui::Checkbox("Enable", &checkSSR))
 					{
-						auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale);
+						auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale, checkSSRDebug);
 						graphicEventQueue->Publish(e);
 					}
 					if (ImGui::SliderInt("Resolution Down Scale", &valueSSRSampleResDownScale, 1, 4, "%d"))
 					{
-						auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale);
+						auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale, checkSSRDebug);
 						graphicEventQueue->Publish(e);
 					}
 					if (ImGui::SliderInt("Gauss Kernel", &valueSSRBlurKernel, 3, 51, "%d"))
 					{
-						auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale);
+						auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale, checkSSRDebug);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::Checkbox("Debug", &checkSSRDebug))
+					{
+						auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale, checkSSRDebug);
 						graphicEventQueue->Publish(e);
 					}
 					ImGui::Separator();
@@ -503,6 +532,43 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 					if (ImGui::DragFloat("Strength", &valueBloomStrength, 0.01, 0, 1, "%.2f"))
 					{
 						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength, valueBloomBlurKernel, valueBloomSampleResDownScale);
+						graphicEventQueue->Publish(e);
+					}
+					ImGui::Separator();
+					ImGui::TreePop();
+				}
+				ImGui::Dummy(ImVec2(0, yoffset_item));
+				// Bloom
+				if (ImGui::TreeNode("Depth of Field"))
+				{
+					if (ImGui::Checkbox("Enable", &checkDOF))
+					{
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Resolution Down Scale", &valueDOFSampleResDownScale, 1, 4, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Gauss Kernel", &valueDOFBlurKernel, 3, 51, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::DragFloat("Strength", &valueDOFStrength, 0.01, 0, 1, "%.2f"))
+					{
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::DragFloat("Refocus Speed", &valueDOFRefocusRate, 0.1, 1, 60, "%.1f"))
+					{
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::Checkbox("Debug", &checkDOFDebug))
+					{
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
 						graphicEventQueue->Publish(e);
 					}
 					ImGui::Separator();

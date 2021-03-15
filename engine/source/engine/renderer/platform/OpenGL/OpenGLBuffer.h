@@ -98,8 +98,8 @@ namespace longmarch {
 		inline virtual const BufferLayout& GetLayout() const override { return m_Layout; }
 		inline virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; }
 
-		static void* GL_GetUniformBufferMapping(size_t size, size_t offset);
-		static void GL_EndUniformBufferMapping();
+		static void* GetUniformBufferMapping(size_t size, size_t offset);
+		static void EndUniformBufferMapping();
 
 	private:
 		uint32_t m_RendererID;
@@ -120,8 +120,8 @@ namespace longmarch {
 		inline virtual const BufferLayout& GetLayout() const override { return m_Layout; }
 		inline virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; }
 
-		static void* GL_GetShaderStorageBufferMapping(size_t size, size_t offset);
-		static void GL_EndShaderStorageBufferMapping();
+		static void* GetShaderStorageBufferMapping(size_t size, size_t offset);
+		static void EndShaderStorageBufferMapping();
 	private:
 		uint32_t m_RendererID;
 		BufferLayout m_Layout;

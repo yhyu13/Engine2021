@@ -3,6 +3,7 @@
 #include "EngineEventType.h"
 #include "engine/events/EventQueue.h"
 #include "engine/ecs/EntityDecorator.h"
+#include "engine/math/Geommath.h"
 
 namespace longmarch
 {
@@ -290,17 +291,19 @@ namespace longmarch
 	};
 
 	struct SetSSRValueEvent : public Event<EngineGraphicsEventType> {
-		explicit SetSSRValueEvent(bool enable, int gaussKernel, int sameleResDownSacle)
+		explicit SetSSRValueEvent(bool enable, int gaussKernel, int sameleResDownSacle, bool debug)
 			:
 			Event(EngineGraphicsEventType::SET_SSR_VALUE),
 			m_enable(enable),
 			m_gaussKernel(gaussKernel),
-			m_sampleResolutionDownScale(sameleResDownSacle)
+			m_sampleResolutionDownScale(sameleResDownSacle),
+			m_debug(debug)
 		{
 		}
 		bool m_enable;
 		int m_gaussKernel;
 		int m_sampleResolutionDownScale;
+		bool m_debug;
 	};
 
 	struct SetBloomEvent : public Event<EngineGraphicsEventType> {
@@ -321,4 +324,39 @@ namespace longmarch
 		int m_sampleResolutionDownScale;
 	};
 
+	struct SetDOFvent : public Event<EngineGraphicsEventType> {
+		explicit SetDOFvent(bool b, float strength, int gaussKernel, int sameleResDownSacle, float refocusRate, bool debug)
+			:
+			Event(EngineGraphicsEventType::SET_DOF_VALUE),
+			m_enable(b),
+			m_strength(strength),
+			m_gaussKernel(gaussKernel),
+			m_sampleResolutionDownScale(sameleResDownSacle),
+			m_refocusRate(refocusRate),
+			m_debug(debug)
+		{
+		}
+		bool m_enable;
+		float m_strength;
+		int m_gaussKernel;
+		int m_sampleResolutionDownScale;
+		float m_refocusRate;
+		bool m_debug;
+	};
+
+	struct SetDOFTarget : public Event<EngineGraphicsEventType> {
+		explicit SetDOFTarget(bool bUseScreenSpaceTarget, const Vec2f& ssTarget, bool bUseWorldSPaceTarget, const Vec3f& wsTarget)
+			:
+			Event(EngineGraphicsEventType::SET_DOF_TARGET),
+			m_bUseScreenSpaceTarget(bUseScreenSpaceTarget),
+			m_ssTarget(ssTarget), 
+			m_bUseWorldSPaceTarget(bUseWorldSPaceTarget),
+			m_wsTarget(wsTarget)
+		{
+		}
+		bool m_bUseScreenSpaceTarget;
+		Vec2f m_ssTarget;
+		bool m_bUseWorldSPaceTarget;
+		Vec3f m_wsTarget;
+	};
 }

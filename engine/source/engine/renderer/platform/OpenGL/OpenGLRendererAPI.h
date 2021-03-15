@@ -33,8 +33,9 @@ namespace longmarch {
 
 		virtual void DispatchCompute(uint32_t num_groups_x, uint32_t num_groups_y, uint32_t num_groups_z) override;
 
-		virtual void PolyModeFill() override;;
-		virtual void PolyModeLine() override;;
+		virtual void PolyModeFill() override;
+		virtual void PolyModeLine() override;
+		virtual void PolyOffset(bool enabled, float factor, float units);
 
 		virtual void BindDefaultFrameBuffer() override;;
 
@@ -45,11 +46,11 @@ namespace longmarch {
 
 		virtual void Reverse_Z(bool b) override;
 
-		virtual void DepthTest(bool test, bool write) override;
+		virtual void DepthTest(bool enabled, bool write) override;
 		virtual void DepthFunc(longmarch::RendererAPI::CompareEnum e) override;
 		virtual void DepthClamp(bool enabled) override;
 
-		virtual void StencilTest(bool test, bool write) override;
+		virtual void StencilTest(bool enabled, bool write) override;
 		virtual void StencilFunc(longmarch::RendererAPI::CompareEnum e) override;
 
 		virtual void CullFace(bool enabled, bool front) override;

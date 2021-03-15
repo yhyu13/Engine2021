@@ -45,7 +45,7 @@ namespace longmarch {
 		switch (Renderer2D::GetAPI())
 		{
 		case RendererAPI::API::None: ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::API::OpenGL: return OpenGLUniformBuffer::GL_GetUniformBufferMapping(size, offset);
+		case RendererAPI::API::OpenGL: return OpenGLUniformBuffer::GetUniformBufferMapping(size, offset);
 		}
 
 		ASSERT(false, "Unknown RendererAPI!");
@@ -57,7 +57,7 @@ namespace longmarch {
 		switch (Renderer2D::GetAPI())
 		{
 		case RendererAPI::API::None: ASSERT(false, "RendererAPI::None is currently not supported!");
-		case RendererAPI::API::OpenGL: return OpenGLUniformBuffer::GL_EndUniformBufferMapping();
+		case RendererAPI::API::OpenGL: return OpenGLUniformBuffer::EndUniformBufferMapping();
 		}
 
 		ASSERT(false, "Unknown RendererAPI!");
@@ -80,7 +80,7 @@ namespace longmarch {
 		switch (Renderer2D::GetAPI())
 		{
 		case RendererAPI::API::None: ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::API::OpenGL: return OpenGLShaderStorageBuffer::GL_GetShaderStorageBufferMapping(size, offset);
+		case RendererAPI::API::OpenGL: return OpenGLShaderStorageBuffer::GetShaderStorageBufferMapping(size, offset);
 		}
 
 		ASSERT(false, "Unknown RendererAPI!");
@@ -92,7 +92,7 @@ namespace longmarch {
 		switch (Renderer2D::GetAPI())
 		{
 		case RendererAPI::API::None: ASSERT(false, "RendererAPI::None is currently not supported!");
-		case RendererAPI::API::OpenGL: return OpenGLShaderStorageBuffer::GL_EndShaderStorageBufferMapping();
+		case RendererAPI::API::OpenGL: return OpenGLShaderStorageBuffer::EndShaderStorageBufferMapping();
 		}
 
 		ASSERT(false, "Unknown RendererAPI!");

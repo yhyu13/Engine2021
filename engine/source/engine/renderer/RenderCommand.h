@@ -90,6 +90,11 @@ namespace longmarch
 			s_RendererAPI->PolyModeLine();
 		}
 
+		inline static void PolyOffset(bool enabled, float factor, float units)
+		{
+			s_RendererAPI->PolyOffset(enabled, factor, units);
+		}
+
 		inline static void BindDefaultFrameBuffer()
 		{
 			s_RendererAPI->BindDefaultFrameBuffer();

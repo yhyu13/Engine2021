@@ -64,9 +64,13 @@ namespace longmarch {
 		virtual void DrawTriangleIndexedInstanced(const std::shared_ptr<VertexArray>& vertexArray, uint32_t count) = 0;
 		virtual void DrawLineIndexedInstanced(const std::shared_ptr<VertexArray>& vertexArray, uint32_t count) = 0;
 		virtual void MultiDrawTriangleIndexedIndirect(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<IndexedIndirectCommandBuffer>& commandBuffer) = 0;
+		
 		virtual void DispatchCompute(uint32_t num_groups_x, uint32_t num_groups_y, uint32_t num_groups_z) = 0;
+
 		virtual void PolyModeFill() = 0;
 		virtual void PolyModeLine() = 0;
+		virtual void PolyOffset(bool enabled, float factor, float units) = 0;
+
 		virtual void BindDefaultFrameBuffer() = 0;
 
 		virtual void TransferColorBit(uint32_t src, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_w, uint32_t dest_h) = 0;
@@ -76,11 +80,11 @@ namespace longmarch {
 
 		virtual void Reverse_Z(bool b) = 0;
 
-		virtual void DepthTest(bool test, bool write) = 0;
+		virtual void DepthTest(bool enabled, bool write) = 0;
 		virtual void DepthFunc(longmarch::RendererAPI::CompareEnum e) = 0;
 		virtual void DepthClamp(bool enabled) = 0;
 
-		virtual void StencilTest(bool test, bool write) = 0;
+		virtual void StencilTest(bool enabled, bool write) = 0;
 		virtual void StencilFunc(longmarch::RendererAPI::CompareEnum e) = 0;
 
 		virtual void CullFace(bool enabled, bool front) = 0;

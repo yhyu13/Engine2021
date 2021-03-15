@@ -65,12 +65,33 @@ void longmarch::PerspectiveCamera::SetViewPort(const Vec2u& origin, const Vec2u&
 	cameraSettings.viewportSize = size;
 }
 
-bool longmarch::PerspectiveCamera::ScreenSpaceToWorldSpace(const Vec2u& in_ss_pos, bool clip_viewport, bool invert_y, const Vec4f& in_plane, Vec3f& out_world_pos) const
+bool longmarch::PerspectiveCamera::GenerateRayFromCursorSpace(const Vec2u& in_cursor_pos, bool clip_viewport, bool invert_y, Vec3f& out_ray_origin, Vec3f& out_ray_dir) const
+{
+	// Transform the pick position from view port space into camera space
+	Vec2f ss_;
+	if (!CursorSpaceToScreenSpace(in_cursor_pos, clip_viewport, invert_y, ss_))
+	{
+		return false;
+	}
+
+	// Use projection matrix that has clip z plane [0, 1]
+	Vec3f far_(ss_, 1);
+	Vec3f near_(far_.xy, 0);
+
+	const auto& in_pv = Geommath::SmartInverse(GetViewProjectionMatrix());
+	far_ = Geommath::Mat4ProdVec3(in_pv, far_);
+	near_ = Geommath::Mat4ProdVec3(in_pv, near_);
+	out_ray_origin = worldPosition;
+	out_ray_dir = Geommath::Normalize(far_ - near_);
+	return true;
+}
+
+bool longmarch::PerspectiveCamera::CursorSpaceToWorldSpace(const Vec2u& in_cursor_pos, const Vec4f& in_plane, bool clip_viewport, bool invert_y, Vec3f& out_world_pos) const
 {
 	Vec3f pick_ray_dir;
 	Vec3f pick_ray_origin;
 	// Convert the screen coordinates to a ray.
-	if (!GenerateRayFromScreenSpace(in_ss_pos, clip_viewport, invert_y, pick_ray_origin, pick_ray_dir))
+	if (!GenerateRayFromCursorSpace(in_cursor_pos, clip_viewport, invert_y, pick_ray_origin, pick_ray_dir))
 	{
 		return false;
 	}
@@ -108,36 +129,7 @@ bool longmarch::PerspectiveCamera::ScreenSpaceToWorldSpace(const Vec2u& in_ss_po
 	return true;
 }
 
-bool longmarch::PerspectiveCamera::GenerateRayFromScreenSpace(const Vec2u& in_ss_pos, bool clip_viewport, bool invert_y, Vec3f& out_ray_origin, Vec3f& out_ray_dir) const
-{
-	if (clip_viewport && (glm::any(glm::lessThanEqual(in_ss_pos, cameraSettings.viewportOrigin))
-		|| glm::any(glm::greaterThanEqual(in_ss_pos, cameraSettings.viewportOrigin + cameraSettings.viewportSize))))
-	{
-		return false;
-	}
-
-	// Ensure we have an up-to-date projection and view matrix
-
-	// Transform the pick position from view port space into camera space
-	Vec3f far_;
-	far_.x = (((2.0f * (in_ss_pos.x - cameraSettings.viewportOrigin.x)) / (cameraSettings.viewportSize.x)) - 1.0f);
-	far_.y = (((2.0f * (in_ss_pos.y - cameraSettings.viewportOrigin.y)) / (cameraSettings.viewportSize.y)) - 1.0f);
-	far_.z = 1.f;
-	if (invert_y)
-	{
-		far_.y *= -1.0f;
-	}
-	Vec3f near_(far_.xy, 0);
-
-	const auto& in_pv = Geommath::SmartInverse(GetViewProjectionMatrix());
-	far_ = Geommath::Mat4ProdVec3(in_pv, far_);
-	near_ = Geommath::Mat4ProdVec3(in_pv, near_);
-	out_ray_origin = worldPosition;
-	out_ray_dir = Geommath::Normalize(far_ - near_);
-	return true;
-}
-
-bool longmarch::PerspectiveCamera::WorldSpaceToScreenSpace(const Vec3f& in_world_pos, Vec2u& out_ss_pos, bool invert_y) const
+bool longmarch::PerspectiveCamera::WorldSpaceToCursorSpace(const Vec3f& in_world_pos, bool invert_y, Vec2u& out_cursor_pos) const
 {
 	const auto& pv = GetViewProjectionMatrix();
 	auto ss = Geommath::Mat4ProdVec3(pv, in_world_pos);
@@ -146,7 +138,32 @@ bool longmarch::PerspectiveCamera::WorldSpaceToScreenSpace(const Vec3f& in_world
 	{
 		ss.y = (1.0 - ss.y);
 	}
-	out_ss_pos = ss.xy * Vec2f(cameraSettings.viewportSize) + Vec2f(cameraSettings.viewportOrigin);
+	out_cursor_pos = ss.xy * Vec2f(cameraSettings.viewportSize) + Vec2f(cameraSettings.viewportOrigin);
+	return true;
+}
+
+bool longmarch::PerspectiveCamera::WorldSpaceToScreenSpace(const Vec3f& in_world_pos, Vec2f& out_ss_pos) const
+{
+	const auto& pv = GetViewProjectionMatrix();
+	auto ss = Geommath::Mat4ProdVec3(pv, in_world_pos);
+	out_ss_pos = Vec2f(ss.xy);
+	return true;
+}
+
+bool longmarch::PerspectiveCamera::CursorSpaceToScreenSpace(const Vec2u& in_cursor_pos, bool clip_viewport, bool invert_y, Vec2f& out_ss_pos) const
+{
+	if (clip_viewport && (glm::any(glm::lessThanEqual(in_cursor_pos, cameraSettings.viewportOrigin))
+		|| glm::any(glm::greaterThanEqual(in_cursor_pos, cameraSettings.viewportOrigin + cameraSettings.viewportSize))))
+	{
+		return false;
+	}
+
+	out_ss_pos.x = (((2.0f * (in_cursor_pos.x - cameraSettings.viewportOrigin.x)) / (cameraSettings.viewportSize.x)) - 1.0f);
+	out_ss_pos.y = (((2.0f * (in_cursor_pos.y - cameraSettings.viewportOrigin.y)) / (cameraSettings.viewportSize.y)) - 1.0f);
+	if (invert_y)
+	{
+		out_ss_pos.y *= -1.0f;
+	}
 	return true;
 }
 

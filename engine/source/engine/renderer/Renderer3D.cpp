@@ -162,6 +162,7 @@ void longmarch::Renderer3D::Init()
 		{
 			const auto& dof_settings = graphicsConfiguration["DOF"];
 			s_Data.DOFSettings.enable = dof_settings["Enable"].asBool();
+			s_Data.DOFSettings.dof_threshold = dof_settings["Threshold"].asFloat();
 			s_Data.DOFSettings.dof_blend_strength = dof_settings["Strength"].asFloat();
 			s_Data.DOFSettings.dof_gaussian_kernal = dof_settings["Gaussian-kernel"].asUInt();
 			{
@@ -314,7 +315,7 @@ void longmarch::Renderer3D::Init()
 
 			it->second->SetInt("u_IrradianceMap", s_Data.fragTexture_0_slot);
 			it->second->SetInt("u_RadianceMap", s_Data.fragTexture_1_slot);
-			it->second->SetInt("u_BrdfLUT", s_Data.fragTexture_2_slot); 
+			it->second->SetInt("u_BrdfLUT", s_Data.fragTexture_2_slot);
 
 			it->second->SetInt("colorTex", s_Data.fragTexture_0_slot);
 			it->second->SetInt("edgesTex", s_Data.fragTexture_1_slot);
@@ -331,7 +332,7 @@ void longmarch::Renderer3D::Init()
 		s_Data.ListRenderShadersToPopulateData.insert(s_Data.ListRenderShadersToPopulateData.end(), clusteredShader.begin(), clusteredShader.end());
 		s_Data.ListRenderShadersToPopulateData.insert(s_Data.ListRenderShadersToPopulateData.end(), deferredShader.begin(), deferredShader.end());
 
-		LongMarch_Vector<std::string> MiscShader = { "ParticleShader", "BBoxShader", "SkyboxShader", "TAAShader", "MotionBlur", "DynamicAOShader", "GaussianBlur_AO", "DynamicSSRShader"};
+		LongMarch_Vector<std::string> MiscShader = { "ParticleShader", "BBoxShader", "SkyboxShader", "TAAShader", "MotionBlur", "DynamicAOShader", "GaussianBlur_AO", "DynamicSSRShader", "DOF_Blend"};
 		s_Data.ListShadersToPopulateData = s_Data.ListRenderShadersToPopulateData;
 		s_Data.ListShadersToPopulateData.insert(s_Data.ListShadersToPopulateData.end(), MiscShader.begin(), MiscShader.end());
 
@@ -776,6 +777,7 @@ void longmarch::Renderer3D::_ON_SET_DOF_VALUE(EventQueue<EngineGraphicsEventType
 		++s_Data.DOFSettings.dof_gaussian_kernal;
 	}
 	s_Data.DOFSettings.dof_gaussian_kernal = (glm::clamp)(s_Data.DOFSettings.dof_gaussian_kernal, 3u, 51u);
+	s_Data.DOFSettings.dof_threshold = event->m_strength;
 	s_Data.DOFSettings.dof_blend_strength = event->m_strength;
 	s_Data.DOFSettings.dof_sample_resolution_downScale = event->m_sampleResolutionDownScale;
 	s_Data.DOFSettings.dof_refocus_rate = event->m_refocusRate;
@@ -859,7 +861,7 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 
 		// Enable depth testing and wirte to depth buffer just for the clearing commend
 		RenderCommand::DepthTest(true, true);
-		RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0));
+		RenderCommand::SetClearColor(Vec4f(0, 0, 0, 1));
 		
 		// CRITICAL : Don't clear prev frame buffer as we need it in the current frame
 		/*s_Data.gpuBuffer.PrevFinalFrameBuffer->Bind();
@@ -3409,6 +3411,7 @@ void longmarch::Renderer3D::_BeginDOFPass(const std::shared_ptr<FrameBuffer>& fr
 				s_Data.CurrentShader = s_Data.ShaderMap["DOF_Blend"];
 				s_Data.CurrentShader->Bind();
 				s_Data.CurrentShader->SetInt("enabled_debug", s_Data.DOFSettings.enable_debug);
+				s_Data.CurrentShader->SetFloat("u_Threashold", s_Data.DOFSettings.dof_threshold);
 				s_Data.CurrentShader->SetFloat("u_Strength", s_Data.DOFSettings.dof_blend_strength);
 				framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
 				DOFBuffer->BindTexture(s_Data.fragTexture_1_slot);

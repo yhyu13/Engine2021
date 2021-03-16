@@ -325,10 +325,11 @@ namespace longmarch
 	};
 
 	struct SetDOFvent : public Event<EngineGraphicsEventType> {
-		explicit SetDOFvent(bool b, float strength, int gaussKernel, int sameleResDownSacle, float refocusRate, bool debug)
+		explicit SetDOFvent(bool b, float threshold, float strength, int gaussKernel, int sameleResDownSacle, float refocusRate, bool debug)
 			:
 			Event(EngineGraphicsEventType::SET_DOF_VALUE),
 			m_enable(b),
+			m_threshold(threshold),
 			m_strength(strength),
 			m_gaussKernel(gaussKernel),
 			m_sampleResolutionDownScale(sameleResDownSacle),
@@ -337,6 +338,7 @@ namespace longmarch
 		{
 		}
 		bool m_enable;
+		float m_threshold;
 		float m_strength;
 		int m_gaussKernel;
 		int m_sampleResolutionDownScale;

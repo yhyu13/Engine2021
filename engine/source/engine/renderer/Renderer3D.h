@@ -436,6 +436,7 @@ namespace longmarch
 				uint32_t dof_gaussian_kernal;
 				uint32_t dof_sample_resolution_downScale;
 				float dof_refocus_rate;
+				float dof_threshold;
 				float dof_blend_strength;
 
 				bool use_ss_target{ true };

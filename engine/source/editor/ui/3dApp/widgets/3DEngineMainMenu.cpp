@@ -203,6 +203,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 
 		// DOF
 		static bool checkDOF = DOFConfig["Enable"].asBool();
+		static float valueDOFThreshold = DOFConfig["Threshold"].asFloat();
 		static float valueDOFStrength = DOFConfig["Strength"].asFloat();
 		static int valueDOFBlurKernel = DOFConfig["Gaussian-kernel"].asInt();
 		static int valueDOFSampleResDownScale = DOFConfig["Res-down-scale"].asFloat();
@@ -260,6 +261,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 			{
 				// DOF
 				checkDOF = DOFConfig["Enable"].asBool();
+				valueDOFThreshold = DOFConfig["Threshold"].asFloat();
 				valueDOFStrength = DOFConfig["Strength"].asFloat();
 				valueDOFBlurKernel = DOFConfig["Gaussian-kernel"].asInt();
 				valueDOFSampleResDownScale = DOFConfig["Res-down-scale"].asFloat();
@@ -324,7 +326,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				graphicEventQueue->Publish(e);
 			}
 			{
-				auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+				auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
 				graphicEventQueue->Publish(e);
 			}
 		}
@@ -543,32 +545,37 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				{
 					if (ImGui::Checkbox("Enable", &checkDOF))
 					{
-						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
 						graphicEventQueue->Publish(e);
 					}
 					if (ImGui::SliderInt("Resolution Down Scale", &valueDOFSampleResDownScale, 1, 4, "%d"))
 					{
-						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
 						graphicEventQueue->Publish(e);
 					}
 					if (ImGui::SliderInt("Gauss Kernel", &valueDOFBlurKernel, 3, 51, "%d"))
 					{
-						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
 						graphicEventQueue->Publish(e);
 					}
-					if (ImGui::DragFloat("Strength", &valueDOFStrength, 0.01, 0, 1, "%.2f"))
+					if (ImGui::DragFloat("Threshold", &valueDOFThreshold, 0.1, 0.01, 100, "%.2f"))
 					{
-						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::DragFloat("Blend Strength", &valueDOFStrength, 0.01, 0.01, 1, "%.2f"))
+					{
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
 						graphicEventQueue->Publish(e);
 					}
 					if (ImGui::DragFloat("Refocus Speed", &valueDOFRefocusRate, 0.1, 1, 60, "%.1f"))
 					{
-						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
 						graphicEventQueue->Publish(e);
 					}
 					if (ImGui::Checkbox("Debug", &checkDOFDebug))
 					{
-						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
 						graphicEventQueue->Publish(e);
 					}
 					ImGui::Separator();

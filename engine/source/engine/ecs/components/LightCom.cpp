@@ -389,121 +389,156 @@ void longmarch::LightCom::JsonDeserialize(const Json::Value& value)
 
 void longmarch::LightCom::ImGuiRender()
 {
-	LOCK_GUARD2();
+	constexpr int yoffset_item = 2;
+	constexpr int width_item = 100;
+	constexpr int width_item_1 = 200;
+	constexpr int width_item_2 = 400;
+
 	if (ImGui::TreeNode("Light"))
 	{
 		if (ImGui::TreeNode("General"))
 		{
 			{
+				ImGui::PushItemWidth(width_item);
 				float v = collisionRadius;
-				if (ImGui::InputFloat("Collision Radius", &v))
+				float speed = 0.01f;
+				if (ImGui::DragFloat("Collision Radius", &v, speed, (glm::max)(v - 1, 0.f), v + 1))
 				{
 					collisionRadius = v;
 				}
+				ImGui::PopItemWidth();
 			}
 			{
+				ImGui::PushItemWidth(width_item_2);
 				auto atten = attenuation;
 				if (ImGui::InputFloat4("Attenuation", &atten[0]))
 				{
 					attenuation = atten;
 				}
+				ImGui::PopItemWidth();
 			}
 			{
+				ImGui::PushItemWidth(width_item_1);
 				static const char* lightType[]{ "Directional", "Point", "Spot" };
 				auto _type = (int)type;
 				if (ImGui::Combo("Type", &_type, lightType, IM_ARRAYSIZE(lightType)))
 				{
 					type = (LightCom::LIGHT_TYPE)_type;
 				}
+				ImGui::PopItemWidth();
 			}
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("Directional"))
 		{
 			{
+				ImGui::PushItemWidth(width_item_1);
 				int v = directionalLight.numOfCSM;
 				if (ImGui::SliderInt("# CSM", &v, 1, 4))
 				{
 					directionalLight.numOfCSM = v;
 				}
+				ImGui::PopItemWidth();
+				ImGuiUtil::InlineHelpMarker("Cascade Shadow Map (CSM) is a technique that allows several directional shadow maps of the same resolution to cover scene objects at different distances to the camera. \n This allows directional shadow to cover every details of the scene at every distances.");
 			}
 			{
+				ImGui::PushItemWidth(width_item_1);
 				float v = directionalLight.lambdaCSM;
 				if (ImGui::SliderFloat("CSM Lambda", &v, 0.0f, 1.0f))
 				{
 					directionalLight.lambdaCSM = v;
 				}
+				ImGui::PopItemWidth();
+				ImGuiUtil::InlineHelpMarker("Move different levels of CSM back and forth");
 			}
 			{
+				ImGui::PushItemWidth(width_item_1);
 				// CSM debug
-				static const char* csmDebug[]{ "None", "Levels", "Camera depth","Light depth" };
+				static const char* csmDebug[]{ "None", "Levels", "Camera depth", "Light depth", "Shadow Intensity" };
 				static int selected_csmDebug = 0;
 				if (ImGui::Combo("CSM Debug", &selected_csmDebug, csmDebug, IM_ARRAYSIZE(csmDebug)))
 				{
 					Renderer3D::s_Data.directional_light_display_mode = selected_csmDebug;
 				}
+				ImGui::PopItemWidth();
 			}
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("Point"))
 		{
 			{
+				ImGui::PushItemWidth(width_item);
 				float v = pointLight.radius;
-				if (ImGui::InputFloat("Radius", &v))
+				float speed = 0.1f;
+				if (ImGui::DragFloat("Radius", &v, speed, (glm::max)(v - 1, 0.f), v + 1))
 				{
 					pointLight.radius = (glm::max)(v, 0.f);
 				}
+				ImGui::PopItemWidth();
 			}
 			{
+				ImGui::PushItemWidth(width_item);
 				float v = pointLight.softEdgeRatio;
 				float speed = 0.01f;
 				if (ImGui::DragFloat("Soft Edge Ratio", &v, speed, 0.0f, 1.0f))
 				{
 					pointLight.softEdgeRatio = v;
 				}
+				ImGui::PopItemWidth();
 			}
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("Spot"))
 		{
 			{
+				ImGui::PushItemWidth(width_item);
 				float v = spotLight.distance;
-				if (ImGui::InputFloat("Distance", &v))
+				float speed = 0.1f;
+				if (ImGui::DragFloat("Distance", &v, speed, (glm::max)(v - 1, 0.f), v + 1))
 				{
 					spotLight.distance = (glm::max)(v, 0.f);
 				}
+				ImGui::PopItemWidth();
 			}
 			{
+				ImGui::PushItemWidth(width_item);
 				float v = spotLight.innerConeRad * RAD2DEG;
 				float speed = 0.25f;
 				if (ImGui::DragFloat("Inner Cone", &v, speed, 0.0f, 170.f))
 				{
 					spotLight.innerConeRad = v * DEG2RAD;
 				}
+				ImGui::PopItemWidth();
 			}
 			{
+				ImGui::PushItemWidth(width_item);
 				float v = spotLight.outterConeRad * RAD2DEG;
 				float speed = 0.25f;
 				if (ImGui::DragFloat("Outter Cone", &v, speed, 0.0f, 170.f))
 				{
 					spotLight.outterConeRad = v * DEG2RAD;
 				}
+				ImGui::PopItemWidth();
 			}
 			{
+				ImGui::PushItemWidth(width_item);
 				float v = spotLight.softEdgeRatio;
 				float speed = 0.01f;
 				if (ImGui::DragFloat("Soft Edge Ratio", &v, speed, 0.0f, 1.0f))
 				{
 					spotLight.softEdgeRatio = v;
 				}
+				ImGui::PopItemWidth();
 			}
 			{
+				ImGui::PushItemWidth(width_item);
 				float v = spotLight.aspectWByH;
 				float speed = 0.01f;
 				if (ImGui::DragFloat("Aspect WByH", &v, speed, 0.5f, 2.0f))
 				{
 					spotLight.aspectWByH = v;
 				}
+				ImGui::PopItemWidth();
 			}
 			ImGui::TreePop();
 		}
@@ -519,6 +554,7 @@ void longmarch::LightCom::ImGuiRender()
 				}
 			}
 			{
+				ImGui::PushItemWidth(width_item_1);
 				int v = shadow.shadowAlgorithmMode;
 				if (ImGui::Combo("Shadow Algorithm", &v, s_shadowAlgorithmModes, IM_ARRAYSIZE(s_shadowAlgorithmModes)))
 				{
@@ -534,62 +570,84 @@ void longmarch::LightCom::ImGuiRender()
 					ReleaseShadowBuffer();
 					AllocateShadowBuffer();
 				}
+				ImGui::PopItemWidth();
 			}
 			{
+				ImGui::PushItemWidth(width_item);
 				float v = shadow.depthBiasHigherBound;
-				if (ImGui::InputFloat("Depth Bias High", &v))
+				float speed = 0.1f;
+				if (ImGui::DragFloat("Depth Bias High", &v, speed, (glm::max)(v - 1, 1.f), v + 1))
 				{
 					shadow.depthBiasHigherBound = (glm::max)(v, 1.0f);
 				}
+				ImGui::PopItemWidth();
+				ImGuiUtil::InlineHelpMarker("Set the shadow map depth bias upper bound");
 			}
 			{
+				ImGui::PushItemWidth(width_item);
 				float v = shadow.depthBiasMultiplier;
-				if (ImGui::InputFloat("Depth Bias Multi", &v))
+				float speed = 0.1f;
+				if (ImGui::DragFloat("Depth Bias Multi", &v, speed, (glm::max)(v - 1, 0.f), v + 1))
 				{
 					shadow.depthBiasMultiplier = (glm::max)(v, .0f);
 				}
+				ImGui::PopItemWidth();
+				ImGuiUtil::InlineHelpMarker("Set the shadow map depth slope bias multiplier");
 			}
 			{
+				ImGui::PushItemWidth(width_item);
 				float v = shadow.nrmBiasMultiplier;
-				if (ImGui::InputFloat("Nrm Bias Multi", &v))
+				float speed = 0.1f;
+				if (ImGui::DragFloat("Normal Bias Multi", &v, speed, v-1, v+1))
 				{
 					shadow.nrmBiasMultiplier = v;
 				}
+				ImGui::PopItemWidth();
+				ImGuiUtil::InlineHelpMarker("Set the shadow map depth normal bias multiplier");
 			}
 			{
+				ImGui::PushItemWidth(width_item);
 				float v = shadow.nearZ;
-				if (ImGui::InputFloat("Near Z", &v))
+				float speed = 0.1f;
+				if (ImGui::DragFloat("Shadow Map Near plane", &v, speed, (glm::max)(v * 0.9f, 0.1f), v * 1.1f))
 				{
 					shadow.nearZ = (glm::max)(v, 0.1f);
 				}
+				ImGui::PopItemWidth();
 			}
 			{
+				ImGui::PushItemWidth(width_item);
 				float v = shadow.farZ;
-				if (ImGui::InputFloat("Far Z", &v))
+				float speed = 0.1f;
+				if (ImGui::DragFloat("Shadow Map Far plane", &v, speed, (glm::max)(v * 0.9f, 0.1f), v * 1.1f))
 				{
 					shadow.farZ = v;
 				}
+				ImGui::PopItemWidth();
 			}
 			{
+				ImGui::PushItemWidth(width_item);
 				float v = shadow.dropOffDistance;
-				if (ImGui::InputFloat("Shadow Map Drop Off Distance", &v))
+				float speed = 0.1f;
+				if (ImGui::DragFloat("Shadow Map Drop Off Distance", &v, speed, (glm::max)(v * 0.9f, 0.0f), v * 1.1f))
 				{
 					shadow.dropOffDistance = v;
 				}
+				ImGui::PopItemWidth();
+				ImGuiUtil::InlineHelpMarker("Shadow map would choose to render in lower resolution on being greater distances to the camera. \n Does not apply to shadow of directional light, use CSM instead.");
 			}
 			{
-				int v = shadow.dimension;
+				ImGui::PushItemWidth(width_item);
+				int v = shadow.origin_dimension;
 				ImGui::InputInt("Shadow Map Size", &v, 128);
-				if (ImGui::Button("Restore Shadow Map Size"))
+				if (shadow.origin_dimension != v)
 				{
-					v = shadow.origin_dimension;
-				}
-				if (shadow.dimension != v)
-				{
-					shadow.dimension = (glm::max)(v, 128);
+					shadow.origin_dimension = (glm::max)(v, 128);
+					shadow.dimension = shadow.origin_dimension;
 					ReleaseShadowBuffer();
 					AllocateShadowBuffer();
 				}
+				ImGui::PopItemWidth();
 			}
 			{
 				bool v = shadow.bEnableTransparentShadow;
@@ -608,8 +666,10 @@ void longmarch::LightCom::ImGuiRender()
 					ReleaseShadowBuffer();
 					AllocateShadowBuffer();
 				}
+				ImGuiUtil::InlineHelpMarker("For MSM2 and MSM4, this value should be true, otherwise, set to false");
 			}
 			{
+				ImGui::PushItemWidth(width_item);
 				int v = shadow.gaussianKernal;
 				if (ImGui::SliderInt("Gaussian Kernel Size", &v, 3, 51))
 				{
@@ -620,20 +680,20 @@ void longmarch::LightCom::ImGuiRender()
 					}
 					shadow.gaussianKernal = (glm::clamp)(shadow.gaussianKernal, 3u, 51u);
 				}
+				ImGui::PopItemWidth();
 			}
 			{
-				int v = shadow.backBufferDimension;
+				ImGui::PushItemWidth(width_item);
+				int v = shadow.origin_backBufferDimension;
 				ImGui::InputInt("Gaussian Backbuffer Shadow Map Size", &v, 128);
-				if (ImGui::Button("Restore Backbuffer Shadow Map Size"))
+				if (shadow.origin_backBufferDimension != v)
 				{
-					v = shadow.origin_backBufferDimension;
-				}
-				if (shadow.backBufferDimension != v)
-				{
-					shadow.backBufferDimension = (glm::clamp)(v, 128, static_cast<int>(shadow.dimension));
+					shadow.origin_backBufferDimension = (glm::clamp)(v, 128, static_cast<int>(shadow.dimension));
+					shadow.backBufferDimension = shadow.origin_backBufferDimension;
 					ReleaseShadowBuffer();
 					AllocateShadowBuffer();
 				}
+				ImGui::PopItemWidth();
 			}
 			ImGui::TreePop();
 		}
@@ -686,7 +746,7 @@ void longmarch::LightCom::AllocateShadowBuffer()
 			case longmarch::LightCom::LIGHT_TYPE::POINT:
 #ifdef POINT_LIGHT_ARRAY_SHADOW_MAP
 				shadow.shadowBuffer2 = ShadowBuffer::CreateArray(
-					shadow.dimension, shadow.dimension,
+					shadow.backBufferDimension, shadow.backBufferDimension,
 					6,
 					ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
 #else
@@ -695,7 +755,7 @@ void longmarch::LightCom::AllocateShadowBuffer()
 					ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE);
 #endif
 				shadow.shadowBuffer2 = ShadowBuffer::CreateArray(
-					shadow.dimension, shadow.dimension,
+					shadow.backBufferDimension, shadow.backBufferDimension,
 					6,
 					ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
 				break;
@@ -712,7 +772,7 @@ void longmarch::LightCom::AllocateShadowBuffer()
 			{
 			case longmarch::LightCom::LIGHT_TYPE::DIRECTIONAL:
 				shadow.shadowBuffer3 = ShadowBuffer::CreateArray(
-					shadow.backBufferDimension, shadow.backBufferDimension,
+					shadow.dimension, shadow.dimension,
 					directionalLight.numOfCSM,
 					ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
 				break;
@@ -734,7 +794,7 @@ void longmarch::LightCom::AllocateShadowBuffer()
 				break;
 			case longmarch::LightCom::LIGHT_TYPE::SPOT:
 				shadow.shadowBuffer3 = ShadowBuffer::Create(
-					shadow.backBufferDimension, shadow.backBufferDimension,
+					shadow.dimension, shadow.dimension,
 					ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4);
 				break;
 			}

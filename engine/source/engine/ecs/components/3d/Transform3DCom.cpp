@@ -486,11 +486,11 @@ void longmarch::Transform3DCom::JsonDeserialize(const Json::Value& value)
 
 void longmarch::Transform3DCom::ImGuiRender()
 {
+	constexpr int yoffset_item = 2;
+	constexpr int width_item = 100;
+
 	if (ImGui::TreeNode("Transform"))
 	{
-		constexpr int yoffset_item = 2;
-		constexpr int width_item = 100;
-
 #ifdef DEBUG_DRAW
 		{
 			bool show = debug.showRotation;

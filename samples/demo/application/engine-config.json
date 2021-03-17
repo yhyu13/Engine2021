@@ -98,7 +98,7 @@
 
 		"DOF":
 		{
-			"Enable": true,	
+			"Enable": false,	
 			"Gaussian-kernel": 15,
 			"Res-down-scale": 4,
 			"Refocus-rate": 4.0,  /* Determine how fast DOF's focus plane reaches to target depth*/

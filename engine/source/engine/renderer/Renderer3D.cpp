@@ -20,6 +20,12 @@ void longmarch::Renderer3D::Init()
 	}
 	_init = true;
 	RenderCommand::Init();
+
+	// CPU/GPU Profiler
+	{
+
+	}
+
 	const auto& engineConfiguration = FileSystem::GetCachedJsonCPP("$root:engine-config.json");
 	const auto& graphicsConfiguration = engineConfiguration["graphics"];
 	const auto& shaderConfiguration = engineConfiguration["shader"];
@@ -777,7 +783,7 @@ void longmarch::Renderer3D::_ON_SET_DOF_VALUE(EventQueue<EngineGraphicsEventType
 		++s_Data.DOFSettings.dof_gaussian_kernal;
 	}
 	s_Data.DOFSettings.dof_gaussian_kernal = (glm::clamp)(s_Data.DOFSettings.dof_gaussian_kernal, 3u, 51u);
-	s_Data.DOFSettings.dof_threshold = event->m_strength;
+	s_Data.DOFSettings.dof_threshold = event->m_threshold;
 	s_Data.DOFSettings.dof_blend_strength = event->m_strength;
 	s_Data.DOFSettings.dof_sample_resolution_downScale = event->m_sampleResolutionDownScale;
 	s_Data.DOFSettings.dof_refocus_rate = event->m_refocusRate;

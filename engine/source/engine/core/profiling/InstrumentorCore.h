@@ -14,3 +14,9 @@
 #else
 #define APP_TIME(name) InstrumentingTimer timer##__LINE__(name, longmarch::Instrumentor::GetApplicationInstance())
 #endif
+
+#ifdef _DEBUG
+#define GPU_TIME(name) InstrumentingTimer timer##__LINE__(name, longmarch::RemoteryInstrumentor::GetInstance())
+#else
+#define GPU_TIME(name) InstrumentingTimer timer##__LINE__(name, longmarch::RemoteryInstrumentor::GetInstance())
+#endif

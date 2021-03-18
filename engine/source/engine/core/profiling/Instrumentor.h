@@ -1,7 +1,10 @@
 #pragma once
+#include <Remotery.h>
 
-namespace longmarch {
-	struct InstrumentorResult {
+namespace longmarch 
+{
+	struct InstrumentorResult 
+	{
 		const char* m_name;
 		double m_time;
 		const char* m_timeUnit;
@@ -12,9 +15,9 @@ namespace longmarch {
 		ENG_TIME("Something")
 		APP_TIME("Something")
 	*/
-	class Instrumentor {
+	class Instrumentor 
+	{
 	public:
-
 		static Instrumentor* GetEngineInstance();
 		static Instrumentor* GetApplicationInstance();
 		~Instrumentor();
@@ -25,9 +28,13 @@ namespace longmarch {
 		std::map<const char*, InstrumentorResult>& GetResults();
 
 	private:
-
 		Instrumentor();
-
 		std::map<const char*, InstrumentorResult> m_results;
+	};
+
+	class RemoteryInstrumentor
+	{
+	public:
+		static Remotery* GetInstance();
 	};
 }

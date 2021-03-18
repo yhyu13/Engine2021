@@ -135,14 +135,17 @@ ApplicationDir["root"]     		= (applicationdir)
 ApplicationDir["source"]     	= (applicationdir .. "/source")
 
 IncludeDir = {}
+-- Non header-only externals are included as external
+IncludeDir["glad"]     		= "%{EngineDir.external}/glad/include"
 IncludeDir["glfw"]     		= "%{EngineDir.external}/glfw/include"
+IncludeDir["SOIL2"]      	= "%{EngineDir.external}/SOIL2"
 IncludeDir["ImGui"]      	= "%{EngineDir.external}/imgui"
 IncludeDir["lua"]      		= "%{EngineDir.external}/lua540/src"
-IncludeDir["glad"]     		= "%{EngineDir.external}/glad/include"
-IncludeDir["tileson"]      	= "%{EngineDir.external}/tileson/include"
-IncludeDir["SOIL2"]      	= "%{EngineDir.external}/SOIL2"
 IncludeDir["jsoncpp"]  		= "%{EngineDir.external}/jsoncpp/include"
+IncludeDir["tileson"]      	= "%{EngineDir.external}/tileson/include"
+IncludeDir["Remotery"]      = "%{EngineDir.external}/Remotery/lib"
 
+-- Header-only externals are included as vendor
 IncludeDir["assimp"]     	= "%{EngineDir.vendors}/assimp/include"
 IncludeDir["glm"]      		= "%{EngineDir.vendors}/glm"
 IncludeDir["fmod_core"]  	= "%{EngineDir.vendors}/fmod/api/core/inc"
@@ -184,6 +187,7 @@ include (enginedir .. "/external/imgui/imgui")
 include (enginedir .. "/external/lua540/src")
 include (enginedir .. "/external/jsoncpp")
 include (enginedir .. "/external/tileson")
+include (enginedir .. "/external/Remotery")
 
 project "engine"
 	location (enginedir)
@@ -227,6 +231,7 @@ project "engine"
 		"%{IncludeDir.sol2}",
 		"%{IncludeDir.FastBVH}",
 		"%{IncludeDir.miniz_cpp}",
+		"%{IncludeDir.Remotery}",
 	}
 
 	libdirs
@@ -247,6 +252,7 @@ project "engine"
 		"Lua540",
 		"jsoncpp",
 		"tileson",
+		"Remotery",
 		"%{LibName.fmod_core}",
 		"%{LibName.fmod_bank}",
 		"%{LibName.fmod_studio}",
@@ -366,6 +372,7 @@ project "application"
 		"%{IncludeDir.sol2}",
 		"%{IncludeDir.FastBVH}",
 		"%{IncludeDir.miniz_cpp}",
+		"%{IncludeDir.Remotery}",
 	}
 
 	links

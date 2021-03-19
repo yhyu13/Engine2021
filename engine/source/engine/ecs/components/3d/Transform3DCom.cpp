@@ -527,6 +527,7 @@ void longmarch::Transform3DCom::ImGuiRender()
 				{
 					AddLocalPos(pos - pos2);
 				}
+				ImGui::Separator();
 				ImGui::TreePop();
 			}
 			if (ImGui::TreeNode("Global Pos"))
@@ -546,9 +547,9 @@ void longmarch::Transform3DCom::ImGuiRender()
 				{
 					SetGlobalPos(pos);
 				}
+				ImGui::Separator();
 				ImGui::TreePop();
 			}
-			ImGui::Separator();
 			ImGui::Dummy(ImVec2(0, yoffset_item));
 		}
 		{
@@ -569,9 +570,9 @@ void longmarch::Transform3DCom::ImGuiRender()
 				{
 					AddLocalRot(Geommath::ToQuaternion((rot - rot2) * DEG2RAD));
 				}
+				ImGui::Separator();
 				ImGui::TreePop();
 			}
-			ImGui::Dummy(ImVec2(0, yoffset_item));
 			if (ImGui::TreeNode("Global Rot"))
 			{
 				auto rot = Geommath::ToEulerAngles(GetGlobalRot()) * RAD2DEG;
@@ -589,9 +590,9 @@ void longmarch::Transform3DCom::ImGuiRender()
 				{
 					AddGlobalRot(Geommath::ToQuaternion((rot - rot2) * DEG2RAD));
 				}
+				ImGui::Separator();
 				ImGui::TreePop();
 			}
-			ImGui::Separator();
 			ImGui::Dummy(ImVec2(0, yoffset_item));
 		}
 		{
@@ -612,6 +613,7 @@ void longmarch::Transform3DCom::ImGuiRender()
 				{
 					SetLocalScale(scale);
 				}
+				ImGui::Separator();
 				ImGui::TreePop();
 			}
 			if (ImGui::TreeNode("RTP Scale"))
@@ -631,6 +633,7 @@ void longmarch::Transform3DCom::ImGuiRender()
 				{
 					SetRelativeToParentScale(scale);
 				}
+				ImGui::Separator();
 				ImGui::TreePop();
 			}
 		}

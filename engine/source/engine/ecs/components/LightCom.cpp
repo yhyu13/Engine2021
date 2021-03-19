@@ -396,6 +396,7 @@ void longmarch::LightCom::ImGuiRender()
 
 	if (ImGui::TreeNode("Light"))
 	{
+		ImGuiUtil::InlineHelpMarker("Light color and intensity is handled in material section of the scene component");
 		if (ImGui::TreeNode("General"))
 		{
 			{
@@ -408,6 +409,7 @@ void longmarch::LightCom::ImGuiRender()
 				}
 				ImGui::PopItemWidth();
 			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
 			{
 				ImGui::PushItemWidth(width_item_2);
 				auto atten = attenuation;
@@ -417,6 +419,7 @@ void longmarch::LightCom::ImGuiRender()
 				}
 				ImGui::PopItemWidth();
 			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
 			{
 				ImGui::PushItemWidth(width_item_1);
 				static const char* lightType[]{ "Directional", "Point", "Spot" };
@@ -424,44 +427,17 @@ void longmarch::LightCom::ImGuiRender()
 				if (ImGui::Combo("Type", &_type, lightType, IM_ARRAYSIZE(lightType)))
 				{
 					type = (LightCom::LIGHT_TYPE)_type;
+					ReleaseShadowBuffer();
+					AllocateShadowBuffer();
 				}
 				ImGui::PopItemWidth();
 			}
+			ImGui::Separator();
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("Directional"))
 		{
-			{
-				ImGui::PushItemWidth(width_item_1);
-				int v = directionalLight.numOfCSM;
-				if (ImGui::SliderInt("# CSM", &v, 1, 4))
-				{
-					directionalLight.numOfCSM = v;
-				}
-				ImGui::PopItemWidth();
-				ImGuiUtil::InlineHelpMarker("Cascade Shadow Map (CSM) is a technique that allows several directional shadow maps of the same resolution to cover scene objects at different distances to the camera. \n This allows directional shadow to cover every details of the scene at every distances.");
-			}
-			{
-				ImGui::PushItemWidth(width_item_1);
-				float v = directionalLight.lambdaCSM;
-				if (ImGui::SliderFloat("CSM Lambda", &v, 0.0f, 1.0f))
-				{
-					directionalLight.lambdaCSM = v;
-				}
-				ImGui::PopItemWidth();
-				ImGuiUtil::InlineHelpMarker("Move different levels of CSM back and forth");
-			}
-			{
-				ImGui::PushItemWidth(width_item_1);
-				// CSM debug
-				static const char* csmDebug[]{ "None", "Levels", "Camera depth", "Light depth", "Shadow Intensity" };
-				static int selected_csmDebug = 0;
-				if (ImGui::Combo("CSM Debug", &selected_csmDebug, csmDebug, IM_ARRAYSIZE(csmDebug)))
-				{
-					Renderer3D::s_Data.directional_light_display_mode = selected_csmDebug;
-				}
-				ImGui::PopItemWidth();
-			}
+			ImGui::Separator();
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("Point"))
@@ -476,6 +452,7 @@ void longmarch::LightCom::ImGuiRender()
 				}
 				ImGui::PopItemWidth();
 			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
 			{
 				ImGui::PushItemWidth(width_item);
 				float v = pointLight.softEdgeRatio;
@@ -486,6 +463,7 @@ void longmarch::LightCom::ImGuiRender()
 				}
 				ImGui::PopItemWidth();
 			}
+			ImGui::Separator();
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("Spot"))
@@ -500,6 +478,7 @@ void longmarch::LightCom::ImGuiRender()
 				}
 				ImGui::PopItemWidth();
 			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
 			{
 				ImGui::PushItemWidth(width_item);
 				float v = spotLight.innerConeRad * RAD2DEG;
@@ -510,6 +489,7 @@ void longmarch::LightCom::ImGuiRender()
 				}
 				ImGui::PopItemWidth();
 			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
 			{
 				ImGui::PushItemWidth(width_item);
 				float v = spotLight.outterConeRad * RAD2DEG;
@@ -520,6 +500,7 @@ void longmarch::LightCom::ImGuiRender()
 				}
 				ImGui::PopItemWidth();
 			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
 			{
 				ImGui::PushItemWidth(width_item);
 				float v = spotLight.softEdgeRatio;
@@ -530,16 +511,18 @@ void longmarch::LightCom::ImGuiRender()
 				}
 				ImGui::PopItemWidth();
 			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
 			{
 				ImGui::PushItemWidth(width_item);
 				float v = spotLight.aspectWByH;
 				float speed = 0.01f;
-				if (ImGui::DragFloat("Aspect WByH", &v, speed, 0.5f, 2.0f))
+				if (ImGui::DragFloat("Aspect ratio (with/height)", &v, speed, 0.5f, 2.0f))
 				{
 					spotLight.aspectWByH = v;
 				}
 				ImGui::PopItemWidth();
 			}
+			ImGui::Separator();
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("Shadow"))
@@ -553,6 +536,7 @@ void longmarch::LightCom::ImGuiRender()
 					AllocateShadowBuffer();
 				}
 			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
 			{
 				ImGui::PushItemWidth(width_item_1);
 				int v = shadow.shadowAlgorithmMode;
@@ -572,6 +556,54 @@ void longmarch::LightCom::ImGuiRender()
 				}
 				ImGui::PopItemWidth();
 			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
+			switch (type)
+			{
+			case longmarch::LightCom::LIGHT_TYPE::DIRECTIONAL:
+			{
+				ImGui::PushItemWidth(width_item_1);
+				int v = directionalLight.numOfCSM;
+				if (ImGui::SliderInt("# CSM", &v, 1, 4))
+				{
+					directionalLight.numOfCSM = v; 
+					ReleaseShadowBuffer();
+					AllocateShadowBuffer();
+				}
+				ImGui::PopItemWidth();
+				ImGuiUtil::InlineHelpMarker("Cascade Shadow Map (CSM) is a technique that allows several directional shadow maps of the same resolution to cover scene objects at different distances to the camera. \n This allows directional shadow to cover every details of the scene at every distances.");
+			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
+			{
+				ImGui::PushItemWidth(width_item_1);
+				float v = directionalLight.lambdaCSM;
+				if (ImGui::SliderFloat("CSM Lambda", &v, 0.0f, 1.0f))
+				{
+					directionalLight.lambdaCSM = v;
+				}
+				ImGui::PopItemWidth();
+				ImGuiUtil::InlineHelpMarker("If you see artifacts at far distances, move different levels of CSM back and forth.");
+			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
+			{
+				ImGui::PushItemWidth(width_item_1);
+				// CSM debug
+				static const char* csmDebug[]{ "None", "Levels", "Camera depth", "Light depth", "Shadow Intensity" };
+				static int selected_csmDebug = 0;
+				if (ImGui::Combo("CSM Debug", &selected_csmDebug, csmDebug, IM_ARRAYSIZE(csmDebug)))
+				{
+					Renderer3D::s_Data.directional_light_display_mode = selected_csmDebug;
+				}
+				ImGui::PopItemWidth();
+			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
+			break;
+			case longmarch::LightCom::LIGHT_TYPE::POINT:
+				break;
+			case longmarch::LightCom::LIGHT_TYPE::SPOT:
+				break;
+			default:
+				break;
+			}
 			{
 				ImGui::PushItemWidth(width_item);
 				float v = shadow.depthBiasHigherBound;
@@ -583,6 +615,7 @@ void longmarch::LightCom::ImGuiRender()
 				ImGui::PopItemWidth();
 				ImGuiUtil::InlineHelpMarker("Set the shadow map depth bias upper bound");
 			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
 			{
 				ImGui::PushItemWidth(width_item);
 				float v = shadow.depthBiasMultiplier;
@@ -594,6 +627,7 @@ void longmarch::LightCom::ImGuiRender()
 				ImGui::PopItemWidth();
 				ImGuiUtil::InlineHelpMarker("Set the shadow map depth slope bias multiplier");
 			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
 			{
 				ImGui::PushItemWidth(width_item);
 				float v = shadow.nrmBiasMultiplier;
@@ -605,6 +639,7 @@ void longmarch::LightCom::ImGuiRender()
 				ImGui::PopItemWidth();
 				ImGuiUtil::InlineHelpMarker("Set the shadow map depth normal bias multiplier");
 			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
 			{
 				ImGui::PushItemWidth(width_item);
 				float v = shadow.nearZ;
@@ -615,6 +650,7 @@ void longmarch::LightCom::ImGuiRender()
 				}
 				ImGui::PopItemWidth();
 			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
 			{
 				ImGui::PushItemWidth(width_item);
 				float v = shadow.farZ;
@@ -625,6 +661,7 @@ void longmarch::LightCom::ImGuiRender()
 				}
 				ImGui::PopItemWidth();
 			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
 			{
 				ImGui::PushItemWidth(width_item);
 				float v = shadow.dropOffDistance;
@@ -636,6 +673,7 @@ void longmarch::LightCom::ImGuiRender()
 				ImGui::PopItemWidth();
 				ImGuiUtil::InlineHelpMarker("Shadow map would choose to render in lower resolution on being greater distances to the camera. \n Does not apply to shadow of directional light, use CSM instead.");
 			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
 			{
 				ImGui::PushItemWidth(width_item);
 				int v = shadow.origin_dimension;
@@ -649,6 +687,7 @@ void longmarch::LightCom::ImGuiRender()
 				}
 				ImGui::PopItemWidth();
 			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
 			{
 				bool v = shadow.bEnableTransparentShadow;
 				if (ImGui::Checkbox("Enable Transparent Shadow", &v))
@@ -658,6 +697,7 @@ void longmarch::LightCom::ImGuiRender()
 					AllocateShadowBuffer();
 				}
 			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
 			{
 				bool v = shadow.bEnableGaussianBlur;
 				if (ImGui::Checkbox("Enable Gaussian Blur", &v))
@@ -668,6 +708,7 @@ void longmarch::LightCom::ImGuiRender()
 				}
 				ImGuiUtil::InlineHelpMarker("For MSM2 and MSM4, this value should be true, otherwise, set to false");
 			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
 			{
 				ImGui::PushItemWidth(width_item);
 				int v = shadow.gaussianKernal;
@@ -682,6 +723,7 @@ void longmarch::LightCom::ImGuiRender()
 				}
 				ImGui::PopItemWidth();
 			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
 			{
 				ImGui::PushItemWidth(width_item);
 				int v = shadow.origin_backBufferDimension;
@@ -695,6 +737,7 @@ void longmarch::LightCom::ImGuiRender()
 				}
 				ImGui::PopItemWidth();
 			}
+			ImGui::Separator();
 			ImGui::TreePop();
 		}
 		ImGui::Separator();

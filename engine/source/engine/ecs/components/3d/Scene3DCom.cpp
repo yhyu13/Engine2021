@@ -435,6 +435,7 @@ void longmarch::Scene3DCom::ImGuiRender()
 		}
 		if (!m_objDatasRef)
 		{
+			ImGui::Separator();
 			ImGui::TreePop();
 			return;
 		}
@@ -492,6 +493,7 @@ void longmarch::Scene3DCom::ImGuiRender()
 				}
 				ImGuiUtil::InlineHelpMarker("Translucency sort priority, positive draw at front, negative draw at back");
 			}
+			ImGui::Separator();
 			ImGui::TreePop();
 		}
 		// Material
@@ -600,6 +602,7 @@ void longmarch::Scene3DCom::ImGuiRender()
 							}
 							ImGuiUtil::TextureViewerWithZoom(mat->textures.ao_texture->TryGet());
 						}
+						ImGui::Separator();
 						ImGui::TreePop();
 					}
 					if (ImGui::TreeNode(LongMarch_ImGuiHashTagName("Kd", "kd_tree" + Str(data.get()))))
@@ -613,6 +616,7 @@ void longmarch::Scene3DCom::ImGuiRender()
 							ImGui::DragFloat(LongMarch_ImGuiHashTagName("B", "kd_picker_b" + Str(data.get())), &kd[2], speed, 0.f, 1.f);
 						}
 						mat->Kd = kd;
+						ImGui::Separator();
 						ImGui::TreePop();
 					}
 					if (ImGui::TreeNode(LongMarch_ImGuiHashTagName("Alpha", "alpha_tree" + Str(data.get()))))
@@ -623,6 +627,7 @@ void longmarch::Scene3DCom::ImGuiRender()
 						{
 							mat->alpha = alpha;
 						}
+						ImGui::Separator();
 						ImGui::TreePop();
 					}
 					if (ImGui::TreeNode(LongMarch_ImGuiHashTagName("Metallic", "met_tree" + Str(data.get()))))
@@ -633,6 +638,7 @@ void longmarch::Scene3DCom::ImGuiRender()
 						{
 							mat->metallic = metallic;
 						}
+						ImGui::Separator();
 						ImGui::TreePop();
 					}
 					if (ImGui::TreeNode(LongMarch_ImGuiHashTagName("Roughness", "roug_tree" + Str(data.get()))))
@@ -643,6 +649,7 @@ void longmarch::Scene3DCom::ImGuiRender()
 						{
 							mat->roughness = roughness;
 						}
+						ImGui::Separator();
 						ImGui::TreePop();
 					}
 					if (ImGui::TreeNode(LongMarch_ImGuiHashTagName("Emssive", "emssive_tree" + Str(data.get()))))
@@ -652,14 +659,17 @@ void longmarch::Scene3DCom::ImGuiRender()
 						{
 							mat->emissive = emissive;
 						}
+						ImGui::Separator();
 						ImGui::TreePop();
 					}
+					ImGui::Separator();
 					ImGui::TreePop();
 				}
 				ImGui::Separator();
 				ImGui::TreePop();
 			}
 		}
+		ImGui::Separator();
 		ImGui::TreePop();
 	}
 }

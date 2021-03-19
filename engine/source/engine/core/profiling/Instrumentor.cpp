@@ -57,12 +57,12 @@ namespace longmarch
 
 	RemoteryInstrumentor::RemoteryInstrumentor()
 	{
-		rmt_CreateGlobalInstance(&m_rmt_instance);
-		rmt_BindOpenGL(); // Remotery is built with OpenGL backend
+		//rmt_CreateGlobalInstance(&m_rmt_instance);
+		//rmt_BindOpenGL(); // Remotery is built with OpenGL backend
 	}
 
 	RemoteryInstrumentor::~RemoteryInstrumentor()
 	{
-		rmt_DestroyGlobalInstance(m_rmt_instance);
+		//rmt_DestroyGlobalInstance(m_rmt_instance);
 	}
 }

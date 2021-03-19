@@ -3079,7 +3079,7 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 				s_Data.CurrentShader = s_Data.ShaderMap["SMAAShader_edge"];
 				s_Data.CurrentShader->Bind();
 
-				s_Data.CurrentShader->SetFloat2("resolution", framebuffer_in->GetBufferSize());
+				s_Data.CurrentShader->SetFloat2("resolution", Vec2f(framebuffer_in->GetBufferSize()));
 				framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
 				// Render quad
 				Renderer3D::_RenderFullScreenQuad();
@@ -3094,7 +3094,7 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 				s_Data.CurrentShader = s_Data.ShaderMap["SMAAShader_weight"];
 				s_Data.CurrentShader->Bind();
 
-				s_Data.CurrentShader->SetFloat2("resolution", framebuffer_edge->GetBufferSize());
+				s_Data.CurrentShader->SetFloat2("resolution", Vec2f(framebuffer_edge->GetBufferSize()));
 				framebuffer_edge->BindTexture(s_Data.fragTexture_1_slot);
 				s_Data.gpuBuffer.SmaaAreaLUT->BindTexture(s_Data.fragTexture_empty_slot + 1);
 				s_Data.gpuBuffer.SmaaSearchLUT->BindTexture(s_Data.fragTexture_empty_slot + 2);
@@ -3120,7 +3120,7 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 				s_Data.CurrentShader = s_Data.ShaderMap["SMAAShader_blend"];
 				s_Data.CurrentShader->Bind();
 
-				s_Data.CurrentShader->SetFloat2("resolution", framebuffer_in->GetBufferSize());
+				s_Data.CurrentShader->SetFloat2("resolution", Vec2f(framebuffer_in->GetBufferSize()));
 				framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
 				framebuffer_blend->BindTexture(s_Data.fragTexture_2_slot);
 				// Render quad

@@ -136,9 +136,7 @@ namespace longmarch
 		{
 			rateController->FrameStart();
 			{
-				//#ifdef _DEBUG
-				Instrumentor::GetEngineInstance()->AddInstrumentorResult({ "Up Time", (m_timer.Mark()), "s " });
-				//#endif
+				Instrumentor::GetEngineInstance()->AddInstrumentorResult({ "Up Time", (m_timer.Mark()), "s" });
 
 				// Pre update
 				PreUpdate().Update();

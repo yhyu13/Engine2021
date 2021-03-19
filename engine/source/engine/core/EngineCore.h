@@ -29,20 +29,20 @@
 #define NONINSTANTIABLE(Class) Class() = delete; ~Class() = delete; Class( const Class& ) = delete; Class( const Class&& ) = delete; \
 							Class& operator=(const Class&) = delete; Class& operator=(const Class&&) = delete;
 
-#ifdef _DEBUG
+#ifndef _SHIPPING
 #define ASSERT(x, ...) { if(!(x)) { if (Logger::init) ENGINE_CRITICAL("Assertion failed: {0}", __VA_ARGS__); __debugbreak(); } }
 #else
-#define ASSERT(x, ...) { if(!(x)) { if (Logger::init) ENGINE_CRITICAL("Assertion failed: {0}", __VA_ARGS__); __debugbreak(); } }
+#define ASSERT(x, ...)
 #endif // DEBUG
 
-#ifdef _DEBUG
+#ifndef _SHIPPING
 #define ERROR_PRINT(...) { if (Logger::init) ENGINE_ERROR(__VA_ARGS__); }
 #define DEBUG_PRINT(...) { if (Logger::init) ENGINE_DEBUG(__VA_ARGS__); }
 #define PRINT(...) { if (Logger::init) ENGINE_INFO(__VA_ARGS__); }
 #else
-#define ERROR_PRINT(...) { if (Logger::init) ENGINE_ERROR(__VA_ARGS__); }
-#define DEBUG_PRINT(...) { if (Logger::init) ENGINE_DEBUG(__VA_ARGS__); }
-#define PRINT(...) { if (Logger::init) ENGINE_INFO(__VA_ARGS__); }
+#define ERROR_PRINT(...) 
+#define DEBUG_PRINT(...) 
+#define PRINT(...) 
 #endif // DEBUG
 
 template<class T>

@@ -44,7 +44,7 @@ namespace longmarch
 
 		virtual void HandleEvent(const std::shared_ptr<BaseEvent>& event)
 		{
-#ifdef _DEBUG
+#ifndef _SHIPPING
 			if (auto ptr = std::dynamic_pointer_cast<Event<EventType>>(event); ptr)
 			{
 				(m_handlerOwner->*m_handler)(ptr);
@@ -55,7 +55,7 @@ namespace longmarch
 			}
 #else
 			(m_handlerOwner->*m_handler)(std::static_pointer_cast<Event<EventType>>(event));
-#endif // DEBUG
+#endif // _SHIPPING
 		}
 
 	private:
@@ -82,7 +82,7 @@ namespace longmarch
 
 		virtual void HandleEvent(const std::shared_ptr<BaseEvent>& event)
 		{
-#ifdef _DEBUG
+#ifndef _SHIPPING
 			if (auto ptr = std::dynamic_pointer_cast<Event<EventType>>(event); ptr)
 			{
 				(*m_handler)(ptr);

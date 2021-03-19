@@ -1924,6 +1924,7 @@ void longmarch::Renderer3D::BeginOpaqueScene(
 
 void longmarch::Renderer3D::_BeginClusterBuildGrid(const PerspectiveCamera* camera)
 {
+	GPU_TIME(ClusterBuildGrid_Pass);
 	s_Data.CurrentShader = s_Data.ShaderMap["BuildAABBGridCompShader"];
 	s_Data.CurrentShader->Bind();
 	RenderCommand::DispatchCompute(s_Data.ClusterData.gridSizeX, s_Data.ClusterData.gridSizeY, s_Data.ClusterData.gridSizeZ);
@@ -1932,6 +1933,7 @@ void longmarch::Renderer3D::_BeginClusterBuildGrid(const PerspectiveCamera* came
 
 void longmarch::Renderer3D::_BeginLightCullingPass(const PerspectiveCamera* camera)
 {
+	GPU_TIME(ClusterLightCulling_Pass);
 	s_Data.CurrentShader = s_Data.ShaderMap["CullLightsCompShader"];
 	s_Data.CurrentShader->Bind();
 	RenderCommand::DispatchCompute(1, 1, 4);
@@ -2023,6 +2025,7 @@ void longmarch::Renderer3D::_BeginDeferredGeomtryPass(const PerspectiveCamera* c
 
 void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const PerspectiveCamera* camera)
 {
+	GPU_TIME(_PopulateShaderUniforms);
 	Mat4 v = camera->GetViewMatrix();
 	Mat4 v_inv = Geommath::SmartInverse(v);
 	Mat4 p;
@@ -2111,6 +2114,7 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 
 void longmarch::Renderer3D::_PopulateShadowPassVariables()
 {
+	GPU_TIME(_PopulateShadowPassVariables);
 	// CRITICAL: Create placeholder texture (must have)
 	static const auto placeholder_shadowBuffer_array = ShadowBuffer::CreateArray(1, 1, 4, ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
 
@@ -2294,10 +2298,8 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 		Renderer3D::_BeginClusterLightingPass(s_Data.gpuBuffer.CurrentFrameBuffer);
 		break;
 	case RENDER_PIPE::DEFERRED:
-		{
-			// Perform SSAO/SSDO after rendering all opaques, ignore transparents and particles.
-			Renderer3D::_BeginDynamicAOPass(s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer);
-		}
+		// Perform SSAO/SSDO after rendering all opaques, ignore transparents and particles.
+		Renderer3D::_BeginDynamicAOPass(s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer);
 		Renderer3D::_BeginDeferredLightingPass(
 			camera,
 			f_render,
@@ -2367,6 +2369,7 @@ void longmarch::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<FrameBuffe
 
 	if (s_Data.AOSettings.enable)
 	{
+		GPU_TIME(DynamicSSAO);
 		RenderCommand::PolyModeFill();			// Draw full model
 		RenderCommand::Blend(false);			// Disable blend
 		RenderCommand::DepthTest(false, false);	// Disable depth test
@@ -2453,6 +2456,7 @@ void longmarch::Renderer3D::_BeginDynamicSSRPass(const std::shared_ptr<FrameBuff
 {
 	if (s_Data.SSRSettings.enable)
 	{
+		GPU_TIME(DynamicSSR);
 		if (auto downscale = s_Data.SSRSettings.ssr_sample_resolution_downScale;
 			s_Data.gpuBuffer.CurrentDynamicSSRBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the SSR with potentially downscaled resolution
 		{
@@ -2544,6 +2548,7 @@ void longmarch::Renderer3D::_BeginDeferredLightingPass(
 	const std::function<void(const std::string&)>& f_setRenderShaderName,
 	const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
+	GPU_TIME(DeferredLighting_Pass);
 	{
 		// bind framebuffer to store frag color
 		if (framebuffer_out)
@@ -2661,6 +2666,7 @@ void longmarch::Renderer3D::_BindSkyBoxTexture()
 
 void longmarch::Renderer3D::_BeginSkyBoxPass(const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
+	GPU_TIME(SkyBox_Pass);
 	{
 		ENG_TIME("SkyBox phase");
 
@@ -2837,19 +2843,19 @@ void longmarch::Renderer3D::BeginPostProcessing()
 		Renderer3D::_BeginFXAAPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_1);
 	}
 
-	{
-		// Fill in prev frame buffer from current frame buffer
-		RenderCommand::TransferColorBit(
-			s_Data.gpuBuffer.CurrentFrameBuffer->GetRendererID(),
-			s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().x,
-			s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().y,
+	//{
+	//	// Fill in prev frame buffer from current frame buffer
+	//	RenderCommand::TransferColorBit(
+	//		s_Data.gpuBuffer.CurrentFrameBuffer->GetRendererID(),
+	//		s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().x,
+	//		s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().y,
 
-			s_Data.gpuBuffer.PrevFinalFrameBuffer->GetRendererID(),
-			s_Data.gpuBuffer.PrevFinalFrameBuffer->GetBufferSize().x,
-			s_Data.gpuBuffer.PrevFinalFrameBuffer->GetBufferSize().y
-		);
-		s_Data.gpuBuffer.PrevFinalFrameBuffer->GenerateMipmaps();
-	}
+	//		s_Data.gpuBuffer.PrevFinalFrameBuffer->GetRendererID(),
+	//		s_Data.gpuBuffer.PrevFinalFrameBuffer->GetBufferSize().x,
+	//		s_Data.gpuBuffer.PrevFinalFrameBuffer->GetBufferSize().y
+	//	);
+	//	s_Data.gpuBuffer.PrevFinalFrameBuffer->GenerateMipmaps();
+	//}
 
 	Renderer3D::_BeginToneMappingPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.CurrentFinalFrameBuffer);
 
@@ -2864,6 +2870,7 @@ void longmarch::Renderer3D::_BeginSSRPass(const std::shared_ptr<FrameBuffer>& fr
 {
 	if (s_Data.SSRSettings.enable)
 	{
+		GPU_TIME(SSR_Pass);
 		RenderCommand::PolyModeFill();			// Draw full model
 		RenderCommand::DepthTest(false, false);	// Disable depth testing
 		RenderCommand::CullFace(false, false);	// Disable face culling
@@ -2952,6 +2959,7 @@ void longmarch::Renderer3D::_BeginTAAPass(const std::shared_ptr<FrameBuffer>& fr
 {
 	if (s_Data.enable_taa)
 	{
+		GPU_TIME(TAA);
 		RenderCommand::PolyModeFill();			// Draw full model
 		RenderCommand::DepthTest(false, false);	// Disable depth testing
 		RenderCommand::CullFace(false, false);	// Disable face culling
@@ -3008,6 +3016,7 @@ void longmarch::Renderer3D::_BeginFXAAPass(const std::shared_ptr<FrameBuffer>& f
 {
 	if (s_Data.enable_fxaa)
 	{
+		GPU_TIME(FXAA);
 		RenderCommand::PolyModeFill();			// Draw full model
 		RenderCommand::DepthTest(false, false);	// Disable depth testing
 		RenderCommand::CullFace(false, false);	// Disable face culling
@@ -3055,6 +3064,7 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 {
 	if (s_Data.enable_smaa)
 	{
+		GPU_TIME(SMAA);
 		RenderCommand::PolyModeFill();			// Draw full model
 		RenderCommand::DepthTest(false, false);	// Disable depth testing
 		RenderCommand::CullFace(false, false);	// Disable face culling
@@ -3137,6 +3147,7 @@ void longmarch::Renderer3D::_BeginMotionBlurPass(const std::shared_ptr<FrameBuff
 {
 	if (s_Data.enable_motionblur)
 	{
+		GPU_TIME(Motion_Blur);
 		RenderCommand::PolyModeFill();			// Draw full model
 		RenderCommand::DepthTest(false, false);	// Disable depth testing
 		RenderCommand::CullFace(false, false);	// Disable face culling
@@ -3192,6 +3203,7 @@ void longmarch::Renderer3D::_BeginBloomPass(const std::shared_ptr<FrameBuffer>& 
 {
 	if (s_Data.BloomSettings.enable)
 	{
+		GPU_TIME(Bloom);
 		if (auto downscale = s_Data.BloomSettings.bloom_sample_resolution_downScale;
 			s_Data.gpuBuffer.CurrentDynamicBloomBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the Bloom with potentially downscaled resolution
 		{
@@ -3306,6 +3318,7 @@ void longmarch::Renderer3D::_BeginDOFPass(const std::shared_ptr<FrameBuffer>& fr
 {
 	if (s_Data.DOFSettings.enable)
 	{
+		GPU_TIME(DOF);
 		if (auto downscale = s_Data.DOFSettings.dof_sample_resolution_downScale;
 			s_Data.gpuBuffer.CurrentDynamicDOFBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the Bloom with potentially downscaled resolution
 		{
@@ -3452,6 +3465,7 @@ void longmarch::Renderer3D::_BeginDOFPass(const std::shared_ptr<FrameBuffer>& fr
 
 void longmarch::Renderer3D::_BeginToneMappingPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
+	GPU_TIME(Tone_Mapping);
 	RenderCommand::PolyModeFill();			// Draw full model
 	RenderCommand::DepthTest(false, false);	// Disable depth testing
 	RenderCommand::CullFace(false, false);	// Disable face culling

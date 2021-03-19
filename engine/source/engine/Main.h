@@ -3,10 +3,10 @@
 #include "engine/core/exception/EngineException.h"
 #include "engine/core/EngineCore.h"
 
-#ifdef _DEBUG
+#ifndef _SHIPPING
 #pragma comment(linker, "/SUBSYSTEM:console")
 #else
-#pragma comment(linker, "/SUBSYSTEM:console") //comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #endif
 
 extern longmarch::Engine* longmarch::CreateEngineApplication();

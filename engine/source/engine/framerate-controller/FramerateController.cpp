@@ -33,12 +33,12 @@ namespace longmarch {
 			m_tickEnd = m_timer.Mark() * 1000.0; // converting seconds to milliseconds
 		} while ((m_tickEnd - m_tickStart) < m_ticksPerFrame);
 		double m_frameTick = (m_tickEnd - m_tickStart);
-		//#ifdef _DEBUG
+
 		Instrumentor::GetEngineInstance()->AddInstrumentorResult({ "Frame Time", m_frameTick, "ms" });
-		Instrumentor::GetEngineInstance()->AddInstrumentorResult({ "FIRST_PERSON", 1000.0 / m_frameTick, "  " });
+		Instrumentor::GetEngineInstance()->AddInstrumentorResult({ "FPS", 1000.0 / m_frameTick, "  " });
 		Instrumentor::GetApplicationInstance()->AddInstrumentorResult({ "Frame Time", m_frameTick, "ms" });
-		Instrumentor::GetApplicationInstance()->AddInstrumentorResult({ "FIRST_PERSON", 1000.0 / m_frameTick, "  " });
-		//#endif
+		Instrumentor::GetApplicationInstance()->AddInstrumentorResult({ "FPS", 1000.0 / m_frameTick, "  " });
+
 		m_frameTime = m_frameTick * 1e-3; // converting milliseconds to seconds
 	}
 

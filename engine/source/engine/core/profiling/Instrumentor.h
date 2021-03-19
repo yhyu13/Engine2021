@@ -35,6 +35,11 @@ namespace longmarch
 	class RemoteryInstrumentor
 	{
 	public:
-		static Remotery* GetInstance();
+		static RemoteryInstrumentor* GetInstance();
+		~RemoteryInstrumentor();
+
+	public:
+		RemoteryInstrumentor();
+		Remotery* m_rmt_instance;
 	};
 }

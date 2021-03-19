@@ -2822,10 +2822,10 @@ void longmarch::Renderer3D::BeginPostProcessing()
 	}
 
 	Renderer3D::_BeginBloomPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_1);
-	Renderer3D::_BeginDOFPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_2);
 
 	if (s_Data.enable_deferredShading)
 	{
+		Renderer3D::_BeginDOFPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_2);
 		Renderer3D::_BeginMotionBlurPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_1);
 		Renderer3D::_BeginTAAPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_2);
 		Renderer3D::_BeginSMAAPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_3, s_Data.gpuBuffer.FrameBuffer_4, s_Data.gpuBuffer.FrameBuffer_1);
@@ -2833,8 +2833,8 @@ void longmarch::Renderer3D::BeginPostProcessing()
 	}
 	else
 	{
-		Renderer3D::_BeginSMAAPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_3, s_Data.gpuBuffer.FrameBuffer_4, s_Data.gpuBuffer.FrameBuffer_1);
-		Renderer3D::_BeginFXAAPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_2);
+		Renderer3D::_BeginSMAAPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_3, s_Data.gpuBuffer.FrameBuffer_4, s_Data.gpuBuffer.FrameBuffer_2);
+		Renderer3D::_BeginFXAAPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_1);
 	}
 
 	{

@@ -49,11 +49,20 @@ namespace longmarch
 		return m_results;
 	}
 	
-	Remotery* RemoteryInstrumentor::GetInstance()
+	RemoteryInstrumentor* RemoteryInstrumentor::GetInstance()
 	{
-		static Remotery* rmt;
-		static std::once_flag flag;
-		std::call_once(flag, []() { rmt_CreateGlobalInstance(&rmt); });
-		return rmt;
+		static RemoteryInstrumentor rmt;
+		return &rmt;
+	}
+
+	RemoteryInstrumentor::RemoteryInstrumentor()
+	{
+		rmt_CreateGlobalInstance(&m_rmt_instance);
+		rmt_BindOpenGL(); // Remotery is built with OpenGL backend
+	}
+
+	RemoteryInstrumentor::~RemoteryInstrumentor()
+	{
+		rmt_DestroyGlobalInstance(m_rmt_instance);
 	}
 }

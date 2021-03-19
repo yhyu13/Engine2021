@@ -416,6 +416,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 			{
 				constexpr int yoffset_item = 5;
 				// Motion blur
+				if (ImGui::TreeNode("Motion Blur"))
 				{
 					if (ImGui::Checkbox("Moltion Blur", &checkMotionBlur))
 					{
@@ -427,6 +428,8 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 						auto e = MemoryManager::Make_shared<ToggleMotionBlurEvent>(checkMotionBlur, valueMotionblurShutterSpeed);
 						graphicEventQueue->Publish(e);
 					}
+					ImGui::Separator();
+					ImGui::TreePop();
 				}
 				ImGui::Dummy(ImVec2(0, yoffset_item));
 				// AO
@@ -610,21 +613,20 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				}
 				ImGui::Dummy(ImVec2(0, yoffset_item));
 				// Tone mapping
+				if (ImGui::TreeNode("Tone Mapping"))
 				{
-					if (ImGui::Combo("Tone Mapping", &selected_toneMap, toneMapModes, IM_ARRAYSIZE(toneMapModes)))
+					if (ImGui::Combo("Method", &selected_toneMap, toneMapModes, IM_ARRAYSIZE(toneMapModes)))
 					{
 						auto e = MemoryManager::Make_shared<SwitchToneMappingEvent>(selected_toneMap);
 						graphicEventQueue->Publish(e);
 					}
-				}
-				ImGui::Dummy(ImVec2(0, yoffset_item));
-				// Gamma slider
-				{
 					if (ImGui::SliderFloat("Gamma", &valueGamma, 0.1f, 5.0f, "%.1f"))
 					{
 						auto e = MemoryManager::Make_shared<SetGammaValueEvent>(valueGamma);
 						graphicEventQueue->Publish(e);
 					}
+					ImGui::Separator();
+					ImGui::TreePop();
 				}
 				ImGui::EndTabItem();
 			}

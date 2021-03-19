@@ -16,7 +16,7 @@
 #endif
 
 #ifdef _DEBUG
-#define GPU_TIME(name) InstrumentingTimer timer##__LINE__(name, longmarch::RemoteryInstrumentor::GetInstance())
+#define GPU_TIME(name) {longmarch::RemoteryInstrumentor::GetInstance();} rmt_ScopedOpenGLSample(##name);
 #else
-#define GPU_TIME(name) InstrumentingTimer timer##__LINE__(name, longmarch::RemoteryInstrumentor::GetInstance())
+#define GPU_TIME(name) {longmarch::RemoteryInstrumentor::GetInstance();} rmt_ScopedOpenGLSample(name);
 #endif

@@ -75,29 +75,34 @@ void longmarch::_3DEditorLayer::BuildRenderPipeline()
 			{
 				Renderer3D::BeginRendering(cam);
 				{
+					GPU_TIME(Shadow_Pass);
 					ENG_TIME("Shadow pass");
 					scene3DComSys->SetRenderMode(Scene3DComSys::RenderMode::SHADOW);
 					Renderer3D::BeginShadowing(cam, f_render_opaque, f_render_translucent, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
 					Renderer3D::EndShadowing();
 				} 
 				{
+					GPU_TIME(Opaque_Scene_pass);
 					ENG_TIME("Opaque Scene pass");
 					scene3DComSys->SetRenderMode(Scene3DComSys::RenderMode::SCENE);
 					Renderer3D::BeginOpaqueScene(cam, f_render_opaque, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
 					Renderer3D::EndOpaqueScene();
 				}
 				{
+					GPU_TIME(Opaque_Lighting_pass);
 					ENG_TIME("Opaque Lighting pass");
 					Renderer3D::BeginOpaqueLighting(cam, f_render_opaque, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
 					Renderer3D::EndOpaqueLighting();
 				}
 				{
+					GPU_TIME(Transparent_Scene_pass);
 					ENG_TIME("Transparent Scene pass");
 					scene3DComSys->SetRenderMode(Scene3DComSys::RenderMode::SCENE);
 					Renderer3D::BeginTransparentSceneAndLighting(cam, f_render_translucent, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
 					Renderer3D::EndTransparentSceneAndLighting();
 				}
 				{
+					GPU_TIME(Postprocessing_pass);
 					ENG_TIME("Postprocessing pass");
 					Renderer3D::BeginPostProcessing();
 					Renderer3D::EndPostProcessing();
@@ -201,6 +206,7 @@ void longmarch::_3DEditorLayer::PreRenderUpdate(double ts)
 
 void longmarch::_3DEditorLayer::Render(double ts)
 {
+	GPU_TIME(Total_Render);
 	GameWorld::GetCurrent()->Render(ts);
 	m_Data.mainRenderPipeline(ts);
 	GameWorld::GetCurrent()->Render2(ts);

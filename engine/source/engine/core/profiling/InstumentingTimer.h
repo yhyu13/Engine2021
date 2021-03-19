@@ -4,7 +4,8 @@
 
 namespace longmarch 
 {
-	class Instrumentor;
+	class Instrumentor; 
+	class RemoteryInstrumentor;
 
 	/*
 		InstrumentingTimer class follows RAII pattern.

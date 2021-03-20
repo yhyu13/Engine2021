@@ -867,7 +867,7 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 
 		// Enable depth testing and wirte to depth buffer just for the clearing commend
 		RenderCommand::DepthTest(true, true);
-		RenderCommand::SetClearColor(Vec4f(0, 0, 0, 1));
+		RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0));
 		
 		// CRITICAL : Don't clear prev frame buffer as we need it in the current frame
 		/*s_Data.gpuBuffer.PrevFinalFrameBuffer->Bind();
@@ -3072,6 +3072,8 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 
 		// Edge detection
 		{
+			RenderCommand::StencilTest(true, true); // Write to stencil for edge pass
+			RenderCommand::StencilFunc(longmarch::RendererAPI::CompareEnum::ALWAYS);
 			framebuffer_edge->Bind();
 			Vec2u traget_resoluation = framebuffer_edge->GetBufferSize();
 			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
@@ -3087,6 +3089,18 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 		}
 		// Wieght calculation
 		{
+			RenderCommand::TransferStencilBit(
+				framebuffer_edge->GetRendererID(),
+				framebuffer_edge->GetBufferSize().x,
+				framebuffer_edge->GetBufferSize().y,
+
+				framebuffer_blend->GetRendererID(),
+				framebuffer_blend->GetBufferSize().x,
+				framebuffer_blend->GetBufferSize().y
+			);
+
+			RenderCommand::StencilTest(true, false); // Only process fragments that were processed in the edge pass
+			RenderCommand::StencilFunc(longmarch::RendererAPI::CompareEnum::EQUAL);
 			framebuffer_blend->Bind();
 			Vec2u traget_resoluation = framebuffer_blend->GetBufferSize();
 			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
@@ -3104,6 +3118,7 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 		}
 		// Blending
 		{
+			RenderCommand::StencilTest(false, false); // Process all fragments in the blend pass, disable stencil test
 			if (framebuffer_out)
 			{
 				framebuffer_out->Bind();

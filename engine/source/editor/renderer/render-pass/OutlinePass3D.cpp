@@ -37,7 +37,6 @@ void longmarch::OutlinePass::BeginRenderPass()
 		RenderCommand::PolyModeFill();
 		RenderCommand::Blend(false);
 		RenderCommand::StencilTest(true, true);
-		RenderCommand::DepthTest(true, true);
 		RenderCommand::CullFace(true, false);
 
 		// Set background to all ones for testing
@@ -48,6 +47,7 @@ void longmarch::OutlinePass::BeginRenderPass()
 		RenderCommand::Clear();
 
 		// 1. Draw objects to stencil
+		RenderCommand::DepthTest(true, true);
 		RenderCommand::StencilFunc(longmarch::RendererAPI::CompareEnum::ALWAYS);
 
 		auto shader_name = "ShadowBuffer";

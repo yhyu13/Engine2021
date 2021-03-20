@@ -446,6 +446,9 @@ namespace longmarch
 		case longmarch::RendererAPI::CompareEnum::NEQUAL:
 			glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 			break;
+		case longmarch::RendererAPI::CompareEnum::EQUAL:
+			glStencilFunc(GL_EQUAL, 1, 0xFF);
+			break;
 		case longmarch::RendererAPI::CompareEnum::ALWAYS:
 			glStencilFunc(GL_ALWAYS, 1, 0xFF);
 			break;

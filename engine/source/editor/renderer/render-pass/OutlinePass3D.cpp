@@ -36,10 +36,10 @@ void longmarch::OutlinePass::BeginRenderPass()
 
 		RenderCommand::PolyModeFill();
 		RenderCommand::Blend(false);
+		RenderCommand::DepthTest(true, true);
 		RenderCommand::StencilTest(true, true);
 		RenderCommand::CullFace(true, false);
 
-		// Set background to all ones for testing
 		Vec2u traget_resoluation = OutlineFrameBuffer->GetBufferSize();
 		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 		RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0));
@@ -47,7 +47,6 @@ void longmarch::OutlinePass::BeginRenderPass()
 		RenderCommand::Clear();
 
 		// 1. Draw objects to stencil
-		RenderCommand::DepthTest(true, true);
 		RenderCommand::StencilFunc(longmarch::RendererAPI::CompareEnum::ALWAYS);
 
 		auto shader_name = "ShadowBuffer";

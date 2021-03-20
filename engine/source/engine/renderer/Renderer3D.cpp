@@ -866,7 +866,8 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 		}
 
 		// Enable depth testing and wirte to depth buffer just for the clearing commend
-		RenderCommand::DepthTest(true, true);
+		RenderCommand::DepthTest(true, true); 
+		RenderCommand::StencilTest(true, true);
 		RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0));
 		
 		// CRITICAL : Don't clear prev frame buffer as we need it in the current frame
@@ -892,6 +893,22 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 		s_Data.gpuBuffer.FrameBuffer_4->Bind();
 		RenderCommand::Clear();
 
+
+		if (s_Data.RENDER_PIPE == RENDER_PIPE::DEFERRED)
+		{
+			// Resize GBuffer if necessary
+			if (s_Data.gpuBuffer.CurrentGBuffer->GetBufferSize() != s_Data.resolution)
+			{
+				s_Data.gpuBuffer.CurrentGBuffer = GBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, GBuffer::GBUFFER_TYPE::DEFAULT);
+			}
+			// CRITICAL GBuffer should be cleared with all zeros
+			RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0));
+			s_Data.gpuBuffer.CurrentGBuffer->Bind();
+			RenderCommand::Clear();
+		}
+
+		RenderCommand::DepthTest(false, false);
+		RenderCommand::StencilTest(false, false);
 	}
 
 	{
@@ -899,18 +916,6 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 		s_Data.gpuBuffer.CurrentFrameBuffer = s_Data.gpuBuffer.FrameBuffer_1;
 	}
 
-	if (s_Data.RENDER_PIPE == RENDER_PIPE::DEFERRED)
-	{
-		// Resize GBuffer if necessary
-		if (s_Data.gpuBuffer.CurrentGBuffer->GetBufferSize() != s_Data.resolution)
-		{
-			s_Data.gpuBuffer.CurrentGBuffer = GBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, GBuffer::GBUFFER_TYPE::DEFAULT);
-		}
-		// CRITICAL GBuffer should be cleared with all zeros
-		RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0));
-		s_Data.gpuBuffer.CurrentGBuffer->Bind();
-		RenderCommand::Clear();
-	}
 
 	if (s_Data.DOFSettings.enable)
 	{
@@ -3072,8 +3077,8 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 
 		// Edge detection
 		{
-			RenderCommand::StencilTest(true, true); // Write to stencil for edge pass
 			RenderCommand::StencilFunc(longmarch::RendererAPI::CompareEnum::ALWAYS);
+			RenderCommand::StencilTest(true, true); // Write to stencil for edge pass
 			framebuffer_edge->Bind();
 			Vec2u traget_resoluation = framebuffer_edge->GetBufferSize();
 			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
@@ -3099,8 +3104,8 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 				framebuffer_blend->GetBufferSize().y
 			);
 
-			RenderCommand::StencilTest(true, false); // Only process fragments that were processed in the edge pass
 			RenderCommand::StencilFunc(longmarch::RendererAPI::CompareEnum::EQUAL);
+			RenderCommand::StencilTest(true, false); // Only process fragments that were processed in the edge pass
 			framebuffer_blend->Bind();
 			Vec2u traget_resoluation = framebuffer_blend->GetBufferSize();
 			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);

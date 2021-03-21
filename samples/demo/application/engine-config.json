@@ -56,7 +56,6 @@
 		"Motion-blur":true, /* only take effects under deffered shading */
 		"Motion-blur-shutter-speed": 45, /* higher this value, lower the motion blur effect */
 		"TAA":false, /* only take effects under deffered shading */
-		"SMAA":true,
 		"FXAA":false,
 		// Shadow
 		"Shadow" : true,
@@ -64,6 +63,13 @@
 		"Sky-box": ["shanghai_bund_2k"],
 		"Env-mapping": false,
 		"BRDF-lut":"ggx_integrate_lut",
+
+
+		"SMAA":
+		{
+			"Enable" :true,
+			"Mode" : 0, // 0 = SMAA 1X, 1 = SMAA T2X
+		},
 
 		"AO":
 		{

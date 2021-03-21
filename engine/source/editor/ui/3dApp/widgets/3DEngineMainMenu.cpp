@@ -128,10 +128,6 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static auto engineConfiguration = FileSystem::GetNewJsonCPP("$root:engine-config.json");
 		static auto windowConfig = engineConfiguration["window"];
 		static auto graphicsConfig = engineConfiguration["graphics"];
-		static auto AOConfig = graphicsConfig["AO"];
-		static auto SSRConfig = graphicsConfig["SSR"];
-		static auto BloomConfig = graphicsConfig["Bloom"];
-		static auto DOFConfig = graphicsConfig["DOF"];
 
 		// 1. Window mode
 		static const char* windowModes[]{ "Fullscreen", "Borderless Windowed", "Windowed" };
@@ -165,7 +161,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static bool checkMotionBlur = graphicsConfig["Motion-blur"].asBool();
 		static int valueMotionblurShutterSpeed = graphicsConfig["Motion-blur-shutter-speed"].asInt();
 		// SMAA
-		static bool checkSMAA = graphicsConfig["SMAA"].asBool();
+		
 		// FXAA
 		static bool checkFXAA = graphicsConfig["FXAA"].asBool();
 		// TAA
@@ -176,7 +172,13 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		// Gamma
 		static float valueGamma = 2.2f;
 
+		// SMAA
+		static auto SMAAConfig = graphicsConfig["SMAA"];
+		static bool checkSMAA = SMAAConfig["Enable"].asBool();
+		static int valueSMAAMode = SMAAConfig["Mode"].asInt();
+
 		// AO
+		static auto AOConfig = graphicsConfig["AO"];
 		static bool checkAO = AOConfig["Enable"].asBool();
 		static int valueAOSample = AOConfig["Num-samples"].asInt();
 		static int valueAOSampleResDownScale = AOConfig["Res-down-scale"].asInt();
@@ -189,12 +191,14 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static float valueIndBonLitScale = AOConfig["Indirect-bounce-strength"].asFloat();
 
 		// SSR
+		static auto SSRConfig = graphicsConfig["SSR"];
 		static bool checkSSR = SSRConfig["Enable"].asBool();
 		static int valueSSRBlurKernel = SSRConfig["Gaussian-kernel"].asInt();
 		static int valueSSRSampleResDownScale = SSRConfig["Res-down-scale"].asInt();
 		static bool checkSSRDebug = false;
 
 		// Bloom
+		static auto BloomConfig = graphicsConfig["Bloom"];
 		static bool checkBloom = BloomConfig["Enable"].asBool();
 		static float valueBloomThreshold = BloomConfig["Threshold"].asFloat();
 		static float valueBloomStrength = BloomConfig["Strength"].asFloat();
@@ -202,6 +206,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static int valueBloomSampleResDownScale = BloomConfig["Res-down-scale"].asFloat();
 
 		// DOF
+		static auto DOFConfig = graphicsConfig["DOF"];
 		static bool checkDOF = DOFConfig["Enable"].asBool();
 		static float valueDOFThreshold = DOFConfig["Threshold"].asFloat();
 		static float valueDOFStrength = DOFConfig["Strength"].asFloat();
@@ -222,13 +227,18 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 			checkDeferredShading = graphicsConfig["Deferred-shading"].asBool();
 			checkClusteredShading = graphicsConfig["Clustered-shading"].asBool();
 			checkFXAA = graphicsConfig["FXAA"].asBool();
-			checkSMAA = graphicsConfig["SMAA"].asBool();
 			checkMotionBlur = graphicsConfig["Motion-blur"].asBool();
 			valueMotionblurShutterSpeed = graphicsConfig["Motion-blur-shutter-speed"].asInt();
 			checkTAA = graphicsConfig["TAA"].asBool();
 			{
 				selected_toneMap = 0;
 				valueGamma = 2.2f;
+			}
+
+			{
+				// SMAA
+				checkSMAA = SMAAConfig["Enable"].asBool();
+				valueSMAAMode = SMAAConfig["Mode"].asInt();
 			}
 			{
 				// AO
@@ -298,7 +308,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				graphicEventQueue->Publish(e);
 			}
 			{
-				auto e = MemoryManager::Make_shared<ToggleSMAAEvent>(checkSMAA);
+				auto e = MemoryManager::Make_shared<ToggleSMAAEvent>(checkSMAA, valueSMAAMode);
 				graphicEventQueue->Publish(e);
 			}
 			{
@@ -543,7 +553,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 					ImGui::TreePop();
 				}
 				ImGui::Dummy(ImVec2(0, yoffset_item));
-				// Bloom
+				// DOF
 				if (ImGui::TreeNode("Depth of Field"))
 				{
 					if (ImGui::Checkbox("Enable", &checkDOF))
@@ -586,30 +596,45 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				}
 				ImGui::Dummy(ImVec2(0, yoffset_item));
 				// TAA
+				if (ImGui::TreeNode("TAA"))
 				{
-					if (ImGui::Checkbox("TAA", &checkTAA))
+					if (ImGui::Checkbox("Enable", &checkTAA))
 					{
 						auto e = MemoryManager::Make_shared<ToggleTAAEvent>(checkTAA);
 						graphicEventQueue->Publish(e);
 					}
+					ImGui::Separator();
+					ImGui::TreePop();
 				}
 				ImGui::Dummy(ImVec2(0, yoffset_item));
-				// FXAA
+				// SMAA
+				if (ImGui::TreeNode("SMAA"))
 				{
-					if (ImGui::Checkbox("SMAA", &checkSMAA))
+					if (ImGui::Checkbox("Enable", &checkSMAA))
 					{
-						auto e = MemoryManager::Make_shared<ToggleSMAAEvent>(checkSMAA);
+						auto e = MemoryManager::Make_shared<ToggleSMAAEvent>(checkSMAA, valueSMAAMode);
 						graphicEventQueue->Publish(e);
 					}
+					static const char* smaa_modes[] = {"SMAA 1X", "SMAA T2X"};
+					if (ImGui::Combo("Method", &valueSMAAMode, smaa_modes, IM_ARRAYSIZE(smaa_modes)))
+					{
+						auto e = MemoryManager::Make_shared<ToggleSMAAEvent>(checkSMAA, valueSMAAMode);
+						graphicEventQueue->Publish(e);
+					}
+					ImGui::Separator();
+					ImGui::TreePop();
 				}
 				ImGui::Dummy(ImVec2(0, yoffset_item));
 				// FXAA
+				if (ImGui::TreeNode("FXAA"))
 				{
-					if (ImGui::Checkbox("FXAA", &checkFXAA))
+					if (ImGui::Checkbox("Enable", &checkFXAA))
 					{
 						auto e = MemoryManager::Make_shared<ToggleFXAAEvent>(checkFXAA);
 						graphicEventQueue->Publish(e);
 					}
+					ImGui::Separator();
+					ImGui::TreePop();
 				}
 				ImGui::Dummy(ImVec2(0, yoffset_item));
 				// Tone mapping

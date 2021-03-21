@@ -254,8 +254,8 @@ namespace longmarch
 			std::shared_ptr<UniformBuffer> CurrentModelBuffer;
 			std::shared_ptr<UniformBuffer> CurrentMaterialBuffer;
 			std::shared_ptr<Texture2D> BrdfIntegrateLUT; // lighting
-			std::shared_ptr<Texture2D> SmaaAreaLUT; // smaa
-			std::shared_ptr<Texture2D> SmaaSearchLUT; // smaa
+			std::shared_ptr<Texture2D> SMAAAreaLUT; // smaa
+			std::shared_ptr<Texture2D> SMAASearchLUT; // smaa
 
 			std::shared_ptr<ShaderStorageBuffer> DirectionalLightBuffer; // lighting / shadow
 			std::shared_ptr<ShaderStorageBuffer> PointLightBuffer; // lighting / shadow
@@ -377,8 +377,6 @@ namespace longmarch
 			uint32_t MAX_SHADOW_BATCH;
 			uint32_t MAX_SCENE_BATCH;
 
-			int directional_light_display_mode;
-
 			RENDER_PASS RENDER_PASS;
 			RENDER_MODE RENDER_MODE;
 
@@ -394,10 +392,34 @@ namespace longmarch
 			Vec2u resolution;
 			float resolution_ratio; //!< ratio of resolution vs. window_size
 
+			int frameIndex; //!< used on determining even frame or odd frame (mainly for camer jittering or checkerboarding)
+
 			int gBuffer_display_mode;
+			int directional_light_display_mode;
+
+			bool enable_deferredShading;
+			bool enable_reverse_z;
+
+			bool enable_env_mapping;
+			bool enable_shadow;
+
+			bool enable_debug_cluster_light;
+
+			bool enable_motionblur;
+			int motionblur_shutterSpeed;
+
+			bool enable_fxaa;
+			bool enable_taa;
 
 			int toneMapping_mode;
 			float value_gamma;
+
+			bool enable_drawingBoundingVolume;
+			bool enable_wireframe;
+
+			bool window_size_changed_this_frame;
+
+			RENDER_PIPE RENDER_PIPE;
 
 			struct
 			{
@@ -445,27 +467,65 @@ namespace longmarch
 				Vec3f ws_target;
 			} DOFSettings;
 
-			bool enable_deferredShading;
-			bool enable_reverse_z;
+			struct
+			{
+				bool enable;
+				int mode; //!< 0 = 1X, 1 = T2X
 
-			bool enable_env_mapping;
-			bool enable_shadow;
+				Mat4 JitteredMatrix(const Mat4& mvp, int width, int height, int frameIndex)
+				{
+					if (enable)
+					{
+						auto jitter = GetJitter(frameIndex);
+						Mat4 jitterMatrix = Geommath::ToTranslateMatrix(Vec3f(2.0f * jitter.x / float(width), 2.0f * jitter.y / float(height), 0.0f));
+						return jitterMatrix * mvp;
+					}
+					else
+					{
+						return mvp;
+					}
+				}
+				Vec4f GetSampleIndcies(int frameIndex) const
+				{
+					switch (mode)
+					{
+					case 0: //SMAA_1X
+						return Vec4f(0);
+					case 1: //SMAA_T2X
+					{
+						Vec4f indcies[] = {
+							Vec4f(1, 1, 1, 0),
+							Vec4f(2, 2, 2, 0)
+						};
+						return indcies[(frameIndex) % 2];
+					}
+					default:
+						ENGINE_EXCEPT(L"Unsupported SMAA mode!");
+						break;
+					}
+				}
 
-			bool enable_debug_cluster_light;
-
-			bool enable_motionblur;
-			int motionblur_shutterSpeed;
-
-			bool enable_fxaa;
-			bool enable_taa;
-			bool enable_smaa;
-
-			bool enable_drawingBoundingVolume;
-			bool enable_wireframe;
-
-			bool window_size_changed_this_frame;
-
-			RENDER_PIPE RENDER_PIPE;
+			private:
+				Vec2f GetJitter(int frameIndex) const
+				{
+					switch (mode)
+					{
+					case 0: //SMAA_1X
+						return Vec2f(0);
+					case 1: //SMAA_T2X
+					{
+						Vec2f jitters[] = {
+							Vec2f(0.25f, -0.25f),
+							Vec2f(-0.25f,  0.25f)
+						};
+						return jitters[(frameIndex) % 2];
+					}
+					default:
+						ENGINE_EXCEPT(L"Unsupported SMAA mode!");
+						break;
+					}
+				}
+			} SMAASettings;
 
 			struct ClusterStorage {
 				struct VolumeTileAABB {

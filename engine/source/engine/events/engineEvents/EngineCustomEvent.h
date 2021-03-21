@@ -225,13 +225,15 @@ namespace longmarch
 	};
 
 	struct ToggleSMAAEvent : public Event<EngineGraphicsEventType> {
-		explicit ToggleSMAAEvent(bool b)
+		explicit ToggleSMAAEvent(bool b, int mode)
 			:
 			Event(EngineGraphicsEventType::TOGGLE_SMAA),
-			m_enable(b)
+			m_enable(b),
+			m_mode(mode)
 		{
 		}
 		bool m_enable;
+		int m_mode;
 	};
 
 	struct ToggleFXAAEvent : public Event<EngineGraphicsEventType> {

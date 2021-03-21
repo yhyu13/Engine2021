@@ -86,7 +86,6 @@ void longmarch::Renderer3D::Init()
 		s_Data.multiDrawBuffer.MultiDraw_CmdBuffer.reserve(TWO_11);
 		s_Data.multiDrawBuffer.MultiDraw_MeshDataToDraw.reserve(TWO_11);
 
-		s_Data.enable_smaa = graphicsConfiguration["SMAA"].asBool();
 		s_Data.enable_fxaa = graphicsConfiguration["FXAA"].asBool();
 		s_Data.enable_taa = graphicsConfiguration["TAA"].asBool();
 		s_Data.enable_motionblur = graphicsConfiguration["Motion-blur"].asBool();
@@ -106,6 +105,7 @@ void longmarch::Renderer3D::Init()
 				s_Data.RENDER_PIPE = RENDER_PIPE::FORWARD;
 			}
 		}
+
 		s_Data.resolution_ratio = graphicsConfiguration["Resolution-ratio"].asFloat();
 		s_Data.enable_env_mapping = graphicsConfiguration["Env-mapping"].asBool();
 		s_Data.enable_shadow = graphicsConfiguration["Shadow"].asBool();
@@ -113,6 +113,12 @@ void longmarch::Renderer3D::Init()
 		s_Data.gBuffer_display_mode = 0;
 		s_Data.toneMapping_mode = 0;
 		s_Data.value_gamma = 2.2f;
+
+		{
+			const auto& smaa_settings = graphicsConfiguration["SMAA"];
+			s_Data.SMAASettings.enable = smaa_settings["Enable"].asBool();
+			s_Data.SMAASettings.mode = smaa_settings["Mode"].asInt();
+		}
 
 		{
 			const auto& ao_settings = graphicsConfiguration["AO"];
@@ -231,7 +237,8 @@ void longmarch::Renderer3D::Init()
 
 		s_Data.ShaderMap["SMAAShader_edge"] = Shader::Create("$shader:smaa/smaa-edges.vert", "$shader:smaa/smaa-edges-color.frag");
 		s_Data.ShaderMap["SMAAShader_weight"] = Shader::Create("$shader:smaa/smaa-weights.vert", "$shader:smaa/smaa-weights.frag");
-		s_Data.ShaderMap["SMAAShader_blend"] = Shader::Create("$shader:smaa/smaa-blend.vert", "$shader:smaa/smaa-blend.frag");
+		s_Data.ShaderMap["SMAAShader_blend"] = Shader::Create("$shader:smaa/smaa-blend.vert", "$shader:smaa/smaa-blend.frag"); 
+		s_Data.ShaderMap["SMAAShader_blend_T2X"] = Shader::Create("$shader:smaa/smaa-color-blend-T2X.vert", "$shader:smaa/smaa-color-blend-T2X.frag");
 
 		s_Data.ShaderMap["FXAAShader"] = Shader::Create("$shader:simple_fxaa.vert", "$shader:simple_fxaa.frag");
 		s_Data.ShaderMap["TAAShader"] = Shader::Create("$shader:simple_taa.vert", "$shader:simple_taa.frag");
@@ -659,7 +666,7 @@ void longmarch::Renderer3D::Init()
 			queue->Subscribe(EngineGraphicsEventType::SET_SSR_VALUE, &Renderer3D::_ON_SET_SSR_VALUE);
 			queue->Subscribe(EngineGraphicsEventType::SET_BLOOM_VALUE, &Renderer3D::_ON_SET_BLOOM_VALUE); 
 			queue->Subscribe(EngineGraphicsEventType::SET_DOF_VALUE, &Renderer3D::_ON_SET_DOF_VALUE);
-			queue->Subscribe(EngineGraphicsEventType::SET_DOF_TARGET, &Renderer3D::_ON_SET_DOF_VALUE);
+			queue->Subscribe(EngineGraphicsEventType::SET_DOF_TARGET, &Renderer3D::_ON_SET_DOF_TARGET);
 		}
 	}
 }
@@ -710,7 +717,8 @@ void longmarch::Renderer3D::_ON_TOGGLE_FXAA(EventQueue<EngineGraphicsEventType>:
 void longmarch::Renderer3D::_ON_TOGGLE_SMAA(EventQueue<EngineGraphicsEventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<ToggleSMAAEvent>(e);
-	s_Data.enable_smaa = event->m_enable;
+	s_Data.SMAASettings.enable = event->m_enable;
+	s_Data.SMAASettings.mode = event->m_mode;
 }
 
 void longmarch::Renderer3D::_ON_SWITCH_TONEMAP_MODE(EventQueue<EngineGraphicsEventType>::EventPtr e)
@@ -826,6 +834,8 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 	s_Data.window_size = Vec2u(prop.m_width, prop.m_height);
 	s_Data.resolution = Vec2u(prop.m_width * s_Data.resolution_ratio, prop.m_height * s_Data.resolution_ratio);
 	s_Data.window_size_changed_this_frame = false;
+	s_Data.frameIndex = (s_Data.frameIndex + 1) % 2;
+
 	// Prepare buffers
 	{
 		// Resize FrameBuffer if necessary
@@ -915,7 +925,6 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 		// Assign current frame buffer
 		s_Data.gpuBuffer.CurrentFrameBuffer = s_Data.gpuBuffer.FrameBuffer_1;
 	}
-
 
 	if (s_Data.DOFSettings.enable)
 	{
@@ -1058,16 +1067,16 @@ void longmarch::Renderer3D::BeginShadowing(
 		return light;
 	};
 
-	static const auto& msm_shader = s_Data.ShaderMap["MSMShadowBuffer"];
-	static const auto& msm_shader_transparent = s_Data.ShaderMap["MSMShadowBuffer_Transparent"];
-	static const auto& msm_shader_particle = s_Data.ShaderMap["MSMShadowBuffer_Particle"];
-	//static const auto& msm_cube_shader = s_Data.ShaderMap["MSMShadowBuffer_Cube"];
+	const auto& msm_shader = s_Data.ShaderMap["MSMShadowBuffer"];
+	const auto& msm_shader_transparent = s_Data.ShaderMap["MSMShadowBuffer_Transparent"];
+	const auto& msm_shader_particle = s_Data.ShaderMap["MSMShadowBuffer_Particle"];
+	//const auto& msm_cube_shader = s_Data.ShaderMap["MSMShadowBuffer_Cube"];
 
-	static const auto& transparent_shader = s_Data.ShaderMap["TransparentForwardShader"];
+	const auto& transparent_shader = s_Data.ShaderMap["TransparentForwardShader"];
 
-	static const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur"];
-	static const auto& guassian_CSM_shader = s_Data.ShaderMap["GaussianBlur_CSM"];
-	static const auto& guassian_cube_shader = s_Data.ShaderMap["GaussianBlur_Cube_PointLight"];
+	const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur"];
+	const auto& guassian_CSM_shader = s_Data.ShaderMap["GaussianBlur_CSM"];
+	const auto& guassian_cube_shader = s_Data.ShaderMap["GaussianBlur_Cube_PointLight"];
 
 	// Reset buffers
 	{
@@ -2031,27 +2040,35 @@ void longmarch::Renderer3D::_BeginDeferredGeomtryPass(const PerspectiveCamera* c
 void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const PerspectiveCamera* camera)
 {
 	GPU_TIME(_PopulateShaderUniforms);
-	Mat4 v = camera->GetViewMatrix();
-	Mat4 v_inv = Geommath::SmartInverse(v);
+	Mat4 v; 
+	Mat4 v_inv;
 	Mat4 p;
 	Mat4 p_inv;
 	Mat4 pv;
 	Mat4 ppv;
 
+	v = camera->GetViewMatrix();
 	if (s_Data.enable_reverse_z)
 	{
 		p = camera->GetReverseZProjectionMatrix();
-		p_inv = Geommath::SmartInverse(p);
 		pv = camera->GetReverseZViewProjectionMatrix();
 		ppv = camera->GetPrevReverseZViewProjectionMatrix();
 	}
 	else
 	{
 		p = camera->GetProjectionMatrix();
-		p_inv = Geommath::SmartInverse(p);
 		pv = camera->GetViewProjectionMatrix();
 		ppv = camera->GetPrevViewProjectionMatrix();
 	}
+
+	if (s_Data.SMAASettings.enable)
+	{
+		p = s_Data.SMAASettings.JitteredMatrix(p, s_Data.resolution.x, s_Data.resolution.y, s_Data.frameIndex);
+		pv = s_Data.SMAASettings.JitteredMatrix(pv, s_Data.resolution.x, s_Data.resolution.y, s_Data.frameIndex);
+		ppv = s_Data.SMAASettings.JitteredMatrix(ppv, s_Data.resolution.x, s_Data.resolution.y, s_Data.frameIndex);
+	}
+	v_inv = Geommath::SmartInverse(v);
+	p_inv = Geommath::SmartInverse(p);
 
 	// Update shader uniforms
 	{
@@ -2384,7 +2401,7 @@ void longmarch::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<FrameBuffe
 		Vec2u traget_resoluation = AOBuffer->GetBufferSize();
 		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 
-		static const auto& ao_shader = s_Data.ShaderMap["DynamicAOShader"];
+		const auto& ao_shader = s_Data.ShaderMap["DynamicAOShader"];
 		s_Data.CurrentShader = ao_shader;
 		s_Data.CurrentShader->Bind();
 		s_Data.CurrentShader->SetInt("enabled", s_Data.AOSettings.enable);
@@ -2414,7 +2431,7 @@ void longmarch::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<FrameBuffe
 		Renderer3D::_RenderFullScreenQuad();
 
 		// Bilaterl blurring
-		static const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur_AO"];
+		const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur_AO"];
 		Vec2u traget_resoluation2(traget_resoluation);
 		static auto AOBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::Float16);
 		if (AOBackBuffer->GetBufferSize() != traget_resoluation2)
@@ -2483,7 +2500,7 @@ void longmarch::Renderer3D::_BeginDynamicSSRPass(const std::shared_ptr<FrameBuff
 		Vec2u traget_resoluation = SSRBuffer->GetBufferSize();
 		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 
-		static const auto& ssr_shader = s_Data.ShaderMap["DynamicSSRShader"];
+		const auto& ssr_shader = s_Data.ShaderMap["DynamicSSRShader"];
 		s_Data.CurrentShader = ssr_shader;
 		s_Data.CurrentShader->Bind();
 		s_Data.CurrentShader->SetInt("enabled", s_Data.SSRSettings.enable);
@@ -2510,7 +2527,7 @@ void longmarch::Renderer3D::_BeginDynamicSSRPass(const std::shared_ptr<FrameBuff
 		Renderer3D::_RenderFullScreenQuad();
 
 		// Bilaterl blurring
-		static const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur"];
+		const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur"];
 		Vec2u traget_resoluation2(traget_resoluation);
 		static auto SSRBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::Float16);
 		if (SSRBackBuffer->GetBufferSize() != traget_resoluation2)
@@ -2848,19 +2865,19 @@ void longmarch::Renderer3D::BeginPostProcessing()
 		Renderer3D::_BeginFXAAPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_1);
 	}
 
-	//{
-	//	// Fill in prev frame buffer from current frame buffer
-	//	RenderCommand::TransferColorBit(
-	//		s_Data.gpuBuffer.CurrentFrameBuffer->GetRendererID(),
-	//		s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().x,
-	//		s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().y,
+	{
+		// Fill in prev frame buffer from current frame buffer
+		RenderCommand::TransferColorBit(
+			s_Data.gpuBuffer.CurrentFrameBuffer->GetRendererID(),
+			s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().x,
+			s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().y,
 
-	//		s_Data.gpuBuffer.PrevFinalFrameBuffer->GetRendererID(),
-	//		s_Data.gpuBuffer.PrevFinalFrameBuffer->GetBufferSize().x,
-	//		s_Data.gpuBuffer.PrevFinalFrameBuffer->GetBufferSize().y
-	//	);
-	//	s_Data.gpuBuffer.PrevFinalFrameBuffer->GenerateMipmaps();
-	//}
+			s_Data.gpuBuffer.PrevFinalFrameBuffer->GetRendererID(),
+			s_Data.gpuBuffer.PrevFinalFrameBuffer->GetBufferSize().x,
+			s_Data.gpuBuffer.PrevFinalFrameBuffer->GetBufferSize().y
+		);
+		s_Data.gpuBuffer.PrevFinalFrameBuffer->GenerateMipmaps();
+	}
 
 	Renderer3D::_BeginToneMappingPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.CurrentFinalFrameBuffer);
 
@@ -2986,7 +3003,7 @@ void longmarch::Renderer3D::_BeginTAAPass(const std::shared_ptr<FrameBuffer>& fr
 		s_Data.CurrentShader = s_Data.ShaderMap["TAAShader"];
 		s_Data.CurrentShader->Bind();
 
-		s_Data.CurrentShader->SetInt("enabled", s_Data.enable_taa && !s_Data.window_size_changed_this_frame);
+		s_Data.CurrentShader->SetInt("enabled", s_Data.enable_taa);
 		s_Data.CurrentShader->SetFloat("u_VelocityScale", 1.0f / s_Data.motionblur_shutterSpeed / Engine::GetFrameTime());
 		s_Data.CurrentShader->SetFloat2("u_ScreenSize", framebuffer_in->GetBufferSize());
 		s_Data.CurrentShader->SetFloat2("u_VelocityScreenSize", s_Data.gpuBuffer.CurrentGBuffer->GetBufferSize());
@@ -3067,7 +3084,7 @@ void longmarch::Renderer3D::_BeginFXAAPass(const std::shared_ptr<FrameBuffer>& f
 
 void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_edge, const std::shared_ptr<FrameBuffer>& framebuffer_blend, const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
-	if (s_Data.enable_smaa)
+	if (s_Data.SMAASettings.enable)
 	{
 		GPU_TIME(SMAA);
 		RenderCommand::PolyModeFill();			// Draw full model
@@ -3113,10 +3130,12 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 				s_Data.CurrentShader = s_Data.ShaderMap["SMAAShader_weight"];
 				s_Data.CurrentShader->Bind();
 
-				s_Data.CurrentShader->SetFloat2("resolution", Vec2f(framebuffer_edge->GetBufferSize()));
+				s_Data.CurrentShader->SetFloat2("resolution", Vec2f(framebuffer_edge->GetBufferSize())); 
+				s_Data.CurrentShader->SetFloat4("subsampleIndices", s_Data.SMAASettings.GetSampleIndcies(s_Data.frameIndex));
+				
 				framebuffer_edge->BindTexture(s_Data.fragTexture_1_slot);
-				s_Data.gpuBuffer.SmaaAreaLUT->BindTexture(s_Data.fragTexture_empty_slot + 1);
-				s_Data.gpuBuffer.SmaaSearchLUT->BindTexture(s_Data.fragTexture_empty_slot + 2);
+				s_Data.gpuBuffer.SMAAAreaLUT->BindTexture(s_Data.fragTexture_empty_slot + 1);
+				s_Data.gpuBuffer.SMAASearchLUT->BindTexture(s_Data.fragTexture_empty_slot + 2);
 				// Render quad
 				Renderer3D::_RenderFullScreenQuad();
 			}
@@ -3124,19 +3143,23 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 		// Blending
 		{
 			RenderCommand::StencilTest(false, false); // Process all fragments in the blend pass, disable stencil test
-			if (framebuffer_out)
+			switch (s_Data.SMAASettings.mode)
 			{
-				framebuffer_out->Bind();
-				Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
-				RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-			}
-			else
+			case 0: // SMAA 1X
 			{
-				RenderCommand::BindDefaultFrameBuffer();
-				Vec2u traget_resoluation = s_Data.window_size;
-				RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-			}
-			{
+				if (framebuffer_out)
+				{
+					framebuffer_out->Bind();
+					Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
+					RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+				}
+				else
+				{
+					RenderCommand::BindDefaultFrameBuffer();
+					Vec2u traget_resoluation = s_Data.window_size;
+					RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+				}
+
 				s_Data.CurrentShader = s_Data.ShaderMap["SMAAShader_blend"];
 				s_Data.CurrentShader->Bind();
 
@@ -3145,6 +3168,61 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 				framebuffer_blend->BindTexture(s_Data.fragTexture_2_slot);
 				// Render quad
 				Renderer3D::_RenderFullScreenQuad();
+			}
+			break;
+			case 1: // SMAA T2X
+			{
+				{
+					// Write to edge buffer as temporary buffer
+					framebuffer_edge->Bind();
+					Vec2u traget_resoluation = framebuffer_edge->GetBufferSize();
+					RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+
+					s_Data.CurrentShader = s_Data.ShaderMap["SMAAShader_blend"];
+					s_Data.CurrentShader->Bind();
+
+					s_Data.CurrentShader->SetFloat2("resolution", Vec2f(framebuffer_in->GetBufferSize()));
+					framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
+					framebuffer_blend->BindTexture(s_Data.fragTexture_2_slot);
+					// Render quad
+					Renderer3D::_RenderFullScreenQuad();
+				}
+
+				{
+					// Blend current frame SMAA result with previous frame
+					if (framebuffer_out)
+					{
+						framebuffer_out->Bind();
+						Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
+						RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+					}
+					else
+					{
+						RenderCommand::BindDefaultFrameBuffer();
+						Vec2u traget_resoluation = s_Data.window_size;
+						RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+					}
+
+					s_Data.CurrentShader = s_Data.ShaderMap["SMAAShader_blend_T2X"];
+					s_Data.CurrentShader->Bind();
+
+					s_Data.gpuBuffer.CurrentGBuffer->BindTextures(
+						{
+							GBuffer::GBUFFER_TEXTURE_TYPE::NORMAL_VELOCITY,
+						},
+						s_Data.fragTexture_empty_slot
+						);
+
+					framebuffer_edge->BindTexture(s_Data.fragTexture_0_slot);
+					s_Data.gpuBuffer.PrevFinalFrameBuffer->BindTexture(s_Data.fragTexture_1_slot);
+					// Render quad
+					Renderer3D::_RenderFullScreenQuad();
+				}
+			}
+			break;
+			default:
+				ENGINE_EXCEPT(L"Unsupported SMAA mode!");
+				break;
 			}
 		}
 	}
@@ -3258,7 +3336,7 @@ void longmarch::Renderer3D::_BeginBloomPass(const std::shared_ptr<FrameBuffer>& 
 		}
 
 		// Blur brightness map
-		static const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur"];
+		const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur"];
 		Vec2u traget_resoluation2(traget_resoluation);
 		static auto BrightnessBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::Float16);
 		if (BrightnessBackBuffer->GetBufferSize() != traget_resoluation2)
@@ -3398,7 +3476,7 @@ void longmarch::Renderer3D::_BeginDOFPass(const std::shared_ptr<FrameBuffer>& fr
 		}
 
 		// Blur DOF map
-		static const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur"];
+		const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur"];
 		Vec2u traget_resoluation2(traget_resoluation);
 		static auto BrightnessBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::Float16);
 		if (BrightnessBackBuffer->GetBufferSize() != traget_resoluation2)
@@ -4138,24 +4216,24 @@ void longmarch::Renderer3D::BuildAllTexture()
 
 		// SMAA
 		{
-			if (!s_Data.gpuBuffer.SmaaAreaLUT)
+			if (!s_Data.gpuBuffer.SMAAAreaLUT)
 			{
 				auto tex = ResourceManager<Texture2D>::GetInstance()->TryGet("smaa_area")->TryGet();
 				if (tex)
 				{
-					s_Data.gpuBuffer.SmaaAreaLUT = tex;
+					s_Data.gpuBuffer.SMAAAreaLUT = tex;
 				}
 				else
 				{
 					ENGINE_EXCEPT(L"smaa_area should be loaded here!");
 				}
 			}
-			if (!s_Data.gpuBuffer.SmaaSearchLUT)
+			if (!s_Data.gpuBuffer.SMAASearchLUT)
 			{
 				auto tex = ResourceManager<Texture2D>::GetInstance()->TryGet("smaa_search")->TryGet();
 				if (tex)
 				{
-					s_Data.gpuBuffer.SmaaSearchLUT = tex;
+					s_Data.gpuBuffer.SMAASearchLUT = tex;
 				}
 				else
 				{

@@ -7,20 +7,6 @@ namespace longmarch
 	{
 		// Render widgets
 		BaseWidgetManager::RenderUI();
-		CaptureMouseAndKeyboardOnMenu();
-	}
-
-	void BaseGameWidgetManager::CaptureMouseAndKeyboardOnMenu()
-	{
-		ImGuiIO& io = ImGui::GetIO();
-		//bool isWindowFocused = ImGui::IsRootWindowOrAnyChildHovered() || ImGui::IsAnyItemHovered(); // deprecated with ImGui update.
-		bool isWindowFocused = ImGui::IsWindowHovered() || ImGui::IsAnyItemHovered();
-		// Set ImGui capture inputs on window focused
-		if (isWindowFocused)
-		{
-			io.WantCaptureMouse = isWindowFocused;
-			io.WantCaptureKeyboard = isWindowFocused;
-		}
 	}
 
 	void BaseGameWidgetManager::LoadWidget(const fs::path& filepath)

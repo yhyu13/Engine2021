@@ -75,27 +75,27 @@ namespace longmarch {
 			}
 		}
 
-		glGenTextures(1, &m_RendererID);
-		glBindTexture(GL_TEXTURE_2D, m_RendererID);
-		glTextureStorage2D(m_RendererID, m_max_level + 1, m_InternalFormat, m_Width, m_Height);
-		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, (m_float_type) ? GL_FLOAT : GL_UNSIGNED_BYTE, (_data) ? _data : data.input_data);
+		glGenTextures(1, &m_RenderTargetID);
+		glBindTexture(GL_TEXTURE_2D, m_RenderTargetID);
+		glTextureStorage2D(m_RenderTargetID, m_max_level + 1, m_InternalFormat, m_Width, m_Height);
+		glTextureSubImage2D(m_RenderTargetID, 0, 0, 0, m_Width, m_Height, m_DataFormat, (m_float_type) ? GL_FLOAT : GL_UNSIGNED_BYTE, (_data) ? _data : data.input_data);
 
 		// 4x anisotropy filter by default
-		glTextureParameterf(m_RendererID, GL_TEXTURE_MAX_ANISOTROPY, 4.0f);
+		glTextureParameterf(m_RenderTargetID, GL_TEXTURE_MAX_ANISOTROPY, 4.0f);
 		// default repeat wrap method
-		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTextureParameteri(m_RenderTargetID, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTextureParameteri(m_RenderTargetID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		if (data.has_mipmap)
 		{
 			// if has mipmap, generate the mipmap
-			glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, (data.linear_filter) ? GL_LINEAR : GL_NEAREST);
-			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+			glTextureParameteri(m_RenderTargetID, GL_TEXTURE_MAG_FILTER, (data.linear_filter) ? GL_LINEAR : GL_NEAREST);
+			glTextureParameteri(m_RenderTargetID, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
 			glGenerateMipmap(GL_TEXTURE_2D);
 		}
 		else
 		{
-			glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, (data.linear_filter) ? GL_LINEAR : GL_NEAREST);
-			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, (data.linear_filter) ? GL_LINEAR : GL_NEAREST);
+			glTextureParameteri(m_RenderTargetID, GL_TEXTURE_MAG_FILTER, (data.linear_filter) ? GL_LINEAR : GL_NEAREST);
+			glTextureParameteri(m_RenderTargetID, GL_TEXTURE_MIN_FILTER, (data.linear_filter) ? GL_LINEAR : GL_NEAREST);
 		}
 		GLCHECKERROR;
 		if (_data)
@@ -145,27 +145,27 @@ namespace longmarch {
 			{
 				throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Invalid channel for texture: " + wStr(m_channels) + L"!");
 			}
-			glGenTextures(1, &m_RendererID);
-			glBindTexture(GL_TEXTURE_2D, m_RendererID);
+			glGenTextures(1, &m_RenderTargetID);
+			glBindTexture(GL_TEXTURE_2D, m_RenderTargetID);
 			// Byte alignment
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-			glTextureStorage2D(m_RendererID, m_max_level + 1, m_InternalFormat, m_Width, m_Height);
-			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_FLOAT, data);
+			glTextureStorage2D(m_RenderTargetID, m_max_level + 1, m_InternalFormat, m_Width, m_Height);
+			glTextureSubImage2D(m_RenderTargetID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_FLOAT, data);
 			// 4x anisotropy filter by default
-			glTextureParameterf(m_RendererID, GL_TEXTURE_MAX_ANISOTROPY, 4.0f);
+			glTextureParameterf(m_RenderTargetID, GL_TEXTURE_MAX_ANISOTROPY, 4.0f);
 			// default repeat wrap method
-			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+			glTextureParameteri(m_RenderTargetID, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTextureParameteri(m_RenderTargetID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			glTextureParameteri(m_RenderTargetID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTextureParameteri(m_RenderTargetID, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
 			glGenerateMipmap(GL_TEXTURE_2D);
 			stbi_image_free(data);
 		}
 		else if (file_extension.compare(".dds") == 0)
 		{
-			m_RendererID = SOIL_load_OGL_texture(_path.c_str(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_DDS_LOAD_DIRECT);
+			m_RenderTargetID = SOIL_load_OGL_texture(_path.c_str(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_DDS_LOAD_DIRECT);
 			auto error = SOIL_last_result();
-			ENGINE_EXCEPT_IF(m_RendererID == 0, L"Texture loading fails at : " + str2wstr(_path) + L" with error : " + wStr(error));
+			ENGINE_EXCEPT_IF(m_RenderTargetID == 0, L"Texture loading fails at : " + str2wstr(_path) + L" with error : " + wStr(error));
 			m_float_type = false;
 		}
 		else
@@ -202,19 +202,19 @@ namespace longmarch {
 			{
 				throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Invalid channel for texture: " + wStr(m_channels) + L"!");
 			}
-			glGenTextures(1, &m_RendererID);
-			glBindTexture(GL_TEXTURE_2D, m_RendererID);
+			glGenTextures(1, &m_RenderTargetID);
+			glBindTexture(GL_TEXTURE_2D, m_RenderTargetID);
 			// Byte alignment
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-			glTextureStorage2D(m_RendererID, m_max_level + 1, m_InternalFormat, m_Width, m_Height);
-			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+			glTextureStorage2D(m_RenderTargetID, m_max_level + 1, m_InternalFormat, m_Width, m_Height);
+			glTextureSubImage2D(m_RenderTargetID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 			// 4x anisotropy filter by default
-			glTextureParameterf(m_RendererID, GL_TEXTURE_MAX_ANISOTROPY, 4.0f);
+			glTextureParameterf(m_RenderTargetID, GL_TEXTURE_MAX_ANISOTROPY, 4.0f);
 			// default repeat wrap method
-			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+			glTextureParameteri(m_RenderTargetID, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTextureParameteri(m_RenderTargetID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			glTextureParameteri(m_RenderTargetID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTextureParameteri(m_RenderTargetID, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
 			glGenerateMipmap(GL_TEXTURE_2D);
 			stbi_image_free(data);
 		}
@@ -223,18 +223,18 @@ namespace longmarch {
 
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
-		glDeleteTextures(1, &m_RendererID);
+		glDeleteTextures(1, &m_RenderTargetID);
 	}
 
 	void OpenGLTexture2D::AttachToFrameBuffer() const
 	{
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_RendererID, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_RenderTargetID, 0);
 		GLCHECKERROR;
 	}
 
 	void OpenGLTexture2D::BindTexture(uint32_t slot) const
 	{
-		glBindTextureUnit(slot, m_RendererID);
+		glBindTextureUnit(slot, m_RenderTargetID);
 		GLCHECKERROR;
 	}
 

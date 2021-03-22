@@ -235,7 +235,8 @@ namespace longmarch
 			inline static LongMarch_Vector<Mat4> s_default_bone_transform{ Mat4(1.0f) };
 
 			std::shared_ptr<FrameBuffer> PrevFinalFrameBuffer; // Previous frame's final frame buffer
-			std::shared_ptr<FrameBuffer> CurrentFinalFrameBuffer; // Frame buffer just before tone mapping
+			std::shared_ptr<FrameBuffer> CurrentFinalFrameBuffer; // Frame buffer before blitting to default frame buffer
+			std::shared_ptr<FrameBuffer> CurrentFinalFrameBufferUnsigned; // Frame buffer before blitting to default frame buffer
 			std::shared_ptr<FrameBuffer> PrevOpaqueLightingFrameBuffer; // Stores opaque lighting color
 			std::shared_ptr<FrameBuffer> CurrentFrameBuffer;
 			std::shared_ptr<FrameBuffer> FrameBuffer_1;

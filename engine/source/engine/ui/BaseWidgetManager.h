@@ -15,7 +15,7 @@ namespace longmarch
 		BaseWidgetManager() = default;
 		virtual ~BaseWidgetManager() = default;
 
-		virtual void BeginFrame() {};
+		virtual void BeginFrame() { ResetCaptureMouseAndKeyboard(); };
 		virtual void RenderUI();
 		virtual void EndFrame() {};
 
@@ -28,6 +28,12 @@ namespace longmarch
 		BaseWidget* GetWidget(const std::string& name);
 		void SetVisible(const std::string& name, bool visible);
 		bool GetVisible(const std::string& name);
+
+		//! Should be called in BeginFrame()
+		void ResetCaptureMouseAndKeyboard();
+
+		//! Capture Mouse and Kyeboard on menu being hovered, should be called as per widget needs
+		void CaptureMouseAndKeyboardOnHover();
 
 	protected:
 		LongMarch_Map<std::string, std::shared_ptr<BaseWidget>> m_WidgetLUT;

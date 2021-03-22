@@ -326,7 +326,7 @@ namespace longmarch {
 		uint32_t data_type;
 		switch (type)
 		{
-		case longmarch::FrameBuffer::BUFFER_FORMAT::UINT8:
+		case longmarch::FrameBuffer::BUFFER_FORMAT::Uint8:
 			format = GL_RGBA8;
 			channel = GL_RGBA;
 			data_type = GL_UNSIGNED_BYTE;

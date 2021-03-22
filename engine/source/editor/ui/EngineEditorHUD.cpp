@@ -1,11 +1,11 @@
 #include "engine-precompiled-header.h"
-#include "EngineEditorDock.h"
+#include "EngineEditorHUD.h"
 #include "BaseEngineWidgetManager.h"
 #include "engine/ecs/header/header.h"
 
 #include <imgui/addons/implot/implot.h>
 
-longmarch::EngineEditorDock::EngineEditorDock()
+longmarch::EngineEditorHUD::EngineEditorHUD()
 {
 	m_IsVisible = true;
 	m_aboutEditorPopup = []() {};
@@ -21,7 +21,7 @@ longmarch::EngineEditorDock::EngineEditorDock()
 	m_JsonLoadSceneFileDialog.SetPwd(FileSystem::ResolveProtocol("$asset:archetype/"));
 }
 
-void longmarch::EngineEditorDock::Render()
+void longmarch::EngineEditorHUD::Render()
 {
 	// Setup Dear ImGui style
 	ImGuiUtil::SetupEngineImGuiStyle();
@@ -42,7 +42,7 @@ void longmarch::EngineEditorDock::Render()
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-	if (!ImGui::Begin("EngineEditorDock", &m_IsVisible, window_flags))
+	if (!ImGui::Begin("EngineEditorHUD", &m_IsVisible, window_flags))
 	{
 		// Early out if the window is collapsed, as an optimization.
 		ImGui::PopStyleVar(3);
@@ -68,7 +68,7 @@ void longmarch::EngineEditorDock::Render()
 	ImGui::End();
 }
 
-void longmarch::EngineEditorDock::ShowEngineFPS()
+void longmarch::EngineEditorHUD::ShowEngineFPS()
 {
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
 	float frameTime = FramerateController::GetInstance()->GetFrameTime();
@@ -88,8 +88,11 @@ void longmarch::EngineEditorDock::ShowEngineFPS()
 	ImGui::PopStyleVar(2);
 }
 
-void longmarch::EngineEditorDock::ShowEngineMainMenuBar()
+void longmarch::EngineEditorHUD::ShowEngineMainMenuBar()
 {
+	auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
+	manager->PushWidgetStyle();
+
 	if (ImGui::BeginMainMenuBar())
 	{
 		if (ImGui::BeginMenu("File"))
@@ -114,9 +117,12 @@ void longmarch::EngineEditorDock::ShowEngineMainMenuBar()
 		}
 		ImGui::EndMainMenuBar();
 	}
+
+	manager->CaptureMouseAndKeyboardOnHover();
+	manager->PopWidgetStyle();
 }
 
-void longmarch::EngineEditorDock::ShowEngineMenuFile()
+void longmarch::EngineEditorHUD::ShowEngineMenuFile()
 {
 	ImGui::MenuItem("Load & Save", NULL, false, false);
 	if (ImGui::MenuItem("New")) {}
@@ -169,7 +175,7 @@ void longmarch::EngineEditorDock::ShowEngineMenuFile()
 	}
 }
 
-void longmarch::EngineEditorDock::ShowEngineMenuEdit()
+void longmarch::EngineEditorHUD::ShowEngineMenuEdit()
 {
 	ImGui::MenuItem("History", NULL, false, false);
 	if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
@@ -181,14 +187,14 @@ void longmarch::EngineEditorDock::ShowEngineMenuEdit()
 	if (ImGui::MenuItem("Paste", "CTRL+V")) {}
 }
 
-void longmarch::EngineEditorDock::ShowEngineMenuWindow()
+void longmarch::EngineEditorHUD::ShowEngineMenuWindow()
 {
 	ImGui::MenuItem("Level Editor", NULL, false, false);
 	ImGui::Separator();
 	ImGui::MenuItem("General", NULL, false, false);
 }
 
-void longmarch::EngineEditorDock::ShowEngineMenuHelp()
+void longmarch::EngineEditorHUD::ShowEngineMenuHelp()
 {
 	ImGui::MenuItem("Application", NULL, false, false);
 	if (ImGui::MenuItem("About GSWY Engine Editor"))
@@ -214,12 +220,14 @@ void longmarch::EngineEditorDock::ShowEngineMenuHelp()
 	}
 }
 
-void longmarch::EngineEditorDock::ShowGameWorldLevelTab()
+void longmarch::EngineEditorHUD::ShowGameWorldLevelTab()
 {
+	auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
+	manager->PushWidgetStyle();
+
 	ImGui::Begin("Game World Level", nullptr, ImGuiWindowFlags_NoDecoration);
 	ImGui::BeginTabBar("Level", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_NoTooltip | ImGuiTabBarFlags_FittingPolicyMask_);
 
-	auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
 	auto& levels = manager->m_gameWorldLevels;
 	static auto num_visible_counter = [](const auto& levels)->size_t
 	{
@@ -261,19 +269,30 @@ void longmarch::EngineEditorDock::ShowGameWorldLevelTab()
 			}
 		}
 	}
+
+	manager->CaptureMouseAndKeyboardOnHover();
+	manager->PopWidgetStyle();
 	ImGui::EndTabBar();
 	ImGui::End();
 }
 
-void longmarch::EngineEditorDock::ShowPopUps()
+void longmarch::EngineEditorHUD::ShowPopUps()
 {
+	auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
+	manager->PushWidgetStyle();
+
 	m_aboutEditorPopup();
 	m_saveBeforeLoadPopup();
 	m_saveBeforeQuitPopup();
+
+	manager->CaptureMouseAndKeyboardOnHover();
+	manager->PopWidgetStyle();
 }
 
-void longmarch::EngineEditorDock::HandleFileDialog()
+void longmarch::EngineEditorHUD::HandleFileDialog()
 {
+	auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
+	manager->PushWidgetStyle();
 	{
 		m_JsonSaveSceneFileDialog.Display();
 		if (m_JsonSaveSceneFileDialog.HasSelected())
@@ -325,10 +344,12 @@ void longmarch::EngineEditorDock::HandleFileDialog()
 				}
 			}
 		}
-	}
+	}	
+	manager->CaptureMouseAndKeyboardOnHover();
+	manager->PopWidgetStyle();
 }
 
-void longmarch::EngineEditorDock::ShowEnginePerformanceMonitor()
+void longmarch::EngineEditorHUD::ShowEnginePerformanceMonitor()
 {
 	// this is rendered in a table format
 	//      col#1                         col#2
@@ -337,6 +358,9 @@ void longmarch::EngineEditorDock::ShowEnginePerformanceMonitor()
 	//	|            |    graph widgets here occupy both rows    |
 	//	|FRAME TIME  |                                           |  // row#2
 	//	|--------------------------------------------------------|
+
+	auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
+	manager->PushWidgetStyle();
 
 	static bool showFPS = false;
 	static bool showFrameTime = false;
@@ -410,5 +434,8 @@ void longmarch::EngineEditorDock::ShowEnginePerformanceMonitor()
 		}
 	}
 	ImGui::Columns(1); // resetting the number of columns to 1
+
+	manager->CaptureMouseAndKeyboardOnHover();
+	manager->PopWidgetStyle();
 	ImGui::End();
 }

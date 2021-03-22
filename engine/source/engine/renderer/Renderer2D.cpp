@@ -145,7 +145,7 @@ namespace longmarch {
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * MaxIndexCount, indices, GL_STATIC_DRAW);
 
 		s_BatchData->RawTexture = Texture2D::Create(Texture::Setting());
-		s_BatchData->TextureSlots[0] = s_BatchData->RawTexture->GetRendererID();
+		s_BatchData->TextureSlots[0] = s_BatchData->RawTexture->GetRenderTargetID();
 
 		for (size_t i = 1; i < MaxTextures; ++i)
 			s_BatchData->TextureSlots[i] = 0;
@@ -350,7 +350,7 @@ namespace longmarch {
 			//Get the texture already in slot
 			for (uint32_t i = 1; i < s_BatchData->TextureSlotIndex; ++i)
 			{
-				if (s_BatchData->TextureSlots[i] == texture->GetRendererID())
+				if (s_BatchData->TextureSlots[i] == texture->GetRenderTargetID())
 				{
 					textureIndex = (float)i;
 					break;
@@ -361,7 +361,7 @@ namespace longmarch {
 			if (textureIndex == 0.0f)
 			{
 				textureIndex = (float)s_BatchData->TextureSlotIndex;
-				s_BatchData->TextureSlots[s_BatchData->TextureSlotIndex] = texture->GetRendererID();
+				s_BatchData->TextureSlots[s_BatchData->TextureSlotIndex] = texture->GetRenderTargetID();
 				s_BatchData->TextureSlotIndex++;
 			}
 		}

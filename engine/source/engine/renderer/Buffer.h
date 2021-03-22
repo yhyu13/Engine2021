@@ -253,7 +253,7 @@ namespace longmarch
 	public:
 		enum class BUFFER_FORMAT
 		{
-			UINT8,
+			Uint8,
 			Float16,
 		};
 

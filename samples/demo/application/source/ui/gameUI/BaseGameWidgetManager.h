@@ -8,7 +8,6 @@ namespace longmarch {
 	{
 	public:
 		virtual void RenderUI() override;
-		void CaptureMouseAndKeyboardOnMenu();
 
 		void LoadWidget(const fs::path& filepath);
 	};

@@ -55,3 +55,19 @@ bool longmarch::BaseWidgetManager::GetVisible(const std::string& name)
 		return false;
 	}
 }
+
+void longmarch::BaseWidgetManager::ResetCaptureMouseAndKeyboard()
+{
+	ImGuiUtil::IgnoreMouseCaptured = ImGuiUtil::IgnoreKeyBoardCaptured = false;
+}
+
+void longmarch::BaseWidgetManager::CaptureMouseAndKeyboardOnHover()
+{
+	ImGuiIO& io = ImGui::GetIO();
+	bool isWindowHovered = ImGui::IsAnyWindowHovered() || ImGui::IsAnyItemHovered();
+	// Set ImGui capture inputs on window focused
+	if (isWindowHovered)
+	{
+		io.WantCaptureMouse = io.WantCaptureKeyboard = isWindowHovered;
+	}
+}

@@ -730,6 +730,7 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 	static float speed_up_multi = 1.0f;
 	bool bUINotHoldMouse = !ImGuiUtil::IsMouseCaptured();
 	bool bUINotHoldKeyBoard = !ImGuiUtil::IsKeyBoardCaptured();
+
 	// Apply friction (for editor camera to slow down on releasing control)
 	{
 		friction_local_v *= powf(0.001f, dt);

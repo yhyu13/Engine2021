@@ -6,15 +6,11 @@ namespace longmarch {
 	 * @brief Display all logging info
 	 * It should act like a dockable menu
 	 */
-	class EngineConsoleDock final : public BaseWidget
+	class SceneDock final : public BaseWidget
 	{
 	public:
-		NONCOPYABLE(EngineConsoleDock);
-		EngineConsoleDock()
-		{
-			m_IsVisible = true;
-			m_Size = ScaleSize({ 500, 400 });
-		}
+		NONCOPYABLE(SceneDock);
+		SceneDock();
 		virtual void Render() override;
 
 	private:

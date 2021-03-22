@@ -12,7 +12,7 @@ void longmarch::_3DEngineMainMenu::Render()
 	manager->PushWidgetStyle();
 	ImVec2 windowsize = ImVec2(GetWindowSize_X(), GetWindowSize_Y());
 	ImVec2 mainMenuWindowSize = PosScaleBySize(m_Size, windowsize);
-	ImGui::SetNextWindowSize(mainMenuWindowSize);
+	ImGui::SetNextWindowSize(mainMenuWindowSize, ImGuiCond_Once);
 	if (!ImGui::Begin("Engine Main Menu", &m_IsVisible))
 	{
 		// Early out if the window is collapsed, as an optimization.
@@ -67,7 +67,7 @@ void longmarch::_3DEngineMainMenu::Render()
 		RenderEngineGraphicSettingMenu();
 	}
 
-	manager->CaptureMouseAndKeyboardOnMenu();
+	manager->CaptureMouseAndKeyboardOnHover();
 	manager->PopWidgetStyle();
 	ImGui::End();
 }
@@ -95,8 +95,16 @@ void longmarch::_3DEngineMainMenu::RenderEngineSettingMenu()
 		ImGui::Dummy(ImVec2(0, yoffset_item));
 
 		{
-			ImGui::Checkbox("Dark Theme", &ImGuiUtil::bStyleDark);
-			ImGui::SliderFloat("Alpha", &ImGuiUtil::alpha, 0.01f, 1.0f, "%.2f");
+			static auto style = ImGuiUtil::bStyleDark;
+			if (ImGui::Checkbox("Dark Theme", &style))
+			{
+				ImGuiUtil::bStyleDark = style;
+			}
+			static auto alpha = ImGuiUtil::alpha;
+			if (ImGui::SliderFloat("Alpha", &alpha, 0.01f, 1.0f, "%.2f"))
+			{
+				ImGuiUtil::alpha = alpha;
+			}
 		}
 		ImGui::Dummy(ImVec2(0, yoffset_item));
 

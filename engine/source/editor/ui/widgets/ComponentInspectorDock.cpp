@@ -17,7 +17,7 @@ void longmarch::ComponentInspectorDock::Render()
 	manager->PushWidgetStyle();
 	ImVec2 windowsize = ImVec2(GetWindowSize_X(), GetWindowSize_Y());
 	ImVec2 mainMenuWindowSize = PosScaleBySize(m_Size, windowsize);
-	ImGui::SetNextWindowSize(mainMenuWindowSize);
+	ImGui::SetNextWindowSize(mainMenuWindowSize, ImGuiCond_Once);
 
 	auto es = manager->GetAllSelectedEntity();
 
@@ -122,7 +122,8 @@ void longmarch::ComponentInspectorDock::Render()
 			com->ImGuiRender();
 		}
 	}
-	manager->CaptureMouseAndKeyboardOnMenu();
+
+	manager->CaptureMouseAndKeyboardOnHover();
 	manager->PopWidgetStyle();
 	ImGui::End();
 }

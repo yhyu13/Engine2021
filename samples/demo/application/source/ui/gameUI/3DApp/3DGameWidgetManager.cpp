@@ -8,6 +8,7 @@
 longmarch::_3DGameWidgetManager::_3DGameWidgetManager()
 {
 	{
+		// mark with "0_" to place it is sorted at the front of std::map when rendering
 		auto widget = MemoryManager::Make_shared<GameHUD>();
 		RegisterWidget("0_HUD", widget);
 	}

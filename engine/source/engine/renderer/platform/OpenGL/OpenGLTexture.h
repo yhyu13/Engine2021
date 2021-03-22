@@ -12,7 +12,7 @@ namespace longmarch {
 
 		inline virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
-		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
+		inline virtual uint32_t GetRenderTargetID() const override { return m_RenderTargetID; }
 		inline virtual bool IsFloatType() const override { return m_float_type; }
 		virtual uint32_t GetMaxMipMapLevel() const { return m_max_level; }
 		inline virtual uint32_t GetTextureRowCount() const override { return m_rows; };
@@ -34,8 +34,9 @@ namespace longmarch {
 		uint32_t m_max_level;
 		uint32_t m_channels;
 		uint32_t m_Width, m_Height;
-		uint32_t m_RendererID;
-		uint32_t m_InternalFormat, m_DataFormat;
+		uint32_t m_RenderTargetID;
+		uint32_t m_InternalFormat;
+		uint32_t m_DataFormat;
 		uint32_t m_rows;
 	};
 }

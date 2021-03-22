@@ -5,8 +5,6 @@ namespace longmarch {
 
 	/**
 	 * @brief Display all ENG_TIME() timed code blcoks
-	 *
-	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
 	 */
 	class EngineProfilerPage final : public BaseWidget
 	{

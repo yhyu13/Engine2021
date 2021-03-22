@@ -9,9 +9,11 @@ void longmarch::EngineConsoleDock::Render()
 	manager->PushWidgetStyle();
 	ImVec2 windowsize = ImVec2(GetWindowSize_X(), GetWindowSize_Y());
 	ImVec2 mainMenuWindowSize = PosScaleBySize(m_Size, windowsize);
-	ImGui::SetNextWindowSize(mainMenuWindowSize);
+	ImGui::SetNextWindowSize(mainMenuWindowSize, ImGuiCond_Once);
 
+	// Simply invoke terminal logger's render function, and we are done
 	TerminalLogger::GetInstance()->show();
-	manager->CaptureMouseAndKeyboardOnMenu();
+
+	manager->CaptureMouseAndKeyboardOnHover();
 	manager->PopWidgetStyle();
 }

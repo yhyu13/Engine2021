@@ -16,9 +16,11 @@ namespace longmarch
 		inline static ImVec4 ColWhite = { ImVec4(1.f,1.f,1.f,1.f) };
 		inline static ImVec4 ColGray = { ImVec4(0.2f,0.2f,0.2f,1.f) };
 		inline static ImVec4 ColNavi = { ImVec4(0.26f, 0.59f, 0.98f, 1.00f) };
-		inline static ImGuiIO& GetIO() { return ImGui::GetIO(); }
-		inline static bool IsMouseCaptured() { return GetIO().WantCaptureMouse; }
-		inline static bool IsKeyBoardCaptured() { return GetIO().WantCaptureKeyboard; }
+
+		inline static bool IsMouseCaptured() { return !IgnoreMouseCaptured && ImGui::GetIO().WantCaptureMouse; };
+		inline static bool IsKeyBoardCaptured() { return !IgnoreKeyBoardCaptured && ImGui::GetIO().WantCaptureKeyboard; };
+		inline static bool IgnoreMouseCaptured{ false }; //!< Custom boolean variable that need to be set every frame by the current widget manager
+		inline static bool IgnoreKeyBoardCaptured{ false }; //!< Custom boolean variable that need to be set every frame by the current widget manager
 
 		inline static ImGuiWindowFlags popupFlag = { ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize };
 		inline static ImGuiWindowFlags menuFlag = { ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse };

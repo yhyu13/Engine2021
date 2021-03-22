@@ -1,13 +1,10 @@
 #pragma once
 #include "engine/ui/BaseWidget.h"
 
-namespace longmarch
-{
+namespace longmarch {
 	/**
 	 * @brief Display all scene nodes in the hierarchical order. Enables single selection and multi-selection
 	 * It should act like a dockable menu
-	 *
-	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
 	 */
 	class SceneHierarchyDock final : public BaseWidget, public BaseEventSubHandleClass
 	{

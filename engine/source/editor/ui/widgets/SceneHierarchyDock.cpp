@@ -24,7 +24,7 @@ void longmarch::SceneHierarchyDock::Render()
 	manager->PushWidgetStyle();
 	ImVec2 windowsize = ImVec2(GetWindowSize_X(), GetWindowSize_Y());
 	ImVec2 mainMenuWindowSize = PosScaleBySize(m_Size, windowsize);
-	ImGui::SetNextWindowSize(mainMenuWindowSize);
+	ImGui::SetNextWindowSize(mainMenuWindowSize, ImGuiCond_Once);
 	if (!ImGui::Begin("Scene Node Menu", &m_IsVisible, ImGuiWindowFlags_HorizontalScrollbar))
 	{
 		// Early out if the window is collapsed, as an optimization.
@@ -144,7 +144,7 @@ void longmarch::SceneHierarchyDock::Render()
 			}
 		}
 	}
-	manager->CaptureMouseAndKeyboardOnMenu();
+	manager->CaptureMouseAndKeyboardOnHover();
 	manager->PopWidgetStyle();
 	ImGui::End();
 }

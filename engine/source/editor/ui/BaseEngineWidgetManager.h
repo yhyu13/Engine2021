@@ -5,12 +5,10 @@ namespace longmarch {
 #define ENG_WIG_MAN_NAME "eng_wig_man"
 
 	class EditorPickingComSys; //!< Component system side of picking system
-	class EngineEditorDock; //!< Game world level tab system
+	class EngineEditorHUD; //!< Game world level tab system
 
 	/**
 	 * @brief Engine derived class of BaseWidgetManager
-	 *
-	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
 	 */
 	class BaseEngineWidgetManager : public BaseWidgetManager
 	{
@@ -21,9 +19,6 @@ namespace longmarch {
 
 		virtual void BeginFrame() override;
 		virtual void EndFrame() override;
-
-		//! Capture Mouse and Kyeboard on menu being clicked
-		void CaptureMouseAndKeyboardOnMenu();	
 
 		//! UI side of picking system (add entity to picked entity buffer)
 		void PushBackSelectedEntityBuffered(const Entity& e); 
@@ -40,7 +35,7 @@ namespace longmarch {
 		//! UI side of picking system
 		void UpdateSelectedEntity();
 
-		friend EngineEditorDock;
+		friend EngineEditorHUD;
 	protected:
 		LongMarch_Vector<Entity> m_SelectedEntity;
 		LongMarch_Vector<Entity> m_SelectedEntityBuffer;

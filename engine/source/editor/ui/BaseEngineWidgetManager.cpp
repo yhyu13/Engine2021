@@ -4,25 +4,14 @@
 
 void longmarch::BaseEngineWidgetManager::BeginFrame()
 {
+	BaseWidgetManager::BeginFrame();
 	UpdateSelectedEntity();
 }
 
 void longmarch::BaseEngineWidgetManager::EndFrame()
 {
-	CaptureMouseAndKeyboardOnMenu();
 	UpdateGameWorldTabs();
-}
-
-void longmarch::BaseEngineWidgetManager::CaptureMouseAndKeyboardOnMenu()
-{
-	ImGuiIO& io = ImGui::GetIO();
-	bool isWindowFocused = ImGui::IsWindowHovered() || ImGui::IsAnyItemHovered();
-	// Set ImGui capture inputs on window focused
-	if (isWindowFocused)
-	{
-		io.WantCaptureMouse = isWindowFocused;
-		io.WantCaptureKeyboard = isWindowFocused;
-	}
+	BaseWidgetManager::EndFrame();
 }
 
 void longmarch::BaseEngineWidgetManager::PushBackSelectedEntityBuffered(const Entity& e)

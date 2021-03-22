@@ -6,7 +6,7 @@
 void longmarch::ImGuiUtil::SetupEngineImGuiStyle()
 {
 	static bool _bStyleDark_ = !bStyleDark;
-	static float _alpha_ = 1.0f - alpha;
+	static float _alpha_ = alpha - 1.0;
 	if (_bStyleDark_ == bStyleDark && _alpha_ == alpha)
 	{
 		return;
@@ -55,7 +55,7 @@ void longmarch::ImGuiUtil::TextureViewerWithZoom(const std::shared_ptr<void>& te
 	}
 	ImVec2 pos = ImGui::GetCursorScreenPos();
 	auto tex = std::static_pointer_cast<Texture2D>(texture);
-	ImTextureID my_tex_id = reinterpret_cast<ImTextureID>(tex->GetRendererID());
+	ImTextureID my_tex_id = reinterpret_cast<ImTextureID>(tex->GetRenderTargetID());
 	float my_tex_w = MIN(256, tex->GetWidth());
 	float my_tex_h = my_tex_w * tex->GetHeight() / tex->GetWidth();
 	{

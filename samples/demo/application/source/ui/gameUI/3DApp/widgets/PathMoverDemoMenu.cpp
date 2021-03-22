@@ -25,7 +25,7 @@ void longmarch::PathMoverDemoMenu::Render()
 
 	RenderPathMotionMenu();
 
-	manager->CaptureMouseAndKeyboardOnMenu();
+	manager->CaptureMouseAndKeyboardOnHover();
 	manager->PopWidgetStyle();
 	ImGui::PopStyleColor(1);
 	ImGui::End();

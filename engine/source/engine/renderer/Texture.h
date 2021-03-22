@@ -24,7 +24,7 @@ namespace longmarch {
 		virtual bool IsFloatType() const = 0;
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
-		virtual uint32_t GetRendererID() const = 0;
+		virtual uint32_t GetRenderTargetID() const = 0;
 		virtual uint32_t GetMaxMipMapLevel() const = 0;
 		virtual uint32_t GetTextureRowCount() const = 0;
 

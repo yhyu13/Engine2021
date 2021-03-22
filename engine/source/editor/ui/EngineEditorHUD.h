@@ -9,11 +9,11 @@ namespace longmarch
 	 *
 	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
 	 */
-	class EngineEditorDock final : public BaseWidget
+	class EngineEditorHUD final : public BaseWidget
 	{
 	public:
-		NONCOPYABLE(EngineEditorDock);
-		EngineEditorDock();
+		NONCOPYABLE(EngineEditorHUD);
+		EngineEditorHUD();
 		void Render() override;
 
 	private:

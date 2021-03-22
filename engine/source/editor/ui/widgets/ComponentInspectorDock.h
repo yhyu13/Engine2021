@@ -5,8 +5,6 @@ namespace longmarch {
 	/**
 	 * @brief Display all components info
 	 * It should act like a dockable menu
-	 *
-	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
 	 */
 	class ComponentInspectorDock final : public BaseWidget
 	{

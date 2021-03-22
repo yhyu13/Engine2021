@@ -16,7 +16,7 @@ void longmarch::PickingPass::Init()
 		setting.linear_filter = false;
 		setting.float_type = false;
 		m_renderTexture = Texture2D::Create(setting);
-		m_renderTarget = FrameBuffer::Create(texture_dim, texture_dim, FrameBuffer::BUFFER_FORMAT::UINT8);
+		m_renderTarget = FrameBuffer::Create(texture_dim, texture_dim, FrameBuffer::BUFFER_FORMAT::Uint8);
 
 		auto rm = ResourceManager<Scene3DNode>::GetInstance();
 		m_particlePickingMesh = rm->TryGet("unit_sphere")->Get()->Copy();
@@ -80,9 +80,9 @@ void longmarch::PickingPass::BeginRenderPass()
 		// Process new picking request
 		m_shouldRead = false;
 		// Push picking rendering cmd on LMB in the editor viewport
-		bool capture = !ImGuiUtil::IsMouseCaptured();
+		bool bUINotHoldMouse = !ImGuiUtil::IsMouseCaptured();
 		if (auto input = InputManager::GetInstance();
-			input->IsMouseButtonTriggered(MOUSE_BUTTON_LEFT) && capture)
+			input->IsMouseButtonTriggered(MOUSE_BUTTON_LEFT) && bUINotHoldMouse)
 		{
 			EntityType e_type;
 			switch (Engine::GetEngineMode())

@@ -62,14 +62,6 @@ void longmarch::_3DEditorLayer::BuildRenderPipeline()
 		{
 		case Engine::ENGINE_MODE::EDITING:
 			// Camera viewport rect should be set by scene dock widget every frame (see SceneDock.cpp)
-		//{
-		//	const auto& prop = Engine::GetWindow()->GetWindowProperties();
-		//	cam->SetViewPort(Vec2u(0), Vec2u(prop.m_width, prop.m_height));
-		//	if (prop.IsResizable)
-		//	{
-		//		cam->cameraSettings.aspectRatioWbyH = float(prop.m_width) / float(prop.m_height);
-		//	}
-		//}
 			break;
 		case Engine::ENGINE_MODE::INGAME:
 		{

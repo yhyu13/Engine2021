@@ -13,10 +13,30 @@ longmarch::SceneDock::SceneDock()
 
 void longmarch::SceneDock::Render()
 {
-	// Feature disabled, because
-	// 1, this feature currently only works properly on fully expanded window or full screen. It seems GLFW's cursor position does not glue well with ImGui's window view port, try to debug break on GenerateRayFromCursorSpace() method in PickingPass3D.cpp
-	// 2, Resize scene dock seems to cause frame drop drastically, making editor harder to approach.
-	//return;
+	/********************************
+	* Scene Dock suffers from a wired bug that when reaching negative x values.
+	* Turn it off temporarily.
+	********************************/
+	{
+		EntityType e_type;
+		switch (Engine::GetEngineMode())
+		{
+		case Engine::ENGINE_MODE::EDITING:
+			e_type = (EntityType)EngineEntityType::EDITOR_CAMERA;
+			break;
+		default:
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Engine mode is not valid!");
+		}
+		auto camera = GameWorld::GetCurrent()->GetTheOnlyEntityWithType(e_type);
+		auto cam = GameWorld::GetCurrent()->GetComponent<PerspectiveCameraCom>(camera)->GetCamera();
+		const auto& prop = Engine::GetWindow()->GetWindowProperties();
+		cam->SetViewPort(Vec2u(0), Vec2u(prop.m_width, prop.m_height));
+		if (prop.IsResizable)
+		{
+			cam->cameraSettings.aspectRatioWbyH = float(prop.m_width) / float(prop.m_height);
+		}
+	}
+	return;
 
 	WIDGET_EARLY_QUIT();
 

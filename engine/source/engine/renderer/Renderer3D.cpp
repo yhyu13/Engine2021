@@ -928,6 +928,18 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 	{
 		// Assign current frame buffer
 		s_Data.gpuBuffer.CurrentFrameBuffer = s_Data.gpuBuffer.FrameBuffer_1;
+
+		// Transfer cleared fbo to default frame buffer in order to clear it as well.
+		constexpr int default_framebuffer_rendererID = 0;
+		RenderCommand::TransferColorBit(
+			s_Data.gpuBuffer.CurrentFrameBuffer->GetRendererID(),
+			s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().x,
+			s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().y,
+
+			default_framebuffer_rendererID,
+			s_Data.window_size.x,
+			s_Data.window_size.y
+		);
 	}
 
 	if (s_Data.DOFSettings.enable)

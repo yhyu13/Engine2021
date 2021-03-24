@@ -2759,8 +2759,10 @@ void longmarch::Renderer3D::_RenderBoundingBox(const std::shared_ptr<FrameBuffer
 		s_Data.CurrentShader = s_Data.ShaderMap["BBoxShader"];
 		s_Data.CurrentShader->Bind();
 		s_Data.gpuBuffer.BBoxInstBO->UpdateBufferData(&(s_Data.cpuBuffer.InstancedDraw_BVModelTr[0][0][0]), num_instance * sizeof(Mat4));
-		s_Data.gpuBuffer.BBoxVAO->Bind();
+		s_Data.gpuBuffer.BBoxVAO->Bind(); 
+		RenderCommand::PolyLineWidth(2);
 		RenderCommand::DrawLineIndexedInstanced(s_Data.gpuBuffer.BBoxVAO, num_instance);
+		RenderCommand::PolyLineWidth(1);
 	}
 	if (num_instance > 0)
 	{

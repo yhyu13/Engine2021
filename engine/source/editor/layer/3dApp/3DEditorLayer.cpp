@@ -61,7 +61,7 @@ void longmarch::_3DEditorLayer::BuildRenderPipeline()
 		switch (Engine::GetEngineMode())
 		{
 		case Engine::ENGINE_MODE::EDITING:
-			// Camera viewport rect should be set by scene dock widget every frame (disabled fatured)
+			// Camera viewport rect should be set by scene dock widget every frame (see SceneDock.cpp)
 		//{
 		//	const auto& prop = Engine::GetWindow()->GetWindowProperties();
 		//	cam->SetViewPort(Vec2u(0), Vec2u(prop.m_width, prop.m_height));

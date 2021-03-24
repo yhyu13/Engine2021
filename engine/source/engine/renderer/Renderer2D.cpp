@@ -248,7 +248,9 @@ namespace longmarch {
 		s_Data->QuadShader->SetMat4("u_Transform", transform);
 		s_Data->FullScreenQuadVAO->Bind();
 		s_Data->FullScreenQuadVAO->SetIndexBuffer(s_Data->QuadIndexBuffer);
+		RenderCommand::PolyLineWidth(2);
 		RenderCommand::DrawLineIndexed(s_Data->FullScreenQuadVAO);
+		RenderCommand::PolyLineWidth(1);
 		s_Data->FullScreenQuadVAO->Unbind();
 		s_Data->FullScreenQuadVAO->Unbind();
 	}

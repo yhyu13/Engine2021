@@ -90,6 +90,11 @@ namespace longmarch
 			s_RendererAPI->PolyModeLine();
 		}
 
+		inline static void PolyLineWidth(uint32_t width)
+		{
+			s_RendererAPI->PolyLineWidth(width);
+		}
+
 		inline static void PolyOffset(bool enabled, float factor, float units)
 		{
 			s_RendererAPI->PolyOffset(enabled, factor, units);

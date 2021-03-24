@@ -35,6 +35,7 @@ namespace longmarch {
 
 		virtual void PolyModeFill() override;
 		virtual void PolyModeLine() override;
+		virtual void PolyLineWidth(uint32_t width) override;
 		virtual void PolyOffset(bool enabled, float factor, float units);
 
 		virtual void BindDefaultFrameBuffer() override;;

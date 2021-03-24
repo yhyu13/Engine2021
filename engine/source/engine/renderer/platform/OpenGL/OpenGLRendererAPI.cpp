@@ -107,9 +107,7 @@ namespace longmarch
 			indexFormat = GL_UNSIGNED_INT;
 			break;
 		}
-		glLineWidth(2);
 		glDrawElements(GL_LINES, vertexArray->GetIndexBuffer()->GetCount(), indexFormat, nullptr);
-		glLineWidth(1);
 	}
 
 	void OpenGLRendererAPI::DrawTriangleIndexedInstanced(const std::shared_ptr<VertexArray>& vertexArray, uint32_t count)
@@ -147,9 +145,7 @@ namespace longmarch
 			indexFormat = GL_UNSIGNED_INT;
 			break;
 		}
-		glLineWidth(2);
 		glDrawElementsInstanced(GL_LINES, vertexArray->GetIndexBuffer()->GetCount(), indexFormat, nullptr, count);
-		glLineWidth(1);
 	}
 
 	void OpenGLRendererAPI::MultiDrawTriangleIndexedIndirect(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<IndexedIndirectCommandBuffer>& commandBuffer)
@@ -198,6 +194,11 @@ namespace longmarch
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			break;
 		} 
+	}
+
+	void OpenGLRendererAPI::PolyLineWidth(uint32_t width)
+	{
+		glLineWidth(width);
 	}
 
 	void OpenGLRendererAPI::PolyOffset(bool enabled, float factor, float units)

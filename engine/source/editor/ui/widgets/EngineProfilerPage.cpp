@@ -4,6 +4,9 @@
 
 void longmarch::EngineProfilerPage::Render()
 {
+	WIDGET_TOGGLE(KEY_F11);
+	WIDGET_EARLY_QUIT();
+
 	auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
 	manager->PushWidgetStyle();
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);

@@ -11,6 +11,9 @@ longmarch::EnginePerformanceMonitor::EnginePerformanceMonitor()
 
 void longmarch::EnginePerformanceMonitor::Render()
 {
+	WIDGET_TOGGLE(KEY_F11);
+	WIDGET_EARLY_QUIT();
+
 	// this is rendered in a table format
 	//      col#1                         col#2
 	//	|------------|-------------------------------------------|

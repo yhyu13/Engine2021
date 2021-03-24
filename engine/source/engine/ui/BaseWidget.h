@@ -29,7 +29,12 @@ namespace longmarch
 		ImVec2 ScaleSize(const ImVec2& itemSize);
 		unsigned int GetWindowSize_X();
 		unsigned int GetWindowSize_Y();
+
+#define WIDGET_EARLY_QUIT() if (!m_ShouldDraw) { return; }
+#define WIDGET_TOGGLE(KEY) 	if (auto input = InputManager::GetInstance(); input->IsKeyTriggered(KEY)) { m_ShouldDraw = !m_ShouldDraw; }
+
 	protected:
+		bool m_ShouldDraw = { true };
 		bool m_IsVisible = { true };
 		ImVec4 m_styleColor = { ImGuiUtil::ColGrayBG };
 	};

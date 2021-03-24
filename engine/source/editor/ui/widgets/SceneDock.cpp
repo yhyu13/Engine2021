@@ -18,6 +18,9 @@ void longmarch::SceneDock::Render()
 	// 2, Resize scene dock seems to cause frame drop drastically, making editor harder to approach.
 	return;
 
+	//WIDGET_TOGGLE(KEY_F11);
+	//WIDGET_EARLY_QUIT();
+
 	//auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
 	//manager->PushWidgetStyle();
 	//ImVec2 windowsize = ImVec2(GetWindowSize_X(), GetWindowSize_Y());

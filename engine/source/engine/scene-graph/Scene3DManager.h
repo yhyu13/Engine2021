@@ -8,7 +8,7 @@ namespace longmarch
 	/**
 	 * @brief Manges scene file loading and intializing Scene3DCom
 	 *
-	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Hang Yu (yohan680919@gmail.com)
 	 */
 	class Scene3DManager
 	{

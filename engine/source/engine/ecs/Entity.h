@@ -17,7 +17,7 @@ namespace longmarch
 		managers.For more information on component-managers, please check
 		ComponentManager.h.
 	 *
-	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
 	struct CACHE_ALIGN8 Entity
 	{

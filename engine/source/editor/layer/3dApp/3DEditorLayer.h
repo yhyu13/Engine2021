@@ -9,7 +9,7 @@ namespace longmarch
 	/**
 	 * @brief 3D engine update/render pipeline
 	 *
-	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Hang Yu (yohan680919@gmail.com)
 	 */
 	class _3DEditorLayer final : public Layer
 	{

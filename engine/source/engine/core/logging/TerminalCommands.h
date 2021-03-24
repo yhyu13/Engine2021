@@ -18,7 +18,7 @@ namespace longmarch
 	/**
 	 * @brief Inspired by <imgui/addons/imterm/terminal_commands.hpp>
 	 *
-	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Hang Yu (yohan680919@gmail.com)
 	 */
 	class TerminalCommands : public ImTerm::basic_spdlog_terminal_helper<TerminalCommands, CustomCommand, misc::no_mutex> {
 	public:

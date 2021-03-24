@@ -7,7 +7,7 @@ namespace longmarch {
 	/**
 	 * @brief Base layer class to drive engine/game update
 	 *
-	 * @author Kyle Wang (kyle.wang@digipen.edu | 60000719), Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Kyle Wang (kyle.wang@digipen.edu | 60000719), Hang Yu (yohan680919@gmail.com)
 	 */
 	class ENGINE_API Layer : public BaseEventSubHandleClass
 	{

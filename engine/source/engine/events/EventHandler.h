@@ -8,7 +8,7 @@ namespace longmarch
 	/**
 	 * @brief Base class event callback
 	 *
-	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
 	class BaseEventHandler
 	{
@@ -27,7 +27,7 @@ namespace longmarch
 	/**
 	 * @brief Event handler that take instance method
 	 *
-	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
 	template<typename T, typename EventType>
 	class InstanceEventHandler final : public BaseEventHandler
@@ -66,7 +66,7 @@ namespace longmarch
 	/**
 	 * @brief Event handler that take global/class method
 	 *
-	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
 	template<typename EventType>
 	class GlobalEventHandler final : public BaseEventHandler

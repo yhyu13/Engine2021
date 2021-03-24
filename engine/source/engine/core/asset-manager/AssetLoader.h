@@ -9,7 +9,7 @@ namespace longmarch
 	/**
 	 * @brief Custom AssetManager that features async loading
 	 *
-	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Hang Yu (yohan680919@gmail.com)
 	 */
 	class ENGINE_API AssetLoader : BaseAtomicClassNI
 	{

@@ -11,7 +11,7 @@ namespace longmarch
 	/**
 	 * @brief Representation of a scene node in the overall scene (a scene node could be consistent of multiple meshs, materials, animations and skeletons)
 	 *
-	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Hang Yu (yohan680919@gmail.com)
 	 */
 	class Scene3DNode
 	{

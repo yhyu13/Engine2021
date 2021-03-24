@@ -81,16 +81,16 @@ void longmarch::OutlinePass::BeginRenderPass()
 		}
 		);
 
-		// 2. Transfer stencil buffer to default frame buffer
-		constexpr int default_framebuffer_rendererID = 0;
+		// 2. Transfer stencil buffer to final frame buffer
+		auto fbo = Renderer3D::s_Data.gpuBuffer.CurrentFinalFrameBuffer;
 		RenderCommand::TransferStencilBit(
 			OutlineFrameBuffer->GetRendererID(),
 			OutlineFrameBuffer->GetBufferSize().x,
 			OutlineFrameBuffer->GetBufferSize().y,
 
-			default_framebuffer_rendererID,
-			Renderer3D::s_Data.window_size.x,
-			Renderer3D::s_Data.window_size.y
+			fbo->GetRendererID(),
+			fbo->GetBufferSize().x,
+			fbo->GetBufferSize().y
 		);
 
 		// 3. Draw slighly larger objects with outline color to default frame buffer
@@ -98,8 +98,8 @@ void longmarch::OutlinePass::BeginRenderPass()
 		RenderCommand::StencilTest(true, false);
 		RenderCommand::StencilFunc(longmarch::RendererAPI::CompareEnum::NEQUAL);
 
-		RenderCommand::BindDefaultFrameBuffer();
-		traget_resoluation = Renderer3D::s_Data.window_size;
+		fbo->Bind();
+		traget_resoluation = fbo->GetBufferSize();
 		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 
 		shader_name = "OutlineShader";

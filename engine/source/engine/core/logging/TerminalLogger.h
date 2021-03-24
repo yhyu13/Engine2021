@@ -7,7 +7,7 @@ namespace longmarch {
 	 * @brief Display all logging info
 	 * It should act like a dockable menu
 	 *
-	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Hang Yu (yohan680919@gmail.com)
 	 */
 	class TerminalLogger {
 

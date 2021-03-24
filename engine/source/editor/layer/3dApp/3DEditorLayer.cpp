@@ -55,12 +55,35 @@ void longmarch::_3DEditorLayer::BuildRenderPipeline()
 			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Engine mode is not valid!");
 		}
 
+		// TODO move render pipeline for INGame to application's layer, and use application layer in application mode
 		auto camera = GameWorld::GetCurrent()->GetTheOnlyEntityWithType(e_type);
 		auto cam = GameWorld::GetCurrent()->GetComponent<PerspectiveCameraCom>(camera)->GetCamera();
-		// TODO : most editor would create a tab window space that stores a captured texture of the rendering result
-		// and that tab window could resize at a user's will. Right now, we still render to the whole screen
-		const auto& prop = Engine::GetWindow()->GetWindowProperties();
-		cam->SetViewPort(Vec2u(0), Vec2u(prop.m_width, prop.m_height));
+		switch (Engine::GetEngineMode())
+		{
+		case Engine::ENGINE_MODE::EDITING:
+			// Camera viewport rect should be set by scene dock widget every frame (disabled fatured)
+		{
+			const auto& prop = Engine::GetWindow()->GetWindowProperties();
+			cam->SetViewPort(Vec2u(0), Vec2u(prop.m_width, prop.m_height));
+			if (prop.IsResizable)
+			{
+				cam->cameraSettings.aspectRatioWbyH = float(prop.m_width) / float(prop.m_height);
+			}
+		}
+			break;
+		case Engine::ENGINE_MODE::INGAME:
+		{
+			const auto& prop = Engine::GetWindow()->GetWindowProperties();
+			cam->SetViewPort(Vec2u(0), Vec2u(prop.m_width, prop.m_height));
+			if (prop.IsResizable)
+			{
+				cam->cameraSettings.aspectRatioWbyH = float(prop.m_width) / float(prop.m_height);
+			}
+		}
+			break;
+		default:
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Engine mode is not valid!");
+		}
 
 		if (Renderer3D::ShouldRendering())
 		{
@@ -210,6 +233,19 @@ void longmarch::_3DEditorLayer::Render(double ts)
 	GameWorld::GetCurrent()->Render(ts);
 	m_Data.mainRenderPipeline(ts);
 	GameWorld::GetCurrent()->Render2(ts);
+
+	switch (Engine::GetEngineMode())
+	{
+	case Engine::ENGINE_MODE::EDITING:
+		Renderer3D::SubmitFrameBufferToScreen();
+		break;
+	case Engine::ENGINE_MODE::INGAME:
+		// TODO, move to applciation layer
+		Renderer3D::SubmitFrameBufferToScreen();
+		break;
+	default:
+		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Engine mode is not valid!");
+	}
 }
 
 void longmarch::_3DEditorLayer::PostRenderUpdate(double ts)

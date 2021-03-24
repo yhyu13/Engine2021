@@ -58,7 +58,12 @@ void longmarch::EditorPickingComSys::RenderUI()
 	}
 }
 
-void longmarch::EditorPickingComSys::ManipulatePickedEntityGizmos(const Entity& e)
+void longmarch::EditorPickingComSys::SetSceneDockDrawList(ImDrawList* drawList)
+{
+	m_sceneDockDrawList = drawList;
+}
+
+void longmarch::EditorPickingComSys::ManipulatePickedEntityGizmos(const Entity& picked_entity)
 {
 	static ImGuizmo::OPERATION operation; // shared for all game worlds in editing
 	static ImGuizmo::MODE mode; // shared for all game worlds in editing
@@ -109,13 +114,21 @@ void longmarch::EditorPickingComSys::ManipulatePickedEntityGizmos(const Entity& 
 
 	auto camera = m_parentWorld->GetTheOnlyEntityWithType((EntityType)EngineEntityType::EDITOR_CAMERA);
 	auto current_camera = GetComponent<PerspectiveCameraCom>(camera)->GetCamera();
-	auto trans = GetComponent<Transform3DCom>(e);
-	if (camera != e && trans.Valid())
+	auto trans = GetComponent<Transform3DCom>(picked_entity);
+	if (camera != picked_entity && trans.Valid())
 	{
-		auto viewport_origin = current_camera->cameraSettings.viewportOrigin;
-		auto viewport_size = current_camera->cameraSettings.viewportSize;
 		const auto& prop = Engine::GetWindow()->GetWindowProperties();
-		ImGuizmo::SetRect(prop.m_xpos + viewport_origin.x, prop.m_ypos + viewport_origin.y, viewport_size.x, viewport_size.y);
+		if (m_sceneDockDrawList)
+		{
+			ImGuizmo::SetDrawlist(m_sceneDockDrawList);
+			auto viewport_origin = current_camera->cameraSettings.viewportOrigin;
+			auto viewport_size = current_camera->cameraSettings.viewportSize;
+			ImGuizmo::SetRect(prop.m_xpos + viewport_origin.x, prop.m_ypos + viewport_origin.y, viewport_size.x, viewport_size.y);
+		}
+		else
+		{
+			ImGuizmo::SetRect(prop.m_xpos, prop.m_ypos, prop.m_width, prop.m_height);
+		}
 
 		auto trans_mat = trans->GetModelTr();
 		Mat4 cam_view = current_camera->GetViewMatrix();

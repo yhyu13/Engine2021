@@ -13,7 +13,7 @@ namespace longmarch
 	 *				 ResourceManager<T>::GetInstance()->LoadFromFile(name, path)
 	 *				 ResourceManager<T>::GetInstance()->LoadFromFileAsync(name, path)
 	 *				 ResourceManager<T>::GetInstance()->TryGet(name)
-	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Hang Yu (yohan680919@gmail.com)
 	 */
 	template<typename T>
 	class ENGINE_API ResourceManager : public BaseAtomicClassNC

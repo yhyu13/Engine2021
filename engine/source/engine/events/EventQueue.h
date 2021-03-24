@@ -11,7 +11,7 @@ namespace longmarch
 	/**
 	 * @brief Base class event subscriber handle
 	 *
-	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
 	struct BaseEventSubHandle
 	{
@@ -23,7 +23,7 @@ namespace longmarch
 	/**
 	 * @brief Base class event queue
 	 *
-	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
 	template <typename EventType>
 	class EventQueue final : public BaseAtomicClassNC {
@@ -364,7 +364,7 @@ namespace longmarch
 	 *
 	 * Making a dervied class of every class that you want event subscriptions to be canceled on destruction.
 	 *
-	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Hang Yu (yohan680919@gmail.com)
 	 */
 	class BaseEventSubHandleClass
 	{

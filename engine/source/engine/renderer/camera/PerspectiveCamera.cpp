@@ -9,8 +9,7 @@ longmarch::PerspectiveCamera::PerspectiveCamera(float fovy_rad, float aspectRati
 
 void longmarch::PerspectiveCamera::OnUpdate()
 {
-	const auto& prop = Engine::GetWindow()->GetWindowProperties();
-	SetProjection(cameraSettings.fovy_rad, (prop.IsResizable) ? float(prop.m_width) / float(prop.m_height) : cameraSettings.aspectRatioWbyH, cameraSettings.nearZ, cameraSettings.farZ);
+	SetProjection(cameraSettings.fovy_rad, cameraSettings.aspectRatioWbyH, cameraSettings.nearZ, cameraSettings.farZ);
 	RecalculateProjectionMatrix();
 	RecalculateViewMatrix();
 	RecalculateViewFrustum();
@@ -68,17 +67,18 @@ void longmarch::PerspectiveCamera::SetViewPort(const Vec2u& origin, const Vec2u&
 bool longmarch::PerspectiveCamera::GenerateRayFromCursorSpace(const Vec2u& in_cursor_pos, bool clip_viewport, bool invert_y, Vec3f& out_ray_origin, Vec3f& out_ray_dir) const
 {
 	// Transform the pick position from view port space into camera space
-	Vec2f ss_;
-	if (!CursorSpaceToScreenSpace(in_cursor_pos, clip_viewport, invert_y, ss_))
+	Vec2f ss_out;
+	if (!CursorSpaceToScreenSpace(in_cursor_pos, clip_viewport, invert_y, ss_out))
 	{
 		return false;
 	}
 
-	// Use projection matrix that has clip z plane [0, 1]
-	Vec3f far_(ss_, 1);
+	// Use projection matrix that has clip z plane [0, 1], use not reverse Z PV matrix here
+	auto pv = GetViewProjectionMatrix();
+	Vec3f far_(ss_out, 1);
 	Vec3f near_(far_.xy, 0);
 
-	const auto& in_pv = Geommath::SmartInverse(GetViewProjectionMatrix());
+	const auto& in_pv = Geommath::SmartInverse(pv);
 	far_ = Geommath::Mat4ProdVec3(in_pv, far_);
 	near_ = Geommath::Mat4ProdVec3(in_pv, near_);
 	out_ray_origin = worldPosition;
@@ -158,8 +158,8 @@ bool longmarch::PerspectiveCamera::CursorSpaceToScreenSpace(const Vec2u& in_curs
 		return false;
 	}
 
-	out_ss_pos.x = (((2.0f * (in_cursor_pos.x - cameraSettings.viewportOrigin.x)) / (cameraSettings.viewportSize.x)) - 1.0f);
-	out_ss_pos.y = (((2.0f * (in_cursor_pos.y - cameraSettings.viewportOrigin.y)) / (cameraSettings.viewportSize.y)) - 1.0f);
+	out_ss_pos.x = (((2.0f * (in_cursor_pos.x - cameraSettings.viewportOrigin.x)) / float(cameraSettings.viewportSize.x)) - 1.0f);
+	out_ss_pos.y = (((2.0f * (in_cursor_pos.y - cameraSettings.viewportOrigin.y)) / float(cameraSettings.viewportSize.y)) - 1.0f);
 	if (invert_y)
 	{
 		out_ss_pos.y *= -1.0f;

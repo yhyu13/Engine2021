@@ -69,7 +69,7 @@ namespace longmarch
 	/**
 	 * @brief The core engine class
 	 *
-	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
 	class ENGINE_API Engine : public BaseEventSubHandleClass
 	{

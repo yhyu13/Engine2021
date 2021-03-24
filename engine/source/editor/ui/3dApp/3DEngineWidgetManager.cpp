@@ -5,6 +5,7 @@
 #include "../widgets/ComponentInspectorDock.h"
 #include "../widgets/SceneHierarchyDock.h"
 #include "../widgets/EngineProfilerPage.h"
+#include "../widgets/EnginePerformanceMonitor.h"
 #include "../widgets/EngineConsoleDock.h"
 #include "../widgets/SceneDock.h"
 #include "../EngineEditorHUD.h"
@@ -23,6 +24,10 @@ longmarch::_3DEngineWidgetManager::_3DEngineWidgetManager()
 	{
 		auto widget = MemoryManager::Make_shared<EngineProfilerPage>();
 		RegisterWidget("ProfilerPage", widget);
+	}
+	{
+		auto widget = MemoryManager::Make_shared<EnginePerformanceMonitor>();
+		RegisterWidget("EnginePerformanceMonitor", widget);
 	}
 	{
 		auto widget = MemoryManager::Make_shared<ComponentInspectorDock>();

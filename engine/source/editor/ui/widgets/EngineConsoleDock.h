@@ -10,11 +10,7 @@ namespace longmarch {
 	{
 	public:
 		NONCOPYABLE(EngineConsoleDock);
-		EngineConsoleDock()
-		{
-			m_IsVisible = true;
-			m_Size = ScaleSize({ 500, 400 });
-		}
+		EngineConsoleDock();
 		virtual void Render() override;
 
 	private:

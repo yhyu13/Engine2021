@@ -6,7 +6,7 @@ namespace longmarch
 	/**
 	 * @brief Manages all wigets winthin
 	 *
-	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Hang Yu (yohan680919@gmail.com)
 	 */
 	class BaseWidgetManager
 	{

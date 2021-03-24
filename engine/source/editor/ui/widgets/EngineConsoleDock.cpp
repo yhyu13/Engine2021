@@ -3,6 +3,12 @@
 #include "editor/ui/BaseEngineWidgetManager.h"
 #include "engine/core/logging/TerminalLogger.h"
 
+longmarch::EngineConsoleDock::EngineConsoleDock()
+{
+	m_IsVisible = true;
+	m_Size = ScaleSize({ 500, 400 });
+}
+
 void longmarch::EngineConsoleDock::Render()
 {
 	auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);

@@ -8,7 +8,7 @@ namespace longmarch
 	/**
 	 * @brief Editor's object picking sytem
 	 *
-	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Hang Yu (yohan680919@gmail.com)
 	 */
 	class EditorPickingComSys final : public BaseComponentSystem
 	{
@@ -22,11 +22,14 @@ namespace longmarch
 		virtual void Render2() override;
 		virtual void RenderUI() override;
 
+		void SetSceneDockDrawList(ImDrawList* drawList);
+
 	private:
 		void ManipulatePickedEntityGizmos(const Entity& e);
 
 	private:
 		PickingPass m_pickingPass;
 		OutlinePass m_outlinePass;
+		ImDrawList* m_sceneDockDrawList{ nullptr };
 	};
 }

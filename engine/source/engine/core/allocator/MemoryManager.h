@@ -28,7 +28,7 @@ namespace longmarch
 	 *				 MemoryManager::Make_unique<T>(args...);
 	 *				 Use std::allocator to allocate values with smaller than 8 bytes, it is not going to be efficient
 	 *
-	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Hang Yu (yohan680919@gmail.com)
 	 */
 	class ENGINE_API MemoryManager
 	{

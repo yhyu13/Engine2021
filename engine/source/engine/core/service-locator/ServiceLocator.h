@@ -5,9 +5,16 @@
 namespace longmarch
 {
 	/**
-	 * @brief Service Locator Pattern for easy instantiate derived classes
+	 * @brief Service Locator Pattern for easy instantiating derived classes
 	 *
-	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @example 
+	 *			class _3DEngineWidgetManager : public BaseEngineWidgetManager
+	 *			...
+				ServiceLocator::ProvideSingleton<_3DEngineWidgetManager>("eng_wig_man", MemoryManager::Make_shared<_3DEngineWidgetManager>());
+				...
+				auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>("eng_wig_man");
+
+	 * @author Hang Yu (yohan680919@gmail.com)
 	 */
 	class ServiceLocator : public BaseAtomicClassNI
 	{
@@ -61,7 +68,7 @@ namespace longmarch
 
 		/**
 		 * @brief Register for copyable classes
-		 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+		 * @author Hang Yu (yohan680919@gmail.com)
 		 * @tparam T derived class type
 		 * @param name name of the registery
 		 */
@@ -74,7 +81,7 @@ namespace longmarch
 		}
 		/**
 		 * @brief Register for copyable classes
-		 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+		 * @author Hang Yu (yohan680919@gmail.com)
 		 * @tparam T derived class type
 		 * @param name name of the registery
 		 */
@@ -86,7 +93,7 @@ namespace longmarch
 		}
 		/**
 		 * @brief Register for non copyable classes
-		 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+		 * @author Hang Yu (yohan680919@gmail.com)
 		 * @tparam T derived class type
 		 * @param name name of the registery
 		 */
@@ -99,7 +106,7 @@ namespace longmarch
 		}
 		/**
 		 * @brief Register for non copyable classes
-		 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+		 * @author Hang Yu (yohan680919@gmail.com)
 		 * @tparam T derived class type
 		 * @param name name of the registery
 		 */
@@ -111,7 +118,7 @@ namespace longmarch
 		}
 		/**
 		 * @brief Get stored service
-		 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+		 * @author Hang Yu (yohan680919@gmail.com)
 		 * @tparam U base class type
 		 * @param name name of the registery
 		 */
@@ -147,7 +154,7 @@ namespace longmarch
 		}
 		/**
 		 * @brief Get a new copy of the stored service
-		 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+		 * @author Hang Yu (yohan680919@gmail.com)
 		 * @tparam U base class type
 		 * @param name name of the registery
 		 */

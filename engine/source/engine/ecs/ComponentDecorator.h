@@ -8,7 +8,7 @@ namespace longmarch {
 		These decorators help in creating useful abstractions for
 		component specific operations.
 	 *
-	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
 	template<typename ComponentType>
 	class ComponentDecorator {

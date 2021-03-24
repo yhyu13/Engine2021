@@ -15,7 +15,7 @@ namespace longmarch
 	 *
 	 * For more information, please check BitMaskSignature.h.
 	 *
-	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
 	struct ComponentTypeIndex
 	{
@@ -25,7 +25,7 @@ namespace longmarch
 	/**
 	 * @brief Interaface class for all components
 	 *
-	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
 	struct BaseComponentInterface
 	{
@@ -52,7 +52,7 @@ namespace longmarch
 			float y;
 		};
 	 *
-	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
 	template <typename ComponentType>
 	struct BaseComponent : public BaseAtomicClass2, public BaseComponentInterface
@@ -89,7 +89,7 @@ namespace longmarch
 	 * @brief Use this function to get the family-code for a component-type.
 			  Example usage: GetComponentFamily<Transform>()
 	 *
-	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
 	template <typename ComponentType>
 	constexpr static const uint32_t GetComponentTypeIndex()

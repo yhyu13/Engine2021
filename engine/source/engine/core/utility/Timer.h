@@ -7,7 +7,7 @@ namespace longmarch
 	/**
 	 * @brief Timer that set and return time point in sec
 	 *
-	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Hang Yu (yohan680919@gmail.com)
 	 */
 	class Timer
 	{
@@ -69,7 +69,7 @@ namespace longmarch
 	/**
 	 * @brief Timer that shall be increamend manually, return time in any units interpreted by the user
 	 *
-	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Hang Yu (yohan680919@gmail.com)
 	 */
 	class Timer2
 	{

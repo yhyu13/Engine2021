@@ -53,7 +53,7 @@ namespace longmarch
 		systems run their update methods, they access all required components of a type
 		from a contiguous memory.
 	 *
-	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
 	template<typename ComponentType>
 	class ComponentManager : public BaseComponentManager

@@ -600,6 +600,8 @@ namespace longmarch
 		static void EndPostProcessing();
 		
 		static void EndRendering();
+		//! Transfer current final frame buffer's color to default frame buffer
+		static void SubmitFrameBufferToScreen();
 
 		/**************************************************************
 		*	Render3D lowlevel API

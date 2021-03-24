@@ -3615,6 +3615,10 @@ void longmarch::Renderer3D::EndPostProcessing()
 **************************************************************/
 void longmarch::Renderer3D::EndRendering()
 {
+}
+
+void longmarch::Renderer3D::SubmitFrameBufferToScreen()
+{
 	/*
 		Blit CurrentFinalFrameBuffer to have the same size as the back buffer.
 		This allows us to render with a smaller resolution thant the screen

@@ -16,70 +16,72 @@ void longmarch::SceneDock::Render()
 	// Feature disabled, because
 	// 1, this feature currently only works properly on fully expanded window or full screen. It seems GLFW's cursor position does not glue well with ImGui's window view port, try to debug break on GenerateRayFromCursorSpace() method in PickingPass3D.cpp
 	// 2, Resize scene dock seems to cause frame drop drastically, making editor harder to approach.
-	return;
+	//return;
 
-	//WIDGET_TOGGLE(KEY_F11);
-	//WIDGET_EARLY_QUIT();
+	WIDGET_EARLY_QUIT();
 
-	//auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
-	//manager->PushWidgetStyle();
-	//ImVec2 windowsize = ImVec2(GetWindowSize_X(), GetWindowSize_Y());
-	//ImVec2 mainMenuWindowSize = PosScaleBySize(m_Size, windowsize);
-	//ImGui::SetNextWindowSize(mainMenuWindowSize, ImGuiCond_Once);
+	auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
+	manager->PushWidgetStyle();
+	ImVec2 windowsize = ImVec2(GetWindowSize_X(), GetWindowSize_Y());
+	ImVec2 mainMenuWindowSize = PosScaleBySize(m_Size, windowsize);
+	ImGui::SetNextWindowSize(mainMenuWindowSize, ImGuiCond_Once);
 
-	//// Broderless and no padding, result in a clean capture of the whole scene
-	//ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f); 
-	//ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
+	// Broderless and no padding, result in a clean capture of the whole scene
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f); 
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
 
-	//if (!ImGui::Begin("Scene", &m_IsVisible, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoNav))
-	//{
-	//	// Early out if the window is collapsed, as an optimization.
-	//	manager->PopWidgetStyle(); 
-	//	ImGui::PopStyleVar(2);
-	//	ImGui::End();
-	//	return;
-	//}
+	if (!ImGui::Begin("Scene", &m_IsVisible, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoNav))
+	{
+		// Early out if the window is collapsed, as an optimization.
+		manager->PopWidgetStyle(); 
+		ImGui::PopStyleVar(2);
+		ImGui::End();
+		return;
+	}
 
-	//auto pos = ImGui::GetCurrentWindowRead()->Pos;
-	//auto size = ImGui::GetCurrentWindowRead()->Size;
-	//auto contentSize = ImGui::GetCurrentWindowRead()->ContentSize;
-	//PRINT(Str("Scene Dock pos : %.2f, %.2f | size : %.2f, %.2f | content size : %.2f, %.2f", pos.x, pos.y, size.x, size.y, contentSize.x, contentSize.y));
+	auto input = InputManager::GetInstance(); 
+	auto cursor_pos = input->GetCursorPositionXY();
+	const auto& prop = Engine::GetWindow()->GetWindowProperties();
+	auto pos = ImGui::GetCurrentWindowRead()->InnerRect.Min; // In screen space (not in window space)
+	auto size = ImGui::GetCurrentWindowRead()->InnerRect.GetSize();
+	//DEBUG_PRINT(Str("Window pos : %d, %d Scene Dock pos : %.2f, %.2f | size : %.2f, %.2f Cursor Pos %.2f, %.2f", prop.m_xpos, prop.m_ypos, pos.x, pos.y, size.x, size.y, cursor_pos.x, cursor_pos.y));
 
-	//{
-	//	// Set viewport rect is size with scene dock rect
-	//	EntityType e_type;
-	//	switch (Engine::GetEngineMode())
-	//	{
-	//	case Engine::ENGINE_MODE::EDITING:
-	//		e_type = (EntityType)EngineEntityType::EDITOR_CAMERA;
-	//		break;
-	//	default:
-	//		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Engine mode is not valid!");
-	//	}
+	{
+		// Set viewport rect is size with scene dock rect
+		EntityType e_type;
+		switch (Engine::GetEngineMode())
+		{
+		case Engine::ENGINE_MODE::EDITING:
+			e_type = (EntityType)EngineEntityType::EDITOR_CAMERA;
+			break;
+		default:
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Engine mode is not valid!");
+		}
 
-	//	auto camera = GameWorld::GetCurrent()->GetTheOnlyEntityWithType(e_type);
-	//	auto cam = GameWorld::GetCurrent()->GetComponent<PerspectiveCameraCom>(camera)->GetCamera();
-	//	cam->SetViewPort(Vec2u(pos.x, pos.y), Vec2u(size.x, size.y));
-	//	cam->cameraSettings.aspectRatioWbyH = float(size.x) / float(size.y);
+		auto camera = GameWorld::GetCurrent()->GetTheOnlyEntityWithType(e_type);
+		auto cam = GameWorld::GetCurrent()->GetComponent<PerspectiveCameraCom>(camera)->GetCamera();
 
-	//	auto editorPickingComSys = static_cast<EditorPickingComSys*>(GameWorld::GetCurrent()->GetComponentSystem("EditorPickingComSys"));
-	//	editorPickingComSys->SetSceneDockDrawList(ImGui::GetWindowDrawList());
-	//}
+		cam->SetViewPort(Vec2u(pos.x - prop.m_xpos, pos.y - prop.m_ypos), Vec2u(size.x, size.y));
+		cam->cameraSettings.aspectRatioWbyH = float(size.x) / float(size.y);
 
-	//{
-	//	// Display final frame buffer to scene dock, notice the uv is y inverted due to OpenGl definition
-	//	auto buffer = Renderer3D::s_Data.gpuBuffer.CurrentFinalFrameBuffer;
-	//	ImGui::Image(reinterpret_cast<ImTextureID>(buffer->GetRenderTargetID()), size, ImVec2(0, 1), ImVec2(1, 0));
-	//}
-	//{
-	//	// Mouse over scene dock should not be captured by ImGui
-	//	bool isWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows) && !ImGui::IsAnyItemHovered();
-	//	if (isWindowHovered)
-	//	{
-	//		ImGuiUtil::IgnoreMouseCaptured = ImGuiUtil::IgnoreKeyBoardCaptured = true;
-	//	}
-	//}
-	//manager->PopWidgetStyle();
-	//ImGui::PopStyleVar(2);
-	//ImGui::End();
+		auto editorPickingComSys = static_cast<EditorPickingComSys*>(GameWorld::GetCurrent()->GetComponentSystem("EditorPickingComSys"));
+		editorPickingComSys->SetSceneDockDrawList(ImGui::GetWindowDrawList());
+	}
+
+	{
+		// Display final frame buffer to scene dock, notice the uv is y inverted due to OpenGl definition
+		auto buffer = Renderer3D::s_Data.gpuBuffer.CurrentFinalFrameBuffer;
+		ImGui::Image(reinterpret_cast<ImTextureID>(buffer->GetRenderTargetID()), size, ImVec2(0, 1), ImVec2(1, 0));
+	}
+	{
+		// Mouse over scene dock should not be captured by ImGui
+		bool isWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows) && !ImGui::IsAnyItemHovered();
+		if (isWindowHovered)
+		{
+			ImGuiUtil::IgnoreMouseCaptured = ImGuiUtil::IgnoreKeyBoardCaptured = true;
+		}
+	}
+	manager->PopWidgetStyle();
+	ImGui::PopStyleVar(2);
+	ImGui::End();
 }

@@ -16,7 +16,7 @@ namespace longmarch
 		float fovy_rad = { PI * 0.5f };
 		float nearZ = { .1f };
 		float farZ = { 2000.0f };
-		Vec2u viewportOrigin{ 0 }; //!< top left corner
+		Vec2u viewportOrigin{ 0 }; //!< top left corner (in window space, not in screen space)
 		Vec2u viewportSize{ 1920,1080 };
 	};
 
@@ -30,7 +30,9 @@ namespace longmarch
 		void RecalculateProjectionMatrix();
 		void RecalculateViewMatrix();
 		void RecalculateViewFrustum();
+		//! Viewport origin should be in window space(with top left corner as the origin)
 		void SetViewPort(const Vec2u& origin, const Vec2u& size);
+		//! Given a cursor position in window space, output the ray origin and ray direction (mainly used for ray casting)
 		bool GenerateRayFromCursorSpace(const Vec2u& in_cursor_pos, bool clip_viewport, bool invert_y, Vec3f& out_ray_origin, Vec3f& out_ray_dir) const;
 		//! Given a contact plane equation, output the world space location of the ray shoot from cursor position
 		bool CursorSpaceToWorldSpace(const Vec2u& in_cursor_pos, const Vec4f& in_plane, bool clip_viewport, bool invert_y, Vec3f& out_world_pos) const;

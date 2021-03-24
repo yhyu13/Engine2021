@@ -158,12 +158,14 @@ bool longmarch::PerspectiveCamera::CursorSpaceToScreenSpace(const Vec2u& in_curs
 		return false;
 	}
 
-	out_ss_pos.x = (((2.0f * (in_cursor_pos.x - cameraSettings.viewportOrigin.x)) / float(cameraSettings.viewportSize.x)) - 1.0f);
-	out_ss_pos.y = (((2.0f * (in_cursor_pos.y - cameraSettings.viewportOrigin.y)) / float(cameraSettings.viewportSize.y)) - 1.0f);
+	out_ss_pos.x = (in_cursor_pos.x - cameraSettings.viewportOrigin.x) / float(cameraSettings.viewportSize.x);
+	out_ss_pos.y = (in_cursor_pos.y - cameraSettings.viewportOrigin.y) / float(cameraSettings.viewportSize.y);
 	if (invert_y)
 	{
-		out_ss_pos.y *= -1.0f;
+		out_ss_pos.y = (1.0f - out_ss_pos.y);
 	}
+	out_ss_pos *= 2.0f;
+	out_ss_pos -= 1.0f;
 	return true;
 }
 

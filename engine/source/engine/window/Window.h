@@ -11,12 +11,12 @@ namespace longmarch {
 	typedef std::function<void(int IsFocussed)> InterruptHandler;
 
 	struct ENGINE_API WindowProperties {
-		int m_upperleft_xpos;
-		int m_upperleft_ypos;
-		int m_width;
-		int m_height;
-		int m_resolutionX;
-		int m_resolutionY;
+		int m_xpos; // Upper left corner position in the whole screen
+		int m_ypos; // Upper left corner position in the whole screen
+		int m_width; // Width of the window, could be different from resolution
+		int m_height; // Height of the window, could be different from resolution
+		int m_resolutionX; // X Resolution, used in render target. Could be different from window width
+		int m_resolutionY; // Y Resolution, used in render target. Could be different from window height
 		std::string m_title;
 		InputManager* m_input = nullptr;
 		bool IsResizable = true;

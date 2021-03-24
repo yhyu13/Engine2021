@@ -395,7 +395,6 @@ void longmarch::Renderer3D::Init()
 			s_Data.gpuBuffer.CurrentFrameBuffer = nullptr;
 			s_Data.gpuBuffer.PrevFinalFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
 			s_Data.gpuBuffer.CurrentFinalFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
-			s_Data.gpuBuffer.CurrentFinalFrameBufferUnsigned = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Uint8);
 			s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
 			s_Data.gpuBuffer.FrameBuffer_1 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
 			s_Data.gpuBuffer.FrameBuffer_2 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
@@ -830,11 +829,17 @@ bool longmarch::Renderer3D::ShouldRendering()
 **************************************************************/
 void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 {
-	const auto& prop = Engine::GetWindow()->GetWindowProperties();
-	s_Data.window_size = Vec2u(prop.m_width, prop.m_height);
-	s_Data.resolution = Vec2u(prop.m_width * s_Data.resolution_ratio, prop.m_height * s_Data.resolution_ratio);
-	s_Data.window_size_changed_this_frame = false;
-	s_Data.frameIndex = (s_Data.frameIndex + 1) % 2;
+	{
+		// Update viewport size
+		const auto& prop = Engine::GetWindow()->GetWindowProperties();
+		s_Data.window_size = Vec2u(prop.m_width, prop.m_height);
+		s_Data.resolution = Vec2u(Vec2f(camera->cameraSettings.viewportSize) * s_Data.resolution_ratio);
+		s_Data.window_size_changed_this_frame = false;
+	}
+	{
+		// Count frame index oddity
+		s_Data.frameIndex = (s_Data.frameIndex + 1) % 2;
+	}
 
 	// Prepare buffers
 	{
@@ -848,11 +853,6 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 		{
 			s_Data.window_size_changed_this_frame = true;
 			s_Data.gpuBuffer.CurrentFinalFrameBuffer = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Float16);
-		}
-		if (s_Data.gpuBuffer.CurrentFinalFrameBufferUnsigned->GetBufferSize() != s_Data.resolution)
-		{
-			s_Data.window_size_changed_this_frame = true;
-			s_Data.gpuBuffer.CurrentFinalFrameBufferUnsigned = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::Uint8);
 		}
 		if (s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer->GetBufferSize() != s_Data.resolution)
 		{
@@ -894,9 +894,6 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 		RenderCommand::Clear();*/
 
 		s_Data.gpuBuffer.CurrentFinalFrameBuffer->Bind();
-		RenderCommand::Clear();
-		
-		s_Data.gpuBuffer.CurrentFinalFrameBufferUnsigned->Bind();
 		RenderCommand::Clear();
 
 		s_Data.gpuBuffer.FrameBuffer_1->Bind();
@@ -3622,16 +3619,6 @@ void longmarch::Renderer3D::EndRendering()
 		Blit CurrentFinalFrameBuffer to have the same size as the back buffer.
 		This allows us to render with a smaller resolution thant the screen
 	*/
-	RenderCommand::TransferColorBit(
-		s_Data.gpuBuffer.CurrentFinalFrameBuffer->GetRendererID(),
-		s_Data.gpuBuffer.CurrentFinalFrameBuffer->GetBufferSize().x,
-		s_Data.gpuBuffer.CurrentFinalFrameBuffer->GetBufferSize().y,
-
-		s_Data.gpuBuffer.CurrentFinalFrameBufferUnsigned->GetRendererID(),
-		s_Data.gpuBuffer.CurrentFinalFrameBufferUnsigned->GetBufferSize().x,
-		s_Data.gpuBuffer.CurrentFinalFrameBufferUnsigned->GetBufferSize().y
-	);
-
 	constexpr int default_framebuffer_rendererID = 0;
 	RenderCommand::TransferColorBit(
 		s_Data.gpuBuffer.CurrentFinalFrameBuffer->GetRendererID(),

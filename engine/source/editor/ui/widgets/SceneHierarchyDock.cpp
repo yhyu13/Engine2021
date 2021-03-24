@@ -60,9 +60,7 @@ void longmarch::SceneHierarchyDock::Render()
 						const auto list_char_ptr = LongMarch_StrVec2ConstChar(list_string);
 
 						static int selected_entity_type = 0;
-						if (ImGui::Combo("Entity Type", &selected_entity_type, &list_char_ptr[0], list_char_ptr.size()))
-						{
-						}
+						ImGui::Combo("Entity Type", &selected_entity_type, &list_char_ptr[0], list_char_ptr.size());
 						if (ImGui::Button("Add", ImVec2(80, 0)))
 						{
 							auto e_type = ObjectFactory::s_instance->GetEntityTypeFromName(list_char_ptr[selected_entity_type]);

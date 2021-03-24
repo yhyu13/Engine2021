@@ -6,7 +6,6 @@ void longmarch::GameProfilerPage::Render()
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 	ImGui::PushStyleColor(ImGuiCol_ResizeGrip, 0);
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, GetStyle());
-	//ImGui::SetNextWindowPosCenter(ImGuiCond_FirstUseEver);			// deprecated with new ImGui updates
 	ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
 	if (!ImGui::Begin("Application Profiling", &m_IsVisible, ImGuiWindowFlags_AlwaysAutoResize))
 	{

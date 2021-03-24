@@ -271,7 +271,7 @@ namespace longmarch {
 		// Register user pointer forsake of callbacks
 		glfwSetWindowUserPointer(m_window, &m_windowProperties);
 		// Get window pos
-		glfwGetWindowPos(m_window, &m_windowProperties.m_upperleft_xpos, &m_windowProperties.m_upperleft_ypos);
+		glfwGetWindowPos(m_window, &m_windowProperties.m_xpos, &m_windowProperties.m_ypos);
 
 		success = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		ASSERT(success >= 0, "Could not initialize Glad!");
@@ -340,8 +340,8 @@ namespace longmarch {
 		glfwSetWindowPosCallback(m_window, [](GLFWwindow* window, int upperleft_xpos, int upperleft_ypos)
 		{
 			WindowProperties& properties = *(WindowProperties*)glfwGetWindowUserPointer(window);
-			properties.m_upperleft_xpos = upperleft_xpos;
-			properties.m_upperleft_ypos = upperleft_ypos;
+			properties.m_xpos = upperleft_xpos;
+			properties.m_ypos = upperleft_ypos;
 		}
 		);
 

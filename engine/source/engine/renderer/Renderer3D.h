@@ -236,7 +236,6 @@ namespace longmarch
 
 			std::shared_ptr<FrameBuffer> PrevFinalFrameBuffer; // Previous frame's final frame buffer
 			std::shared_ptr<FrameBuffer> CurrentFinalFrameBuffer; // Frame buffer before blitting to default frame buffer
-			std::shared_ptr<FrameBuffer> CurrentFinalFrameBufferUnsigned; // Frame buffer before blitting to default frame buffer
 			std::shared_ptr<FrameBuffer> PrevOpaqueLightingFrameBuffer; // Stores opaque lighting color
 			std::shared_ptr<FrameBuffer> CurrentFrameBuffer;
 			std::shared_ptr<FrameBuffer> FrameBuffer_1;

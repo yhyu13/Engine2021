@@ -83,8 +83,6 @@ void longmarch::Renderer3D::Init()
 
 		s_Data.enable_fxaa = graphicsConfiguration["FXAA"].asBool();
 		s_Data.enable_taa = graphicsConfiguration["TAA"].asBool();
-		s_Data.enable_motionblur = graphicsConfiguration["Motion-blur"].asBool();
-		s_Data.motionblur_shutterSpeed = graphicsConfiguration["Motion-blur-shutter-speed"].asInt();
 		
 		s_Data.enable_deferredShading = graphicsConfiguration["Deferred-shading"].asBool();
 		{
@@ -107,6 +105,12 @@ void longmarch::Renderer3D::Init()
 		s_Data.gBuffer_display_mode = 0;
 		s_Data.toneMapping_mode = 0;
 		s_Data.value_gamma = 2.2f;
+
+		{
+			const auto& motion_blur_setttings = graphicsConfiguration["Motion-blur"];
+			s_Data.MotionBlur.enable_motionblur = motion_blur_setttings["Enable"].asBool();
+			s_Data.MotionBlur.motionblur_shutterSpeed = motion_blur_setttings["Motion-blur-shutter-speed"].asInt();
+		}
 
 		{
 			const auto& smaa_settings = graphicsConfiguration["SMAA"];
@@ -197,7 +201,7 @@ void longmarch::Renderer3D::Init()
 			s_Data.ClusterData.numClusters = s_Data.ClusterData.gridSizeX * s_Data.ClusterData.gridSizeY * s_Data.ClusterData.gridSizeZ;
 		}
 
-		if (s_Data.enable_motionblur && !s_Data.enable_deferredShading)
+		if (s_Data.MotionBlur.enable_motionblur && !s_Data.enable_deferredShading)
 		{
 			ENGINE_INFO("Motion Blur requires Deferred Renderering as 'True' in the engine configuration file!");
 		}
@@ -701,8 +705,8 @@ void longmarch::Renderer3D::_ON_SWITCH_GBUFFER_MODE(EventQueue<EngineGraphicsDeb
 void longmarch::Renderer3D::_ON_TOGGLE_MOTION_BLUR(EventQueue<EngineGraphicsEventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<ToggleMotionBlurEvent>(e);
-	s_Data.enable_motionblur = event->m_enable;
-	s_Data.motionblur_shutterSpeed = event->m_shutterSpeed;
+	s_Data.MotionBlur.enable_motionblur = event->m_enable;
+	s_Data.MotionBlur.motionblur_shutterSpeed = event->m_shutterSpeed;
 }
 
 void longmarch::Renderer3D::_ON_TOGGLE_TAA(EventQueue<EngineGraphicsEventType>::EventPtr e)
@@ -3025,7 +3029,7 @@ void longmarch::Renderer3D::_BeginTAAPass(const std::shared_ptr<FrameBuffer>& fr
 		s_Data.CurrentShader->Bind();
 
 		s_Data.CurrentShader->SetInt("enabled", s_Data.enable_taa);
-		s_Data.CurrentShader->SetFloat("u_VelocityScale", 1.0f / s_Data.motionblur_shutterSpeed / Engine::GetFrameTime());
+		s_Data.CurrentShader->SetFloat("u_VelocityScale", 1.0f / s_Data.MotionBlur.motionblur_shutterSpeed / Engine::GetFrameTime());
 		s_Data.CurrentShader->SetFloat2("u_ScreenSize", framebuffer_in->GetBufferSize());
 		s_Data.CurrentShader->SetFloat2("u_VelocityScreenSize", s_Data.gpuBuffer.CurrentGBuffer->GetBufferSize());
 		framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
@@ -3226,6 +3230,7 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 
 					s_Data.CurrentShader = s_Data.ShaderMap["SMAAShader_blend_T2X"];
 					s_Data.CurrentShader->Bind();
+					s_Data.CurrentShader->SetFloat("u_VelocityScale", 1.0f / s_Data.MotionBlur.motionblur_shutterSpeed / Engine::GetFrameTime());
 
 					s_Data.gpuBuffer.CurrentGBuffer->BindTextures(
 						{
@@ -3264,7 +3269,7 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 
 void longmarch::Renderer3D::_BeginMotionBlurPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
-	if (s_Data.enable_motionblur)
+	if (s_Data.MotionBlur.enable_motionblur)
 	{
 		GPU_TIME(Motion_Blur);
 		RenderCommand::PolyModeFill();			// Draw full model
@@ -3287,8 +3292,8 @@ void longmarch::Renderer3D::_BeginMotionBlurPass(const std::shared_ptr<FrameBuff
 
 		s_Data.CurrentShader = s_Data.ShaderMap["MotionBlur"];
 		s_Data.CurrentShader->Bind();
-		s_Data.CurrentShader->SetInt("enabled", s_Data.enable_motionblur);
-		s_Data.CurrentShader->SetFloat("u_VelocityScale", 1.0f / s_Data.motionblur_shutterSpeed / Engine::GetFrameTime());
+		s_Data.CurrentShader->SetInt("enabled", s_Data.MotionBlur.enable_motionblur);
+		s_Data.CurrentShader->SetFloat("u_VelocityScale", 1.0f / s_Data.MotionBlur.motionblur_shutterSpeed / Engine::GetFrameTime());
 		s_Data.CurrentShader->SetFloat2("u_ScreenSize", framebuffer_in->GetBufferSize());
 		s_Data.CurrentShader->SetFloat2("u_GBufferSize", s_Data.gpuBuffer.CurrentGBuffer->GetBufferSize());
 		framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);

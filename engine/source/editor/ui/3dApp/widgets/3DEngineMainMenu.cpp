@@ -166,11 +166,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static bool checkDeferredShading = graphicsConfig["Deferred-shading"].asBool();
 		// Clustered shading
 		static bool checkClusteredShading = graphicsConfig["Clustered-shading"].asBool();
-		// Motion Blur
-		static bool checkMotionBlur = graphicsConfig["Motion-blur"].asBool();
-		static int valueMotionblurShutterSpeed = graphicsConfig["Motion-blur-shutter-speed"].asInt();
-		// SMAA
-		
+
 		// FXAA
 		static bool checkFXAA = graphicsConfig["FXAA"].asBool();
 		// TAA
@@ -181,7 +177,12 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		// Gamma
 		static float valueGamma = 2.2f;
 
-		//IBL
+		// Motion Blur
+		static auto MotionBlurConfig = graphicsConfig["Motion-blur"];
+		static bool checkMotionBlur = MotionBlurConfig["Enable"].asBool();
+		static int valueMotionblurShutterSpeed = MotionBlurConfig["Motion-blur-shutter-speed"].asInt();
+
+		// Env mapping
 		static auto EnvMapConfig = graphicsConfig["Env-mapping"];
 		static std::string valueCurrentEnvMapName = EnvMapConfig["Current-Sky-box"].asString();
 		static LongMarch_Vector<std::string> valueAllEnvMapName;
@@ -248,12 +249,15 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 			checkDeferredShading = graphicsConfig["Deferred-shading"].asBool();
 			checkClusteredShading = graphicsConfig["Clustered-shading"].asBool();
 			checkFXAA = graphicsConfig["FXAA"].asBool();
-			checkMotionBlur = graphicsConfig["Motion-blur"].asBool();
-			valueMotionblurShutterSpeed = graphicsConfig["Motion-blur-shutter-speed"].asInt();
 			checkTAA = graphicsConfig["TAA"].asBool();
 			{
 				selected_toneMap = 0;
 				valueGamma = 2.2f;
+			}
+			{
+				// Motion Blur
+				checkMotionBlur = MotionBlurConfig["Enable"].asBool();
+				valueMotionblurShutterSpeed = MotionBlurConfig["Motion-blur-shutter-speed"].asInt();
 			}
 			{
 				// Env mapping
@@ -472,7 +476,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				// Motion blur
 				if (ImGui::TreeNode("Motion Blur"))
 				{
-					if (ImGui::Checkbox("Moltion Blur", &checkMotionBlur))
+					if (ImGui::Checkbox("Enable", &checkMotionBlur))
 					{
 						auto e = MemoryManager::Make_shared<ToggleMotionBlurEvent>(checkMotionBlur, valueMotionblurShutterSpeed);
 						graphicEventQueue->Publish(e);

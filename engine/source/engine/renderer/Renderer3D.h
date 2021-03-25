@@ -402,8 +402,6 @@ namespace longmarch
 
 			bool enable_debug_cluster_light;
 
-			bool enable_motionblur;
-			int motionblur_shutterSpeed;
 
 			bool enable_fxaa;
 			bool enable_taa;
@@ -417,6 +415,12 @@ namespace longmarch
 			bool window_size_changed_this_frame;
 
 			RENDER_PIPE RENDER_PIPE;
+
+			struct
+			{
+				bool enable_motionblur;
+				int motionblur_shutterSpeed;
+			} MotionBlur;
 
 			struct
 			{

@@ -53,12 +53,17 @@
 		"Clustered-shading": false,
 		"Debug-cluster-light" : false,
 
-		"Motion-blur":true, /* only take effects under deffered shading */
-		"Motion-blur-shutter-speed": 45, /* higher this value, lower the motion blur effect */
+		
 		"TAA":false, /* only take effects under deffered shading */
 		"FXAA":false,
 		// Shadow
 		"Shadow" : true,
+
+		"Motion-blur":
+		{
+			"Enable":true, /* only take effects under deffered shading */
+			"Motion-blur-shutter-speed": 45, /* higher this value, lower the motion blur effect */
+		},
 
 		"Env-mapping":
 		{

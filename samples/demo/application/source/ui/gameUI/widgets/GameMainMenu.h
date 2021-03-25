@@ -5,7 +5,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 Language: c++ 20
 Platform: Windows 10 (X64)
 Project: CS562
-Author: Hang Yu (hang.yu@digipen.edu | 60001119)
+Author: Hang Yu (yohan680919@gmail.com)
 Creation date: 07/28/2020
 - End Header ----------------------------*/
 

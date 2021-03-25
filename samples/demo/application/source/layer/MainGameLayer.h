@@ -6,7 +6,7 @@ namespace longmarch
 	/**
 	 * @brief Main editor layer
 	 *
-	 * @author Hang Yu (hang.yu@digipen.edu | 60001119)
+	 * @author Hang Yu (yohan680919@gmail.com)
 	 */
 	class MainGameLayer final : public Layer
 	{
@@ -23,6 +23,14 @@ namespace longmarch
 		void InitFramework();
 		void InitGameWorld();
 
+		void PreUpdate(double ts);
+		void Update(double ts);
+		void JoinAll();
+		void PreRenderUpdate(double ts);
+		void Render(double ts);
+		void PostRenderUpdate(double ts);
+
+		void BuildRenderPipeline();
 		void BuildTestScene();
 
 	private:
@@ -36,7 +44,11 @@ namespace longmarch
 
 		void _ON_WINDOW_INTERRUPT(EventQueue<EngineEventType>::EventPtr e);
 
-	private:
+	private:		
+		struct
+		{
+			std::function<void(double)> mainRenderPipeline;
+		}m_Data;
 		ImFont* m_font;
 	};
 }

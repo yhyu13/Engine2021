@@ -4,13 +4,13 @@
 #include "InstumentingTimer.h"
 
 #ifndef _SHIPPING
-#define ENG_TIME(name) InstrumentingTimer timer##__LINE__(name, longmarch::Instrumentor::GetEngineInstance())
+#define ENG_TIME(name) InstrumentingTimer(name, longmarch::Instrumentor::GetEngineInstance())
 #else
 #define ENG_TIME(name) 
 #endif
 
 #ifndef _SHIPPING
-#define APP_TIME(name) InstrumentingTimer timer##__LINE__(name, longmarch::Instrumentor::GetApplicationInstance())
+#define APP_TIME(name) InstrumentingTimer(name, longmarch::Instrumentor::GetApplicationInstance())
 #else
 #define APP_TIME(name) 
 #endif

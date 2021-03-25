@@ -56,6 +56,21 @@ namespace longmarch
 		// Engine updaters
 		{
 			PreUpdate().Connect(AssetLoader::Update);
+			Update().Connect([](double dt)
+			{
+				{
+					auto queue = EventQueue<EngineEventType>::GetInstance();
+					queue->Update(dt);
+				}
+				{
+					auto queue = EventQueue<EngineGraphicsEventType>::GetInstance();
+					queue->Update(dt);
+				}
+				{
+					auto queue = EventQueue<EngineGraphicsDebugEventType>::GetInstance();
+					queue->Update(dt);
+				}
+			});
 			Update().Connect([this](double dt) 
 			{
 				m_engineWindow->Update(dt);
@@ -147,13 +162,10 @@ namespace longmarch
 
 				if (!Engine::GetPaused())
 				{
-					// Update all layers (games, UIs)
-					for (auto& layers : m_LayerStack.GetAllLayers())
+					// Updating for the current layer
+					for (auto& layer : *m_LayerStack.GetCurrentLayer())
 					{
-						for (auto& layer : layers.second)
-						{
-							layer->OnUpdate(dt);
-						}
+						layer->OnUpdate(dt);
 					}
 
 					// Render the imgui UI of the cureent layer

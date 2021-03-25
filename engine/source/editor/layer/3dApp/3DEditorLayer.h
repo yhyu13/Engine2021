@@ -22,7 +22,6 @@ namespace longmarch
 		virtual void OnDetach() override;
 		virtual void OnImGuiRender() override;
 
-		void BuildRenderPipeline();
 		void PreUpdate(double ts);
 		void Update(double ts);
 		void JoinAll();
@@ -30,19 +29,17 @@ namespace longmarch
 		void Render(double ts);
 		void PostRenderUpdate(double ts);
 
-	private:
-		void _ON_LOAD_SCENE_BEGIN(EventQueue<EngineIOEventType>::EventPtr e);
-		void _ON_LOAD_SCENE_END(EventQueue<EngineIOEventType>::EventPtr e);
+		void BuildRenderPipeline();
 
+	private:
 		void _ON_EDITOR_SWITCH_TO_GAME_MODE(EventQueue<EditorEventType>::EventPtr e);
 		void _ON_EDITOR_SWITCH_TO_EDITING_MODE(EventQueue<EditorEventType>::EventPtr e);
+
 	private:
 		struct
 		{
 			std::function<void(double)> mainRenderPipeline;
 		}m_Data;
-		// TODO : stop calling render pipeline on unfocused
-		bool m_enable_pause_on_unfocused = { true };
 		ImFont* m_font;
 	};
 }

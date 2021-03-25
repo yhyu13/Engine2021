@@ -18,13 +18,8 @@ void longmarch::Renderer3D::Init()
 	{
 		return;
 	}
-	_init = true;
+	_init = true; 
 	RenderCommand::Init();
-
-	// CPU/GPU Profiler
-	{
-
-	}
 
 	const auto& engineConfiguration = FileSystem::GetCachedJsonCPP("$root:engine-config.json");
 	const auto& graphicsConfiguration = engineConfiguration["graphics"];
@@ -107,7 +102,6 @@ void longmarch::Renderer3D::Init()
 		}
 
 		s_Data.resolution_ratio = graphicsConfiguration["Resolution-ratio"].asFloat();
-		s_Data.enable_env_mapping = graphicsConfiguration["Env-mapping"].asBool();
 		s_Data.enable_shadow = graphicsConfiguration["Shadow"].asBool();
 		s_Data.enable_debug_cluster_light = graphicsConfiguration["Debug-cluster-light"].asBool();;
 		s_Data.gBuffer_display_mode = 0;
@@ -412,19 +406,27 @@ void longmarch::Renderer3D::Init()
 			s_Data.gpuBuffer.CurrentThinGBuffer = GBuffer::Create(1, 1, GBuffer::GBUFFER_TYPE::THIN);
 
 			// IBL related buffers
-			LongMarch_UnorderedMap<std::string, std::shared_ptr<SkyBoxBuffer>> _envmaps;
-			_envmaps.emplace("original", nullptr);
-			_envmaps.emplace("irradiance", nullptr);
-			const auto& skyboxes = graphicsConfiguration["Sky-box"];
-			for (auto i(0u); i < skyboxes.size(); ++i)
 			{
-				const auto& item = skyboxes[i];
-				s_Data.gpuBuffer.EnvCubeMaps.emplace(item.asString(), _envmaps);
-				s_Data.gpuBuffer.EnvMaps.emplace(item.asString(), nullptr);
+				const auto& EnvMapConfiguration = graphicsConfiguration["Env-mapping"];
+				LongMarch_UnorderedMap<std::string, std::shared_ptr<SkyBoxBuffer>> _envmaps;
+				_envmaps.emplace("original", nullptr);
+				_envmaps.emplace("irradiance", nullptr);
+				_envmaps.emplace("radiance", nullptr); 
+				const auto& skyboxes_name = EnvMapConfiguration["All-Sky-box"];
+				for (auto i(0u); i < skyboxes_name.size(); ++i)
+				{
+					const auto& name = skyboxes_name[i].asString();
+					s_Data.gpuBuffer.EnvCubeMaps.emplace(name, _envmaps);
+					s_Data.gpuBuffer.EnvEquiMaps.emplace(name, nullptr);
+				}
+				s_Data.EnvMapping.CurrentEnvMapName = EnvMapConfiguration["Current-Sky-box"].asString();
+				if (s_Data.EnvMapping.CurrentEnvMapName != "")
+				{
+					ASSERT(s_Data.gpuBuffer.EnvEquiMaps.contains(s_Data.EnvMapping.CurrentEnvMapName), s_Data.EnvMapping.CurrentEnvMapName + " does not exists!");
+				}
+				s_Data.EnvMapping.enable_env_mapping = EnvMapConfiguration["Enable"].asBool();
+				s_Data.EnvMapping.brdf_lut_name = EnvMapConfiguration["BRDF-lut"].asString();
 			}
-			s_Data.CurrentEnvMapName = (s_Data.gpuBuffer.EnvCubeMaps.size() > 0) ?
-				s_Data.gpuBuffer.EnvCubeMaps.begin()->first :
-				s_Data.CurrentEnvMapName = "";
 		}
 
 		{
@@ -649,7 +651,7 @@ void longmarch::Renderer3D::Init()
 	{
 		{
 			auto queue = EventQueue<EngineGraphicsDebugEventType>::GetInstance();
-			queue->Subscribe(EngineGraphicsDebugEventType::TOGGLE_ENV_MAPPING, &Renderer3D::_ON_TOGGLE_ENV_MAPPING);
+			queue->Subscribe(EngineGraphicsDebugEventType::SET_ENV_MAPPING, &Renderer3D::_ON_SET_ENV_MAPPING);
 			queue->Subscribe(EngineGraphicsDebugEventType::TOGGLE_SHADOW, &Renderer3D::_ON_TOGGLE_SHADOW);
 			queue->Subscribe(EngineGraphicsDebugEventType::SWITCH_G_BUFFER_DISPLAY, &Renderer3D::_ON_SWITCH_GBUFFER_MODE);
 			queue->Subscribe(EngineGraphicsDebugEventType::TOGGLE_DEBUG_CLUSTER, &Renderer3D::_ON_TOGGLE_DEBUG_CLUSTER);
@@ -677,10 +679,11 @@ void longmarch::Renderer3D::_ON_TOGGLE_DEBUG_CLUSTER(EventQueue<EngineGraphicsDe
 	s_Data.enable_debug_cluster_light = event->m_enable;
 }
 
-void longmarch::Renderer3D::_ON_TOGGLE_ENV_MAPPING(EventQueue<EngineGraphicsDebugEventType>::EventPtr e)
+void longmarch::Renderer3D::_ON_SET_ENV_MAPPING(EventQueue<EngineGraphicsDebugEventType>::EventPtr e)
 {
-	auto event = std::static_pointer_cast<ToggleShadowEvent>(e);
-	s_Data.enable_env_mapping = event->m_enable;
+	auto event = std::static_pointer_cast<SetEnvironmentMappingEvent>(e);
+	s_Data.EnvMapping.enable_env_mapping = event->m_enable;
+	s_Data.EnvMapping.CurrentEnvMapName = event->m_currentEnvMap;
 }
 
 void longmarch::Renderer3D::_ON_TOGGLE_SHADOW(EventQueue<EngineGraphicsDebugEventType>::EventPtr e)
@@ -2091,7 +2094,7 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 		{
 			const auto& shaderProg = s_Data.ShaderMap[shaderName];
 			shaderProg->Bind();
-			shaderProg->SetInt("hasEnvLighting", s_Data.enable_env_mapping && s_Data.CurrentEnvMapName != "");
+			shaderProg->SetInt("hasEnvLighting", s_Data.EnvMapping.enable_env_mapping && s_Data.EnvMapping.CurrentEnvMapName != "");
 			shaderProg->SetFloat("u_Time", Engine::GetTotalTime());
 			shaderProg->SetInt("u_numLights", s_Data.NUM_LIGHT);
 			shaderProg->SetInt("u_numDirectionalLights", s_Data.NUM_DIRECTIONAL_LIGHT);
@@ -2687,10 +2690,10 @@ void longmarch::Renderer3D::_BeginClusterLightingPass(const std::shared_ptr<Fram
 void longmarch::Renderer3D::_BindSkyBoxTexture()
 {
 	// Bind Skybox
-	if (s_Data.CurrentEnvMapName != "")
+	if (s_Data.EnvMapping.CurrentEnvMapName != "")
 	{
-		const auto& irradiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["irradiance"];
-		const auto& radiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["radiance"];
+		const auto& irradiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.EnvMapping.CurrentEnvMapName]["irradiance"];
+		const auto& radiance = s_Data.gpuBuffer.EnvCubeMaps[s_Data.EnvMapping.CurrentEnvMapName]["radiance"];
 		s_Data.CurrentShader->SetFloat("u_max_radiance_map_lod", radiance->GetMaxMipMapLevel());
 		// Bind irradiance map
 		irradiance->BindTexture(s_Data.fragTexture_0_slot);
@@ -2729,9 +2732,9 @@ void longmarch::Renderer3D::_BeginSkyBoxPass(const std::shared_ptr<FrameBuffer>&
 
 		s_Data.CurrentShader = s_Data.ShaderMap["SkyboxShader"];
 		s_Data.CurrentShader->Bind();
-		if (s_Data.CurrentEnvMapName != "")
+		if (s_Data.EnvMapping.CurrentEnvMapName != "")
 		{
-			auto& skybox = s_Data.gpuBuffer.EnvCubeMaps[s_Data.CurrentEnvMapName]["original"];
+			auto& skybox = s_Data.gpuBuffer.EnvCubeMaps[s_Data.EnvMapping.CurrentEnvMapName]["original"];
 			skybox->BindTexture(s_Data.fragTexture_0_slot);
 			_RenderFullScreenCube();
 		}
@@ -4263,17 +4266,11 @@ void longmarch::Renderer3D::BuildAllTexture()
 			}
 		}
 
-		// Evn mapping
-		{
-			s_Data.CurrentEnvMapName = (s_Data.gpuBuffer.EnvCubeMaps.size() > 0) ?
-				s_Data.gpuBuffer.EnvCubeMaps.begin()->first :
-				s_Data.CurrentEnvMapName = "";
-		}
 		/**************************************************************
 		*	 1. Load equirectangular env maps
 		**************************************************************/
 		{
-			for (auto& item : s_Data.gpuBuffer.EnvMaps)
+			for (auto& item : s_Data.gpuBuffer.EnvEquiMaps)
 			{
 				const auto& name = item.first;
 				auto& env_map = item.second;
@@ -4314,7 +4311,7 @@ void longmarch::Renderer3D::BuildAllTexture()
 			{
 				const std::string& name = item.first;
 				auto& skybox_buffer_map = item.second;
-				const auto& equirectangle_image = s_Data.gpuBuffer.EnvMaps[name];
+				const auto& equirectangle_image = s_Data.gpuBuffer.EnvEquiMaps[name];
 				uint32_t cube_width = glm::roundEven(sqrtf(3.0f) / 6.0f * equirectangle_image->GetWidth());
 				cube_width = NEAREST_POW2(cube_width); // use nearest power of 2, even though the total pixels after convertion is not equal
 				skybox_buffer_map["original"] = SkyBoxBuffer::Create(cube_width, cube_width, SkyBoxBuffer::BUFFER_FORMAT::Float16);
@@ -4498,14 +4495,12 @@ void longmarch::Renderer3D::BuildAllTexture()
 		*	 4. BRDF integration look up texture
 		**************************************************************/
 		{
-			const auto& engineConfiguration = FileSystem::GetCachedJsonCPP("$root:engine-config.json");
-			const auto& graphicsConfiguration = engineConfiguration["graphics"];
-			const std::string& brdf_texture_name = graphicsConfiguration["BRDF-lut"].asString();
+			const auto& brdf_texture_name = s_Data.EnvMapping.brdf_lut_name;
 			bool has_texture = ResourceManager<Texture2D>::GetInstance()->Has(brdf_texture_name);
 			if (!has_texture)
 			{
 				{
-					PRINT("Building BRDF ISM LUT by GPU sampling!");
+					PRINT("Building BRDF Split-sum LUT by GPU sampling!");
 					// Brute force generating brdf texture
 					auto BRDF_ISM_Generator_Shader = Shader::Create("$shader:brdf_importance_sampling_geneartor.vert", "$shader:brdf_importance_sampling_geneartor.frag");
 					uint32_t texture_width = 256;
@@ -4756,7 +4751,8 @@ void longmarch::Renderer3D::AppendMeshToMultiDraw(std::shared_ptr<MeshData> Mesh
 void longmarch::Renderer3D::ToggleReverseZ(bool enable) 
 { 
 	LOCK_GUARD_NI(); 
-	s_Data.enable_reverse_z = enable; RenderCommand::Reverse_Z(enable); 
+	s_Data.enable_reverse_z = enable; 
+	RenderCommand::Reverse_Z(enable); 
 }
 
 RendererAPI::API longmarch::Renderer3D::GetAPI() 

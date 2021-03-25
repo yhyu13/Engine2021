@@ -231,7 +231,7 @@ namespace longmarch
 			LongMarch_UnorderedMap<uint32_t, std::tuple<int, std::shared_ptr<ShaderStorageBuffer>, std::shared_ptr<ShaderStorageBuffer>>> GuassinKernelHalfBilinear;
 
 			LongMarch_UnorderedMap<std::string, LongMarch_UnorderedMap<std::string, std::shared_ptr<SkyBoxBuffer>>> EnvCubeMaps;
-			LongMarch_UnorderedMap<std::string, std::shared_ptr<Texture2D>> EnvMaps;
+			LongMarch_UnorderedMap<std::string, std::shared_ptr<Texture2D>> EnvEquiMaps;
 			inline static LongMarch_Vector<Mat4> s_default_bone_transform{ Mat4(1.0f) };
 
 			std::shared_ptr<FrameBuffer> PrevFinalFrameBuffer; // Previous frame's final frame buffer
@@ -380,8 +380,6 @@ namespace longmarch
 			RENDER_PASS RENDER_PASS;
 			RENDER_MODE RENDER_MODE;
 
-			std::string CurrentEnvMapName;
-
 			const uint32_t fragTexture_0_slot = { 0u };
 			const uint32_t fragTexture_1_slot = { 1u };
 			const uint32_t fragTexture_2_slot = { 2u };
@@ -400,7 +398,6 @@ namespace longmarch
 			bool enable_deferredShading;
 			bool enable_reverse_z;
 
-			bool enable_env_mapping;
 			bool enable_shadow;
 
 			bool enable_debug_cluster_light;
@@ -420,6 +417,13 @@ namespace longmarch
 			bool window_size_changed_this_frame;
 
 			RENDER_PIPE RENDER_PIPE;
+
+			struct
+			{
+				bool enable_env_mapping;
+				std::string CurrentEnvMapName;
+				std::string brdf_lut_name;
+			} EnvMapping;
 
 			struct
 			{
@@ -712,13 +716,13 @@ namespace longmarch
 
 	private:
 		static void _ON_TOGGLE_DEBUG_CLUSTER(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
-		static void _ON_TOGGLE_ENV_MAPPING(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
 		static void _ON_TOGGLE_SHADOW(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
 		static void _ON_SWITCH_GBUFFER_MODE(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
 		static void _ON_TOGGLE_MOTION_BLUR(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_TOGGLE_TAA(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_TOGGLE_FXAA(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_TOGGLE_SMAA(EventQueue<EngineGraphicsEventType>::EventPtr e);
+		static void _ON_SET_ENV_MAPPING(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
 		static void _ON_SWITCH_TONEMAP_MODE(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_SET_GAMMA_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_SET_AO_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e);

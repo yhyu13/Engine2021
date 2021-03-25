@@ -160,8 +160,6 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 
 		// Debug Cluster Light Mode
 		static bool enable_debug_cluster_light_mode = windowConfig["Debug_cluster_light"].asBool();
-		// Env mapping
-		static bool checkEvnMapping = graphicsConfig["Env-mapping"].asBool();
 		// Toggle shadow
 		static bool checkShadow = graphicsConfig["Shadow"].asBool();
 		// Deferred shading
@@ -182,6 +180,19 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static int selected_toneMap = 0;
 		// Gamma
 		static float valueGamma = 2.2f;
+
+		//IBL
+		static auto EnvMapConfig = graphicsConfig["Env-mapping"];
+		static std::string valueCurrentEnvMapName = EnvMapConfig["Current-Sky-box"].asString();
+		static LongMarch_Vector<std::string> valueAllEnvMapName;
+		valueAllEnvMapName.clear();
+		const auto& skyboxes_name = EnvMapConfig["All-Sky-box"];
+		for (auto i(0u); i < skyboxes_name.size(); ++i)
+		{
+			const auto& name = skyboxes_name[i].asString();
+			valueAllEnvMapName.push_back(name);
+		}
+		static bool checkEvnMapping = EnvMapConfig["Enable"].asBool();
 
 		// SMAA
 		static auto SMAAConfig = graphicsConfig["SMAA"];
@@ -232,8 +243,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		{
 			checkVSync = windowConfig["V-sync"].asBool();
 			checkGPUSync = windowConfig["GPU-sync"].asBool();
-			selected_gbufferModes = 0;
-			checkEvnMapping = graphicsConfig["Env-mapping"].asBool();
+			selected_gbufferModes = 0;;
 			checkShadow = graphicsConfig["Shadow"].asBool();
 			checkDeferredShading = graphicsConfig["Deferred-shading"].asBool();
 			checkClusteredShading = graphicsConfig["Clustered-shading"].asBool();
@@ -245,7 +255,18 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				selected_toneMap = 0;
 				valueGamma = 2.2f;
 			}
-
+			{
+				// Env mapping
+				valueCurrentEnvMapName = EnvMapConfig["Current-Sky-box"].asString();
+				valueAllEnvMapName.clear();
+				const auto& skyboxes_name = EnvMapConfig["All-Sky-box"];
+				for (auto i(0u); i < skyboxes_name.size(); ++i)
+				{
+					const auto& name = skyboxes_name[i].asString();
+					valueAllEnvMapName.push_back(name);
+				}
+				checkEvnMapping = EnvMapConfig["Enable"].asBool();
+			}
 			{
 				// SMAA
 				checkSMAA = SMAAConfig["Enable"].asBool();
@@ -307,7 +328,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 			}
 
 			{
-				auto e = MemoryManager::Make_shared<ToggleEnvironmentMappingEvent>(checkEvnMapping);
+				auto e = MemoryManager::Make_shared<SetEnvironmentMappingEvent>(checkEvnMapping, valueCurrentEnvMapName);
 				graphicDebugEventQueue->Publish(e);
 			}
 			{
@@ -414,13 +435,25 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 					}
 				}
 				ImGui::Dummy(ImVec2(0, yoffset_item));
-				// Toggle shadow
+				// Set IBL
+				if (ImGui::TreeNode("Environment Mapping"))
 				{
-					if (ImGui::Checkbox("Environment Mapping", &checkEvnMapping))
+					if (ImGui::Checkbox("Enable", &checkEvnMapping))
 					{
-						auto e = MemoryManager::Make_shared<ToggleEnvironmentMappingEvent>(checkEvnMapping);
+						auto e = MemoryManager::Make_shared<SetEnvironmentMappingEvent>(checkEvnMapping, valueCurrentEnvMapName);
 						graphicDebugEventQueue->Publish(e);
 					}
+					int selected_skybox = LongMarch_findFristIndex(valueAllEnvMapName, valueCurrentEnvMapName);
+					auto valueAllEnvMapName_char = LongMarch_StrVec2ConstChar(valueAllEnvMapName);
+					valueAllEnvMapName_char.insert(valueAllEnvMapName_char.begin(),"");
+					if (ImGui::Combo("Skyboxes", &selected_skybox, &valueAllEnvMapName_char[0], valueAllEnvMapName_char.size()))
+					{
+						valueCurrentEnvMapName = valueAllEnvMapName[selected_skybox];
+						auto e = MemoryManager::Make_shared<SetEnvironmentMappingEvent>(checkEvnMapping, valueCurrentEnvMapName);
+						graphicDebugEventQueue->Publish(e);
+					}
+					ImGui::Separator();
+					ImGui::TreePop();
 				}
 				ImGui::Dummy(ImVec2(0, yoffset_item));
 				// Toggle shadow

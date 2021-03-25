@@ -27,7 +27,7 @@
 		"Full-screen": 2, /* 0-Full screen, 1- Borderless full screen 2- Windowed mode  */
 		"V-sync" : true,
 		"GPU-sync" : false,
-		"Resizable":true,
+		"Resizable": true,
 		"Resolution1_X" : 1920, "Resolution1_Y" : 1080,
 		"Resolution2_X" : 1920, "Resolution2_Y" : 1200,
 		"Resolution3_X" : 1280, "Resolution3_Y" : 1024,
@@ -59,11 +59,14 @@
 		"FXAA":false,
 		// Shadow
 		"Shadow" : true,
-		// IBL
-		"Sky-box": ["shanghai_bund_2k"],
-		"Env-mapping": false,
-		"BRDF-lut":"ggx_integrate_lut",
 
+		"Env-mapping":
+		{
+			"Enable": false,
+			"Current-Sky-box" : "shanghai_bund_2k",
+			"All-Sky-box": ["shanghai_bund_2k", "colorful_studio_2k"],
+			"BRDF-lut":"ggx_integrate_lut", /* Loaded in resource.json */
+		},
 
 		"SMAA":
 		{

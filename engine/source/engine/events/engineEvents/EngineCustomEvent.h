@@ -162,14 +162,16 @@ namespace longmarch
 	};
 
 	
-	struct ToggleEnvironmentMappingEvent : public Event<EngineGraphicsDebugEventType> {
-		explicit ToggleEnvironmentMappingEvent(bool b)
+	struct SetEnvironmentMappingEvent : public Event<EngineGraphicsDebugEventType> {
+		explicit SetEnvironmentMappingEvent(bool b, const std::string& name)
 			:
-			Event(EngineGraphicsDebugEventType::TOGGLE_ENV_MAPPING),
-			m_enable(b)
+			Event(EngineGraphicsDebugEventType::SET_ENV_MAPPING),
+			m_enable(b),
+			m_currentEnvMap(name)
 		{
 		}
 		bool m_enable;
+		std::string m_currentEnvMap;
 	};
 
 	struct ToggleShadowEvent : public Event<EngineGraphicsDebugEventType> {

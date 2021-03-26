@@ -175,7 +175,10 @@ namespace longmarch {
 	void Window::ShowMessageBox(const std::wstring& title, const std::wstring& message)
 	{
 #if defined(WIN32) || defined(WINDOWS_APP)
-		MessageBox(glfwGetWin32Window(m_window), message.c_str(), title.c_str(), MB_OK);
+		if (auto window = glfwGetWin32Window(m_window); window)
+		{
+			MessageBox(window, message.c_str(), title.c_str(), MB_OK);
+		}
 #endif
 	}
 

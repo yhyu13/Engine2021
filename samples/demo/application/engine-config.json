@@ -85,11 +85,11 @@
 			"Gaussian-kernel":40,
 			"Num-samples":50,
 			"Res-down-scale":3,
-			"Radius":7.0,
-			"Scale":1.4,
-			"Power":1.4,
+			"Radius":4.0,
+			"Scale":2.0,
+			"Power":2.0,
 			"Indirect-bounce":true, // SSDO inspired indirect bounce light 
-			"Indirect-bounce-strength":5.0,
+			"Indirect-bounce-strength":10.0,
 		}
 		,
 

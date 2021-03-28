@@ -2527,6 +2527,7 @@ void longmarch::Renderer3D::_BeginDynamicSSRPass(const std::shared_ptr<FrameBuff
 		s_Data.CurrentShader->Bind();
 		s_Data.CurrentShader->SetInt("enabled", s_Data.SSRSettings.enable);
 		s_Data.CurrentShader->SetInt("enabled_debug", s_Data.SSRSettings.enable_debug);
+		s_Data.CurrentShader->SetFloat2("u_ScreenSize", Vec2f(SSRBuffer->GetBufferSize()));
 		SSRBuffer->Bind();
 
 		// Bind Skybox

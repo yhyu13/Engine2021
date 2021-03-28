@@ -96,8 +96,8 @@
 		"SSR":
 		{
 			"Enable": true,
-			"Gaussian-kernel": 3,
-			"Res-down-scale": 4,
+			"Gaussian-kernel": 11,
+			"Res-down-scale": 2,
 		},
 
 		"Bloom":

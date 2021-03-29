@@ -13,7 +13,7 @@ void longmarch::EngineProfilerPage::Render()
 	ImGui::PushStyleColor(ImGuiCol_ResizeGrip, 0);
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, GetStyle());
 	ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
-	if (!ImGui::Begin("Application Profiling", &m_IsVisible, ImGuiWindowFlags_AlwaysAutoResize))
+	if (!ImGui::Begin("Engine Profiling", &m_IsVisible, ImGuiWindowFlags_AlwaysAutoResize))
 	{
 		// Early out if the window is collapsed, as an optimization.
 		manager->PopWidgetStyle();
@@ -25,7 +25,7 @@ void longmarch::EngineProfilerPage::Render()
 	{
 		for (const auto& result : Instrumentor::GetEngineInstance()->GetResults()) {
 			char entry[100];
-			strcpy(entry, "%10.3f %s\t");
+			strcpy(entry, "%.3f %s\t");
 			strcat(entry, result.first);
 			ImGui::TextColored(ImGuiUtil::ColWhite, entry, result.second.m_time, result.second.m_timeUnit);
 		}

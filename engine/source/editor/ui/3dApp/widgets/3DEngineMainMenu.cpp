@@ -52,8 +52,9 @@ void longmarch::_3DEngineMainMenu::Render()
 	{
 		if (ImGui::Button("Engine Profiler page"))
 		{
-			bool b = manager->GetVisible("ProfilerPage");
-			manager->SetVisible("ProfilerPage", !b);
+			bool visible = manager->GetVisible("ProfilerPage");
+			visible = !visible;
+			manager->SetVisible("ProfilerPage", visible);
 		}
 	}
 	ImGui::Dummy(ImVec2(0, yoffset_item));

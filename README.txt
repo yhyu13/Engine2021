@@ -13,6 +13,8 @@ Run generate-project.bat script to generate a MSVS solution for the application.
 
 Open the solution in MSVS and build.
 
+Run index.html under engine\external\Remotery\vis\ for profiling.
+
 -----------------------------------------------------------------------------------------
 Credit
 Team G.S.W.Y @ DigiPen GAM541Fa19 and Team 4a games @ DigiPen GAM550Sp20 

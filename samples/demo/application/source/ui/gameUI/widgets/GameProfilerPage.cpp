@@ -18,7 +18,7 @@ void longmarch::GameProfilerPage::Render()
 	{
 		for (const auto& result : Instrumentor::GetApplicationInstance()->GetResults()) {
 			char entry[100];
-			strcpy(entry, "%10.3f %s\t");
+			strcpy(entry, "%.3f %s\t");
 			strcat(entry, result.first);
 			ImGui::TextColored(ImGuiUtil::ColWhite, entry, result.second.m_time, result.second.m_timeUnit);
 		}

@@ -67,7 +67,6 @@ void longmarch::MainGameLayer::InitFramework()
 	ServiceLocator::Register<MainObjectFactory>("ObjectFactory");
 	{
 		APP_TIME("Loading resources");
-		ENG_TIME("Loading resources");
 		LoadResources();
 	}
 }

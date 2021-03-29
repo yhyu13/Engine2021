@@ -1,6 +1,8 @@
 #include "engine-precompiled-header.h"
 #include "Instrumentor.h"
 
+//#define USE_NSIGHT_GPU_PROFILING
+
 namespace longmarch 
 {
 	Instrumentor::Instrumentor() 
@@ -57,12 +59,14 @@ namespace longmarch
 
 	RemoteryInstrumentor::RemoteryInstrumentor()
 	{
-		//rmt_CreateGlobalInstance(&m_rmt_instance);
-		//rmt_BindOpenGL(); // Remotery is built with OpenGL backend
+		rmt_CreateGlobalInstance(&m_rmt_instance);
+#ifndef USE_NSIGHT_GPU_PROFILING
+		rmt_BindOpenGL(); // Remotery is built with OpenGL backend
+#endif
 	}
 
 	RemoteryInstrumentor::~RemoteryInstrumentor()
 	{
-		//rmt_DestroyGlobalInstance(m_rmt_instance);
+		rmt_DestroyGlobalInstance(m_rmt_instance);
 	}
 }

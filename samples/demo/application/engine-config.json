@@ -83,7 +83,7 @@
 		{
 			"Enable": true,
 			"Gaussian-kernel":40,
-			"Num-samples":50,
+			"Num-samples":40,
 			"Res-down-scale":3,
 			"Radius":4.0,
 			"Scale":2.0,
@@ -97,7 +97,7 @@
 		{
 			"Enable": true,
 			"Gaussian-kernel": 11,
-			"Res-down-scale": 2,
+			"Res-down-scale": 4,
 		},
 
 		"Bloom":

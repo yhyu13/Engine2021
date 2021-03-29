@@ -243,6 +243,7 @@ namespace longmarch
 			std::shared_ptr<FrameBuffer> FrameBuffer_3;
 			std::shared_ptr<FrameBuffer> FrameBuffer_4;
 			std::shared_ptr<FrameBuffer> CurrentDynamicAOBuffer;
+			std::shared_ptr<ShadowBuffer> CurrentBackFaceDepthBuffer;
 			std::shared_ptr<FrameBuffer> CurrentDynamicSSRBuffer;
 			std::shared_ptr<FrameBuffer> CurrentDynamicBloomBuffer;
 			std::shared_ptr<FrameBuffer> CurrentDynamicDOFBuffer;
@@ -384,7 +385,8 @@ namespace longmarch
 			const uint32_t fragTexture_1_slot = { 1u };
 			const uint32_t fragTexture_2_slot = { 2u };
 			const uint32_t fragTexture_3_slot = { 3u };
-			const uint32_t fragTexture_empty_slot = { 4u }; //<! Slots before this slot are reserved for uniform texture bindings, you can bind custom textures (including gbuffer textures) after this slot
+			const uint32_t fragTexture_4_slot = { 4u };
+			const uint32_t fragTexture_empty_slot = { 5u }; //<! Slots before this slot are reserved for uniform texture bindings, you can bind custom textures (including gbuffer textures) after this slot
 
 			Vec2u window_size;
 			Vec2u resolution;
@@ -685,16 +687,15 @@ namespace longmarch
 		static void _BindSkyBoxTexture();
 		static void _BeginSkyBoxPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginDynamicAOPass(const std::shared_ptr<FrameBuffer>& colorBuffer_in);
-		static void _BeginDynamicSSRPass(const std::shared_ptr<FrameBuffer>& colorBuffer_in);
-
-		static void _BeginDeferredLightingPass(
+		static void _BeginDynamicSSRPass(
 			const PerspectiveCamera* camera,
 			const std::function<void()>& f_render,
 			const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
 			const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
 			const std::function<void(const std::string&)>& f_setRenderShaderName,
-			const std::shared_ptr<FrameBuffer>& framebuffer_out
-		);
+			const std::shared_ptr<FrameBuffer>& colorBuffer_in);
+
+		static void _BeginDeferredLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginForwardLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginClusterLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _RenderBoundingBox(const std::shared_ptr<FrameBuffer>& framebuffer_out);

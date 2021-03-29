@@ -226,11 +226,6 @@ void longmarch::Scene3DComSys::RenderTransparentObj()
 	}
 }
 
-void longmarch::Scene3DComSys::SetRenderMode(RenderMode mode)
-{
-	m_RenderMode = mode;
-}
-
 void longmarch::Scene3DComSys::SetVFCullingParam(bool enable, const ViewFrustum& VF, const Mat4& WorldSpaceToViewFrustum)
 {
 	m_vfcParam.enableVFCulling = enable;
@@ -273,9 +268,9 @@ void longmarch::Scene3DComSys::RenderWithModeOpaque(Renderer3D::RenderObj_CPU& r
 			}
 		}
 	}
-	switch (m_RenderMode)
+	switch (Renderer3D::s_Data.RENDER_PASS)
 	{
-	case RenderMode::SCENE:
+	case Renderer3D::RENDER_PASS::SCENE:
 	{
 		if (!scene->IsHideInGame())
 		{
@@ -283,7 +278,7 @@ void longmarch::Scene3DComSys::RenderWithModeOpaque(Renderer3D::RenderObj_CPU& r
 		}
 	}
 	break;
-	case RenderMode::SHADOW:
+	case Renderer3D::RENDER_PASS::SHADOW:
 	{
 		if (!scene->IsHideInGame() && scene->IsCastShadow())
 		{
@@ -323,9 +318,9 @@ void longmarch::Scene3DComSys::RenderWithModeTransparent(Renderer3D::RenderObj_C
 			}
 		}
 	}
-	switch (m_RenderMode)
+	switch (Renderer3D::s_Data.RENDER_PASS)
 	{
-	case RenderMode::SCENE:
+	case Renderer3D::RENDER_PASS::SCENE:
 	{
 		if (!scene->IsHideInGame())
 		{
@@ -341,7 +336,7 @@ void longmarch::Scene3DComSys::RenderWithModeTransparent(Renderer3D::RenderObj_C
 		}
 	}
 	break;
-	case RenderMode::SHADOW:
+	case Renderer3D::RENDER_PASS::SHADOW:
 	{
 		if (!scene->IsHideInGame() && scene->IsCastShadow())
 		{

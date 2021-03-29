@@ -25,8 +25,8 @@ void longmarch::OutlinePass::BeginRenderPass()
 		}
 
 		auto cam_type = (EntityType)EngineEntityType::EDITOR_CAMERA;
-		auto camera = m_parentWorld->GetTheOnlyEntityWithType(cam_type);
-		auto cam = m_parentWorld->GetComponent<PerspectiveCameraCom>(camera)->GetCamera();
+		auto camera_entity = m_parentWorld->GetTheOnlyEntityWithType(cam_type);
+		auto camera = m_parentWorld->GetComponent<PerspectiveCameraCom>(camera_entity)->GetCamera();
 
 		auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
 		auto es = manager->GetAllSelectedEntityBuffered();
@@ -66,10 +66,10 @@ void longmarch::OutlinePass::BeginRenderPass()
 		auto shader_name = "ShadowBuffer";
 		Renderer3D::s_Data.CurrentShader = Renderer3D::s_Data.ShaderMap[shader_name];
 		Renderer3D::s_Data.CurrentShader->Bind();
-		Renderer3D::s_Data.CurrentShader->SetMat4("u_PVMatrix", cam->GetReverseZViewProjectionMatrix());
+		Renderer3D::s_Data.CurrentShader->SetMat4("u_PVMatrix", (Renderer3D::s_Data.enable_reverse_z) ? camera->GetReverseZViewProjectionMatrix() : camera->GetViewProjectionMatrix());
 		m_parentWorld->ForEach(
 			es,
-			[&shader_name, &cam](EntityDecorator e)
+			[&shader_name, &camera](EntityDecorator e)
 		{
 			auto particle = e.GetComponent<Particle3DCom>();
 			bool isParticle = particle.Valid();
@@ -84,7 +84,7 @@ void longmarch::OutlinePass::BeginRenderPass()
 				{
 					// TODO : outline particle, need to write a specialized shader
 					/*particle->SetRendering(scene->GetShouldDraw());
-					particle->PrepareDrawWithViewMatrix(cam->GetViewMatrix());
+					particle->PrepareDrawWithViewMatrix(camera->GetViewMatrix());
 					scene->Draw(particle.GetPtr());*/
 				}
 				else
@@ -143,10 +143,10 @@ void longmarch::OutlinePass::BeginRenderPass()
 		shader_name = "OutlineShader";
 		Renderer3D::s_Data.CurrentShader = Renderer3D::s_Data.ShaderMap[shader_name];
 		Renderer3D::s_Data.CurrentShader->Bind();
-		Renderer3D::s_Data.CurrentShader->SetMat4("u_PVMatrix", cam->GetReverseZViewProjectionMatrix());
+		Renderer3D::s_Data.CurrentShader->SetMat4("u_PVMatrix", camera->GetReverseZViewProjectionMatrix());
 		m_parentWorld->ForEach(
 			es,
-			[&shader_name, &cam](EntityDecorator e)
+			[&shader_name, &camera](EntityDecorator e)
 		{
 			// Up scale
 			auto trans = e.GetComponent<Transform3DCom>();
@@ -167,7 +167,7 @@ void longmarch::OutlinePass::BeginRenderPass()
 				{
 					// TODO : outline particle, need to write a specialized shader
 					/*particle->SetRendering(scene->GetShouldDraw());
-					particle->PrepareDrawWithViewMatrix(cam->GetViewMatrix());
+					particle->PrepareDrawWithViewMatrix(camera->GetViewMatrix());
 					scene->Draw(particle.GetPtr());*/
 				}
 				else

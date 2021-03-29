@@ -12,12 +12,6 @@ namespace longmarch
 	class Scene3DComSys final : public BaseComponentSystem 
 	{
 	public:
-		enum class RenderMode
-		{
-			SCENE = 0,
-			SHADOW,
-		};
-	public:
 		NONCOPYABLE(Scene3DComSys);
 		COMSYS_DEFAULT_COPY(Scene3DComSys);
 
@@ -29,7 +23,6 @@ namespace longmarch
 		void RenderOpaqueObj(); 
 		void RenderTransparentObj();
 
-		void SetRenderMode(RenderMode mode);
 		void SetVFCullingParam(bool enable, const ViewFrustum& VF, const Mat4& WorldSpaceToViewFrustum);
 		void SetDistanceCullingParam(bool enable, const Vec3f& center, float Near, float Far);
 		void SetRenderShaderName(const std::string& shaderName);
@@ -60,7 +53,6 @@ namespace longmarch
 		VFCParam m_vfcParam;
 		DistanceCParam m_distanceCParam;
 		std::string m_RenderShaderName = { "" };
-		RenderMode m_RenderMode = { RenderMode::SCENE };
 		bool m_enableDebugDraw{ true };
 #ifdef MULTITHREAD_PRE_RENDER_UPDATE
 		AtomicQueue<std::shared_future<void>> m_threadJob;

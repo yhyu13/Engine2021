@@ -264,7 +264,8 @@ void longmarch::Renderer3D::Init()
 		{
 			s_Data.ShaderMap["MSMShadowBuffer_Transparent"] = Shader::Create("$shader:shadow/momentShadowMap_shader.vert", "$shader:shadow/momentShadowMap_shader.frag");
 			s_Data.ShaderMap["MSMShadowBuffer_Particle"] = Shader::Create("$shader:shadow/momentShadowMap_shader_particle.vert", "$shader:shadow/momentShadowMap_shader_particle.frag");
-			
+
+			s_Data.ShaderMap["ShadowBuffer_MultiDraw"] = Shader::Create("$shader:shadow/ShadowMap_shader_MultiDraw.vert", "$shader:shadow/ShadowMap_shader.frag"); // used in ssr pass to draw back face depth buffer
 			s_Data.ShaderMap["ShadowBuffer"] = Shader::Create("$shader:shadow/ShadowMap_shader.vert", "$shader:shadow/ShadowMap_shader.frag"); // used in outlining pass as a cheap way to draw objects
 		}
 
@@ -323,6 +324,7 @@ void longmarch::Renderer3D::Init()
 			it->second->SetInt("u_FragTexture1", s_Data.fragTexture_1_slot);
 			it->second->SetInt("u_FragTexture2", s_Data.fragTexture_2_slot);
 			it->second->SetInt("u_FragTexture3", s_Data.fragTexture_3_slot);
+			it->second->SetInt("u_FragTexture4", s_Data.fragTexture_4_slot);
 
 			it->second->SetInt("u_IrradianceMap", s_Data.fragTexture_0_slot);
 			it->second->SetInt("u_RadianceMap", s_Data.fragTexture_1_slot);
@@ -399,6 +401,7 @@ void longmarch::Renderer3D::Init()
 			s_Data.gpuBuffer.FrameBuffer_3 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
 			s_Data.gpuBuffer.FrameBuffer_4 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
 			s_Data.gpuBuffer.CurrentDynamicAOBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
+			s_Data.gpuBuffer.CurrentBackFaceDepthBuffer = ShadowBuffer::Create(1, 1, ShadowBuffer::SHADOW_MAP_TYPE::BASIC);
 			s_Data.gpuBuffer.CurrentDynamicSSRBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
 			s_Data.gpuBuffer.CurrentDynamicBloomBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16); 
 			s_Data.gpuBuffer.CurrentDynamicDOFBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
@@ -985,14 +988,14 @@ void longmarch::Renderer3D::BeginShadowing(
 	const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
 	const std::function<void(const std::string&)>& f_setRenderShaderName)
 {
+	auto render_pipe_original = s_Data.RENDER_PIPE;
+	auto render_mode_original = s_Data.RENDER_MODE;
+
 	s_Data.RENDER_PASS = RENDER_PASS::SHADOW;
 	RenderCommand::PolyModeFill();
 	RenderCommand::Blend(false);
 	RenderCommand::DepthTest(true, true);
 	RenderCommand::CullFace(true, false);
-
-	auto render_pipe_original = s_Data.RENDER_PIPE;
-	auto render_mode_original = s_Data.RENDER_MODE;
 
 	static auto BeginGaussianBlur = []()
 	{
@@ -2344,14 +2347,7 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 	case RENDER_PIPE::DEFERRED:
 		// Perform SSAO/SSDO after rendering all opaques, ignore transparents and particles.
 		Renderer3D::_BeginDynamicAOPass(s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer);
-		Renderer3D::_BeginDeferredLightingPass(
-			camera,
-			f_render,
-			f_setVFCullingParam,
-			f_setDistanceCullingParam,
-			f_setRenderShaderName,
-			s_Data.gpuBuffer.CurrentFrameBuffer
-		);
+		Renderer3D::_BeginDeferredLightingPass(s_Data.gpuBuffer.CurrentFrameBuffer);
 		break;
 	case RENDER_PIPE::FORWARD:
 		Renderer3D::_BeginForwardLightingPass(s_Data.gpuBuffer.CurrentFrameBuffer);
@@ -2374,9 +2370,18 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 	{
 		{
 			// Perform SSR after rendering all opaques, ignore transparents and particles for now
-			Renderer3D::_BeginDynamicSSRPass(s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer);
+			Renderer3D::_BeginDynamicSSRPass(
+				camera,
+				f_render,
+				f_setVFCullingParam,
+				f_setDistanceCullingParam,
+				f_setRenderShaderName,
+				s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer);
 			auto old = s_Data.gpuBuffer.CurrentFrameBuffer;
 			Renderer3D::_BeginSSRPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_2);
+			
+			// Since both depth buffer and stencil buffer are NOT transfered automatically
+			// Transfer depth from old frame buffer to new frame buffer
 			RenderCommand::TransferDepthBit(
 				old->GetRendererID(),
 				old->GetBufferSize().x,
@@ -2398,22 +2403,28 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 
 void longmarch::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<FrameBuffer>& colorBuffer_in)
 {
-	// Clear AO buffer regardless if AO is enabled because it will always be used
-	if (auto downscale = s_Data.AOSettings.ao_sample_resolution_downScale;
-		s_Data.gpuBuffer.CurrentDynamicAOBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the AO with potentially downscaled resolution
 	{
-		s_Data.gpuBuffer.CurrentDynamicAOBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::Float16);
+		// Clear AO buffer regardless if AO is enabled because it will always be used
+		if (auto downscale = s_Data.AOSettings.ao_sample_resolution_downScale;
+			s_Data.gpuBuffer.CurrentDynamicAOBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the AO with potentially downscaled resolution
+		{
+			s_Data.gpuBuffer.CurrentDynamicAOBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::Float16);
+		}
+
+		RenderCommand::DepthTest(true, true);
+		RenderCommand::SetClearColor(Vec4f(0, 0, 0, 1)); // Clear w component to 1 as it stores the AO value, and 1 stands for no occlusion
+
+		s_Data.gpuBuffer.CurrentDynamicAOBuffer->Bind();
+		RenderCommand::Clear();
 	}
-
-	RenderCommand::DepthTest(true, true);
-	RenderCommand::SetClearColor(Vec4f(0, 0, 0, 1)); // Clear w component to 1 as it stores the AO value, and 1 stands for no occlusion
-
-	s_Data.gpuBuffer.CurrentDynamicAOBuffer->Bind();
-	RenderCommand::Clear();
 
 	if (s_Data.AOSettings.enable)
 	{
 		GPU_TIME(DynamicSSAO);
+
+		//------------------------------------------------------------------------------
+
+		// SSAO/SSDO pass
 		RenderCommand::PolyModeFill();			// Draw full model
 		RenderCommand::Blend(false);			// Disable blend
 		RenderCommand::DepthTest(false, false);	// Disable depth test
@@ -2451,6 +2462,8 @@ void longmarch::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<FrameBuffe
 
 		// Render quad
 		Renderer3D::_RenderFullScreenQuad();
+
+		//------------------------------------------------------------------------------
 
 		// Bilaterl blurring
 		const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur_AO"];
@@ -2496,25 +2509,91 @@ void longmarch::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<FrameBuffe
 	}
 }
 
-void longmarch::Renderer3D::_BeginDynamicSSRPass(const std::shared_ptr<FrameBuffer>& colorBuffer_in)
+void longmarch::Renderer3D::_BeginDynamicSSRPass(
+	const PerspectiveCamera* camera,
+	const std::function<void()>& f_render,
+	const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
+	const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
+	const std::function<void(const std::string&)>& f_setRenderShaderName,
+	const std::shared_ptr<FrameBuffer>& colorBuffer_in)
 {
 	if (s_Data.SSRSettings.enable)
 	{
 		GPU_TIME(DynamicSSR);
-		if (auto downscale = s_Data.SSRSettings.ssr_sample_resolution_downScale;
-			s_Data.gpuBuffer.CurrentDynamicSSRBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the SSR with potentially downscaled resolution
 		{
-			s_Data.gpuBuffer.CurrentDynamicSSRBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::Float16);
+			// Clear buffer
+			if (auto downscale = s_Data.SSRSettings.ssr_sample_resolution_downScale;
+				s_Data.gpuBuffer.CurrentDynamicSSRBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the SSR with potentially downscaled resolution
+			{
+				s_Data.gpuBuffer.CurrentDynamicSSRBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::Float16);
+			}
+
+			if (auto downscale = s_Data.SSRSettings.ssr_sample_resolution_downScale;
+				s_Data.gpuBuffer.CurrentBackFaceDepthBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the SSR with potentially downscaled resolution
+			{
+				s_Data.gpuBuffer.CurrentBackFaceDepthBuffer = ShadowBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, ShadowBuffer::SHADOW_MAP_TYPE::BASIC);
+			}
+
+			RenderCommand::DepthTest(true, true);
+			RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0));
+
+			s_Data.gpuBuffer.CurrentDynamicSSRBuffer->Bind();
+			RenderCommand::Clear();
+
+			s_Data.gpuBuffer.CurrentBackFaceDepthBuffer->Bind();
+			RenderCommand::Clear();
 		}
-
-		RenderCommand::DepthTest(true, true);
-		RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0));
-
-		s_Data.gpuBuffer.CurrentDynamicSSRBuffer->Bind();
-		RenderCommand::Clear();
 
 		RenderCommand::PolyModeFill();			// Draw full model
 		RenderCommand::Blend(false);			// Disable blend
+
+		//------------------------------------------------------------------------------
+
+		{
+			// Back face depth pass
+			RenderCommand::DepthTest(true, true);	// Enable depth test
+			RenderCommand::CullFace(true, true);	// Cull front face to draw back face depth
+
+			auto render_pass_original = s_Data.RENDER_PASS;
+			auto render_pipe_original = s_Data.RENDER_PIPE;
+			auto render_mode_original = s_Data.RENDER_MODE;
+			s_Data.RENDER_PASS = RENDER_PASS::SHADOW;
+			s_Data.RENDER_PIPE = RENDER_PIPE::FORWARD;
+			s_Data.RENDER_MODE = RENDER_MODE::MULTIDRAW;
+
+			auto& BackFaceDepthBuffer = s_Data.gpuBuffer.CurrentBackFaceDepthBuffer;
+			Vec2u traget_resoluation = BackFaceDepthBuffer->GetBufferSize();
+			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+			BackFaceDepthBuffer->Bind();
+			{
+				// Bind default shader here to avoid rebinding in the subsequent draw call
+				constexpr auto shader_name = "ShadowBuffer_MultiDraw";
+				s_Data.CurrentShader = s_Data.ShaderMap[shader_name];
+				s_Data.CurrentShader->Bind();
+				s_Data.CurrentShader->SetMat4("u_PVMatrix", (Renderer3D::s_Data.enable_reverse_z) ? camera->GetReverseZViewProjectionMatrix() : camera->GetViewProjectionMatrix());
+				// Rendering
+				{
+					ENG_TIME("SSR pass (Back face depth): LOOPING");
+					f_setRenderShaderName(shader_name);
+					f_setVFCullingParam(true, camera->GetViewFrustumInViewSpace(), camera->GetViewMatrix());
+					f_setDistanceCullingParam(false, Vec3f(), 0, 0);
+					f_render();
+				}
+
+				{
+					ENG_TIME("SSR pass (Back face depth): BATCH RENDER");
+					CommitBatchRendering();
+				}
+			}
+
+			s_Data.RENDER_PASS = render_pass_original;
+			s_Data.RENDER_PIPE = render_pipe_original;
+			s_Data.RENDER_MODE = render_mode_original;
+		}
+
+		//------------------------------------------------------------------------------
+
+		// SSR ray march
 		RenderCommand::DepthTest(false, false);	// Disable depth test
 		RenderCommand::CullFace(false, false);
 
@@ -2542,12 +2621,15 @@ void longmarch::Renderer3D::_BeginDynamicSSRPass(const std::shared_ptr<FrameBuff
 			},
 			s_Data.fragTexture_empty_slot
 			);
-
 		// Bind prev frame buffer
 		colorBuffer_in->BindTexture(s_Data.fragTexture_3_slot);
-
+		// Bind back face depth buffer
+		s_Data.gpuBuffer.CurrentBackFaceDepthBuffer->BindTexture(s_Data.fragTexture_4_slot);
+		
 		// Render quad
 		Renderer3D::_RenderFullScreenQuad();
+
+		//------------------------------------------------------------------------------
 
 		// Bilaterl blurring
 		const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur"];
@@ -2585,13 +2667,7 @@ void longmarch::Renderer3D::_BeginDynamicSSRPass(const std::shared_ptr<FrameBuff
 	}
 }
 
-void longmarch::Renderer3D::_BeginDeferredLightingPass(
-	const PerspectiveCamera* camera,
-	const std::function<void()>& f_render,
-	const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam,
-	const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
-	const std::function<void(const std::string&)>& f_setRenderShaderName,
-	const std::shared_ptr<FrameBuffer>& framebuffer_out)
+void longmarch::Renderer3D::_BeginDeferredLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
 	GPU_TIME(DeferredLighting_Pass);
 	{
@@ -2647,6 +2723,12 @@ void longmarch::Renderer3D::_BeginDeferredLightingPass(
 		// This shader requires the depth gbuffer to be binded, which is done in above
 		s_Data.CurrentShader = s_Data.ShaderMap["DepthCopyShader"];
 		s_Data.CurrentShader->Bind();
+		s_Data.gpuBuffer.CurrentGBuffer->BindTextures(
+			{
+				GBuffer::GBUFFER_TEXTURE_TYPE::DEPTH
+			},
+			s_Data.fragTexture_empty_slot // offsets to be after all frame buffers
+			);
 
 		// Render quad
 		Renderer3D::_RenderFullScreenQuad();
@@ -2803,10 +2885,17 @@ void longmarch::Renderer3D::EndOpaqueLighting()
 *	Render3D highlevel API : BeginTransparentSceneAndLighting
 *
 **************************************************************/
-void longmarch::Renderer3D::BeginTransparentSceneAndLighting(const PerspectiveCamera* camera, const std::function<void()>& f_render, const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam, const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam, const std::function<void(const std::string&)>& f_setRenderShaderName)
+void longmarch::Renderer3D::BeginTransparentSceneAndLighting(
+	const PerspectiveCamera* camera, 
+	const std::function<void()>& f_render, 
+	const std::function<void(bool, const ViewFrustum&, const Mat4&)>& f_setVFCullingParam, 
+	const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam, 
+	const std::function<void(const std::string&)>& f_setRenderShaderName)
 {
 	{
 		ENG_TIME("Scene phase (Transparent): BEGIN");
+
+		auto render_pass_original = s_Data.RENDER_PASS;
 		auto render_pipe_original = s_Data.RENDER_PIPE;
 		auto render_mode_original = s_Data.RENDER_MODE;
 		s_Data.RENDER_PASS = RENDER_PASS::SCENE;
@@ -2835,6 +2924,7 @@ void longmarch::Renderer3D::BeginTransparentSceneAndLighting(const PerspectiveCa
 			}
 		}
 
+		s_Data.RENDER_PASS = render_pass_original;
 		s_Data.RENDER_PIPE = render_pipe_original;
 		s_Data.RENDER_MODE = render_mode_original;
 	}

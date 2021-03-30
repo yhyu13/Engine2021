@@ -347,19 +347,19 @@ void longmarch::MainObjectFactory::SaveGameWorldScene(const fs::path& filepath, 
 	builder["precision"] = 4;
 	builder["precisionType"] = "decimal";
 	builder["dropNullPlaceholders"] = false;
-	std::unique_ptr<Json::StreamWriter> writer(
-		builder.newStreamWriter());
+	std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+
 	{
 		ENG_TIME("Save:Serialize");
-		// Write entities
+		// 1. Write ECS
 		SerializeEntity(EntityDecorator(), doc["root"], world, 0);
 
-		// Write system as well
-		auto& system_val = doc["system"];
+		// 2. Write system as well
+		auto& system = doc["system"];
 		const auto& names = world->GetAllComponentSystemName();
 		for (auto&& name : names)
 		{
-			system_val.append(Json::Value(name));
+			system.append(Json::Value(name));
 		}
 	}
 	{
@@ -367,7 +367,7 @@ void longmarch::MainObjectFactory::SaveGameWorldScene(const fs::path& filepath, 
 		auto& output = FileSystem::OpenOfstream(filepath, FileSystem::FileType::OPEN_BINARY);
 		writer->write(doc, &output);
 		FileSystem::CloseOfstream(filepath);
-		FileSystem::RemoveCachedJsonCPP(filepath);
+		FileSystem::RemoveCachedJsonCPP(filepath); //< Remove cached json file so that we can load the one that has just written to
 		DEBUG_PRINT("Save game world to " + filepath.string());
 	}
 }
@@ -376,6 +376,7 @@ void longmarch::MainObjectFactory::SerializeEntity(EntityDecorator parentEntity,
 {
 	if (level == 0)
 	{
+		// Serialize root entity
 		auto root = world->GetTheOnlyEntityWithType((EntityType)EngineEntityType::SCENE_ROOT);
 		{
 			auto rootEntity = EntityDecorator(root, world);
@@ -388,6 +389,7 @@ void longmarch::MainObjectFactory::SerializeEntity(EntityDecorator parentEntity,
 	}
 	else
 	{
+		// Serialize children entities
 		for (auto& child : world->GetComponent<ChildrenCom>(parentEntity)->GetChildren())
 		{
 			auto childEntity = EntityDecorator(child, world);
@@ -403,17 +405,19 @@ void longmarch::MainObjectFactory::SerializeEntity(EntityDecorator parentEntity,
 Json::Value longmarch::MainObjectFactory::SerializedCom(EntityDecorator entity) const
 {
 	Json::Value val;
-	{
-		auto e_type = entity.GetType();
-		auto s_type = GetEntityNameFromType(e_type);
-		val["0_type"] = std::move(s_type);
 
-		Json::Value coms(Json::arrayValue);
-		for (auto& com : entity.GetAllComponent())
-		{
-			com->JsonSerialize(coms);
-		}
-		val["1_com"] = std::move(coms);
+	// Serialize entity type
+	auto e_type = entity.GetType();
+	auto s_type = GetEntityNameFromType(e_type);
+	val["0_type"] = std::move(s_type);
+
+	// Serialize all components
+	Json::Value coms(Json::arrayValue);
+	for (auto& com : entity.GetAllComponent())
+	{
+		com->JsonSerialize(coms);
 	}
+	val["1_com"] = std::move(coms);
+
 	return val;
 }

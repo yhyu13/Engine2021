@@ -420,7 +420,7 @@ void longmarch::Scene3DCom::ImGuiRender()
 {
 	if (ImGui::TreeNode("Scene3D"))
 	{
-		constexpr int yoffset_item = 2;
+		constexpr int yoffset_item = 5;
 		// Scene Mesh
 		{
 			const auto meshName = (m_objDatasRef) ? m_objDatasRef->Name() : "None";

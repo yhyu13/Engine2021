@@ -83,7 +83,7 @@ void longmarch::PerspectiveCameraCom::ImGuiRender()
 {
 	if (ImGui::TreeNode("PerspectiveCamera"))
 	{
-		constexpr int yoffset_item = 2;
+		constexpr int yoffset_item = 5;
 		constexpr int width_item = 100;
 
 		{

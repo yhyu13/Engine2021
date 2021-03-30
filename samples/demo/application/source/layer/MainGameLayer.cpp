@@ -14,6 +14,7 @@
 longmarch::MainGameLayer::MainGameLayer()
 	: Layer("MainGameLayer")
 {
+	Renderer3D::Init();
 }
 
 void longmarch::MainGameLayer::Init()

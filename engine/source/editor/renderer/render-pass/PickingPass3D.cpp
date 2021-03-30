@@ -1,8 +1,8 @@
 #include "engine-precompiled-header.h"
 #include "PickingPass3D.h"
 #include "engine/ecs/header/header.h"
-#include "editor/ui/BaseEngineWidgetManager.h"
-#include "editor/ui/widgets/SceneHierarchyDock.h"
+#include "editor/ui/common/BaseEngineWidgetManager.h"
+#include "editor/ui/common/widgets/SceneHierarchyDock.h"
 
 void longmarch::PickingPass::Init()
 {

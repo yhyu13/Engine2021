@@ -88,7 +88,7 @@
 			"Radius":4.0,
 			"Scale":2.0,
 			"Power":2.0,
-			"Indirect-bounce":true, // SSDO inspired indirect bounce light 
+			"Indirect-bounce":false, // SSDO inspired indirect bounce light, expensive on interior
 			"Indirect-bounce-strength":10.0,
 		}
 		,
@@ -96,8 +96,8 @@
 		"SSR":
 		{
 			"Enable": true,
-			"Gaussian-kernel": 11,
-			"Res-down-scale": 4,
+			"Gaussian-kernel": 7,
+			"Res-down-scale": 2,
 		},
 
 		"Bloom":

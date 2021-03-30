@@ -1,9 +1,11 @@
 #include "engine-precompiled-header.h"
 #include "SceneDock.h"
-#include "editor/ui/BaseEngineWidgetManager.h"
+#include "../BaseEngineWidgetManager.h"
 #include "engine/ecs/header/header.h"
 #include "engine/renderer/Renderer3D.h"
 #include "editor/ecs/header/header.h"
+
+#define USE_SCENE_DOCK
 
 longmarch::SceneDock::SceneDock()
 {
@@ -13,6 +15,7 @@ longmarch::SceneDock::SceneDock()
 
 void longmarch::SceneDock::Render()
 {
+#ifndef USE_SCENE_DOCK
 	/********************************
 	* Scene Dock suffers from a wired bug that when reaching negative x values.
 	* Turn it off temporarily.
@@ -37,6 +40,7 @@ void longmarch::SceneDock::Render()
 		}
 	}
 	return;
+#endif // !USE_SCENE_DOCK
 
 	WIDGET_EARLY_QUIT();
 

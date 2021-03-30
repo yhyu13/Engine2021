@@ -80,7 +80,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineSettingMenu()
 {
 	if (ImGui::TreeNode("Engine Settings"))
 	{
-		constexpr int yoffset_item = 2;
+		constexpr int yoffset_item = 5;
 
 		auto settingEventQueue = EventQueue<EngineSettingEventType>::GetInstance();
 
@@ -140,6 +140,13 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static auto engineConfiguration = FileSystem::GetNewJsonCPP("$root:engine-config.json");
 		static auto windowConfig = engineConfiguration["window"];
 		static auto graphicsConfig = engineConfiguration["graphics"];
+		static auto MotionBlurConfig = graphicsConfig["Motion-blur"];
+		static auto EnvMapConfig = graphicsConfig["Env-mapping"];
+		static auto SMAAConfig = graphicsConfig["SMAA"];
+		static auto AOConfig = graphicsConfig["AO"];
+		static auto SSRConfig = graphicsConfig["SSR"];
+		static auto BloomConfig = graphicsConfig["Bloom"];
+		static auto DOFConfig = graphicsConfig["DOF"];
 
 		// 1. Window mode
 		static const char* windowModes[]{ "Fullscreen", "Borderless Windowed", "Windowed" };
@@ -179,12 +186,10 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static float valueGamma = 2.2f;
 
 		// Motion Blur
-		static auto MotionBlurConfig = graphicsConfig["Motion-blur"];
 		static bool checkMotionBlur = MotionBlurConfig["Enable"].asBool();
 		static int valueMotionblurShutterSpeed = MotionBlurConfig["Motion-blur-shutter-speed"].asInt();
 
 		// Env mapping
-		static auto EnvMapConfig = graphicsConfig["Env-mapping"];
 		static std::string valueCurrentEnvMapName = EnvMapConfig["Current-Sky-box"].asString();
 		static LongMarch_Vector<std::string> valueAllEnvMapName;
 		valueAllEnvMapName.clear();
@@ -197,12 +202,10 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static bool checkEvnMapping = EnvMapConfig["Enable"].asBool();
 
 		// SMAA
-		static auto SMAAConfig = graphicsConfig["SMAA"];
 		static bool checkSMAA = SMAAConfig["Enable"].asBool();
 		static int valueSMAAMode = SMAAConfig["Mode"].asInt();
 
 		// AO
-		static auto AOConfig = graphicsConfig["AO"];
 		static bool checkAO = AOConfig["Enable"].asBool();
 		static int valueAOSample = AOConfig["Num-samples"].asInt();
 		static int valueAOSampleResDownScale = AOConfig["Res-down-scale"].asInt();
@@ -215,14 +218,12 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static float valueIndBonLitScale = AOConfig["Indirect-bounce-strength"].asFloat();
 
 		// SSR
-		static auto SSRConfig = graphicsConfig["SSR"];
 		static bool checkSSR = SSRConfig["Enable"].asBool();
 		static int valueSSRBlurKernel = SSRConfig["Gaussian-kernel"].asInt();
 		static int valueSSRSampleResDownScale = SSRConfig["Res-down-scale"].asInt();
 		static bool checkSSRDebug = false;
 
 		// Bloom
-		static auto BloomConfig = graphicsConfig["Bloom"];
 		static bool checkBloom = BloomConfig["Enable"].asBool();
 		static float valueBloomThreshold = BloomConfig["Threshold"].asFloat();
 		static float valueBloomStrength = BloomConfig["Strength"].asFloat();
@@ -230,7 +231,6 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static int valueBloomSampleResDownScale = BloomConfig["Res-down-scale"].asFloat();
 
 		// DOF
-		static auto DOFConfig = graphicsConfig["DOF"];
 		static bool checkDOF = DOFConfig["Enable"].asBool();
 		static float valueDOFThreshold = DOFConfig["Threshold"].asFloat();
 		static float valueDOFStrength = DOFConfig["Strength"].asFloat();
@@ -241,6 +241,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 
 		constexpr int yoffset_item = 5;
 
+		ImGui::Dummy(ImVec2(0, yoffset_item));
 		if (ImGui::Button("Reset graphics settings to default values"))
 		{
 			checkVSync = windowConfig["V-sync"].asBool();
@@ -376,6 +377,80 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
 				graphicEventQueue->Publish(e);
 			}
+		}
+
+		if (ImGui::Button("Save graphics settings to config"))
+		{
+			constexpr auto config_path = "$root:engine-config.json";
+			auto engineConfiguration = FileSystem::GetNewJsonCPP(config_path);
+
+			Json::StreamWriterBuilder builder;
+			builder["commentStyle"] = "None";
+			builder["indentation"] = "    ";
+			builder["precision"] = 4;
+			builder["precisionType"] = "decimal";
+			builder["dropNullPlaceholders"] = false;
+			std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+
+			{
+				auto& graphicsConfig = engineConfiguration["graphics"];
+				{
+					auto& MotionBlurConfig = graphicsConfig["Motion-blur"]; 
+					MotionBlurConfig["Enable"] = checkMotionBlur;
+					MotionBlurConfig["Motion-blur-shutter-speed"] = valueMotionblurShutterSpeed;
+				}
+				{
+					auto& EnvMapConfig = graphicsConfig["Env-mapping"]; 
+					EnvMapConfig["Current-Sky-box"] = valueCurrentEnvMapName;
+					EnvMapConfig["Enable"] = checkEvnMapping;
+				}
+				{
+					auto& SMAAConfig = graphicsConfig["SMAA"]; 
+					SMAAConfig["Enable"] = checkSMAA;
+					SMAAConfig["Mode"] = valueSMAAMode;
+				} 
+				{
+					auto& AOConfig = graphicsConfig["AO"]; 
+					AOConfig["Enable"] = checkAO;
+					AOConfig["Num-samples"] = valueAOSample;
+					AOConfig["Res-down-scale"] = valueAOSampleResDownScale;
+					AOConfig["Gaussian-kernel"] = valueAOBlurKernel;
+					AOConfig["Radius"] = valueAOSampleRadius;
+					AOConfig["Scale"] = valueAOScale;
+					AOConfig["Power"] = valueAOPower;
+					// Indirect Bounce of light
+					AOConfig["Indirect-bounce"] = checkIndBonLit;
+					AOConfig["Indirect-bounce-strength"] = valueIndBonLitScale;
+				}
+				{
+					auto& SSRConfig = graphicsConfig["SSR"]; 
+					SSRConfig["Enable"] = checkSSR;
+					SSRConfig["Gaussian-kernel"] = valueSSRBlurKernel;
+					SSRConfig["Res-down-scale"] = valueSSRSampleResDownScale;
+				}
+				{
+					auto& BloomConfig = graphicsConfig["Bloom"]; 
+					BloomConfig["Enable"] = checkBloom;
+					BloomConfig["Threshold"] = valueBloomThreshold;
+					BloomConfig["Strength"] = valueBloomStrength;
+					BloomConfig["Gaussian-kernel"] = valueBloomBlurKernel;
+					BloomConfig["Res-down-scale"] = valueBloomSampleResDownScale;
+				}
+				{
+					auto& DOFConfig = graphicsConfig["DOF"]; 
+					DOFConfig["Enable"] = checkDOF;
+					DOFConfig["Threshold"] = valueDOFThreshold;
+					DOFConfig["Strength"] = valueDOFStrength;
+					DOFConfig["Gaussian-kernel"] = valueDOFBlurKernel;
+					DOFConfig["Res-down-scale"] = valueDOFSampleResDownScale;
+					DOFConfig["Refocus-rate"] = valueDOFRefocusRate;
+				}
+			}
+			
+			auto& output = FileSystem::OpenOfstream(config_path, FileSystem::FileType::OPEN_BINARY);
+			writer->write(engineConfiguration, &output);
+			FileSystem::CloseOfstream(config_path);
+			FileSystem::RemoveCachedJsonCPP(config_path); //< Remove cached json file so that we can load the one that has just written to
 		}
 		ImGui::Dummy(ImVec2(0, yoffset_item));
 

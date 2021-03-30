@@ -33,7 +33,7 @@ void longmarch::PathMoverDemoMenu::Render()
 
 void longmarch::PathMoverDemoMenu::RenderPathMotionMenu()
 {
-	constexpr int yoffset_item = 2;
+	constexpr int yoffset_item = 5;
 	constexpr int width_item = 100;
 	if (ImGui::TreeNode("Path Motion"))
 	{

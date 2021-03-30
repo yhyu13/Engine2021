@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "OutlinePass3D.h"
 #include "engine/ecs/header/header.h"
-#include "editor/ui/BaseEngineWidgetManager.h"
+#include "editor/ui/common/BaseEngineWidgetManager.h"
 
 // Choose between stencil or polyoffset methods
 //#define USE_STENCIL

@@ -202,7 +202,7 @@ void longmarch::Animation3DCom::ImGuiRender()
 {
 	if (ImGui::TreeNode("Animation3D"))
 	{
-		constexpr int yoffset_item = 2;
+		constexpr int yoffset_item = 5;
 		constexpr int width_item = 100;
 
 		// animation collection

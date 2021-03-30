@@ -1,6 +1,6 @@
 #include "engine-precompiled-header.h"
 #include "EngineConsoleDock.h"
-#include "editor/ui/BaseEngineWidgetManager.h"
+#include "../BaseEngineWidgetManager.h"
 #include "engine/core/logging/TerminalLogger.h"
 
 longmarch::EngineConsoleDock::EngineConsoleDock()

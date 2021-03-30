@@ -1,6 +1,6 @@
 #include "engine-precompiled-header.h"
 #include "EngineEditorHUD.h"
-#include "BaseEngineWidgetManager.h"
+#include "../BaseEngineWidgetManager.h"
 #include "engine/ecs/header/header.h"
 
 #include <imgui/addons/implot/implot.h>

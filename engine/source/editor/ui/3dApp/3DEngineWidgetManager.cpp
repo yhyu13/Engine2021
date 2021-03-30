@@ -2,20 +2,19 @@
 #include "3DEngineWidgetManager.h"
 
 #include "widgets/3DEngineMainMenu.h"
-#include "../widgets/ComponentInspectorDock.h"
-#include "../widgets/SceneHierarchyDock.h"
-#include "../widgets/EngineProfilerPage.h"
-#include "../widgets/EnginePerformanceMonitor.h"
-#include "../widgets/EngineConsoleDock.h"
-#include "../widgets/SceneDock.h"
-#include "../EngineEditorHUD.h"
+#include "../common/widgets/ComponentInspectorDock.h"
+#include "../common/widgets/SceneHierarchyDock.h"
+#include "../common/widgets/EngineProfilerPage.h"
+#include "../common/widgets/EnginePerformanceMonitor.h"
+#include "../common/widgets/EngineConsoleDock.h"
+#include "../common/widgets/SceneDock.h"
+#include "../common/widgets/EngineEditorHUD.h"
 
 longmarch::_3DEngineWidgetManager::_3DEngineWidgetManager()
 {
 	{
-		// mark with "0_" to place it is sorted at the front of std::map when rendering
 		auto widget = MemoryManager::Make_shared<EngineEditorHUD>();
-		RegisterWidget("0_HUD", widget); 
+		RegisterWidget("0_HUD", widget); // mark with "0_" to place it is sorted at the front of std::map when rendering
 	}
 	{
 		auto widget = MemoryManager::Make_shared<_3DEngineMainMenu>();

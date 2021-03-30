@@ -389,7 +389,7 @@ void longmarch::LightCom::JsonDeserialize(const Json::Value& value)
 
 void longmarch::LightCom::ImGuiRender()
 {
-	constexpr int yoffset_item = 2;
+	constexpr int yoffset_item = 5;
 	constexpr int width_item = 100;
 	constexpr int width_item_1 = 200;
 	constexpr int width_item_2 = 400;

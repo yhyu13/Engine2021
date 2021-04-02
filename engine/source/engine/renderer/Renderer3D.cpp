@@ -264,9 +264,10 @@ void longmarch::Renderer3D::Init()
 		{
 			s_Data.ShaderMap["MSMShadowBuffer_Transparent"] = Shader::Create("$shader:shadow/momentShadowMap_shader.vert", "$shader:shadow/momentShadowMap_shader.frag");
 			s_Data.ShaderMap["MSMShadowBuffer_Particle"] = Shader::Create("$shader:shadow/momentShadowMap_shader_particle.vert", "$shader:shadow/momentShadowMap_shader_particle.frag");
+			s_Data.ShaderMap["ShadowBuffer_Transparent"] = Shader::Create("$shader:shadow/ShadowMap_shader_transparent.vert", "$shader:shadow/ShadowMap_shader_transparent.frag");
+			s_Data.ShaderMap["ShadowBuffer_Particle"] = Shader::Create("$shader:shadow/ShadowMap_shader_particle.vert", "$shader:shadow/ShadowMap_shader_particle.frag");
 
-			s_Data.ShaderMap["ShadowBuffer_MultiDraw"] = Shader::Create("$shader:shadow/ShadowMap_shader_MultiDraw.vert", "$shader:shadow/ShadowMap_shader.frag"); // used in ssr pass to draw back face depth buffer
-			s_Data.ShaderMap["ShadowBuffer"] = Shader::Create("$shader:shadow/ShadowMap_shader.vert", "$shader:shadow/ShadowMap_shader.frag"); // used in outlining pass as a cheap way to draw objects
+			s_Data.ShaderMap["ShadowBuffer_Canonical"] = Shader::Create("$shader:shadow/ShadowMap_shader.vert", "$shader:shadow/ShadowMap_shader.frag"); // used in outlining pass as a cheap way to draw objects
 		}
 
 		switch (s_Data.RENDER_MODE)
@@ -275,6 +276,7 @@ void longmarch::Renderer3D::Init()
 			s_Data.ShaderMap["ClusterShader"] = Shader::Create("$shader:cluster_shader.vert", "$shader:cluster_shader.frag");
 			s_Data.ShaderMap["ForwardShader"] = Shader::Create("$shader:forward_shader.vert", "$shader:forward_shader.frag");
 			s_Data.ShaderMap["GBufferShader"] = Shader::Create("$shader:gBuffer_shader.vert", "$shader:gBuffer_shader.frag");
+			s_Data.ShaderMap["ShadowBuffer"] = Shader::Create("$shader:shadow/ShadowMap_shader.vert", "$shader:shadow/ShadowMap_shader.frag");
 			s_Data.ShaderMap["MSMShadowBuffer"] = Shader::Create("$shader:shadow/momentShadowMap_shader.vert", "$shader:shadow/momentShadowMap_shader.frag");
 			//s_Data.ShaderMap["MSMShadowBuffer_Cube"] = Shader::Create("$shader:shadow/momentShadowMap_shader_cube.vert", "$shader:shadow/momentShadowMap_shader_cube.frag", "$shader:cubemap_geomtry_shader.geom"); // Point light shadows use 6 array texture instead
 			break;
@@ -282,6 +284,7 @@ void longmarch::Renderer3D::Init()
 			s_Data.ShaderMap["ClusterShader"] = Shader::Create("$shader:cluster_shader_MultiDraw.vert", "$shader:cluster_shader_MultiDraw.frag");
 			s_Data.ShaderMap["ForwardShader"] = Shader::Create("$shader:forward_shader_MultiDraw.vert", "$shader:forward_shader_MultiDraw.frag");
 			s_Data.ShaderMap["GBufferShader"] = Shader::Create("$shader:gBuffer_shader_MultiDraw.vert", "$shader:gBuffer_shader_MultiDraw.frag");
+			s_Data.ShaderMap["ShadowBuffer"] = Shader::Create("$shader:shadow/ShadowMap_shader_MultiDraw.vert", "$shader:shadow/ShadowMap_shader.frag");
 			s_Data.ShaderMap["MSMShadowBuffer"] = Shader::Create("$shader:shadow/momentShadowMap_shader_MultiDraw.vert", "$shader:shadow/momentShadowMap_shader.frag");
 			//s_Data.ShaderMap["MSMShadowBuffer_Cube"] = Shader::Create("$shader:shadow/momentShadowMap_shader_cube_MultiDraw.vert", "$shader:shadow/momentShadowMap_shader_cube.frag", "$shader:cubemap_geomtry_shader.geom"); // Point light shadows use 6 array texture instead
 			break;
@@ -1093,10 +1096,49 @@ void longmarch::Renderer3D::BeginShadowing(
 		return light;
 	};
 
-	const auto& msm_shader = s_Data.ShaderMap["MSMShadowBuffer"];
-	const auto& msm_shader_transparent = s_Data.ShaderMap["MSMShadowBuffer_Transparent"];
-	const auto& msm_shader_particle = s_Data.ShaderMap["MSMShadowBuffer_Particle"];
-	//const auto& msm_cube_shader = s_Data.ShaderMap["MSMShadowBuffer_Cube"];
+
+	static auto GetShadowBuffer_Opaque = [](const ComponentDecorator<LightCom>& lightCom, std::shared_ptr<Shader>& shadow_shader, std::string& shadow_shader_name)
+	{
+		if (lightCom->shadow.shadowAlgorithmMode <= 3)
+		{
+			shadow_shader_name = "ShadowBuffer";
+			shadow_shader = s_Data.ShaderMap["ShadowBuffer"];
+		}
+		else
+		{
+			shadow_shader_name = "MSMShadowBuffer";
+			shadow_shader = s_Data.ShaderMap["MSMShadowBuffer"];
+		}
+	};
+
+	static auto GetShadowBuffer_Particle = [](const ComponentDecorator<LightCom>& lightCom, std::shared_ptr<Shader>& shadow_shader, std::string& shadow_shader_name)
+	{
+		if (lightCom->shadow.shadowAlgorithmMode <= 3)
+		{
+			shadow_shader_name = "ShadowBuffer_Particle";
+			shadow_shader = s_Data.ShaderMap["ShadowBuffer_Particle"];
+		}
+		else
+		{
+			shadow_shader_name = "MSMShadowBuffer_Particle";
+			shadow_shader = s_Data.ShaderMap["MSMShadowBuffer_Particle"];
+		}
+	};
+
+	static auto GetShadowBuffer_Transparent = [](const ComponentDecorator<LightCom>& lightCom, std::shared_ptr<Shader>& shadow_shader, std::string& shadow_shader_name)
+	{
+		if (lightCom->shadow.shadowAlgorithmMode <= 3)
+		{
+			shadow_shader_name = "ShadowBuffer_Transparent";
+			shadow_shader = s_Data.ShaderMap["ShadowBuffer_Transparent"];
+		}
+		else
+		{
+			shadow_shader_name = "MSMShadowBuffer_Transparent";
+			shadow_shader = s_Data.ShaderMap["MSMShadowBuffer_Transparent"];
+		}
+	};
+	//const auto& msm_cube_shader = s_Data.ShaderMap["MSMShadowBuffer_Cube"]; // used when using cubic shadow map for point lights
 
 	const auto& transparent_shader = s_Data.ShaderMap["TransparentForwardShader"];
 
@@ -1257,23 +1299,25 @@ void longmarch::Renderer3D::BeginShadowing(
 							RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0))
 							: RenderCommand::SetClearColor(Vec4f(1, 1, 1, 0));
 						RenderCommand::Clear();
-
-						// Bind shader
-						s_Data.CurrentShader = msm_shader;
+						
+						std::string shader_name;
+						std::shared_ptr<Shader> shader;
+						GetShadowBuffer_Opaque(lightCom, shader, shader_name);
+						s_Data.CurrentShader = shader;
 						s_Data.CurrentShader->Bind();
 						s_Data.CurrentShader->SetMat4("u_PVMatrix", light_pv);
 						s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
 						sceneCom->SetShouldDraw(false, true);
 						// Render the scene
 						{
-							ENG_TIME("Shadow phase: DIRECTIONAL LOOPING");
-							f_setRenderShaderName("MSMShadowBuffer");
+							ENG_TIME("Shadow phase: DIRECTIONAL LOOPING (opaque)");
+							f_setRenderShaderName(shader_name);
 							f_setVFCullingParam(true, clipping_vf, light_view_mat);
 							f_setDistanceCullingParam(false, Vec3f(), 0, 0);
 							f_render_opaque();
 						}
 						{
-							ENG_TIME("Shadow phase: DIRECTIONAL BATCH RENDER");
+							ENG_TIME("Shadow phase: DIRECTIONAL BATCH RENDER (opaque)");
 							CommitBatchRendering();
 						}
 						if (lightCom->shadow.bEnableTransparentShadow)
@@ -1281,15 +1325,17 @@ void longmarch::Renderer3D::BeginShadowing(
 							BeginTransparentShadow();
 							{
 								ENG_TIME("Shadow phase: DIRECTIONAL LOOPING (transparent)");
-								s_Data.CurrentShader = msm_shader_particle;
+								GetShadowBuffer_Particle(lightCom, shader, shader_name);
+								s_Data.CurrentShader = shader;
 								s_Data.CurrentShader->Bind();
 								s_Data.CurrentShader->SetMat4("u_ProjectionMatrix", light_projection_mat);
 								s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
-								s_Data.CurrentShader = msm_shader_transparent;
+								GetShadowBuffer_Transparent(lightCom, shader, shader_name);
+								s_Data.CurrentShader = shader;
 								s_Data.CurrentShader->Bind();
 								s_Data.CurrentShader->SetMat4("u_PVMatrix", light_pv);
 								s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
-								f_setRenderShaderName("MSMShadowBuffer_Transparent");
+								f_setRenderShaderName(shader_name);
 								f_setVFCullingParam(true, clipping_vf, light_view_mat);
 								f_setDistanceCullingParam(false, Vec3f(), 0, 0);
 								f_render_trasparent();
@@ -1453,8 +1499,10 @@ void longmarch::Renderer3D::BeginShadowing(
 							: RenderCommand::SetClearColor(Vec4f(1, 1, 1, 0));
 						RenderCommand::Clear();
 
-						// Bind shader
-						s_Data.CurrentShader = msm_shader;
+						std::string shader_name;
+						std::shared_ptr<Shader> shader;
+						GetShadowBuffer_Opaque(lightCom, shader, shader_name);
+						s_Data.CurrentShader = shader;
 						s_Data.CurrentShader->Bind();
 						s_Data.CurrentShader->SetMat4("u_PVMatrix", light_pv);
 						s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
@@ -1462,7 +1510,7 @@ void longmarch::Renderer3D::BeginShadowing(
 						// Render the scene
 						{
 							ENG_TIME("Shadow phase: POINT LOOPING");
-							f_setRenderShaderName("MSMShadowBuffer");
+							f_setRenderShaderName(shader_name);
 							f_setVFCullingParam(true, clipping_vf, light_view_mat);
 							f_setDistanceCullingParam(false, light_pos, Near, Far);
 							f_render_opaque();
@@ -1476,15 +1524,17 @@ void longmarch::Renderer3D::BeginShadowing(
 							BeginTransparentShadow();
 							{
 								ENG_TIME("Shadow phase: POINT LOOPING (transparent)");
-								s_Data.CurrentShader = msm_shader_particle;
+								GetShadowBuffer_Particle(lightCom, shader, shader_name);
+								s_Data.CurrentShader = shader;
 								s_Data.CurrentShader->Bind();
 								s_Data.CurrentShader->SetMat4("u_ProjectionMatrix", light_projection_mat);
 								s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
-								s_Data.CurrentShader = msm_shader_transparent;
+								GetShadowBuffer_Transparent(lightCom, shader, shader_name);
+								s_Data.CurrentShader = shader;
 								s_Data.CurrentShader->Bind();
 								s_Data.CurrentShader->SetMat4("u_PVMatrix", light_pv);
 								s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
-								f_setRenderShaderName("MSMShadowBuffer_Transparent");
+								f_setRenderShaderName(shader_name);
 								f_setVFCullingParam(true, clipping_vf, light_view_mat);
 								f_setDistanceCullingParam(true, light_pos, Near, Far);
 								f_render_trasparent();
@@ -1698,8 +1748,11 @@ void longmarch::Renderer3D::BeginShadowing(
 					}
 
 					RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-					// Bind shader
-					s_Data.CurrentShader = msm_shader;
+					
+					std::string shader_name;
+					std::shared_ptr<Shader> shader;
+					GetShadowBuffer_Opaque(lightCom, shader, shader_name);
+					s_Data.CurrentShader = shader;
 					s_Data.CurrentShader->Bind();
 					s_Data.CurrentShader->SetMat4("u_PVMatrix", light_pv);
 					s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
@@ -1714,7 +1767,7 @@ void longmarch::Renderer3D::BeginShadowing(
 					// Render the scene
 					{
 						ENG_TIME("Shadow phase: SPOT LOOPING");
-						f_setRenderShaderName("MSMShadowBuffer");
+						f_setRenderShaderName(shader_name);
 						f_setVFCullingParam(true, clipping_vf, light_view_mat);
 						f_setDistanceCullingParam(false, Vec3f(), 0, 0);
 						f_render_opaque();
@@ -1728,15 +1781,17 @@ void longmarch::Renderer3D::BeginShadowing(
 						BeginTransparentShadow();
 						{
 							ENG_TIME("Shadow phase: SPOT LOOPING (transparent)");
-							s_Data.CurrentShader = msm_shader_particle;
+							GetShadowBuffer_Particle(lightCom, shader, shader_name);
+							s_Data.CurrentShader = shader;
 							s_Data.CurrentShader->Bind();
 							s_Data.CurrentShader->SetMat4("u_ProjectionMatrix", light_projection_mat);
 							s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
-							s_Data.CurrentShader = msm_shader_transparent;
+							GetShadowBuffer_Transparent(lightCom, shader, shader_name);
+							s_Data.CurrentShader = shader;
 							s_Data.CurrentShader->Bind();
 							s_Data.CurrentShader->SetMat4("u_PVMatrix", light_pv);
 							s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
-							f_setRenderShaderName("MSMShadowBuffer_Transparent");
+							f_setRenderShaderName(shader_name);
 							f_setVFCullingParam(true, clipping_vf, light_view_mat);
 							f_render_trasparent();
 						}
@@ -2113,8 +2168,8 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 			shaderProg->SetMat4("u_ViewMatrixInv", v_inv);
 			shaderProg->SetMat4("u_PVMatrix", pv);
 			shaderProg->SetMat4("u_PrevPVMatrix", ppv);
-
 			shaderProg->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
+
 			shaderProg->SetInt("u_GBufferDisplayMode", s_Data.gBuffer_display_mode);
 			shaderProg->SetInt("u_DirectionalLightDisplayMode", s_Data.directional_light_display_mode);
 
@@ -2162,13 +2217,13 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 void longmarch::Renderer3D::_PopulateShadowPassVariables()
 {
 	GPU_TIME(_PopulateShadowPassVariables);
-	// CRITICAL: Create placeholder texture (must have)
-	static const auto placeholder_shadowBuffer_array = ShadowBuffer::CreateArray(1, 1, 4, ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
+	// CRITICAL: Create placeholder texture (must have) for directional light
+	static const auto placeholder_shadowBuffer_array = ShadowBuffer::CreateArray(1, 1, 4, ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_COMPARE); //ShadowBuffer::CreateArray(1, 1, 4, ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
 
-	// CRITICAL: Create placeholder texture (must have)
+	// CRITICAL: Create placeholder texture (must have) for point light
 	static const auto placeholder_shadowBuffer_cube = ShadowBuffer::CreateArray(1, 1, 6, ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4); // ShadowBuffer::Create(1, 1, ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE);
 
-	// CRITICAL: Create placeholder texture (must have)
+	// CRITICAL: Create placeholder texture (must have) for spot light
 	static const auto placeholder_shadowBuffer = ShadowBuffer::Create(1, 1, ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4);
 
 	{
@@ -2555,11 +2610,7 @@ void longmarch::Renderer3D::_BeginDynamicSSRPass(
 			RenderCommand::CullFace(true, true);	// Cull front face to draw back face depth
 
 			auto render_pass_original = s_Data.RENDER_PASS;
-			auto render_pipe_original = s_Data.RENDER_PIPE;
-			auto render_mode_original = s_Data.RENDER_MODE;
 			s_Data.RENDER_PASS = RENDER_PASS::SHADOW;
-			s_Data.RENDER_PIPE = RENDER_PIPE::FORWARD;
-			s_Data.RENDER_MODE = RENDER_MODE::MULTIDRAW;
 
 			auto& BackFaceDepthBuffer = s_Data.gpuBuffer.CurrentBackFaceDepthBuffer;
 			Vec2u traget_resoluation = BackFaceDepthBuffer->GetBufferSize();
@@ -2567,10 +2618,11 @@ void longmarch::Renderer3D::_BeginDynamicSSRPass(
 			BackFaceDepthBuffer->Bind();
 			{
 				// Bind default shader here to avoid rebinding in the subsequent draw call
-				constexpr auto shader_name = "ShadowBuffer_MultiDraw";
+				constexpr auto shader_name = "ShadowBuffer";
 				s_Data.CurrentShader = s_Data.ShaderMap[shader_name];
 				s_Data.CurrentShader->Bind();
-				s_Data.CurrentShader->SetMat4("u_PVMatrix", (Renderer3D::s_Data.enable_reverse_z) ? camera->GetReverseZViewProjectionMatrix() : camera->GetViewProjectionMatrix());
+				s_Data.CurrentShader->SetMat4("u_PVMatrix", (s_Data.enable_reverse_z) ? camera->GetReverseZViewProjectionMatrix() : camera->GetViewProjectionMatrix());
+				s_Data.CurrentShader->SetInt("enable_ReverseZ", s_Data.enable_reverse_z);
 				// Rendering
 				{
 					ENG_TIME("SSR pass (Back face depth): LOOPING");
@@ -2587,8 +2639,6 @@ void longmarch::Renderer3D::_BeginDynamicSSRPass(
 			}
 
 			s_Data.RENDER_PASS = render_pass_original;
-			s_Data.RENDER_PIPE = render_pipe_original;
-			s_Data.RENDER_MODE = render_mode_original;
 		}
 
 		//------------------------------------------------------------------------------
@@ -4029,7 +4079,18 @@ void longmarch::Renderer3D::DrawParticles(const ParticleInstanceDrawData& partic
 	switch (s_Data.RENDER_PASS)
 	{
 	case RENDER_PASS::SHADOW:
-		s_Data.CurrentShader = s_Data.ShaderMap["MSMShadowBuffer_Particle"];
+		if (s_Data.CurrentShader == s_Data.ShaderMap["ShadowBuffer_Transparent"])
+		{
+			s_Data.CurrentShader = s_Data.ShaderMap["ShadowBuffer_Particle"];
+		}
+		else if (s_Data.CurrentShader == s_Data.ShaderMap["MSMShadowBuffer_Transparent"])
+		{
+			s_Data.CurrentShader = s_Data.ShaderMap["MSMShadowBuffer_Particle"];
+		}
+		else
+		{
+			return;
+		}
 		break;
 	case RENDER_PASS::SCENE:
 		s_Data.CurrentShader = s_Data.ShaderMap["ParticleShader"];

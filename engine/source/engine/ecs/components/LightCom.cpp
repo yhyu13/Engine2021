@@ -2,7 +2,8 @@
 #include "LightCom.h"
 #include "engine/renderer/Renderer3D.h"
 
-#define POINT_LIGHT_ARRAY_SHADOW_MAP
+#define USE_DIRECTIONAL_LIGHT_COMPARE_TEXTURE
+#define USE_POINT_LIGHT_ARRAY_TEXTURE
 
 void longmarch::LightCom::JsonSerialize(Json::Value& value)
 {
@@ -555,6 +556,7 @@ void longmarch::LightCom::ImGuiRender()
 					AllocateShadowBuffer();
 				}
 				ImGui::PopItemWidth();
+				ImGuiUtil::InlineHelpMarker("MSM2 and MSM4 are only available for point light and spot light");
 			}
 			ImGui::Dummy(ImVec2(0, yoffset_item));
 			switch (type)
@@ -753,13 +755,20 @@ void longmarch::LightCom::AllocateShadowBuffer()
 		switch (type)
 		{
 		case longmarch::LightCom::LIGHT_TYPE::DIRECTIONAL:
+#ifdef USE_DIRECTIONAL_LIGHT_COMPARE_TEXTURE
+			shadow.shadowBuffer = ShadowBuffer::CreateArray(
+				shadow.dimension, shadow.dimension,
+				directionalLight.numOfCSM,
+				ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_COMPARE);
+#else
 			shadow.shadowBuffer = ShadowBuffer::CreateArray(
 				shadow.dimension, shadow.dimension,
 				directionalLight.numOfCSM,
 				ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
+#endif
 			break;
 		case longmarch::LightCom::LIGHT_TYPE::POINT:
-#ifdef POINT_LIGHT_ARRAY_SHADOW_MAP
+#ifdef USE_POINT_LIGHT_ARRAY_TEXTURE
 			shadow.shadowBuffer = ShadowBuffer::CreateArray(
 				shadow.dimension, shadow.dimension,
 				6,
@@ -781,13 +790,20 @@ void longmarch::LightCom::AllocateShadowBuffer()
 			switch (type)
 			{
 			case longmarch::LightCom::LIGHT_TYPE::DIRECTIONAL:
+#ifdef USE_DIRECTIONAL_LIGHT_COMPARE_TEXTURE
+				shadow.shadowBuffer2 = ShadowBuffer::CreateArray(
+					shadow.backBufferDimension, shadow.backBufferDimension,
+					directionalLight.numOfCSM,
+					ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_COMPARE);
+#else
 				shadow.shadowBuffer2 = ShadowBuffer::CreateArray(
 					shadow.backBufferDimension, shadow.backBufferDimension,
 					directionalLight.numOfCSM,
 					ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
+#endif
 				break;
 			case longmarch::LightCom::LIGHT_TYPE::POINT:
-#ifdef POINT_LIGHT_ARRAY_SHADOW_MAP
+#ifdef USE_POINT_LIGHT_ARRAY_TEXTURE
 				shadow.shadowBuffer2 = ShadowBuffer::CreateArray(
 					shadow.backBufferDimension, shadow.backBufferDimension,
 					6,
@@ -814,13 +830,20 @@ void longmarch::LightCom::AllocateShadowBuffer()
 			switch (type)
 			{
 			case longmarch::LightCom::LIGHT_TYPE::DIRECTIONAL:
+#ifdef USE_DIRECTIONAL_LIGHT_COMPARE_TEXTURE
+				shadow.shadowBuffer3 = ShadowBuffer::CreateArray(
+					shadow.dimension, shadow.dimension,
+					directionalLight.numOfCSM,
+					ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_COMPARE);
+#else
 				shadow.shadowBuffer3 = ShadowBuffer::CreateArray(
 					shadow.dimension, shadow.dimension,
 					directionalLight.numOfCSM,
 					ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4);
+#endif
 				break;
 			case longmarch::LightCom::LIGHT_TYPE::POINT:
-#ifdef POINT_LIGHT_ARRAY_SHADOW_MAP
+#ifdef USE_POINT_LIGHT_ARRAY_TEXTURE
 				shadow.shadowBuffer3 = ShadowBuffer::CreateArray(
 					shadow.dimension, shadow.dimension,
 					6,

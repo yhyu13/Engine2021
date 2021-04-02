@@ -4,7 +4,6 @@
 #include <glad/glad.h>
 #include <cstdint>
 
-//#define SHADOW_FILTER GL_NEAREST
 #define SHADOW_FILTER GL_LINEAR
 
 namespace longmarch {
@@ -421,20 +420,29 @@ namespace longmarch {
 		glGenFramebuffers(1, &m_RendererID);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 
-		// Depth texture. Slower than a depth buffer, but you can sample it later in your shader
+		// Even though we can simply write depth component into 2D texture, but since we used reverse Z, we need to alter the z value in shader.
+		// So we use a depth render buffer, together with a color texture that stores the depth value.
+
+		glGenRenderbuffers(1, &m_DepthID);
+		glBindRenderbuffer(GL_RENDERBUFFER, m_DepthID);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_DepthID);
+
 		glGenTextures(1, &m_RenderTargetID);
 		glBindTexture(GL_TEXTURE_2D, m_RenderTargetID);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, SHADOW_FILTER); // Even though it doesn't make sense to have shadow map filtered linear, but it looks nicer
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, SHADOW_FILTER); // Even though it doesn't make sense to have shadow map filtered linear, but it looks nicer
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, SHADOW_FILTER); 
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, SHADOW_FILTER); 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		float color[] = { 0 };
 		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &color[0]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_RenderTargetID, 0);
-		glDrawBuffer(GL_NONE); // No color buffer is drawn to.
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width, height, 0, GL_RED, GL_FLOAT, NULL);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_RenderTargetID, 0);
+
+		GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+		glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
 
 		// Check for completeness/correctness
 		int status = (int)glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -451,6 +459,7 @@ namespace longmarch {
 	{
 		glDeleteFramebuffers(1, &m_RendererID);
 		glDeleteTextures(1, &m_RenderTargetID);
+		glDeleteRenderbuffers(1, &m_DepthID);
 	}
 
 	void OpenGLShadowBuffer::Bind() const
@@ -471,6 +480,76 @@ namespace longmarch {
 		GLCHECKERROR;
 	}
 	/**************************************************************
+	*	Compare Shadow Buffer
+	**************************************************************/
+	OpenGLCompareShadowBuffer::OpenGLCompareShadowBuffer(uint32_t width, uint32_t height)
+	{
+		m_width = width;
+		m_height = height;
+		m_type = ShadowBuffer::SHADOW_MAP_TYPE::BASIC_COMPARE;
+
+		GLCHECKERROR;
+		glGenFramebuffers(1, &m_RendererID);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);		
+
+		// Even though we can simply write depth component into 2D texture, but since we used reverse Z, we need to alter the z value in shader.
+		// So we use a depth render buffer, together with a color texture that stores the depth value.
+		
+		glGenRenderbuffers(1, &m_DepthID);
+		glBindRenderbuffer(GL_RENDERBUFFER, m_DepthID);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_DepthID);
+
+		glGenTextures(1, &m_RenderTargetID);
+		glBindTexture(GL_TEXTURE_2D, m_RenderTargetID);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, SHADOW_FILTER); 
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, SHADOW_FILTER); 
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); 
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_GREATER);
+		float color[] = { 0 };
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &color[0]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, NULL);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_RenderTargetID, 0);
+
+		GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+		glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+
+		// Check for completeness/correctness
+		int status = (int)glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (status != int(GL_FRAMEBUFFER_COMPLETE))
+		{
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"FBO Error : " + wStr(status));
+		}
+		// Unbind the fbo until it's ready to be used
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		GLCHECKERROR;
+	}
+	OpenGLCompareShadowBuffer::~OpenGLCompareShadowBuffer()
+	{
+		glDeleteFramebuffers(1, &m_RendererID);
+		glDeleteTextures(1, &m_RenderTargetID);
+		glDeleteRenderbuffers(1, &m_DepthID);
+	}
+	void OpenGLCompareShadowBuffer::Bind() const
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+		GLCHECKERROR;
+	}
+	void OpenGLCompareShadowBuffer::Unbind() const
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		GLCHECKERROR;
+	}
+	void OpenGLCompareShadowBuffer::BindTexture(uint32_t slot) const
+	{
+		glBindTextureUnit(slot, m_RenderTargetID);
+		GLCHECKERROR;
+	}
+	/**************************************************************
 	*	Moment Shadow Buffer
 	**************************************************************/
 	OpenGLMSMShadowBuffer::OpenGLMSMShadowBuffer(uint32_t width, uint32_t height)
@@ -482,7 +561,7 @@ namespace longmarch {
 		glGenFramebuffers(1, &m_RendererID);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 
-		//Create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
+		//Create a renderbuffer object for depth attachment (we won't be sampling these)
 		glGenRenderbuffers(1, &m_DepthID);
 		glBindRenderbuffer(GL_RENDERBUFFER, m_DepthID);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height);
@@ -496,8 +575,8 @@ namespace longmarch {
 		glBindTexture(GL_TEXTURE_2D, m_RenderTargetID);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, SHADOW_FILTER); // Even though it doesn't make sense to have shadow map filtered linear, but it looks nicer
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, SHADOW_FILTER); // Even though it doesn't make sense to have shadow map filtered linear, but it looks nicer
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, SHADOW_FILTER); 
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, SHADOW_FILTER); 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		float color[] = { 0,0,0,0 };
@@ -573,8 +652,8 @@ namespace longmarch {
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_RenderTargetID);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, SHADOW_FILTER); // Even though it doesn't make sense to have shadow map filtered linear, but it looks nicer
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, SHADOW_FILTER); // Even though it doesn't make sense to have shadow map filtered linear, but it looks nicer
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, SHADOW_FILTER); 
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, SHADOW_FILTER); 
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
@@ -633,8 +712,11 @@ namespace longmarch {
 
 		glGenFramebuffers(1, &m_RendererID);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+		
+		// We can't simply write depth component into array texture, so we use a depth render buffer (cleared and used for each layer)
+		// together with a color texture that stores the depth value.
 
-		//Create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
+		//Create a renderbuffer object for depth attachment (we won't be sampling these)
 		glGenRenderbuffers(1, &m_DepthID);
 		glBindRenderbuffer(GL_RENDERBUFFER, m_DepthID);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height);
@@ -644,8 +726,8 @@ namespace longmarch {
 		glBindTexture(GL_TEXTURE_2D_ARRAY, m_RenderTargetID);
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_LEVEL, 0);
-		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, SHADOW_FILTER); // Even though it doesn't make sense to have shadow map filtered linear, but it looks nicer
-		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, SHADOW_FILTER); // Even though it doesn't make sense to have shadow map filtered linear, but it looks nicer
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, SHADOW_FILTER); 
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, SHADOW_FILTER); 
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_R16F, width, height, depth, 0, GL_RED, GL_FLOAT, NULL);
@@ -693,6 +775,80 @@ namespace longmarch {
 	/**************************************************************
 	*	OpenGLMSMShadowArrayBuffer Buffer
 	**************************************************************/
+	OpenGLCompareShadowArrayBuffer::OpenGLCompareShadowArrayBuffer(uint32_t width, uint32_t height, uint32_t depth)
+	{
+		m_width = width;
+		m_height = height;
+		m_depth = depth;
+		m_type = ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_COMPARE;
+
+		glGenFramebuffers(1, &m_RendererID);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+
+		// We can't simply write depth component into array texture, so we use a depth render buffer (cleared and used for each layer)
+		// together with a color texture that stores the depth value.
+
+		//Create a renderbuffer object for depth attachment (we won't be sampling these)
+		glGenRenderbuffers(1, &m_DepthID);
+		glBindRenderbuffer(GL_RENDERBUFFER, m_DepthID);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_DepthID);
+
+		glGenTextures(1, &m_RenderTargetID);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, m_RenderTargetID);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, SHADOW_FILTER);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, SHADOW_FILTER);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_GREATER);
+		glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_R32F, width, height, depth, 0, GL_RED, GL_FLOAT, NULL);
+
+		GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+		glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+
+		// Check for completeness/correctness
+		int status = (int)glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (status != int(GL_FRAMEBUFFER_COMPLETE))
+		{
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"FBO Error : " + wStr(status));
+		}
+
+		// Unbind the fbo until it's ready to be used
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		GLCHECKERROR;
+	}
+	OpenGLCompareShadowArrayBuffer::~OpenGLCompareShadowArrayBuffer()
+	{
+		glDeleteFramebuffers(1, &m_RendererID);
+		glDeleteRenderbuffers(1, &m_DepthID);
+		glDeleteTextures(1, &m_RenderTargetID);
+	}
+	void OpenGLCompareShadowArrayBuffer::Bind() const
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+		GLCHECKERROR;
+	}
+	void OpenGLCompareShadowArrayBuffer::BindLayer(uint32_t slot) const
+	{
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_RenderTargetID, 0, slot);
+		GLCHECKERROR;
+	}
+	void OpenGLCompareShadowArrayBuffer::Unbind() const
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		GLCHECKERROR;
+	}
+	void OpenGLCompareShadowArrayBuffer::BindTexture(uint32_t slot) const
+	{
+		glBindTextureUnit(slot, m_RenderTargetID);
+		GLCHECKERROR;
+	}
+	/**************************************************************
+	*	OpenGLMSMShadowArrayBuffer Buffer
+	**************************************************************/
 	OpenGLMSMShadowArrayBuffer::OpenGLMSMShadowArrayBuffer(uint32_t width, uint32_t height, uint32_t depth)
 	{
 		m_width = width;
@@ -703,7 +859,7 @@ namespace longmarch {
 		glGenFramebuffers(1, &m_RendererID);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 
-		//Create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
+		//Create a renderbuffer object for depth attachment (we won't be sampling these)
 		glGenRenderbuffers(1, &m_DepthID);
 		glBindRenderbuffer(GL_RENDERBUFFER, m_DepthID);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height);
@@ -713,8 +869,8 @@ namespace longmarch {
 		glBindTexture(GL_TEXTURE_2D_ARRAY, m_RenderTargetID);
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_LEVEL, 0);
-		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, SHADOW_FILTER); // Even though it doesn't make sense to have shadow map filtered linear, but it looks nicer
-		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, SHADOW_FILTER); // Even though it doesn't make sense to have shadow map filtered linear, but it looks nicer
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, SHADOW_FILTER); 
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, SHADOW_FILTER); 
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		float color2[] = { 0,0,0,0 };

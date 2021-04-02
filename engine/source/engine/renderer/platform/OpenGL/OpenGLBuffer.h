@@ -165,6 +165,27 @@ namespace longmarch {
 	private:
 		uint32_t m_RendererID;
 		uint32_t m_RenderTargetID;
+		uint32_t m_DepthID;
+	};
+
+	class OpenGLCompareShadowBuffer :public ShadowBuffer
+	{
+	public:
+		OpenGLCompareShadowBuffer(uint32_t width, uint32_t height);
+
+		virtual ~OpenGLCompareShadowBuffer();
+
+		virtual void Bind() const override;
+		virtual void Unbind() const override;
+		virtual void BindTexture(uint32_t slot) const override;
+
+		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
+		inline virtual uint32_t GetRenderTargetID() const override { return m_RenderTargetID; }
+
+	private:
+		uint32_t m_RendererID;
+		uint32_t m_RenderTargetID;
+		uint32_t m_DepthID;
 	};
 
 	class OpenGLMSMShadowBuffer :public ShadowBuffer
@@ -213,6 +234,27 @@ namespace longmarch {
 		OpenGLShadowArrayBuffer(uint32_t width, uint32_t height, uint32_t depth);
 
 		virtual ~OpenGLShadowArrayBuffer();
+
+		virtual void Bind() const override;
+		virtual void BindLayer(uint32_t slot) const override;
+		virtual void Unbind() const override;
+		virtual void BindTexture(uint32_t slot) const override;
+
+		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
+		inline virtual uint32_t GetRenderTargetID() const override { return m_RenderTargetID; }
+
+	private:
+		uint32_t m_RendererID;
+		uint32_t m_DepthID;
+		uint32_t m_RenderTargetID;
+	};
+
+	class OpenGLCompareShadowArrayBuffer :public ShadowBuffer
+	{
+	public:
+		OpenGLCompareShadowArrayBuffer(uint32_t width, uint32_t height, uint32_t depth);
+
+		virtual ~OpenGLCompareShadowArrayBuffer();
 
 		virtual void Bind() const override;
 		virtual void BindLayer(uint32_t slot) const override;

@@ -27,6 +27,8 @@ namespace longmarch
 
 		inline static bool bStyleDark = true;
 		inline static float alpha = 1.0f;
+		static void StyleColorsDark();
+		static void StyleColorsLight();
 		static void SetupEngineImGuiStyle();
 		static void InlineHelpMarker(const char* desc);
 		static void TextureViewerWithZoom(const std::shared_ptr<void>& texture);

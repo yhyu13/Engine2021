@@ -286,10 +286,13 @@ namespace longmarch
 		enum class SHADOW_MAP_TYPE
 		{
 			BASIC = 0,
+			BASIC_COMPARE,
+
 			MOMENT4,
 			MOMENT4_CUBE,
 
 			ARRAY_BASIC,
+			ARRAY_COMPARE,
 			ARRAY_MOMENT4
 		};
 

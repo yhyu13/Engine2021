@@ -1,7 +1,8 @@
 #include "engine-precompiled-header.h"
 #include "Instrumentor.h"
 
-//#define USE_NSIGHT_GPU_PROFILING
+//! If use Nvidia Nsight, turn remotery off
+//#define USE_REMOTERY_PROFILING
 
 namespace longmarch 
 {
@@ -59,14 +60,16 @@ namespace longmarch
 
 	RemoteryInstrumentor::RemoteryInstrumentor()
 	{
+#ifdef USE_REMOTERY_PROFILING
 		rmt_CreateGlobalInstance(&m_rmt_instance);
-#ifndef USE_NSIGHT_GPU_PROFILING
 		rmt_BindOpenGL(); // Remotery is built with OpenGL backend
 #endif
 	}
 
 	RemoteryInstrumentor::~RemoteryInstrumentor()
 	{
-		rmt_DestroyGlobalInstance(m_rmt_instance);
+#ifdef USE_REMOTERY_PROFILING
+		rmt_DestroyGlobalInstance(m_rmt_instance); 
+#endif
 	}
 }

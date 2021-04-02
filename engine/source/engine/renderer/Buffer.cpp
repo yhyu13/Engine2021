@@ -133,6 +133,8 @@ namespace longmarch {
 			{
 			case longmarch::ShadowBuffer::SHADOW_MAP_TYPE::BASIC:
 				return MemoryManager::Make_shared<OpenGLShadowBuffer>(width, height);
+			case longmarch::ShadowBuffer::SHADOW_MAP_TYPE::BASIC_COMPARE:
+				return MemoryManager::Make_shared<OpenGLCompareShadowBuffer>(width, height);
 			case longmarch::ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4:
 				return MemoryManager::Make_shared<OpenGLMSMShadowBuffer>(width, height);
 			case longmarch::ShadowBuffer::SHADOW_MAP_TYPE::MOMENT4_CUBE:
@@ -156,6 +158,8 @@ namespace longmarch {
 			{
 			case longmarch::ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_BASIC:
 				return MemoryManager::Make_shared<OpenGLShadowArrayBuffer>(width, height, depth);
+			case longmarch::ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_COMPARE:
+				return MemoryManager::Make_shared<OpenGLCompareShadowArrayBuffer>(width, height, depth);
 			case longmarch::ShadowBuffer::SHADOW_MAP_TYPE::ARRAY_MOMENT4:
 				return MemoryManager::Make_shared<OpenGLMSMShadowArrayBuffer>(width, height, depth);
 			}

@@ -63,10 +63,13 @@ void longmarch::OutlinePass::BeginRenderPass()
 			RenderCommand::PolyOffset(true, -10.f, 1.0f);
 #endif
 
-		auto shader_name = "ShadowBuffer";
+		// Use shadow buffer shader to fill in depth value or to quickly draw to the stencil buffer
+		auto shader_name = "ShadowBuffer_Canonical";
 		Renderer3D::s_Data.CurrentShader = Renderer3D::s_Data.ShaderMap[shader_name];
 		Renderer3D::s_Data.CurrentShader->Bind();
 		Renderer3D::s_Data.CurrentShader->SetMat4("u_PVMatrix", (Renderer3D::s_Data.enable_reverse_z) ? camera->GetReverseZViewProjectionMatrix() : camera->GetViewProjectionMatrix());
+		Renderer3D::s_Data.CurrentShader->SetInt("enable_ReverseZ", Renderer3D::s_Data.enable_reverse_z);
+
 		m_parentWorld->ForEach(
 			es,
 			[&shader_name, &camera](EntityDecorator e)
@@ -144,6 +147,7 @@ void longmarch::OutlinePass::BeginRenderPass()
 		Renderer3D::s_Data.CurrentShader = Renderer3D::s_Data.ShaderMap[shader_name];
 		Renderer3D::s_Data.CurrentShader->Bind();
 		Renderer3D::s_Data.CurrentShader->SetMat4("u_PVMatrix", camera->GetReverseZViewProjectionMatrix());
+
 		m_parentWorld->ForEach(
 			es,
 			[&shader_name, &camera](EntityDecorator e)

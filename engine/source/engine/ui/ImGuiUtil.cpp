@@ -3,6 +3,24 @@
 #include "engine/renderer/Texture.h"
 #include "engine/math/MathUtil.h"
 
+void longmarch::ImGuiUtil::StyleColorsDark()
+{
+	ImGui::StyleColorsDark();
+	ImGuiStyle* style = &ImGui::GetStyle();
+	ImVec4* colors = style->Colors;
+
+	colors[ImGuiCol_WindowBg] = ImVec4(0.06f, 0.06f, 0.06f, 0.99f);
+}
+
+void longmarch::ImGuiUtil::StyleColorsLight()
+{
+	ImGui::StyleColorsLight();
+	ImGuiStyle* style = &ImGui::GetStyle();
+	ImVec4* colors = style->Colors;
+
+	colors[ImGuiCol_WindowBg] = ImVec4(0.94f, 0.94f, 0.94f, 0.99f);
+}
+
 void longmarch::ImGuiUtil::SetupEngineImGuiStyle()
 {
 	static bool _bStyleDark_ = !bStyleDark;
@@ -16,11 +34,11 @@ void longmarch::ImGuiUtil::SetupEngineImGuiStyle()
 
 	if (bStyleDark)
 	{
-		ImGui::StyleColorsDark();
+		ImGuiUtil::StyleColorsDark();
 	}
 	else
 	{
-		ImGui::StyleColorsLight();
+		ImGuiUtil::StyleColorsLight();
 	}
 	ImGuiStyle& style = ImGui::GetStyle();
 	for (int i = 0; i < ImGuiCol_COUNT; i++)

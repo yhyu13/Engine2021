@@ -40,6 +40,6 @@ namespace longmarch
 
 	public:
 		RemoteryInstrumentor();
-		Remotery* m_rmt_instance;
+		Remotery* m_rmt_instance{ nullptr };
 	};
 }

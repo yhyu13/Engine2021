@@ -72,7 +72,7 @@ namespace longmarch
 		}shadow;
 		float collisionRadius = { 0.1f }; //<! Object samller than this distance should not be lit by this light
 		Vec4f attenuation{1.0f, 0.7f, 0.01f, 1.0f }; //<! Light attenuation: w / ( x + 1/d * y + 1/d^2 * z)
-		LIGHT_TYPE type;
+		LIGHT_TYPE type{};
 	public:
 		inline static const char* s_shadowAlgorithmModes[]{ "Direct", "PCF", "Vogel", "Poisson", "MSM2", "MSM4" };
 	};

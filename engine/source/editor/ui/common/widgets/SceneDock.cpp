@@ -53,12 +53,14 @@ void longmarch::SceneDock::Render()
 	// Broderless and no padding, result in a clean capture of the whole scene
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f); 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
-
+	ImGui::PushStyleColor(ImGuiCol_Border, ImGuiUtil::ColGreen);
+	
 	if (!ImGui::Begin("Scene", &m_IsVisible, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoNav))
 	{
 		// Early out if the window is collapsed, as an optimization.
 		manager->PopWidgetStyle(); 
 		ImGui::PopStyleVar(2);
+		ImGui::PopStyleColor(1);
 		ImGui::End();
 		return;
 	}
@@ -107,5 +109,6 @@ void longmarch::SceneDock::Render()
 	}
 	manager->PopWidgetStyle();
 	ImGui::PopStyleVar(2);
+	ImGui::PopStyleColor(1);
 	ImGui::End();
 }

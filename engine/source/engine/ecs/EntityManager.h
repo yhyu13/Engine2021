@@ -75,6 +75,6 @@ namespace longmarch
 
 	private:
 		LongMarch_UnorderedMap_Par_node<EntityType, std::vector<EntityID>> m_typeToEntity;
-		EntityID m_entityID;
+		EntityID m_entityID{};
 	};
 }

@@ -310,7 +310,6 @@ namespace longmarch {
 
 	private:
 		uint32_t m_max_level;
-		uint32_t m_DepthID;
 		uint32_t m_RendererID;
 		uint32_t m_RenderTargetID;
 	};

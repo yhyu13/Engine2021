@@ -123,7 +123,8 @@ void longmarch::EditorPickingComSys::ManipulatePickedEntityGizmos(const Entity& 
 			ImGuizmo::SetDrawlist(m_sceneDockDrawList);
 			auto viewport_origin = current_camera->cameraSettings.viewportOrigin;
 			auto viewport_size = current_camera->cameraSettings.viewportSize;
-			ImGuizmo::SetRect(prop.m_xpos + viewport_origin.x, prop.m_ypos + viewport_origin.y, viewport_size.x, viewport_size.y);
+			// CRITICAL : beaware of arithmatic of int and unsigned int as it could resul in overflow (so we convert viewport from unsigned to float and window property to float in the same time)
+			ImGuizmo::SetRect((float)prop.m_xpos + (float)viewport_origin.x, (float)prop.m_ypos + (float)viewport_origin.y, (float)viewport_size.x, (float)viewport_size.y);
 		}
 		else
 		{

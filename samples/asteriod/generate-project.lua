@@ -143,6 +143,7 @@ project "engine"
 		"Lua540",
 		"jsoncpp",
 		"tileson",
+		"Remotery",
 		"%{LibName.fmod_core}",
 		"%{LibName.fmod_bank}",
 		"%{LibName.fmod_studio}",

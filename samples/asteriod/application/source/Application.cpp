@@ -10,7 +10,6 @@ Creation date: 05/13/2020
 - End Header ----------------------------*/
 
 #include "application-precompiled-header.h"
-#include "layer/MainGameLayer.h"
 #include "layer/Prototype2GameLayer.h"
 #include "editor/layer/header/header.h"
 #include "engine/Main.h"

@@ -128,7 +128,7 @@ void longmarch::EditorPickingComSys::ManipulatePickedEntityGizmos(const Entity& 
 		}
 		else
 		{
-			ImGuizmo::SetRect(prop.m_xpos, prop.m_ypos, prop.m_width, prop.m_height);
+			ImGuizmo::SetRect((float)prop.m_xpos, (float)prop.m_ypos, (float)prop.m_width, (float)prop.m_height);
 		}
 
 		auto trans_mat = trans->GetModelTr();

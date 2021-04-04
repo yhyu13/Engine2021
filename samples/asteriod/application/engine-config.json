@@ -44,44 +44,60 @@
 	"graphics": 
 	{
 		"Max-framerate" : 60,
-		"Resolution-ratio": 0.8, /* rendering at a resolution that is a portion of the targeted resolution, save G-buffer space and increase rendering performance*/
+		"Resolution-ratio": 1.0, /* rendering at a resolution that is a portion of the targeted resolution, save G-buffer space and increase rendering performance*/
 		
 		// Render passes
 		"Multi-draw" : true,
 		"Deferred-shading": true,
+
 		"Clustered-shading": false,
 		"Debug-cluster-light" : false,
-		"Motion-blur":true, /* only take effects under deffered shading */
-		"Motion-blur-shutter-speed": 45, /* higher this value, lower the motion blur effect */
-		"TAA":true, /* only take effects under deffered shading */
-		"SMAA":false,
-		"FXAA":true,
+
 		
+		"TAA":false, /* only take effects under deffered shading */
+		"FXAA":false,
 		// Shadow
 		"Shadow" : true,
-		// IBL
-		"Sky-box":["skybox_14"],
-		"BRDF-lut":"ggx_integrate_lut",
+
+		"Motion-blur":
+		{
+			"Enable":true, /* only take effects under deffered shading */
+			"Motion-blur-shutter-speed": 45, /* higher this value, lower the motion blur effect */
+		},
+
+		"Env-mapping":
+		{
+			"Enable": true,
+			"Current-Sky-box" : "skybox_14",
+			"All-Sky-box": ["skybox_14"],
+			"BRDF-lut":"ggx_integrate_lut", /* Loaded in resource.json */
+		},
+
+		"SMAA":
+		{
+			"Enable" :true,
+			"Mode" : 0, // 0 = SMAA 1X, 1 = SMAA T2X
+		},
 
 		"AO":
 		{
 			"Enable": true,
-			"Gaussian-kernel":30,
+			"Gaussian-kernel":40,
 			"Num-samples":40,
-			"Res-down-scale":2,
-			"Radius":1.0,
-			"Scale":1.4,
-			"Power":1.4,
-			"Indirect-bounce":true,
-			"Indirect-bounce-strength":9.0
+			"Res-down-scale":3,
+			"Radius":4.0,
+			"Scale":2.0,
+			"Power":2.0,
+			"Indirect-bounce":false, // SSDO inspired indirect bounce light, expensive on interior
+			"Indirect-bounce-strength":10.0,
 		}
 		,
 
 		"SSR":
 		{
 			"Enable": true,
-			"Gaussian-kernel": 3,
-			"Res-down-scale": 2
+			"Gaussian-kernel": 7,
+			"Res-down-scale": 2,
 		},
 
 		"Bloom":
@@ -91,7 +107,17 @@
 							   /* positive value serves as the cutoff value of a step function in [0,1], the the lower this value, the greater the bloom coverage */
 			"Strength" : 1.0, /* Bloom strength range of 0 to 1 */
 			"Gaussian-kernel": 3,
-			"Res-down-scale": 2
+			"Res-down-scale": 2,
+		},
+
+		"DOF":
+		{
+			"Enable": false,	
+			"Gaussian-kernel": 15,
+			"Res-down-scale": 4,
+			"Refocus-rate": 4.0,  /* Determine how fast DOF's focus plane reaches to target depth*/
+			"Threshold" : 1.0, /* linear depth difference, +/- this value should be within the focus plane, the threshold automatically scales up on further distance based on blend strength*/
+			"Strength": 0.9,  /* DOF blend strength range of 0 to 1 */
 		}
 	},
 	"shader":

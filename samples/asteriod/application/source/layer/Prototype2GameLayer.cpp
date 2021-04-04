@@ -29,6 +29,7 @@ Creation date: 05/13/2020
 longmarch::Prototype2GameLayer::Prototype2GameLayer()
 	: Layer("Prototype2GameLayer")
 {
+	Renderer3D::Init();
 }
 
 void longmarch::Prototype2GameLayer::Init()
@@ -36,7 +37,7 @@ void longmarch::Prototype2GameLayer::Init()
 	APP_TIME("App Initialization");
 	InitFramework();
 	InitGameWorld();
-	BuildTestScene();
+	BuildRenderPipeline();
 	{
 		// Register _3DEngineWidgetManager
 		ServiceLocator::ProvideSingleton<_3DGameWidgetManager>(APP_WIG_MAN_NAME, MemoryManager::Make_shared<_3DGameWidgetManager>());
@@ -60,10 +61,6 @@ void longmarch::Prototype2GameLayer::Init()
 		auto queue = EventQueue<EngineEventType>::GetInstance();
 		ManageEventSubHandle(queue->Subscribe<Prototype2GameLayer>(this, EngineEventType::ENG_WINDOW_INTERRUTPTION, &Prototype2GameLayer::_ON_WINDOW_INTERRUPT));
 	}
-}
-
-void longmarch::Prototype2GameLayer::BuildTestScene()
-{
 }
 
 /*
@@ -102,7 +99,7 @@ void longmarch::Prototype2GameLayer::InitGameWorld()
 	GameWorld::GetInstance(true, "", filepath);
 }
 
-void longmarch::Prototype2GameLayer::OnUpdate(double ts)
+void longmarch::Prototype2GameLayer::PreUpdate(double ts)
 {
 	{
 		auto queue = EventQueue<GameEventType>::GetInstance();
@@ -117,6 +114,166 @@ void longmarch::Prototype2GameLayer::OnUpdate(double ts)
 		queue->Update(ts);
 	}
 }
+
+void longmarch::Prototype2GameLayer::Update(double ts)
+{
+#ifdef MULTITHREAD_UPDATE
+	GameWorld::GetCurrent()->MultiThreadUpdate(ts);
+#else
+	GameWorld::GetCurrent()->Update(ts);
+#endif // MULTITHREAD_UPDATE
+}
+
+void longmarch::Prototype2GameLayer::JoinAll()
+{
+#ifdef MULTITHREAD_UPDATE
+	GameWorld::GetCurrent()->MultiThreadJoin();
+#endif // MULTITHREAD_UPDATE
+}
+
+void longmarch::Prototype2GameLayer::PreRenderUpdate(double ts)
+{
+	GameWorld::GetCurrent()->PreRenderUpdate(ts);
+}
+
+void longmarch::Prototype2GameLayer::Render(double ts)
+{
+	switch (Engine::GetEngineMode())
+	{
+	case Engine::ENGINE_MODE::INGAME:
+	{
+		GPU_TIME(Total_Render);
+		GameWorld::GetCurrent()->Render(ts);
+		m_Data.mainRenderPipeline(ts);
+		GameWorld::GetCurrent()->Render2(ts);
+		Renderer3D::SubmitFrameBufferToScreen();
+	}
+	break;
+	default:
+		return;
+	}
+}
+
+void longmarch::Prototype2GameLayer::PostRenderUpdate(double ts)
+{
+	GameWorld::GetCurrent()->PostRenderUpdate(ts);
+}
+
+void longmarch::Prototype2GameLayer::OnUpdate(double ts)
+{
+	double dt = GameWorld::GetCurrent()->IsPaused() ? 0.0 : ts;
+	{
+		{
+			APP_TIME("Pre System update");
+			PreUpdate(dt);
+		}
+		{
+			APP_TIME("PreRender update");
+			PreRenderUpdate(dt);
+		}
+		{
+			APP_TIME("System update");
+			Update(dt);
+		}
+		{
+			APP_TIME("Render");
+			Render(dt);
+		}
+		{
+			JoinAll();
+		}
+		{
+			APP_TIME("PostRender update");
+			PostRenderUpdate(dt);
+		}
+	}
+}
+
+void longmarch::Prototype2GameLayer::BuildRenderPipeline()
+{
+	Renderer3D::BuildAllMesh();
+	Renderer3D::BuildAllMaterial();
+	Renderer3D::BuildAllTexture();
+
+	m_Data.mainRenderPipeline = [this](double ts)
+	{
+		EntityType e_type;
+		switch (Engine::GetEngineMode())
+		{
+		case Engine::ENGINE_MODE::INGAME:
+			e_type = (EntityType)EngineEntityType::PLAYER_CAMERA;
+			break;
+		default:
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Engine mode is not valid!");
+		}
+
+		// TODO move render pipeline for INGame to application's layer, and use application layer in application mode
+		auto camera = GameWorld::GetCurrent()->GetTheOnlyEntityWithType(e_type);
+		auto cam = GameWorld::GetCurrent()->GetComponent<PerspectiveCameraCom>(camera)->GetCamera();
+		switch (Engine::GetEngineMode())
+		{
+		case Engine::ENGINE_MODE::INGAME:
+		{
+			const auto& prop = Engine::GetWindow()->GetWindowProperties();
+			cam->SetViewPort(Vec2u(0), Vec2u(prop.m_width, prop.m_height));
+			if (prop.IsResizable)
+			{
+				cam->cameraSettings.aspectRatioWbyH = float(prop.m_width) / float(prop.m_height);
+			}
+		}
+		break;
+		default:
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Engine mode is not valid!");
+		}
+
+		if (Renderer3D::ShouldRendering())
+		{
+			// callbacks for scene rendering
+			auto scene3DComSys = static_cast<Scene3DComSys*>(GameWorld::GetCurrent()->GetComponentSystem("Scene3DComSys"));
+			std::function<void()> f_render_opaque = std::bind(&Scene3DComSys::RenderOpaqueObj, scene3DComSys);
+			std::function<void()> f_render_translucent = std::bind(&Scene3DComSys::RenderTransparentObj, scene3DComSys);
+			std::function<void(bool, const ViewFrustum&, const Mat4&)> f_setVFCullingParam = std::bind(&Scene3DComSys::SetVFCullingParam, scene3DComSys, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+			std::function<void(bool, const Vec3f&, float, float)> f_setDistanceCullingParam = std::bind(&Scene3DComSys::SetDistanceCullingParam, scene3DComSys, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+			std::function<void(const std::string&)> f_setRenderShaderName = std::bind(&Scene3DComSys::SetRenderShaderName, scene3DComSys, std::placeholders::_1);
+
+			{
+				Renderer3D::BeginRendering(cam);
+				{
+					GPU_TIME(Shadow_Pass);
+					APP_TIME("Shadow pass");
+					Renderer3D::BeginShadowing(cam, f_render_opaque, f_render_translucent, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
+					Renderer3D::EndShadowing();
+				}
+				{
+					GPU_TIME(Opaque_Scene_pass);
+					APP_TIME("Opaque Scene pass");
+					Renderer3D::BeginOpaqueScene(cam, f_render_opaque, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
+					Renderer3D::EndOpaqueScene();
+				}
+				{
+					GPU_TIME(Opaque_Lighting_pass);
+					APP_TIME("Opaque Lighting pass");
+					Renderer3D::BeginOpaqueLighting(cam, f_render_opaque, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
+					Renderer3D::EndOpaqueLighting();
+				}
+				{
+					GPU_TIME(Transparent_Scene_pass);
+					APP_TIME("Transparent Scene pass");
+					Renderer3D::BeginTransparentSceneAndLighting(cam, f_render_translucent, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
+					Renderer3D::EndTransparentSceneAndLighting();
+				}
+				{
+					GPU_TIME(Postprocessing_pass);
+					APP_TIME("Postprocessing pass");
+					Renderer3D::BeginPostProcessing();
+					Renderer3D::EndPostProcessing();
+				}
+				Renderer3D::EndRendering();
+			}
+		}
+	};
+}
+
 
 void longmarch::Prototype2GameLayer::OnAttach()
 {
@@ -152,6 +309,9 @@ void longmarch::Prototype2GameLayer::_ON_LOAD_SCENE(EventQueue<EngineIOEventType
 
 void longmarch::Prototype2GameLayer::_ON_LOAD_SCENE_END(EventQueue<EngineIOEventType>::EventPtr e)
 {
+	Renderer3D::BuildAllMesh();
+	Renderer3D::BuildAllMaterial();
+	Renderer3D::BuildAllTexture();
 }
 
 void longmarch::Prototype2GameLayer::_ON_SAVE_SCENE_BEGIN(EventQueue<EngineIOEventType>::EventPtr e)

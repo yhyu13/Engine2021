@@ -41,7 +41,14 @@ namespace longmarch
 		void InitFramework();
 		void InitGameWorld();
 
-		void BuildTestScene();
+		void PreUpdate(double ts);
+		void Update(double ts);
+		void JoinAll();
+		void PreRenderUpdate(double ts);
+		void Render(double ts);
+		void PostRenderUpdate(double ts);
+
+		void BuildRenderPipeline();
 
 	private:
 		void _ON_LOAD_SCENE_BEGIN(EventQueue<EngineIOEventType>::EventPtr e);
@@ -54,7 +61,11 @@ namespace longmarch
 
 		void _ON_WINDOW_INTERRUPT(EventQueue<EngineEventType>::EventPtr e);
 
-	private:
+	private:		
+		struct
+		{
+			std::function<void(double)> mainRenderPipeline;
+		}m_Data;
 		ImFont* m_font;
 	};
 }

@@ -46,6 +46,7 @@ namespace longmarch
 				m_engineMode = ENGINE_MODE::INGAME;
 				break;
 			default:
+				ENGINE_EXCEPT(L"Unknown startup mode!");
 				break;
 			}
 			if (engineConfiguration["test"]["Reset-random-seed"].asBool())
@@ -83,9 +84,9 @@ namespace longmarch
 			PostRenderUpdate().Connect([this]() 
 			{
 				// Check should exit
-				if (!Engine::GetQuit() && m_engineWindow->ShouldExit())
+				if (!m_shouldQUit && m_engineWindow->ShouldExit())
 				{
-					Engine::SetQuit(true);
+					m_shouldQUit = true;
 				}
 			});
 		}
@@ -145,7 +146,8 @@ namespace longmarch
 		s_instance->GetWindow()->SetGPUSync(event->m_enable);
 	}
 
-	void Engine::Run() {
+	void Engine::Run() 
+	{
 		auto rateController = FramerateController::GetInstance();
 		while (!Engine::GetQuit())
 		{
@@ -201,20 +203,19 @@ namespace longmarch
 
 	void longmarch::Engine::ShowMessageBox(const std::wstring& title, const std::wstring& message)
 	{
-		if (s_instance && s_instance->m_engineWindow)
-		{
-			s_instance->m_engineWindow->ShowMessageBox(title, message);
-		}
+		s_instance->GetWindow()->ShowMessageBox(title, message);
 	}
 
 	void longmarch::Engine::OnInterruption(const int& isFocussed)
 	{
+		s_instance->m_isWindowFocused = static_cast<bool>(isFocussed);
+
 		if (s_instance->m_enable_pause_on_unfocused)
 		{
-			Engine::SetPaused(!static_cast<bool>(isFocussed));
-			auto queue = EventQueue<EngineEventType>::GetInstance();
-			auto e = MemoryManager::Make_shared<EngineWindowInterruptionEvent>(static_cast<bool>(isFocussed));
-			queue->Publish(e);
+			Engine::SetPaused(!s_instance->m_isWindowFocused);
 		}
+		auto queue = EventQueue<EngineEventType>::GetInstance();
+		auto e = MemoryManager::Make_shared<EngineWindowInterruptionEvent>(s_instance->m_isWindowFocused);
+		queue->Publish(e);
 	}
 }

@@ -448,6 +448,6 @@ void longmarch::AudioManager::_ON_PAUSE(EventQueue<EngineEventType>::EventPtr e)
 {
 	if (auto event = std::dynamic_pointer_cast<EngineWindowInterruptionEvent>(e); event)
 	{
-		PauseAllChannels(!event->m_isFocused);
+		PauseAllChannels(!event->m_isFocused && Engine::GetPaused());
 	}
 }

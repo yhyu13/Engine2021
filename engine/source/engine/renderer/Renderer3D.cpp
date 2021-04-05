@@ -122,13 +122,7 @@ void longmarch::Renderer3D::Init()
 			const auto& ao_settings = graphicsConfiguration["AO"];
 			s_Data.AOSettings.enable = ao_settings["Enable"].asBool();
 			s_Data.AOSettings.ao_gaussian_kernal = ao_settings["Gaussian-kernel"].asUInt();
-			{
-				if (s_Data.AOSettings.ao_gaussian_kernal % 2u == 0)
-				{
-					++s_Data.AOSettings.ao_gaussian_kernal;
-				}
-				s_Data.AOSettings.ao_gaussian_kernal = (glm::clamp)(s_Data.AOSettings.ao_gaussian_kernal, 3u, 51u);
-			}
+			s_Data.AOSettings.ao_gaussian_kernal = (glm::clamp)(s_Data.AOSettings.ao_gaussian_kernal, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX);
 			s_Data.AOSettings.ao_samples = ao_settings["Num-samples"].asUInt();
 			s_Data.AOSettings.ao_sample_resolution_downScale = ao_settings["Res-down-scale"].asUInt();
 			s_Data.AOSettings.ao_sample_radius = ao_settings["Radius"].asFloat();
@@ -141,15 +135,7 @@ void longmarch::Renderer3D::Init()
 			const auto& ssr_settings = graphicsConfiguration["SSR"];
 			s_Data.SSRSettings.enable = ssr_settings["Enable"].asBool();
 			s_Data.SSRSettings.ssr_gaussian_kernal = ssr_settings["Gaussian-kernel"].asUInt();
-			{
-				{
-					if (s_Data.SSRSettings.ssr_gaussian_kernal % 2u == 0)
-					{
-						++s_Data.SSRSettings.ssr_gaussian_kernal;
-					}
-					s_Data.SSRSettings.ssr_gaussian_kernal = (glm::clamp)(s_Data.SSRSettings.ssr_gaussian_kernal, 3u, 51u);
-				}
-			}
+			s_Data.SSRSettings.ssr_gaussian_kernal = (glm::clamp)(s_Data.SSRSettings.ssr_gaussian_kernal, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX);
 			s_Data.SSRSettings.ssr_sample_resolution_downScale = ssr_settings["Res-down-scale"].asUInt();
 		}
 		{
@@ -158,15 +144,7 @@ void longmarch::Renderer3D::Init()
 			s_Data.BloomSettings.bloom_threshold = bloom_settings["Threshold"].asFloat();
 			s_Data.BloomSettings.bloom_blend_strength = bloom_settings["Strength"].asFloat();
 			s_Data.BloomSettings.bloom_gaussian_kernal = bloom_settings["Gaussian-kernel"].asUInt();
-			{
-				{
-					if (s_Data.BloomSettings.bloom_gaussian_kernal % 2u == 0)
-					{
-						++s_Data.BloomSettings.bloom_gaussian_kernal;
-					}
-					s_Data.BloomSettings.bloom_gaussian_kernal = (glm::clamp)(s_Data.BloomSettings.bloom_gaussian_kernal, 3u, 51u);
-				}
-			}
+			s_Data.BloomSettings.bloom_gaussian_kernal = (glm::clamp)(s_Data.BloomSettings.bloom_gaussian_kernal, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX);
 			s_Data.BloomSettings.bloom_sample_resolution_downScale = bloom_settings["Res-down-scale"].asUInt();
 		}
 		{
@@ -175,15 +153,7 @@ void longmarch::Renderer3D::Init()
 			s_Data.DOFSettings.dof_threshold = dof_settings["Threshold"].asFloat();
 			s_Data.DOFSettings.dof_blend_strength = dof_settings["Strength"].asFloat();
 			s_Data.DOFSettings.dof_gaussian_kernal = dof_settings["Gaussian-kernel"].asUInt();
-			{
-				{
-					if (s_Data.DOFSettings.dof_gaussian_kernal % 2u == 0)
-					{
-						++s_Data.DOFSettings.dof_gaussian_kernal;
-					}
-					s_Data.DOFSettings.dof_gaussian_kernal = (glm::clamp)(s_Data.DOFSettings.dof_gaussian_kernal, 3u, 51u);
-				}
-			}
+			s_Data.DOFSettings.dof_gaussian_kernal = (glm::clamp)(s_Data.DOFSettings.dof_gaussian_kernal, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX);
 			s_Data.DOFSettings.dof_sample_resolution_downScale = dof_settings["Res-down-scale"].asUInt();
 			s_Data.DOFSettings.dof_refocus_rate = dof_settings["Refocus-rate"].asFloat();
 		}
@@ -357,16 +327,18 @@ void longmarch::Renderer3D::Init()
 		*
 		**************************************************************/
 		{
-			for (uint32_t i(3); i <= 51u; i += 2u)
+			constexpr float mean = 0.f;
+			constexpr float num_std = 3.0f;
+			for (uint32_t i = LongMarch_GUASSIAN_KERNEL_MIN; i <= LongMarch_GUASSIAN_KERNEL_MAX; ++i)
 			{
 				{
-					auto [offsets, weights] = DistributionMath::Gaussian1DHalf(i, 0, (i / 2) / 3.0f);
+					auto [offsets, weights] = DistributionMath::Gaussian1DHalf(i, mean, (i / 2.0f) / num_std);
 					auto weight = ShaderStorageBuffer::Create(&weights[0], weights.X() * sizeof(float));
 					auto offset = ShaderStorageBuffer::Create(&offsets[0], offsets.X() * sizeof(float));
 					s_Data.gpuBuffer.GuassinKernelHalf.try_emplace(i, weights.X(), offset, weight);
 				}
 				{
-					auto [offsets, weights] = DistributionMath::Gaussian1DHalfBilinear(i, 0, (i / 2) / 3.0f);
+					auto [offsets, weights] = DistributionMath::Gaussian1DHalfBilinear(i, mean, (i / 2.0f) / num_std);
 					auto weight = ShaderStorageBuffer::Create(&weights[0], weights.X() * sizeof(float));
 					auto offset = ShaderStorageBuffer::Create(&offsets[0], offsets.X() * sizeof(float));
 					s_Data.gpuBuffer.GuassinKernelHalfBilinear.try_emplace(i, weights.X(), offset, weight);
@@ -751,11 +723,7 @@ void longmarch::Renderer3D::_ON_SET_AO_VALUE(EventQueue<EngineGraphicsEventType>
 	auto event = std::static_pointer_cast<SetAOValueEvent>(e);
 	s_Data.AOSettings.enable = event->m_enable;
 	s_Data.AOSettings.ao_gaussian_kernal = event->m_gaussKernel;
-	if (s_Data.AOSettings.ao_gaussian_kernal % 2u == 0)
-	{
-		++s_Data.AOSettings.ao_gaussian_kernal;
-	}
-	s_Data.AOSettings.ao_gaussian_kernal = (glm::clamp)(s_Data.AOSettings.ao_gaussian_kernal, 3u, 51u);
+	s_Data.AOSettings.ao_gaussian_kernal = (glm::clamp)(s_Data.AOSettings.ao_gaussian_kernal, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX);
 	s_Data.AOSettings.ao_samples = event->m_sample;
 	s_Data.AOSettings.ao_sample_radius = event->m_sampleRadius;
 	s_Data.AOSettings.ao_sample_resolution_downScale = event->m_sampleResolutionDownScale;
@@ -770,11 +738,7 @@ void longmarch::Renderer3D::_ON_SET_SSR_VALUE(EventQueue<EngineGraphicsEventType
 	auto event = std::static_pointer_cast<SetSSRValueEvent>(e);
 	s_Data.SSRSettings.enable = event->m_enable;
 	s_Data.SSRSettings.ssr_gaussian_kernal = event->m_gaussKernel;
-	if (s_Data.SSRSettings.ssr_gaussian_kernal % 2u == 0)
-	{
-		++s_Data.SSRSettings.ssr_gaussian_kernal;
-	}
-	s_Data.SSRSettings.ssr_gaussian_kernal = (glm::clamp)(s_Data.SSRSettings.ssr_gaussian_kernal, 3u, 51u);
+	s_Data.SSRSettings.ssr_gaussian_kernal = (glm::clamp)(s_Data.SSRSettings.ssr_gaussian_kernal, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX);
 	s_Data.SSRSettings.ssr_sample_resolution_downScale = event->m_sampleResolutionDownScale;
 	s_Data.SSRSettings.enable_debug = event->m_debug;
 }
@@ -784,11 +748,7 @@ void longmarch::Renderer3D::_ON_SET_BLOOM_VALUE(EventQueue<EngineGraphicsEventTy
 	auto event = std::static_pointer_cast<SetBloomEvent>(e);
 	s_Data.BloomSettings.enable = event->m_enable;
 	s_Data.BloomSettings.bloom_gaussian_kernal = event->m_gaussKernel;
-	if (s_Data.BloomSettings.bloom_gaussian_kernal % 2u == 0)
-	{
-		++s_Data.BloomSettings.bloom_gaussian_kernal;
-	}
-	s_Data.BloomSettings.bloom_gaussian_kernal = (glm::clamp)(s_Data.BloomSettings.bloom_gaussian_kernal, 3u, 51u);
+	s_Data.BloomSettings.bloom_gaussian_kernal = (glm::clamp)(s_Data.BloomSettings.bloom_gaussian_kernal, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX);
 	s_Data.BloomSettings.bloom_threshold = event->m_threshold;
 	s_Data.BloomSettings.bloom_blend_strength = event->m_strength;
 	s_Data.BloomSettings.bloom_sample_resolution_downScale = event->m_sampleResolutionDownScale;
@@ -799,11 +759,7 @@ void longmarch::Renderer3D::_ON_SET_DOF_VALUE(EventQueue<EngineGraphicsEventType
 	auto event = std::static_pointer_cast<SetDOFvent>(e);
 	s_Data.DOFSettings.enable = event->m_enable;
 	s_Data.DOFSettings.dof_gaussian_kernal = event->m_gaussKernel;
-	if (s_Data.DOFSettings.dof_gaussian_kernal % 2u == 0)
-	{
-		++s_Data.DOFSettings.dof_gaussian_kernal;
-	}
-	s_Data.DOFSettings.dof_gaussian_kernal = (glm::clamp)(s_Data.DOFSettings.dof_gaussian_kernal, 3u, 51u);
+	s_Data.DOFSettings.dof_gaussian_kernal = (glm::clamp)(s_Data.DOFSettings.dof_gaussian_kernal, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX);
 	s_Data.DOFSettings.dof_threshold = event->m_threshold;
 	s_Data.DOFSettings.dof_blend_strength = event->m_strength;
 	s_Data.DOFSettings.dof_sample_resolution_downScale = event->m_sampleResolutionDownScale;
@@ -2529,6 +2485,11 @@ void longmarch::Renderer3D::_BeginDynamicAOPass(const std::shared_ptr<FrameBuffe
 			AOBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::Float16);
 		}
 		auto kernel_size = s_Data.AOSettings.ao_gaussian_kernal;
+#ifdef LongMarch_SCALE_GUASSIAN_KERNEL_WITH_RESOLUTION
+		auto kernel_ratio = std::min(traget_resoluation2.x, traget_resoluation2.y) / 1080.0f;
+		kernel_size *= kernel_ratio;
+		kernel_size = std::max(kernel_size, LongMarch_GUASSIAN_KERNEL_MIN);
+#endif
 		auto [length, offset, weight] = s_Data.gpuBuffer.GuassinKernelHalfBilinear[kernel_size];
 		{
 			s_Data.CurrentShader = guassian_shader;
@@ -2690,6 +2651,11 @@ void longmarch::Renderer3D::_BeginDynamicSSRPass(
 			SSRBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::Float16);
 		}
 		auto kernel_size = s_Data.SSRSettings.ssr_gaussian_kernal;
+#ifdef LongMarch_SCALE_GUASSIAN_KERNEL_WITH_RESOLUTION
+		auto kernel_ratio = std::min(traget_resoluation2.x, traget_resoluation2.y) / 1080.0f;
+		kernel_size *= kernel_ratio;
+		kernel_size = std::max(kernel_size, LongMarch_GUASSIAN_KERNEL_MIN);
+#endif
 		auto [length, offset, weight] = s_Data.gpuBuffer.GuassinKernelHalfBilinear[kernel_size];
 		{
 			s_Data.CurrentShader = guassian_shader;
@@ -3511,6 +3477,11 @@ void longmarch::Renderer3D::_BeginBloomPass(const std::shared_ptr<FrameBuffer>& 
 			BrightnessBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::Float16);
 		}
 		auto kernel_size = s_Data.BloomSettings.bloom_gaussian_kernal;
+#ifdef LongMarch_SCALE_GUASSIAN_KERNEL_WITH_RESOLUTION
+		auto kernel_ratio = std::min(traget_resoluation2.x, traget_resoluation2.y) / 1080.0f;
+		kernel_size *= kernel_ratio;
+		kernel_size = std::max(kernel_size, LongMarch_GUASSIAN_KERNEL_MIN);
+#endif
 		auto [length, offset, weight] = s_Data.gpuBuffer.GuassinKernelHalfBilinear[kernel_size];
 		{
 			s_Data.CurrentShader = guassian_shader;
@@ -3651,6 +3622,11 @@ void longmarch::Renderer3D::_BeginDOFPass(const std::shared_ptr<FrameBuffer>& fr
 			BrightnessBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::Float16);
 		}
 		auto kernel_size = s_Data.DOFSettings.dof_gaussian_kernal;
+#ifdef LongMarch_SCALE_GUASSIAN_KERNEL_WITH_RESOLUTION
+		auto kernel_ratio = std::min(traget_resoluation2.x, traget_resoluation2.y) / 1080.0f;
+		kernel_size *= kernel_ratio;
+		kernel_size = std::max(kernel_size, LongMarch_GUASSIAN_KERNEL_MIN);
+#endif
 		auto [length, offset, weight] = s_Data.gpuBuffer.GuassinKernelHalfBilinear[kernel_size];
 		{
 			s_Data.CurrentShader = guassian_shader;
@@ -4839,14 +4815,14 @@ void longmarch::Renderer3D::BuildAllTexture()
 void longmarch::Renderer3D::UpdateMeshToMultiDraw(const LongMarch_Vector<std::shared_ptr<MeshData>>& Meshs)
 {
 	// Prevent uploading the same mesh data sequences
-	static LongMarch_Vector<std::shared_ptr<MeshData>> _Mesh_duplicat_guard;
-	if (_Mesh_duplicat_guard == Meshs)
+	static LongMarch_Vector<std::shared_ptr<MeshData>> _Mesh_duplicate_guard;
+	if (_Mesh_duplicate_guard == Meshs)
 	{
 		return;
 	}
 	else
 	{
-		_Mesh_duplicat_guard = Meshs;
+		_Mesh_duplicate_guard = Meshs;
 	}
 
 	auto& _multiDrawBuffer = s_Data.multiDrawBuffer;

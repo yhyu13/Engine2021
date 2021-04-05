@@ -38,8 +38,16 @@ namespace longmarch
 #define LongMarch_MAX_SCENE_PASS_BATCH 64 // After this number of textures are to be drawn, the batch buffer is flushed to render because this is the max number of textures that gpu shader has registerd
 #endif
 
-#ifndef LongMarch_INPLACE_SHADOW_GUASSIAN_PASS
-#define LongMarch_INPLACE_SHADOW_GUASSIAN_PASS 1 // Doing guassian blur for shadow maps inplace if 1
+#ifndef LongMarch_GUASSIAN_KERNEL_MIN
+#define LongMarch_GUASSIAN_KERNEL_MIN 3u
+#endif
+
+#ifndef LongMarch_GUASSIAN_KERNEL_MAX
+#define LongMarch_GUASSIAN_KERNEL_MAX 101u
+#endif
+
+#ifndef LongMarch_SCALE_GUASSIAN_KERNEL_WITH_RESOLUTION
+#define LongMarch_SCALE_GUASSIAN_KERNEL_WITH_RESOLUTION
 #endif
 
 	class Scene3DNode;

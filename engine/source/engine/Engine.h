@@ -139,8 +139,9 @@ namespace longmarch
 		ENGINE_MODE m_engineMode{ ENGINE_MODE::EDITING };
 		unsigned int m_maxFrameRate{ 60u };
 		bool m_shouldQUit{ false };
-		bool m_isPaused{ false };
-		bool m_enable_pause_on_unfocused{ true };
+		bool m_isPaused{ false }; 
+		bool m_isWindowFocused{ true };
+		bool m_enable_pause_on_unfocused{ false };
 	};
 
 	//! Must implement this function in your application.cpp

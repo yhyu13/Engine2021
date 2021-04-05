@@ -94,7 +94,7 @@ namespace longmarch
 		LOCK_GUARD_NC();
 		if (auto event = std::dynamic_pointer_cast<EngineWindowInterruptionEvent>(e); event)
 		{
-			m_paused = !m_paused;
+			m_paused = !event->m_isFocused && Engine::GetPaused();
 		}
 	}
 }

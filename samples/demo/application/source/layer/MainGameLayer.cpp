@@ -335,7 +335,7 @@ void longmarch::MainGameLayer::_ON_SAVE_SCENE_END(EventQueue<EngineIOEventType>:
 void longmarch::MainGameLayer::_ON_WINDOW_INTERRUPT(EventQueue<EngineEventType>::EventPtr e)
 {
 	auto event = std::static_pointer_cast<EngineWindowInterruptionEvent>(e);
-	GameWorld::GetCurrent()->SetPause(!event->m_isFocused);
+	GameWorld::GetCurrent()->SetPause(!event->m_isFocused && Engine::GetPaused());
 }
 
 void TEST_BRDF_Materials()

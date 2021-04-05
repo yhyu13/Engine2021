@@ -9,30 +9,34 @@ namespace longmarch {
 		FramerateController will always have only one instance throughout the execution of the application.
 		Default max frame rate is 60fps.
 	*/
-	FramerateController* FramerateController::GetInstance() {
+	FramerateController* FramerateController::GetInstance() 
+	{
 		static FramerateController frameRateController;
 		return &frameRateController;
 	}
 
-	FramerateController::FramerateController() : m_tickStart(0), m_tickEnd(0), m_ticksPerFrame(0.0f) {
+	FramerateController::FramerateController() : m_tickStart(0), m_tickEnd(0), m_ticksPerFrame(0.0f) 
+	{
 		m_maxFramerate = 60;
 		m_ticksPerFrame = 1000.0 / static_cast<double>(m_maxFramerate);
 		m_frameTime = m_ticksPerFrame * 1e-3;
 	}
 
-	void FramerateController::FrameStart() {
+	void FramerateController::FrameStart() 
+	{
 		m_timer.Reset();
 		m_tickStart = 0.0;// m_timer.Mark() * 1000.0; // m_timer.Mark() returns time in seconds passed
 	}
 
-	void FramerateController::FrameEnd() {
+	void FramerateController::FrameEnd() 
+	{
+		double m_frameTick;
 		do {
 			// yield to do other work while there is time left over
-			// It works well in practice, way better than sleep
 			std::this_thread::yield();
 			m_tickEnd = m_timer.Mark() * 1000.0; // converting seconds to milliseconds
-		} while ((m_tickEnd - m_tickStart) < m_ticksPerFrame);
-		double m_frameTick = (m_tickEnd - m_tickStart);
+			m_frameTick = (m_tickEnd - m_tickStart);
+		} while (m_frameTick < m_ticksPerFrame);
 
 		Instrumentor::GetEngineInstance()->AddInstrumentorResult({ "Frame Time", m_frameTick, "ms" });
 		Instrumentor::GetEngineInstance()->AddInstrumentorResult({ "FPS", 1000.0 / m_frameTick, "  " });
@@ -42,7 +46,8 @@ namespace longmarch {
 		m_frameTime = m_frameTick * 1e-3; // converting milliseconds to seconds
 	}
 
-	const double FramerateController::GetFrameTime() const {
+	const double FramerateController::GetFrameTime() const 
+	{
 		return m_frameTime;
 	}
 

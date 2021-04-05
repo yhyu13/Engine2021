@@ -268,7 +268,7 @@ void longmarch::LightCom::JsonDeserialize(const Json::Value& value)
 						{
 							++shadow.gaussianKernal;
 						}
-						shadow.gaussianKernal = (glm::clamp)(shadow.gaussianKernal, 3u, 51u);
+						shadow.gaussianKernal = (glm::clamp)(shadow.gaussianKernal, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX);
 					}
 				}
 			}
@@ -714,14 +714,10 @@ void longmarch::LightCom::ImGuiRender()
 			{
 				ImGui::PushItemWidth(width_item);
 				int v = shadow.gaussianKernal;
-				if (ImGui::SliderInt("Gaussian Kernel Size", &v, 3, 51))
+				if (ImGui::SliderInt("Gaussian Kernel Size", &v, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX))
 				{
 					shadow.gaussianKernal = v;
-					if (shadow.gaussianKernal % 2u == 0)
-					{
-						++shadow.gaussianKernal;
-					}
-					shadow.gaussianKernal = (glm::clamp)(shadow.gaussianKernal, 3u, 51u);
+					shadow.gaussianKernal = (glm::clamp)(shadow.gaussianKernal, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX);
 				}
 				ImGui::PopItemWidth();
 			}

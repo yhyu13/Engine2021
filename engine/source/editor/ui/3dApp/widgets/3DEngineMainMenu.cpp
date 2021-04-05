@@ -1,6 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "3DEngineMainMenu.h"
 #include "../3DEngineWidgetManager.h"
+#include "engine/renderer/Renderer3D.h"
 #include "engine/events/engineEvents/EngineCustomEvent.h"
 
 #include <imgui/addons/implot/implot_items.cpp>
@@ -84,20 +85,20 @@ void longmarch::_3DEngineMainMenu::RenderEngineSettingMenu()
 
 		auto settingEventQueue = EventQueue<EngineSettingEventType>::GetInstance();
 
-		static bool checkInterrutionHandle = true;
+		static auto engineConfiguration = FileSystem::GetNewJsonCPP("$root:engine-config.json");
+		static bool checkInterrutionHandle = engineConfiguration["engine"]["Pause-on-unfocused"].asBool();
 
 		if (ImGui::Button("Reset engine settings to default values"))
 		{
 			ImGuiUtil::bStyleDark = true;
 			ImGuiUtil::alpha = 1.0f;
-			checkInterrutionHandle = true;
+			checkInterrutionHandle = engineConfiguration["engine"]["Pause-on-unfocused"].asBool();
 			{
 				auto e = MemoryManager::Make_shared<ToggleWindowInterrutpionEvent>(checkInterrutionHandle);
 				settingEventQueue->Publish(e);
 			}
 		}
 		ImGui::Dummy(ImVec2(0, yoffset_item));
-
 		{
 			static auto style = ImGuiUtil::bStyleDark;
 			if (ImGui::Checkbox("Dark Theme", &style))
@@ -584,11 +585,12 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
 						graphicEventQueue->Publish(e);
 					}
-					if (ImGui::SliderInt("Gauss Kernel", &valueAOBlurKernel, 3, 51, "%d"))
+					if (ImGui::SliderInt("Gauss Kernel", &valueAOBlurKernel, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX, "%d"))
 					{
 						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
 						graphicEventQueue->Publish(e);
 					}
+					ImGuiUtil::InlineHelpMarker("Kernel size is scaled with buffer size against 1080p (e.g. 540p buffer size will have half the size of the kernel)");
 					if (ImGui::SliderFloat("Sample Radius", &valueAOSampleRadius, 0.01f, 20.0f, "%.2f"))
 					{
 						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
@@ -631,11 +633,12 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 						auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale, checkSSRDebug);
 						graphicEventQueue->Publish(e);
 					}
-					if (ImGui::SliderInt("Gauss Kernel", &valueSSRBlurKernel, 3, 51, "%d"))
+					if (ImGui::SliderInt("Gauss Kernel", &valueSSRBlurKernel, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX, "%d"))
 					{
 						auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale, checkSSRDebug);
 						graphicEventQueue->Publish(e);
 					}
+					ImGuiUtil::InlineHelpMarker("Kernel size is scaled with buffer size against 1080p (e.g. 540p buffer size will have half the size of the kernel)");
 					if (ImGui::Checkbox("Debug", &checkSSRDebug))
 					{
 						auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale, checkSSRDebug);
@@ -658,11 +661,12 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength, valueBloomBlurKernel, valueBloomSampleResDownScale);
 						graphicEventQueue->Publish(e);
 					}
-					if (ImGui::SliderInt("Gauss Kernel", &valueBloomBlurKernel, 3, 51, "%d"))
+					if (ImGui::SliderInt("Gauss Kernel", &valueBloomBlurKernel, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX, "%d"))
 					{
 						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength, valueBloomBlurKernel, valueBloomSampleResDownScale);
 						graphicEventQueue->Publish(e);
 					}
+					ImGuiUtil::InlineHelpMarker("Kernel size is scaled with buffer size against 1080p (e.g. 540p buffer size will have half the size of the kernel)");
 					if (ImGui::DragFloat("Threshold", &valueBloomThreshold, 0.05, -60, 1, "%.2f"))
 					{
 						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength, valueBloomBlurKernel, valueBloomSampleResDownScale);
@@ -690,11 +694,12 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
 						graphicEventQueue->Publish(e);
 					}
-					if (ImGui::SliderInt("Gauss Kernel", &valueDOFBlurKernel, 3, 51, "%d"))
+					if (ImGui::SliderInt("Gauss Kernel", &valueDOFBlurKernel, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX, "%d"))
 					{
 						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
 						graphicEventQueue->Publish(e);
 					}
+					ImGuiUtil::InlineHelpMarker("Kernel size is scaled with buffer size against 1080p (e.g. 540p buffer size will have half the size of the kernel)");
 					if (ImGui::DragFloat("Threshold", &valueDOFThreshold, 0.1, 0.01, 100, "%.2f"))
 					{
 						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);

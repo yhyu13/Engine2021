@@ -9,13 +9,13 @@ Win10 x64 <br/>
 
 The project contains source of the engine, and source sample applications.
 
-1. Use `git lfs pull` to download ./engine/vendor.zip, ./engine/asset.zip and assets for sample projects.
+1. Use `git lfs pull` to download zipped large files.
 
-2. Unzip vendor.zip, asset.zip, and optionally sample asssets. Beware to not create vendor/vendor/..., just vendor/... is fine.
+2. Run `./unzip-assets.bat` in the root folder to unzip large files.
 
-3. Run `generate-project.bat` script to generate a MSCV solution for the application for each sample project.
+3. In each sample project, run `generate-project.bat` script to generate a MSCV solution for the application.
 
-4. To create your own application, please follow the same folder structure or change path settings in engine-config.json for each application. 
+4. To create your own application, please follow the same folder structure(or change path settings in application/engine-config.json for each project). 
 
 Optional: <br/>
 Run index.html under engine/external/Remotery/vis/ for profiling. Beware that it may block other profiling tools such as Nvidia Nsight. 

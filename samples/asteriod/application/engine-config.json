@@ -82,7 +82,7 @@
 		"AO":
 		{
 			"Enable": true,
-			"Gaussian-kernel":40,
+			"Gaussian-kernel":60,
 			"Num-samples":40,
 			"Res-down-scale":3,
 			"Radius":4.0,

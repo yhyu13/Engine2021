@@ -9,7 +9,7 @@
 
 void longmarch::OutlinePass::Init()
 {
-	OutlineFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::Float16);
+	OutlineFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
 }
 
 void longmarch::OutlinePass::BeginRenderPass()
@@ -21,7 +21,7 @@ void longmarch::OutlinePass::BeginRenderPass()
 		// TODO : render stencil based outline rendering
 		if (OutlineFrameBuffer->GetBufferSize() != Renderer3D::s_Data.window_size)
 		{
-			OutlineFrameBuffer = FrameBuffer::Create(Renderer3D::s_Data.window_size.x, Renderer3D::s_Data.window_size.y, FrameBuffer::BUFFER_FORMAT::Float16);
+			OutlineFrameBuffer = FrameBuffer::Create(Renderer3D::s_Data.window_size.x, Renderer3D::s_Data.window_size.y, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
 		}
 
 		auto cam_type = (EntityType)EngineEntityType::EDITOR_CAMERA;

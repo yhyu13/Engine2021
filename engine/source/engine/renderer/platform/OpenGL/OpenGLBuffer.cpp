@@ -325,12 +325,22 @@ namespace longmarch {
 		uint32_t data_type;
 		switch (type)
 		{
-		case longmarch::FrameBuffer::BUFFER_FORMAT::Uint8:
+		case longmarch::FrameBuffer::BUFFER_FORMAT::UINT8_R:
+			format = GL_R8;
+			channel = GL_RED;
+			data_type = GL_UNSIGNED_BYTE;
+			break;
+		case longmarch::FrameBuffer::BUFFER_FORMAT::UINT8_RGBA:
 			format = GL_RGBA8;
 			channel = GL_RGBA;
 			data_type = GL_UNSIGNED_BYTE;
 			break;
-		case longmarch::FrameBuffer::BUFFER_FORMAT::Float16:
+		case longmarch::FrameBuffer::BUFFER_FORMAT::FLOAT16_R:
+			format = GL_R16F;
+			channel = GL_RED;
+			data_type = GL_FLOAT;
+			break;
+		case longmarch::FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA:
 			format = GL_RGBA16F;
 			channel = GL_RGBA;
 			data_type = GL_FLOAT;
@@ -1037,22 +1047,33 @@ namespace longmarch {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_DepthID, 0);
 
-		// - normal buffer
-		// - velocity buffer that stores texel sized velocity (i.e. screen space pixel velocity / screen size, i.e. clip space velocity on x-y plane)
-		glGenTextures(1, &m_RenderNormal_VelocityID);
-		glBindTexture(GL_TEXTURE_2D, m_RenderNormal_VelocityID);
+		// - normal buffer (encoded in spherical coordiniate)
+		glGenTextures(1, &m_RenderNormalID);
+		glBindTexture(GL_TEXTURE_2D, m_RenderNormalID);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + (GLuint)0, GL_TEXTURE_2D, m_RenderNormal_VelocityID, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, width, height, 0, GL_RG, GL_FLOAT, NULL);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + (GLuint)0, GL_TEXTURE_2D, m_RenderNormalID, 0);
+		
+		// - velocity buffer that stores texel sized velocity (i.e. screen space pixel velocity / screen size, i.e. screen space velocity on x-y plane)
+		glGenTextures(1, &m_RenderVelocityID);
+		glBindTexture(GL_TEXTURE_2D, m_RenderVelocityID);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, width, height, 0, GL_RG, GL_FLOAT, NULL);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + (GLuint)1, GL_TEXTURE_2D, m_RenderVelocityID, 0);
 
 		// - color buffer with w as emissive that stores albedo color
-		glGenTextures(1, &m_RenderAlbedo_EmssiveID);
-		glBindTexture(GL_TEXTURE_2D, m_RenderAlbedo_EmssiveID);
+		glGenTextures(1, &m_Render_Albedo_Emssive_ID);
+		glBindTexture(GL_TEXTURE_2D, m_Render_Albedo_Emssive_ID);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -1060,13 +1081,13 @@ namespace longmarch {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB10_A2, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + (GLuint)1, GL_TEXTURE_2D, m_RenderAlbedo_EmssiveID, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + (GLuint)2, GL_TEXTURE_2D, m_Render_Albedo_Emssive_ID, 0);
 
 		// - Ambient occulusion buffer that stores baked AO texture
 		// - Metallic buffer
 		// - Roughness buffer
-		glGenTextures(1, &m_RenderAO_Metallic_RoughnessID);
-		glBindTexture(GL_TEXTURE_2D, m_RenderAO_Metallic_RoughnessID);
+		glGenTextures(1, &m_Render_AO_Metallic_Roughness_ID);
+		glBindTexture(GL_TEXTURE_2D, m_Render_AO_Metallic_Roughness_ID);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -1074,12 +1095,13 @@ namespace longmarch {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + (GLuint)2, GL_TEXTURE_2D, m_RenderAO_Metallic_RoughnessID, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + (GLuint)3, GL_TEXTURE_2D, m_Render_AO_Metallic_Roughness_ID, 0);
 
 		// - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
 		GLenum DrawBuffers[] = { GL_COLOR_ATTACHMENT0 + (GLuint)0,
 										GL_COLOR_ATTACHMENT0 + (GLuint)1,
-										GL_COLOR_ATTACHMENT0 + (GLuint)2 };
+										GL_COLOR_ATTACHMENT0 + (GLuint)2,
+										GL_COLOR_ATTACHMENT0 + (GLuint)3 };
 		glDrawBuffers(sizeof(DrawBuffers) / sizeof(DrawBuffers[0]), DrawBuffers);
 
 		// Check for completeness/correctness
@@ -1096,9 +1118,10 @@ namespace longmarch {
 	{
 		glDeleteFramebuffers(1, &m_RendererID);
 		glDeleteTextures(1, &m_DepthID);
-		glDeleteTextures(1, &m_RenderNormal_VelocityID);
-		glDeleteTextures(1, &m_RenderAlbedo_EmssiveID);
-		glDeleteTextures(1, &m_RenderAO_Metallic_RoughnessID);
+		glDeleteTextures(1, &m_RenderNormalID);
+		glDeleteTextures(1, &m_RenderVelocityID);
+		glDeleteTextures(1, &m_Render_Albedo_Emssive_ID);
+		glDeleteTextures(1, &m_Render_AO_Metallic_Roughness_ID);
 	}
 	void OpenGLGBuffer::Bind() const
 	{
@@ -1125,14 +1148,17 @@ namespace longmarch {
 		case longmarch::GBuffer::GBUFFER_TEXTURE_TYPE::DEPTH:
 			return m_DepthID;
 			break;
-		case longmarch::GBuffer::GBUFFER_TEXTURE_TYPE::NORMAL_VELOCITY:
-			return m_RenderNormal_VelocityID;
+		case longmarch::GBuffer::GBUFFER_TEXTURE_TYPE::NORMAL:
+			return m_RenderNormalID;
+			break;
+		case longmarch::GBuffer::GBUFFER_TEXTURE_TYPE::VELOCITY:
+			return m_RenderVelocityID;
 			break;
 		case longmarch::GBuffer::GBUFFER_TEXTURE_TYPE::ALBEDO_EMSSIVE:
-			return m_RenderAlbedo_EmssiveID;
+			return m_Render_Albedo_Emssive_ID;
 			break;
 		case longmarch::GBuffer::GBUFFER_TEXTURE_TYPE::BAKEDAO_METALLIC_ROUGHNESS:
-			return m_RenderAO_Metallic_RoughnessID;
+			return m_Render_AO_Metallic_Roughness_ID;
 			break;
 		default:
 			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Unknow GBuffer texture type!");
@@ -1162,21 +1188,33 @@ namespace longmarch {
 		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &color[0]);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_DepthID, 0);
 
-		// - normal buffer
-		// - velocity buffer that stores texel sized velocity (i.e. screen space pixel velocity / screen size, i.e. clip space velocity on x-y plane)
-		glGenTextures(1, &m_RenderNormal_VelocityID);
-		glBindTexture(GL_TEXTURE_2D, m_RenderNormal_VelocityID);
+		// - normal buffer (encoded in spherical coordiniate)
+		glGenTextures(1, &m_RenderNormalID);
+		glBindTexture(GL_TEXTURE_2D, m_RenderNormalID);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + (GLuint)0, GL_TEXTURE_2D, m_RenderNormal_VelocityID, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, width, height, 0, GL_RG, GL_FLOAT, NULL);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + (GLuint)0, GL_TEXTURE_2D, m_RenderNormalID, 0);
+
+		// - velocity buffer that stores texel sized velocity (i.e. screen space pixel velocity / screen size, i.e. screen space velocity on x-y plane)
+		glGenTextures(1, &m_RenderVelocityID);
+		glBindTexture(GL_TEXTURE_2D, m_RenderVelocityID);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, width, height, 0, GL_RG, GL_FLOAT, NULL);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + (GLuint)1, GL_TEXTURE_2D, m_RenderVelocityID, 0);
 
 		// - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
-		unsigned int attachments[] = { GL_COLOR_ATTACHMENT0 + (GLuint)0 };
+		unsigned int attachments[] = { GL_COLOR_ATTACHMENT0 + (GLuint)0,
+										GL_COLOR_ATTACHMENT0 + (GLuint)1 };
 		glDrawBuffers(sizeof(attachments) / sizeof(attachments[0]), attachments);
 
 		// Check for completeness/correctness
@@ -1193,7 +1231,8 @@ namespace longmarch {
 	{
 		glDeleteFramebuffers(1, &m_RendererID);
 		glDeleteTextures(1, &m_DepthID);
-		glDeleteTextures(1, &m_RenderNormal_VelocityID);
+		glDeleteTextures(1, &m_RenderNormalID);
+		glDeleteTextures(1, &m_RenderVelocityID);
 	}
 	void OpenGLThinGBuffer::Bind() const
 	{
@@ -1220,8 +1259,11 @@ namespace longmarch {
 		case longmarch::GBuffer::GBUFFER_TEXTURE_TYPE::DEPTH:
 			return m_DepthID;
 			break;
-		case longmarch::GBuffer::GBUFFER_TEXTURE_TYPE::NORMAL_VELOCITY:
-			return m_RenderNormal_VelocityID;
+		case longmarch::GBuffer::GBUFFER_TEXTURE_TYPE::NORMAL:
+			return m_RenderNormalID;
+			break;
+		case longmarch::GBuffer::GBUFFER_TEXTURE_TYPE::VELOCITY:
+			return m_RenderVelocityID;
 			break;
 		default:
 			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Unknow ThinGBuffer texture type!");

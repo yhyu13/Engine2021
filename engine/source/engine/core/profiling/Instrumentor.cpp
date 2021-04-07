@@ -2,7 +2,7 @@
 #include "Instrumentor.h"
 
 //! If use Nvidia Nsight, turn remotery off
-#define USE_REMOTERY_PROFILING
+//#define USE_REMOTERY_PROFILING
 
 namespace longmarch 
 {

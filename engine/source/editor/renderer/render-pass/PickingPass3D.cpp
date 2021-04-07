@@ -16,7 +16,7 @@ void longmarch::PickingPass::Init()
 		setting.linear_filter = false;
 		setting.float_type = false;
 		m_renderTexture = Texture2D::Create(setting);
-		m_renderTarget = FrameBuffer::Create(texture_dim, texture_dim, FrameBuffer::BUFFER_FORMAT::Uint8);
+		m_renderTarget = FrameBuffer::Create(texture_dim, texture_dim, FrameBuffer::BUFFER_FORMAT::UINT8_RGBA);
 
 		auto rm = ResourceManager<Scene3DNode>::GetInstance();
 		m_particlePickingMesh = rm->TryGet("unit_sphere")->Get()->Copy();

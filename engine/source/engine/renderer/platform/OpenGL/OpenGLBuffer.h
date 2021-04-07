@@ -332,9 +332,10 @@ namespace longmarch {
 	private:
 		uint32_t m_RendererID;
 		uint32_t m_DepthID;
-		uint32_t m_RenderNormal_VelocityID;
-		uint32_t m_RenderAlbedo_EmssiveID;
-		uint32_t m_RenderAO_Metallic_RoughnessID;
+		uint32_t m_RenderNormalID;
+		uint32_t m_RenderVelocityID;
+		uint32_t m_Render_Albedo_Emssive_ID;
+		uint32_t m_Render_AO_Metallic_Roughness_ID;
 	};
 
 	class OpenGLThinGBuffer : public GBuffer
@@ -355,7 +356,8 @@ namespace longmarch {
 	private:
 		uint32_t m_RendererID;
 		uint32_t m_DepthID;
-		uint32_t m_RenderNormal_VelocityID;
+		uint32_t m_RenderNormalID;
+		uint32_t m_RenderVelocityID;
 	};
 
 	class OpenGLComputeBuffer :public ComputeBuffer

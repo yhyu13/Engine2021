@@ -524,7 +524,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 						auto e = MemoryManager::Make_shared<SetEnvironmentMappingEvent>(checkEvnMapping, valueCurrentEnvMapName);
 						graphicDebugEventQueue->Publish(e);
 					}
-					int selected_skybox = LongMarch_findFristIndex(valueAllEnvMapName, valueCurrentEnvMapName);
+					int selected_skybox = LongMarch_findFristIndex(valueAllEnvMapName, valueCurrentEnvMapName) + 1;
 					auto valueAllEnvMapName_char = LongMarch_StrVec2ConstChar(valueAllEnvMapName);
 					valueAllEnvMapName_char.insert(valueAllEnvMapName_char.begin(),"");
 					if (ImGui::Combo("Skyboxes", &selected_skybox, &valueAllEnvMapName_char[0], valueAllEnvMapName_char.size()))

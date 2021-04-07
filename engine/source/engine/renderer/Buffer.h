@@ -253,8 +253,10 @@ namespace longmarch
 	public:
 		enum class BUFFER_FORMAT
 		{
-			Uint8,
-			Float16,
+			UINT8_R,
+			UINT8_RGBA, 
+			FLOAT16_R,
+			FLOAT16_RGBA,
 		};
 
 		virtual ~FrameBuffer() = default;
@@ -385,7 +387,8 @@ namespace longmarch
 		{
 			EMPTY = 0,
 			DEPTH,
-			NORMAL_VELOCITY,
+			NORMAL,
+			VELOCITY,
 			ALBEDO_EMSSIVE,
 			BAKEDAO_METALLIC_ROUGHNESS,
 			NUM

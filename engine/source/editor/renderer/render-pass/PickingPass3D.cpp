@@ -4,6 +4,8 @@
 #include "editor/ui/common/BaseEngineWidgetManager.h"
 #include "editor/ui/common/widgets/SceneHierarchyDock.h"
 
+#include <imgui/addons/ImGuizmo/ImGuizmo.h>
+
 void longmarch::PickingPass::Init()
 {
 	// Create picking texture and framebuffer
@@ -80,9 +82,10 @@ void longmarch::PickingPass::BeginRenderPass()
 		// Process new picking request
 		m_shouldRead = false;
 		// Push picking rendering cmd on LMB in the editor viewport
-		bool bUINotHoldMouse = !ImGuiUtil::IsMouseCaptured();
+		bool bUIHover = !ImGui::IsAnyItemHovered();
+		bool bNotIsOverGuizmo = !ImGuizmo::IsOver();
 		if (auto input = InputManager::GetInstance();
-			input->IsMouseButtonTriggered(MOUSE_BUTTON_LEFT) && bUINotHoldMouse)
+			input->IsMouseButtonTriggered(MOUSE_BUTTON_LEFT) && bUIHover&& bNotIsOverGuizmo)
 		{
 			EntityType e_type;
 			switch (Engine::GetEngineMode())
@@ -95,21 +98,26 @@ void longmarch::PickingPass::BeginRenderPass()
 			}
 
 			auto camera = m_parentWorld->GetTheOnlyEntityWithType(e_type);
-			auto camera_ptr = m_parentWorld->GetComponent<PerspectiveCameraCom>(camera)->GetCamera();
+			auto cam = m_parentWorld->GetComponent<PerspectiveCameraCom>(camera)->GetCamera();
 
 			auto cursor_pos = input->GetCursorPositionXY();
-			Vec3f out_eye_world;
-			Vec3f out_dir_wprld;
-			camera_ptr->GenerateRayFromCursorSpace(cursor_pos, true, true, out_eye_world, out_dir_wprld);
-			Vec3f look_at_world = out_eye_world + out_dir_wprld;
 
-			m_pickingCam.type = PerspectiveCameraType::FIRST_PERSON;
-			m_pickingCam.SetProjection(1.0 * DEG2RAD, 1.0, camera_ptr->cameraSettings.nearZ, camera_ptr->cameraSettings.farZ);
-			m_pickingCam.SetLookAt(out_eye_world, look_at_world);
-			m_pickingCam.OnUpdate();
+			if (IN_RANGE(cursor_pos.x, (float)cam->cameraSettings.viewportOrigin.x, (float)cam->cameraSettings.viewportOrigin.x + (float)cam->cameraSettings.viewportSize.x)
+				&& IN_RANGE(cursor_pos.y, (float)cam->cameraSettings.viewportOrigin.y, (float)cam->cameraSettings.viewportOrigin.y + (float)cam->cameraSettings.viewportSize.y))
+			{
+				Vec3f out_eye_world;
+				Vec3f out_dir_wprld;
+				cam->GenerateRayFromCursorSpace(cursor_pos, true, true, out_eye_world, out_dir_wprld);
+				Vec3f look_at_world = out_eye_world + out_dir_wprld;
 
-			Render();
-			m_shouldRead = true;
+				m_pickingCam.type = PerspectiveCameraType::FIRST_PERSON;
+				m_pickingCam.SetProjection(1.0 * DEG2RAD, 1.0, cam->cameraSettings.nearZ, cam->cameraSettings.farZ);
+				m_pickingCam.SetLookAt(out_eye_world, look_at_world);
+				m_pickingCam.OnUpdate();
+
+				Render();
+				m_shouldRead = true;
+			}
 		}
 	}
 }

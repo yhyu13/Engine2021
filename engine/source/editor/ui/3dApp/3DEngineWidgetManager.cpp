@@ -14,7 +14,7 @@ longmarch::_3DEngineWidgetManager::_3DEngineWidgetManager()
 {
 	{
 		auto widget = MemoryManager::Make_shared<EngineEditorHUD>();
-		RegisterWidget("0_HUD", widget); // mark with "0_" to place it is sorted at the front of std::map when rendering
+		RegisterWidget("0_HUD", widget); // mark with "0_" to place it at the front of std::map when rendering
 	}
 	{
 		auto widget = MemoryManager::Make_shared<_3DEngineMainMenu>();
@@ -39,9 +39,9 @@ longmarch::_3DEngineWidgetManager::_3DEngineWidgetManager()
 	{
 		auto widget = MemoryManager::Make_shared<EngineConsoleDock>();
 		RegisterWidget("EngineConsoleDock", widget);
-	}
+	} 
 	{
 		auto widget = MemoryManager::Make_shared<SceneDock>();
-		RegisterWidget("SceneDock", widget);
+		RegisterWidget("~_SceneDock", widget); // mark with "~" to place it the last place
 	}
 }

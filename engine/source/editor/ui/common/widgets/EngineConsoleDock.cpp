@@ -23,6 +23,6 @@ void longmarch::EngineConsoleDock::Render()
 	// Simply invoke terminal logger's render function, and we are done
 	TerminalLogger::GetInstance()->show();
 
-	manager->CaptureMouseAndKeyboardOnHover();
+	manager->CaptureMouseAndKeyboardOnHover(true);
 	manager->PopWidgetStyle();
 }

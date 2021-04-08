@@ -3,51 +3,27 @@
 #include "engine/renderer/Texture.h"
 #include "engine/math/MathUtil.h"
 
-void longmarch::ImGuiUtil::StyleColorsDark()
+bool longmarch::ImGuiUtil::IsMouseCaptured(bool considerIgnore)
 {
-	ImGui::StyleColorsDark();
-	ImGuiStyle* style = &ImGui::GetStyle();
-	ImVec4* colors = style->Colors;
-
-	colors[ImGuiCol_WindowBg] = ImVec4(0.06f, 0.06f, 0.06f, 0.99f);
-}
-
-void longmarch::ImGuiUtil::StyleColorsLight()
-{
-	ImGui::StyleColorsLight();
-	ImGuiStyle* style = &ImGui::GetStyle();
-	ImVec4* colors = style->Colors;
-
-	colors[ImGuiCol_WindowBg] = ImVec4(0.94f, 0.94f, 0.94f, 0.99f);
-}
-
-void longmarch::ImGuiUtil::SetupEngineImGuiStyle()
-{
-	static bool _bStyleDark_ = !bStyleDark;
-	static float _alpha_ = alpha - 1.0;
-	if (_bStyleDark_ == bStyleDark && _alpha_ == alpha)
+	if (considerIgnore)
 	{
-		return;
-	}
-	_bStyleDark_ = bStyleDark;
-	_alpha_ = alpha;
-
-	if (bStyleDark)
-	{
-		ImGuiUtil::StyleColorsDark();
+		return !IgnoreMouseCaptured && ImGui::GetIO().WantCaptureMouse;
 	}
 	else
 	{
-		ImGuiUtil::StyleColorsLight();
+		return ImGui::GetIO().WantCaptureMouse;
 	}
-	ImGuiStyle& style = ImGui::GetStyle();
-	for (int i = 0; i < ImGuiCol_COUNT; i++)
+}
+
+bool longmarch::ImGuiUtil::IsKeyBoardCaptured(bool considerIgnore)
+{
+	if (considerIgnore)
 	{
-		ImVec4& col = style.Colors[i];
-		if (col.w < 1.00f)
-		{
-			col.w *= alpha;
-		}
+		return !IgnoreKeyBoardCaptured && ImGui::GetIO().WantCaptureKeyboard;
+	}
+	else
+	{
+		return ImGui::GetIO().WantCaptureKeyboard;
 	}
 }
 

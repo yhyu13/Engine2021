@@ -3,6 +3,8 @@
 #include "engine/ecs/components/3d/Scene3DCom.h"
 #include "Scene3DManager.h"
 
+//#define DEBUG_PRINT_SCENE_NODE
+
 void longmarch::Scene3DManager::LoadSceneNodeFromAssimp(const std::string& sceneNodeName)
 {
 	auto sceneNode = ResourceManager<AssimpSceneObject>::GetInstance()->TryGet(sceneNodeName)->Get();
@@ -56,6 +58,7 @@ void longmarch::Scene3DManager::RecurseLoad(Scene3DNode& sceneData, const std::s
 		PRINT(Str("  %d meshes", aiscene->mNumMeshes));         // Verts and faces for the skin.
 		PRINT(Str("  %d materials", aiscene->mNumMaterials));   // More graphics info
 		PRINT(Str("  %d textures", aiscene->mNumTextures));     // More graphics info
+#ifdef DEBUG_PRINT_SCENE_NODE
 		// Prints a graphical representation of the bone hierarchy.
 		AssimpHelper::ShowBoneHierarchy(aiscene, aiscene->mRootNode);
 		// Prints all the animation info for each animation in the file
@@ -68,6 +71,7 @@ void longmarch::Scene3DManager::RecurseLoad(Scene3DNode& sceneData, const std::s
 		{
 			AssimpHelper::ShowMesh(aiscene->mMeshes[i]);
 		}
+#endif
 		// Load skeleton and animation
 		if (aiscene->mNumAnimations != 0)
 		{
@@ -111,6 +115,7 @@ void longmarch::Scene3DManager::RecurseLoad(Scene3DNode& sceneData, const std::s
 				{
 					material->Kd = { baseColorFactor.r, baseColorFactor.g, baseColorFactor.b };
 				}
+
 				// Metallic
 				if (AI_SUCCESS == mtl->GetTexture(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE, &texPath)
 					|| AI_SUCCESS == mtl->GetTexture(aiTextureType_METALNESS, 0, &texPath))
@@ -122,6 +127,7 @@ void longmarch::Scene3DManager::RecurseLoad(Scene3DNode& sceneData, const std::s
 				{
 					material->metallic = metallicFactor;
 				}
+
 				// Roughness
 				if (AI_SUCCESS == mtl->GetTexture(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE, &texPath)
 					|| AI_SUCCESS == mtl->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &texPath))
@@ -133,12 +139,14 @@ void longmarch::Scene3DManager::RecurseLoad(Scene3DNode& sceneData, const std::s
 				{
 					material->roughness = roughnessFactor;
 				}
+
 				// Normal
 				if (AI_SUCCESS == mtl->GetTexture(aiTextureType_NORMALS, 0, &texPath))
 				{
 					auto filename = texPath.C_Str();
 					material->SetTexture(filename, sceneDir / filename, Material::MAT_TEXTURE_TYPE::NORMAL);
 				}
+
 				// Ambient Occlusion
 				if (AI_SUCCESS == mtl->GetTexture(aiTextureType_LIGHTMAP, 0, &texPath)
 					|| AI_SUCCESS == mtl->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &texPath))
@@ -245,9 +253,9 @@ void longmarch::Scene3DManager::RecurseLoad(Scene3DNode& sceneData, const std::s
 				sceneData.meshTree.emplace_back(level, mesh);
 				// TODO mesh name is not gauranteed to be unique, need to reconsider managing mesh and so on.
 				//auto name = sceneName + "_" + Str(level) + "_" + aimesh->mName.C_Str();
-				//ResourceManager<Mesh>::GetInstance()->AddResource(name, "", mesh); //! Individual component should not have a path related to it
-				//ResourceManager<MeshData>::GetInstance()->AddResource(name, "", meshdata); //! Individual component should not have a path related to it
-				//ResourceManager<Material>::GetInstance()->AddResource(name, "", material); //! Individual component should not have a path related to it
+				//ResourceManager<Mesh>::GetInstance()->AddResource(name, "", mesh); //TODO: Individual component should not have a path related to it (problem : name is not unique)
+				//ResourceManager<MeshData>::GetInstance()->AddResource(name, "", meshdata); //TODO: Individual component should not have a path related to it (problem : name is not unique)
+				//ResourceManager<Material>::GetInstance()->AddResource(name, "", material); //TODO: Individual component should not have a path related to it (problem : name is not unique)
 			}
 		}
 	}

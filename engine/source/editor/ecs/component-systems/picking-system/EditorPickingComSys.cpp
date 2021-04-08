@@ -34,6 +34,7 @@ void longmarch::EditorPickingComSys::RenderUI()
 	{
 	case Engine::ENGINE_MODE::EDITING:
 		ImGuizmo::BeginFrame();
+		ImGuizmo::SetDrawlist(m_sceneDockDrawList);
 		{
 			if (auto e = m_pickingPass.GetPickedEntity(); e.Valid())
 			{
@@ -120,7 +121,6 @@ void longmarch::EditorPickingComSys::ManipulatePickedEntityGizmos(const Entity& 
 		const auto& prop = Engine::GetWindow()->GetWindowProperties();
 		if (m_sceneDockDrawList)
 		{
-			ImGuizmo::SetDrawlist(m_sceneDockDrawList);
 			auto viewport_origin = current_camera->cameraSettings.viewportOrigin;
 			auto viewport_size = current_camera->cameraSettings.viewportSize;
 			// CRITICAL : beaware of arithmatic of int and unsigned int as it could resul in overflow (so we convert viewport from unsigned to float and window property to float in the same time)

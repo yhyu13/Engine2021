@@ -145,7 +145,7 @@ void longmarch::SceneHierarchyDock::Render()
 			}
 		}
 	}
-	manager->CaptureMouseAndKeyboardOnHover();
+	manager->CaptureMouseAndKeyboardOnHover(true);
 	manager->PopWidgetStyle();
 	ImGui::End();
 }

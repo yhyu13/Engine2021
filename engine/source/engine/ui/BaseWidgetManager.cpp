@@ -58,16 +58,20 @@ bool longmarch::BaseWidgetManager::GetVisible(const std::string& name)
 
 void longmarch::BaseWidgetManager::ResetCaptureMouseAndKeyboard()
 {
-	ImGuiUtil::IgnoreMouseCaptured = ImGuiUtil::IgnoreKeyBoardCaptured = false;
+	ImGuiUtil::IgnoreMouseCaptured = ImGuiUtil::IgnoreKeyBoardCaptured = true;
 }
 
-void longmarch::BaseWidgetManager::CaptureMouseAndKeyboardOnHover()
+void longmarch::BaseWidgetManager::CaptureMouseAndKeyboardOnHover(bool resetIgnoreCapture)
 {
 	ImGuiIO& io = ImGui::GetIO();
-	bool isWindowHovered = ImGui::IsAnyWindowHovered() || ImGui::IsAnyItemHovered();
+	bool isWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows) || ImGui::IsItemHovered(ImGuiHoveredFlags_RectOnly);
 	// Set ImGui capture inputs on window focused
 	if (isWindowHovered)
 	{
-		io.WantCaptureMouse = io.WantCaptureKeyboard = isWindowHovered;
+		io.WantCaptureMouse = io.WantCaptureKeyboard = true;
+		if (resetIgnoreCapture)
+		{
+			ImGuiUtil::IgnoreMouseCaptured = ImGuiUtil::IgnoreKeyBoardCaptured = false;
+		}
 	}
 }

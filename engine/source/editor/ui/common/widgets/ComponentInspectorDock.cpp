@@ -126,7 +126,7 @@ void longmarch::ComponentInspectorDock::Render()
 		}
 	}
 
-	manager->CaptureMouseAndKeyboardOnHover();
+	manager->CaptureMouseAndKeyboardOnHover(true);
 	manager->PopWidgetStyle();
 	ImGui::End();
 }

@@ -17,20 +17,18 @@ namespace longmarch
 		inline static ImVec4 ColGray = { ImVec4(0.2f,0.2f,0.2f,1.f) };
 		inline static ImVec4 ColNavi = { ImVec4(0.26f, 0.59f, 0.98f, 1.00f) };
 
-		inline static bool IsMouseCaptured() { return !IgnoreMouseCaptured && ImGui::GetIO().WantCaptureMouse; };
-		inline static bool IsKeyBoardCaptured() { return !IgnoreKeyBoardCaptured && ImGui::GetIO().WantCaptureKeyboard; };
-		inline static bool IgnoreMouseCaptured{ false }; //!< Custom boolean variable that need to be set every frame by the current widget manager
-		inline static bool IgnoreKeyBoardCaptured{ false }; //!< Custom boolean variable that need to be set every frame by the current widget manager
-
 		inline static ImGuiWindowFlags popupFlag = { ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize };
 		inline static ImGuiWindowFlags menuFlag = { ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse };
 
-		inline static bool bStyleDark = true;
-		inline static float alpha = 1.0f;
-		static void StyleColorsDark();
-		static void StyleColorsLight();
-		static void SetupEngineImGuiStyle();
+		inline static bool IgnoreMouseCaptured{ false }; //!< Custom boolean variable that need to be set every frame by the current widget manager. Ignore is usually set by the editor scene docker.
+		inline static bool IgnoreKeyBoardCaptured{ false }; //!< Custom boolean variable that need to be set every frame by the current widget manager. Ignore is usually set by the editor scene docker.
+		static bool IsMouseCaptured(bool considerIgnore);
+		static bool IsKeyBoardCaptured(bool considerIgnore);
+
+		//! Draw a question mark and display text on hover
 		static void InlineHelpMarker(const char* desc);
-		static void TextureViewerWithZoom(const std::shared_ptr<void>& texture);
+
+		//! Zoom in texture on hover (used in editor panel)
+		static void TextureViewerWithZoom(const std::shared_ptr<void>& texture); 
 	};
 }

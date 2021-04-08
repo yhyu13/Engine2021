@@ -27,10 +27,6 @@ namespace longmarch {
 			glFinish();
 	}
 
-	void Window::UpdateTitle(std::string title) {
-		glfwSetWindowTitle(m_window, title.c_str());
-	}
-
 	void Window::ToggleFullScreen(int mode)
 	{
 		glfwWindowHint(GLFW_RESIZABLE, m_windowProperties.IsResizable);
@@ -172,6 +168,46 @@ namespace longmarch {
 		m_windowProperties.IsCPUGPUSync = on;
 	}
 
+	void Window::SetCursorMode(CURSOR_MODE mode)
+	{
+		static auto s_mode = CURSOR_MODE::NUM;
+		if (s_mode != mode)
+		{
+			switch (mode)
+			{
+			case CURSOR_MODE::NORMAL:
+				glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				break;
+			case CURSOR_MODE::HIDDEN:
+				glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+				break;
+			case CURSOR_MODE::HIDDEN_AND_FREE:
+				glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				break;
+			default:
+				break;
+			}
+			s_mode = mode;
+		}
+	}
+
+	Window::CURSOR_MODE Window::GetCursorMode()
+	{
+		auto mode = glfwGetInputMode(m_window, GLFW_CURSOR);
+		if (mode == GLFW_CURSOR_NORMAL)
+		{
+			return CURSOR_MODE::NORMAL;
+		}
+		if (mode == GLFW_CURSOR_HIDDEN)
+		{
+			return CURSOR_MODE::HIDDEN;
+		}
+		if (mode == GLFW_CURSOR_DISABLED)
+		{
+			return CURSOR_MODE::HIDDEN_AND_FREE;
+		}
+	}
+
 	void Window::ShowMessageBox(const std::wstring& title, const std::wstring& message)
 	{
 #if defined(WIN32) || defined(WINDOWS_APP)
@@ -182,23 +218,34 @@ namespace longmarch {
 #endif
 	}
 
-	void Window::Shutdown() {
+	void Window::Shutdown() 
+	{
 		glfwDestroyWindow(m_window);
 	}
 
-	bool Window::ShouldExit() {
+	bool Window::ShouldExit() 
+	{
 		return glfwWindowShouldClose(m_window);
 	}
 
-	Window::Window(const Json::Value& windowConfiguration) {
+	void Window::UpdateTitle(const std::string& title)
+	{
+		glfwSetWindowTitle(m_window, title.c_str());
+	}
+
+
+	Window::Window(const Json::Value& windowConfiguration) 
+	{
 		Init(windowConfiguration);
 	}
 
-	Window::~Window() {
+	Window::~Window() 
+	{
 		Shutdown();
 	}
 
-	void Window::Init(const Json::Value& windowConfiguration) {
+	void Window::Init(const Json::Value& windowConfiguration) 
+	{
 #if defined(WIN32) || defined(WINDOWS_APP)
 		// This api call make the process be aware of dpi
 		// i.e. managing dpi by ourself instead of Desktop Window Manager(DWM)
@@ -286,7 +333,8 @@ namespace longmarch {
 		ENGINE_INFO(" Version: {0}", glGetString(GL_VERSION));
 
 		// Callbacks
-		glfwSetKeyCallback(m_window, [](GLFWwindow* window, int key, int scanCode, int action, int mods) {
+		glfwSetKeyCallback(m_window, [](GLFWwindow* window, int key, int scanCode, int action, int mods) 
+		{
 			WindowProperties& properties = *(WindowProperties*)glfwGetWindowUserPointer(window);
 			switch (action) {
 			case GLFW_PRESS:
@@ -304,7 +352,8 @@ namespace longmarch {
 			}
 		});
 
-		glfwSetMouseButtonCallback(m_window, [](GLFWwindow* window, int button, int action, int mods) {
+		glfwSetMouseButtonCallback(m_window, [](GLFWwindow* window, int button, int action, int mods) 
+		{
 			WindowProperties& properties = *(WindowProperties*)glfwGetWindowUserPointer(window);
 			switch (action) {
 			case GLFW_PRESS:
@@ -322,12 +371,14 @@ namespace longmarch {
 			}
 		});
 
-		glfwSetCursorPosCallback(m_window, [](GLFWwindow* window, double positionX, double positionY) {
+		glfwSetCursorPosCallback(m_window, [](GLFWwindow* window, double positionX, double positionY) 
+		{
 			WindowProperties& properties = *(WindowProperties*)glfwGetWindowUserPointer(window);
 			properties.m_input->UpdateCursorPosition(positionX, positionY);
 		});
 
-		glfwSetScrollCallback(m_window, [](GLFWwindow* window, double xoffset, double yoffset) {
+		glfwSetScrollCallback(m_window, [](GLFWwindow* window, double xoffset, double yoffset) 
+		{
 			WindowProperties& properties = *(WindowProperties*)glfwGetWindowUserPointer(window);
 			properties.m_input->UpdateMouseScroll(xoffset, yoffset);
 		});
@@ -357,7 +408,8 @@ namespace longmarch {
 			}
 		});
 
-		glfwSetJoystickCallback([](int gamepadid, int state) {
+		glfwSetJoystickCallback([](int gamepadid, int state) 
+		{
 			ENGINE_INFO("game pad id: {0} state: {1}", gamepadid, state == GLFW_CONNECTED ? "connected" : "disconnected");
 		});
 	}

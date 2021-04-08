@@ -120,6 +120,7 @@ namespace longmarch
 
 	public:
 		void _ON_ENG_WINDOW_QUIT(EventQueue<EngineEventType>::EventPtr e);
+		void _ON_CURSOR_SWITCH_MODE(EventQueue<EngineEventType>::EventPtr e);
 		void _ON_TOGGLE_GPUSYNC(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		void _ON_TOGGLE_WINDOW_INTERRUTPTION_HANDLE(EventQueue<EngineSettingEventType>::EventPtr e);
 		void _ON_TOGGLE_VSYNC(EventQueue<EngineGraphicsEventType>::EventPtr e);

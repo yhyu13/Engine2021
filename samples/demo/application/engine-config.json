@@ -114,7 +114,7 @@
 		{
 			"Enable": false,	
 			"Gaussian-kernel": 15,
-			"Res-down-scale": 4,
+			"Res-down-scale": 2,
 			"Refocus-rate": 4.0,  /* Determine how fast DOF's focus plane reaches to target depth*/
 			"Threshold" : 1.0, /* linear depth difference, +/- this value should be within the focus plane, the threshold automatically scales up on further distance based on blend strength*/
 			"Strength": 0.9,  /* DOF blend strength range of 0 to 1 */

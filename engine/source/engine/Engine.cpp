@@ -100,6 +100,7 @@ namespace longmarch
 			auto queue = EventQueue<EngineEventType>::GetInstance();
 			{
 				ManageEventSubHandle(queue->Subscribe<Engine>(s_instance, EngineEventType::ENG_WINDOW_QUIT, &Engine::_ON_ENG_WINDOW_QUIT));
+				ManageEventSubHandle(queue->Subscribe<Engine>(s_instance, EngineEventType::ENG_WINDOW_CURSOR_SWITCH_MODE, &Engine::_ON_CURSOR_SWITCH_MODE));
 			}
 		}
 		{
@@ -123,6 +124,17 @@ namespace longmarch
 		Logger::ShutDown();
 	}
 
+	void Engine::_ON_ENG_WINDOW_QUIT(EventQueue<EngineEventType>::EventPtr e)
+	{
+		// Nothing
+	}
+
+	void Engine::_ON_CURSOR_SWITCH_MODE(EventQueue<EngineEventType>::EventPtr e)
+	{
+		auto event = std::static_pointer_cast<EngineCursorSwitchModeEvent>(e);
+		s_instance->GetWindow()->SetCursorMode(Window::CURSOR_MODE(event->m_mode));
+	}
+
 	void Engine::_ON_TOGGLE_WINDOW_INTERRUTPTION_HANDLE(EventQueue<EngineSettingEventType>::EventPtr e)
 	{
 		auto event = std::static_pointer_cast<ToggleWindowInterrutpionEvent>(e);
@@ -133,11 +145,6 @@ namespace longmarch
 	{
 		auto event = std::static_pointer_cast<ToggleVSyncEvent>(e);
 		s_instance->GetWindow()->SetVSync(event->m_enable);
-	}
-
-	void Engine::_ON_ENG_WINDOW_QUIT(EventQueue<EngineEventType>::EventPtr e)
-	{
-		// Nothing
 	}
 
 	void longmarch::Engine::_ON_TOGGLE_GPUSYNC(EventQueue<EngineGraphicsEventType>::EventPtr e)

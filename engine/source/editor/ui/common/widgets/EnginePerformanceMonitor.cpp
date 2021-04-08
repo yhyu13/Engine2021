@@ -98,7 +98,7 @@ void longmarch::EnginePerformanceMonitor::Render()
 	}
 	ImGui::Columns(1); // resetting the number of columns to 1
 
-	manager->CaptureMouseAndKeyboardOnHover();
+	manager->CaptureMouseAndKeyboardOnHover(true);
 	manager->PopWidgetStyle();
 	ImGui::End();
 }

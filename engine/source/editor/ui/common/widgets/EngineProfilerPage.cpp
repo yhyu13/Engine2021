@@ -31,7 +31,7 @@ void longmarch::EngineProfilerPage::Render()
 		}
 	}
 	
-	manager->CaptureMouseAndKeyboardOnHover();
+	manager->CaptureMouseAndKeyboardOnHover(true);
 	manager->PopWidgetStyle();
 	ImGui::PopStyleVar(1);
 	ImGui::PopStyleColor(2);

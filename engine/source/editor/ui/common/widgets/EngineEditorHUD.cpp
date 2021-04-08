@@ -24,7 +24,7 @@ longmarch::EngineEditorHUD::EngineEditorHUD()
 void longmarch::EngineEditorHUD::Render()
 {
 	// Setup Dear ImGui style
-	ImGuiUtil::SetupEngineImGuiStyle();
+	SetupEngineImGuiStyle();
 
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
 	ImGui::SetNextWindowSize(viewport->Size);
@@ -65,6 +65,44 @@ void longmarch::EngineEditorHUD::Render()
 	HandleFileDialog();
 
 	ImGui::End();
+}
+
+void longmarch::EngineEditorHUD::SetupEngineImGuiStyle()
+{
+	static bool _bStyleDark_ = !bStyleDark;
+	static float _alpha_ = fStyleAlpha - 1.0;
+	if (_bStyleDark_ == bStyleDark && _alpha_ == fStyleAlpha)
+	{
+		return;
+	}
+	_bStyleDark_ = bStyleDark;
+	_alpha_ = fStyleAlpha;
+
+	if (bStyleDark)
+	{
+		ImGui::StyleColorsDark();
+		ImGuiStyle* style = &ImGui::GetStyle();
+		ImVec4* colors = style->Colors;
+
+		colors[ImGuiCol_WindowBg] = ImVec4(0.06f, 0.06f, 0.06f, 0.99f);
+	}
+	else
+	{
+		ImGui::StyleColorsLight();
+		ImGuiStyle* style = &ImGui::GetStyle();
+		ImVec4* colors = style->Colors;
+
+		colors[ImGuiCol_WindowBg] = ImVec4(0.94f, 0.94f, 0.94f, 0.99f);
+	}
+	ImGuiStyle& style = ImGui::GetStyle();
+	for (int i = 0; i < ImGuiCol_COUNT; i++)
+	{
+		ImVec4& col = style.Colors[i];
+		if (col.w < 1.00f)
+		{
+			col.w *= fStyleAlpha;
+		}
+	}
 }
 
 void longmarch::EngineEditorHUD::ShowEngineFPS()
@@ -117,7 +155,7 @@ void longmarch::EngineEditorHUD::ShowEngineMainMenuBar()
 		ImGui::EndMainMenuBar();
 	}
 
-	manager->CaptureMouseAndKeyboardOnHover();
+	manager->CaptureMouseAndKeyboardOnHover(true);
 	manager->PopWidgetStyle();
 }
 
@@ -269,7 +307,7 @@ void longmarch::EngineEditorHUD::ShowGameWorldLevelTab()
 		}
 	}
 
-	manager->CaptureMouseAndKeyboardOnHover();
+	manager->CaptureMouseAndKeyboardOnHover(true);
 	manager->PopWidgetStyle();
 	ImGui::EndTabBar();
 	ImGui::End();
@@ -284,7 +322,7 @@ void longmarch::EngineEditorHUD::ShowPopUps()
 	m_saveBeforeLoadPopup();
 	m_saveBeforeQuitPopup();
 
-	manager->CaptureMouseAndKeyboardOnHover();
+	manager->CaptureMouseAndKeyboardOnHover(true);
 	manager->PopWidgetStyle();
 }
 
@@ -344,6 +382,6 @@ void longmarch::EngineEditorHUD::HandleFileDialog()
 			}
 		}
 	}	
-	manager->CaptureMouseAndKeyboardOnHover();
+	manager->CaptureMouseAndKeyboardOnHover(true);
 	manager->PopWidgetStyle();
 }

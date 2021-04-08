@@ -7,10 +7,12 @@
 
 struct GLFWwindow;
 
-namespace longmarch {
+namespace longmarch 
+{
 	typedef std::function<void(int IsFocussed)> InterruptHandler;
 
-	struct ENGINE_API WindowProperties {
+	struct ENGINE_API WindowProperties 
+	{
 		int m_xpos; // Upper left corner position in the whole screen
 		int m_ypos; // Upper left corner position in the whole screen
 		int m_width; // Width of the window, could be different from resolution
@@ -51,10 +53,19 @@ namespace longmarch {
 	};
 
 	class Engine;
-	class ENGINE_API Window {
-	public:
-		friend Engine;
 
+	class ENGINE_API Window 
+	{
+	public:
+		enum class CURSOR_MODE : int32_t
+		{
+			NORMAL = 0, // Disaply cursor and cursor has limited movement within the window
+			HIDDEN, // Deos not disaply cursor and cursor has limited movement within the window
+			HIDDEN_AND_FREE, // Does not display cursor but cursor is still available with unlimited movement
+			NUM
+		};
+
+	public:
 		explicit Window(const Json::Value& engineConfiguration);
 		~Window();
 
@@ -62,7 +73,7 @@ namespace longmarch {
 		void Render();
 		void Shutdown();
 		bool ShouldExit();
-		void UpdateTitle(std::string title);
+		void UpdateTitle(const std::string& title);
 
 		void ToggleFullScreen(int mode); /* 0-Full screen, 1- Borderless full screen 2- Windowed mode  */
 
@@ -70,6 +81,8 @@ namespace longmarch {
 		void SetResolution(int n);
 		void SetVSync(bool on);
 		void SetGPUSync(bool on);
+		void SetCursorMode(CURSOR_MODE mode);
+		CURSOR_MODE GetCursorMode();
 
 		void ShowMessageBox(const std::wstring& title, const std::wstring& message);
 
@@ -80,8 +93,13 @@ namespace longmarch {
 		inline void SetInterruptHandler(const InterruptHandler& handler) { m_windowProperties.m_interruptHandler = handler; };
 
 		static std::shared_ptr<Window> InitializeWindow(const Json::Value& engineConfiguration);
+
 	private:
+		friend Engine;
+		
 		void Init(const Json::Value& windowConfiguration);
+
+
 	private:
 		WindowProperties m_windowProperties;
 		GLFWwindow* m_window;

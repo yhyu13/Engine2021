@@ -17,6 +17,7 @@ namespace longmarch
 		void Render() override;
 
 	private:
+		void SetupEngineImGuiStyle();
 		void ShowEngineFPS();
 		void ShowEngineMainMenuBar();
 		void ShowEngineMenuFile();
@@ -26,6 +27,10 @@ namespace longmarch
 		void ShowGameWorldLevelTab();
 		void ShowPopUps();
 		void HandleFileDialog();
+
+	public:
+		bool bStyleDark{ true };
+		float fStyleAlpha{ 1.0f };
 
 	private:
 		std::function<void()> m_aboutEditorPopup;

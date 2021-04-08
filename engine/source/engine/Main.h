@@ -46,4 +46,5 @@ int main(int argc, char** argv)
 		longmarch::Engine::SetQuit(true);
 	}
 	delete engine;
+	return 0;
 }

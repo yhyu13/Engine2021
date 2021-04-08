@@ -2,9 +2,8 @@
 #include "FramerateController.h"
 #include "engine/core/profiling/InstrumentorCore.h"
 
-#include <GLFW/glfw3.h>
-
-namespace longmarch {
+namespace longmarch 
+{
 	/*
 		FramerateController will always have only one instance throughout the execution of the application.
 		Default max frame rate is 60fps.
@@ -38,12 +37,14 @@ namespace longmarch {
 			m_frameTick = (m_tickEnd - m_tickStart);
 		} while (m_frameTick < m_ticksPerFrame);
 
+		m_frameTime = m_frameTick * 1e-3; // converting milliseconds to seconds
+
+#ifndef _SHIPPING
 		Instrumentor::GetEngineInstance()->AddInstrumentorResult({ "Frame Time", m_frameTick, "ms" });
 		Instrumentor::GetEngineInstance()->AddInstrumentorResult({ "FPS", 1000.0 / m_frameTick, "  " });
 		Instrumentor::GetApplicationInstance()->AddInstrumentorResult({ "Frame Time", m_frameTick, "ms" });
 		Instrumentor::GetApplicationInstance()->AddInstrumentorResult({ "FPS", 1000.0 / m_frameTick, "  " });
-
-		m_frameTime = m_frameTick * 1e-3; // converting milliseconds to seconds
+#endif
 	}
 
 	const double FramerateController::GetFrameTime() const 

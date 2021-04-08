@@ -46,7 +46,7 @@ void longmarch::GameMainMenu::Render()
 		RenderGameSettingMenu();
 	}
 
-	manager->CaptureMouseAndKeyboardOnHover();
+	manager->CaptureMouseAndKeyboardOnHover(true);
 	manager->PopWidgetStyle();
 	ImGui::PopStyleColor(1);
 	ImGui::End();

@@ -4,6 +4,8 @@
 #include "engine/renderer/Renderer3D.h"
 #include "engine/events/engineEvents/EngineCustomEvent.h"
 
+#include "editor/ui/common/widgets/EngineEditorHUD.h"
+
 #include <imgui/addons/implot/implot_items.cpp>
 #include <imgui/addons/implot/implot_demo.cpp>
 
@@ -72,7 +74,7 @@ void longmarch::_3DEngineMainMenu::Render()
 		RenderEngineGraphicSettingMenu();
 	}
 
-	manager->CaptureMouseAndKeyboardOnHover();
+	manager->CaptureMouseAndKeyboardOnHover(true);
 	manager->PopWidgetStyle();
 	ImGui::End();
 }
@@ -90,8 +92,11 @@ void longmarch::_3DEngineMainMenu::RenderEngineSettingMenu()
 
 		if (ImGui::Button("Reset engine settings to default values"))
 		{
-			ImGuiUtil::bStyleDark = true;
-			ImGuiUtil::alpha = 1.0f;
+			auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
+			auto editor_hud = static_cast<EngineEditorHUD*>(manager->GetWidget("0_HUD"));
+			editor_hud->bStyleDark = true;
+			editor_hud->fStyleAlpha = 1.0f;
+
 			checkInterrutionHandle = engineConfiguration["engine"]["Pause-on-unfocused"].asBool();
 			{
 				auto e = MemoryManager::Make_shared<ToggleWindowInterrutpionEvent>(checkInterrutionHandle);
@@ -100,15 +105,18 @@ void longmarch::_3DEngineMainMenu::RenderEngineSettingMenu()
 		}
 		ImGui::Dummy(ImVec2(0, yoffset_item));
 		{
-			static auto style = ImGuiUtil::bStyleDark;
+			auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
+			auto editor_hud = static_cast<EngineEditorHUD*>(manager->GetWidget("0_HUD"));
+
+			auto style = editor_hud->bStyleDark;
 			if (ImGui::Checkbox("Dark Theme", &style))
 			{
-				ImGuiUtil::bStyleDark = style;
+				editor_hud->bStyleDark = style;
 			}
-			static auto alpha = ImGuiUtil::alpha;
+			auto alpha = editor_hud->fStyleAlpha;
 			if (ImGui::SliderFloat("Alpha", &alpha, 0.01f, 1.0f, "%.2f"))
 			{
-				ImGuiUtil::alpha = alpha;
+				editor_hud->fStyleAlpha = alpha;
 			}
 		}
 		ImGui::Dummy(ImVec2(0, yoffset_item));

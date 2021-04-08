@@ -42,8 +42,8 @@ void longmarch::PlayerControllerComSys::Update(double dt)
 	static float v_max = 30.f;
 	constexpr float rotation_speed = 180.f;
 	static float speed_up_multi = 1.0f;
-	bool bUINotHoldMouse = !ImGuiUtil::IsMouseCaptured();
-	bool bUINotHoldKeyBoard = !ImGuiUtil::IsKeyBoardCaptured();
+	bool bUINotHoldMouse = !ImGuiUtil::IsMouseCaptured(true);
+	bool bUINotHoldKeyBoard = !ImGuiUtil::IsKeyBoardCaptured(true);
 	// Apply friction
 	{
 		friction_local_v *= powf(0.001f, dt);

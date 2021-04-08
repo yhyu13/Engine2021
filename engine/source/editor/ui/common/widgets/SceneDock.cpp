@@ -15,33 +15,7 @@ longmarch::SceneDock::SceneDock()
 
 void longmarch::SceneDock::Render()
 {
-#ifndef USE_SCENE_DOCK
-	/********************************
-	* Scene Dock suffers from a wired bug that when reaching negative x values.
-	* Turn it off temporarily.
-	********************************/
-	{
-		EntityType e_type;
-		switch (Engine::GetEngineMode())
-		{
-		case Engine::ENGINE_MODE::EDITING:
-			e_type = (EntityType)EngineEntityType::EDITOR_CAMERA;
-			break;
-		default:
-			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Engine mode is not valid!");
-		}
-		auto camera = GameWorld::GetCurrent()->GetTheOnlyEntityWithType(e_type);
-		auto cam = GameWorld::GetCurrent()->GetComponent<PerspectiveCameraCom>(camera)->GetCamera();
-		const auto& prop = Engine::GetWindow()->GetWindowProperties();
-		cam->SetViewPort(Vec2u(0), Vec2u(prop.m_width, prop.m_height));
-		if (prop.IsResizable)
-		{
-			cam->cameraSettings.aspectRatioWbyH = float(prop.m_width) / float(prop.m_height);
-		}
-	}
-	return;
-#endif // !USE_SCENE_DOCK
-
+#ifdef USE_SCENE_DOCK
 	WIDGET_EARLY_QUIT();
 
 	auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
@@ -51,21 +25,20 @@ void longmarch::SceneDock::Render()
 	ImGui::SetNextWindowSize(mainMenuWindowSize, ImGuiCond_Once);
 
 	// Broderless and no padding, result in a clean capture of the whole scene
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f); 
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 	ImGui::PushStyleColor(ImGuiCol_Border, ImGuiUtil::ColGreen);
-	
+
 	if (!ImGui::Begin("Scene", &m_IsVisible, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoNav))
 	{
 		// Early out if the window is collapsed, as an optimization.
-		manager->PopWidgetStyle(); 
+		manager->PopWidgetStyle();
 		ImGui::PopStyleVar(2);
 		ImGui::PopStyleColor(1);
 		ImGui::End();
 		return;
 	}
-
-	auto input = InputManager::GetInstance(); 
+	auto input = InputManager::GetInstance();
 	auto cursor_pos = input->GetCursorPositionXY();
 	const auto& prop = Engine::GetWindow()->GetWindowProperties();
 	auto pos = ImGui::GetCurrentWindowRead()->InnerRect.Min; // In screen space (not in window space)
@@ -99,16 +72,46 @@ void longmarch::SceneDock::Render()
 		auto buffer = Renderer3D::s_Data.gpuBuffer.CurrentFinalFrameBuffer;
 		ImGui::Image(reinterpret_cast<ImTextureID>(buffer->GetRenderTargetID()), size, ImVec2(0, 1), ImVec2(1, 0));
 	}
+	
 	{
 		// Mouse over scene dock should not be captured by ImGui
-		bool isWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows) && !ImGui::IsAnyItemHovered();
-		if (isWindowHovered)
+		switch (Engine::GetWindow()->GetCursorMode())
 		{
+		case Window::CURSOR_MODE::HIDDEN_AND_FREE:
 			ImGuiUtil::IgnoreMouseCaptured = ImGuiUtil::IgnoreKeyBoardCaptured = true;
+			break;
+		default:
+			break;
 		}
 	}
+
 	manager->PopWidgetStyle();
 	ImGui::PopStyleVar(2);
 	ImGui::PopStyleColor(1);
 	ImGui::End();
+#else
+	/********************************
+* Scene Dock suffers from a wired bug that when reaching negative x values.
+* Turn it off temporarily.
+********************************/
+	{
+		EntityType e_type;
+		switch (Engine::GetEngineMode())
+		{
+		case Engine::ENGINE_MODE::EDITING:
+			e_type = (EntityType)EngineEntityType::EDITOR_CAMERA;
+			break;
+		default:
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Engine mode is not valid!");
+		}
+		auto camera = GameWorld::GetCurrent()->GetTheOnlyEntityWithType(e_type);
+		auto cam = GameWorld::GetCurrent()->GetComponent<PerspectiveCameraCom>(camera)->GetCamera();
+		const auto& prop = Engine::GetWindow()->GetWindowProperties();
+		cam->SetViewPort(Vec2u(0), Vec2u(prop.m_width, prop.m_height));
+		if (prop.IsResizable)
+		{
+			cam->cameraSettings.aspectRatioWbyH = float(prop.m_width) / float(prop.m_height);
+		}
+	}
+#endif // !USE_SCENE_DOCK
 }

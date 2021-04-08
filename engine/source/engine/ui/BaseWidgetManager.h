@@ -33,7 +33,7 @@ namespace longmarch
 		void ResetCaptureMouseAndKeyboard();
 
 		//! Capture Mouse and Kyeboard on menu being hovered, should be called as per widget needs
-		void CaptureMouseAndKeyboardOnHover();
+		void CaptureMouseAndKeyboardOnHover(bool resetIgnoreCapture);
 
 	protected:
 		LongMarch_Map<std::string, std::shared_ptr<BaseWidget>> m_WidgetLUT;

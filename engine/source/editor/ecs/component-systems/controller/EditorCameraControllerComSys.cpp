@@ -728,8 +728,8 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 	static float v_max = 30.f;
 	constexpr float rotation_speed = 180.f;
 	static float speed_up_multi = 1.0f;
-	bool bUINotHoldMouse = !ImGuiUtil::IsMouseCaptured();
-	bool bUINotHoldKeyBoard = !ImGuiUtil::IsKeyBoardCaptured();
+	bool bUINotHoldMouse = !ImGuiUtil::IsMouseCaptured(true);
+	bool bUINotHoldKeyBoard = !ImGuiUtil::IsKeyBoardCaptured(true);
 
 	// Apply friction (for editor camera to slow down on releasing control)
 	{
@@ -754,6 +754,9 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			break;
 		}
 	}
+
+
+
 	// Keyboard & Mouse inputs
 	{
 		if (input->IsKeyTriggered(KEY_LEFT_SHIFT) && bUINotHoldKeyBoard)
@@ -761,11 +764,27 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			speed_up_multi = (speed_up_multi == 1.0f) ? 2.0f : (speed_up_multi == 2.0f) ? 1.0f : 1.0f;
 			v_max = (v_max == 30.0f) ? 40.0f : (v_max == 40.0f) ? 30.0f : 30.0f;
 		}
+
+		if (input->IsMouseButtonReleased(MOUSE_BUTTON_MIDDLE) || input->IsMouseButtonReleased(MOUSE_BUTTON_RIGHT))
+		{
+			// Set cursor mode to normal before handling any mouse inputs
+			auto queue = EventQueue<EngineEventType>::GetInstance();
+			auto e = MemoryManager::Make_shared<EngineCursorSwitchModeEvent>(LongMarch_ToUnderlying(Window::CURSOR_MODE::NORMAL));
+			queue->Publish(e, 0); // By publish in main thread in next frame
+		}
+
 		switch (cam->type)
 		{
 		case longmarch::PerspectiveCameraType::LOOK_AT:
 			if (input->IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && bUINotHoldMouse)
 			{
+				// Unlimit cursor movement and hide cursor
+				{
+					auto queue = EventQueue<EngineEventType>::GetInstance();
+					auto e = MemoryManager::Make_shared<EngineCursorSwitchModeEvent>(LongMarch_ToUnderlying(Window::CURSOR_MODE::HIDDEN_AND_FREE));
+					queue->Publish(e, 0); // By publish in main thread in next frame
+				}
+
 				mouse_delta_pixel = input->GetCursorPositionDeltaXY();
 				constexpr float pixel_threshold = 1.0f;
 				constexpr float pixel_max_threshold = 50.0f;
@@ -788,18 +807,28 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 				{
 					rv_pitch += -y_multi * DEG2RAD * Geommath::WorldRight;
 				}
+				break;
 			}
+			// If RMB is not pressed, do UE4 like mouse scroll:
+			// panning on local front/back
 			{
 				auto& offsets = input->GetMouseScrollOffsets();
 				float y_offset = offsets.y;
 				cam->SetZoom(cam->GetZoom() - y_offset * speed_up_multi);
+				break;
 			}
-			break;
 		case longmarch::PerspectiveCameraType::FIRST_PERSON:
 			// UE4 like movement with MMB pressed :
 			// panning on local right / left and global up / down
 			if (input->IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE) && bUINotHoldMouse)
 			{
+				// Unlimit cursor movement and hide cursor
+				{
+					auto queue = EventQueue<EngineEventType>::GetInstance();
+					auto e = MemoryManager::Make_shared<EngineCursorSwitchModeEvent>(LongMarch_ToUnderlying(Window::CURSOR_MODE::HIDDEN_AND_FREE));
+					queue->Publish(e, 0); // By publish in main thread in next frame
+				}
+
 				mouse_delta_pixel = input->GetCursorPositionDeltaXY();
 				constexpr float pixel_threshold = 1.0f;
 				constexpr float pixel_max_threshold = 50.0f;
@@ -829,6 +858,13 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			// Rotate with global yaw and local pitch
 			if (input->IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && bUINotHoldMouse)
 			{
+				// Unlimit cursor movement and hide cursor
+				{
+					auto queue = EventQueue<EngineEventType>::GetInstance();
+					auto e = MemoryManager::Make_shared<EngineCursorSwitchModeEvent>(LongMarch_ToUnderlying(Window::CURSOR_MODE::HIDDEN_AND_FREE));
+					queue->Publish(e, 0); // By publish in main thread in next frame
+				}
+
 				if (input->IsKeyPressed(KEY_W))
 				{
 					friction_local_v += v_speed * Geommath::WorldFront;

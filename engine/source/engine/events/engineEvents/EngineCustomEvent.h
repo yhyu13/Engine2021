@@ -59,6 +59,16 @@ namespace longmarch
 		}
 	};
 
+	struct EngineCursorSwitchModeEvent : public Event<EngineEventType> {
+		explicit EngineCursorSwitchModeEvent(int mode)
+			:
+			Event(EngineEventType::ENG_WINDOW_CURSOR_SWITCH_MODE),
+			m_mode(mode)
+		{
+		}
+		int m_mode;
+	};
+
 	struct EngineSaveSceneBeginEvent : public Event<EngineIOEventType> {
 		explicit EngineSaveSceneBeginEvent(const std::string& filepath, void* world)
 			:

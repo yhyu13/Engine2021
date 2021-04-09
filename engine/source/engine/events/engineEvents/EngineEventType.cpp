@@ -49,7 +49,7 @@ std::ostream& operator<<(std::ostream& o, longmarch::EngineGraphicsEventType n) 
 		PROCESS_VAL(longmarch::EngineGraphicsEventType::SWITCH_TONE_MAPPING);
 		PROCESS_VAL(longmarch::EngineGraphicsEventType::SET_GAMMA_VALUE);
 		PROCESS_VAL(longmarch::EngineGraphicsEventType::SWITCH_SHADOW_RESLOTION);
-		PROCESS_VAL(longmarch::EngineGraphicsEventType::SET_AO_VALUE);
+		PROCESS_VAL(longmarch::EngineGraphicsEventType::SET_SSAO_VALUE);
 	default: s = "(invalid value)"; break;
 	}
 #undef PROCESS_VAL

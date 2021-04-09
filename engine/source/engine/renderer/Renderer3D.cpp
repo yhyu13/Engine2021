@@ -105,6 +105,7 @@ void longmarch::Renderer3D::Init()
 		s_Data.gBuffer_display_mode = 0;
 		s_Data.toneMapping_mode = 0;
 		s_Data.value_gamma = 2.2f;
+		s_Data.ambient = 0.1f;
 
 		{
 			const auto& motion_blur_setttings = graphicsConfiguration["Motion-blur"];
@@ -117,19 +118,26 @@ void longmarch::Renderer3D::Init()
 			s_Data.SMAASettings.enable = smaa_settings["Enable"].asBool();
 			s_Data.SMAASettings.mode = smaa_settings["Mode"].asInt();
 		}
-
 		{
-			const auto& ao_settings = graphicsConfiguration["AO"];
-			s_Data.AOSettings.enable = ao_settings["Enable"].asBool();
-			s_Data.AOSettings.ao_gaussian_kernal = ao_settings["Gaussian-kernel"].asUInt();
-			s_Data.AOSettings.ao_gaussian_kernal = (glm::clamp)(s_Data.AOSettings.ao_gaussian_kernal, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX);
-			s_Data.AOSettings.ao_samples = ao_settings["Num-samples"].asUInt();
-			s_Data.AOSettings.ao_sample_resolution_downScale = ao_settings["Res-down-scale"].asUInt();
-			s_Data.AOSettings.ao_sample_radius = ao_settings["Radius"].asFloat();
-			s_Data.AOSettings.ao_scale = ao_settings["Scale"].asFloat();
-			s_Data.AOSettings.ao_power = ao_settings["Power"].asFloat();
-			s_Data.AOSettings.enable_indirect_light_bounce = ao_settings["Indirect-bounce"].asBool();
-			s_Data.AOSettings.indirect_light_bounce_scale = ao_settings["Indirect-bounce-strength"].asFloat();
+			const auto& gi_settings = graphicsConfiguration["SSGI"];
+			s_Data.SSGISettings.enable = gi_settings["Enable"].asBool();
+			s_Data.SSGISettings.gi_gaussian_kernal = gi_settings["Gaussian-kernel"].asUInt();
+			s_Data.SSGISettings.gi_gaussian_kernal = (glm::clamp)(s_Data.SSGISettings.gi_gaussian_kernal, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX);
+			s_Data.SSGISettings.gi_samples = gi_settings["Num-samples"].asUInt();
+			s_Data.SSGISettings.gi_sample_resolution_downScale = gi_settings["Res-down-scale"].asUInt();
+			s_Data.SSGISettings.gi_sample_radius = gi_settings["Radius"].asFloat();
+			s_Data.SSGISettings.gi_strength = gi_settings["Strength"].asFloat();
+		}
+		{
+			const auto& ao_settings = graphicsConfiguration["SSAO"];
+			s_Data.SSAOSettings.enable = ao_settings["Enable"].asBool();
+			s_Data.SSAOSettings.ao_gaussian_kernal = ao_settings["Gaussian-kernel"].asUInt();
+			s_Data.SSAOSettings.ao_gaussian_kernal = (glm::clamp)(s_Data.SSAOSettings.ao_gaussian_kernal, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX);
+			s_Data.SSAOSettings.ao_samples = ao_settings["Num-samples"].asUInt();
+			s_Data.SSAOSettings.ao_sample_resolution_downScale = ao_settings["Res-down-scale"].asUInt();
+			s_Data.SSAOSettings.ao_sample_radius = ao_settings["Radius"].asFloat();
+			s_Data.SSAOSettings.ao_scale = ao_settings["Scale"].asFloat();
+			s_Data.SSAOSettings.ao_power = ao_settings["Power"].asFloat();
 		}
 		{
 			const auto& ssr_settings = graphicsConfiguration["SSR"];
@@ -179,9 +187,9 @@ void longmarch::Renderer3D::Init()
 		{
 			ENGINE_INFO("TAA requires Deferred Renderering as 'True' in the engine configuration file!");
 		}
-		if (s_Data.AOSettings.enable && !s_Data.enable_deferredShading)
+		if (s_Data.SSAOSettings.enable && !s_Data.enable_deferredShading)
 		{
-			ENGINE_INFO("Alchemy AO (SSAO) requires Deferred Renderering as 'True' in the engine configuration file!");
+			ENGINE_INFO("Alchemy SSAO requires Deferred Renderering as 'True' in the engine configuration file!");
 		}
 
 		/**************************************************************
@@ -194,10 +202,12 @@ void longmarch::Renderer3D::Init()
 
 		s_Data.ShaderMap["TransparentForwardShader"] = Shader::Create("$shader:forward_shader.vert", "$shader:forward_shader.frag");
 		s_Data.ShaderMap["DeferredShader"] = Shader::Create("$shader:deferred_shader.vert", "$shader:deferred_shader.frag");
-		s_Data.ShaderMap["DynamicSSAOShader"] = Shader::Create("$shader:dynamic_ao_shader.vert", "$shader:dynamic_ao_shader.frag");
+		s_Data.ShaderMap["DynamicSSGIShader"] = Shader::Create("$shader:dynamic_ssgi_shader.vert", "$shader:dynamic_ssgi_shader.frag");
+		s_Data.ShaderMap["DynamicSSGIBlendShader"] = Shader::Create("$shader:dynamic_ssgi_blend_shader.vert", "$shader:dynamic_ssgi_blend_shader.frag");
+		s_Data.ShaderMap["DynamicSSAOShader"] = Shader::Create("$shader:dynamic_ssao_shader.vert", "$shader:dynamic_ssao_shader.frag");
 		//s_Data.ShaderMap["DynamicSSAOColorShader"] = Shader::Create("$shader:dynamic_ao_color_shader.vert", "$shader:dynamic_ao_color_shader.frag");
 		s_Data.ShaderMap["DynamicSSRShader"] = Shader::Create("$shader:dynamic_ssr_shader.vert", "$shader:dynamic_ssr_shader.frag");
-		s_Data.ShaderMap["DynamicSSRColorShader"] = Shader::Create("$shader:dynamic_ssr_color_shader.vert", "$shader:dynamic_ssr_color_shader.frag");
+		s_Data.ShaderMap["DynamicSSRBlendShader"] = Shader::Create("$shader:dynamic_ssr_blend_shader.vert", "$shader:dynamic_ssr_blend_shader.frag");
 		s_Data.ShaderMap["Bloom_Brightness_Filter"] = Shader::Create("$shader:dynamic_bloom_brightness_filter.vert", "$shader:dynamic_bloom_brightness_filter.frag");
 		s_Data.ShaderMap["Bloom_Blend"] = Shader::Create("$shader:dynamic_bloom_blend_shader.vert", "$shader:dynamic_bloom_blend_shader.frag");
 		s_Data.ShaderMap["DOF_Dpeth"] = Shader::Create("$shader:dynamic_dof_depth_shader.vert", "$shader:dynamic_dof_depth_shader.frag");
@@ -221,7 +231,7 @@ void longmarch::Renderer3D::Init()
 		s_Data.ShaderMap["GaussianBlur_Cube_PointLight"] = Shader::Create("$shader:guassian_blur_cube_point_light.vert", "$shader:guassian_blur_cube_point_light.frag", "$shader:cubemap_geomtry_shader.geom");
 		s_Data.ShaderMap["GaussianBlur_Comp_H"] = Shader::Create("$shader:guassian_blur_compute_H.comp");
 		s_Data.ShaderMap["GaussianBlur_Comp_V"] = Shader::Create("$shader:guassian_blur_compute_V.comp");
-		s_Data.ShaderMap["GaussianBlur_AO"] = Shader::Create("$shader:dynamic_ao_guassian_blur.vert", "$shader:dynamic_ao_guassian_blur.frag");
+		s_Data.ShaderMap["BilateralBlur"] = Shader::Create("$shader:bilateral_blur.vert", "$shader:bilateral_blur.frag");
 
 		s_Data.ShaderMap["ParticleShader"] = Shader::Create("$shader:particle_shader.vert", "$shader:particle_shader.frag");
 
@@ -278,7 +288,7 @@ void longmarch::Renderer3D::Init()
 		for (auto it = s_Data.ShaderMap.begin(); it != s_Data.ShaderMap.end(); ++it)
 		{
 			it->second->Bind();
-			it->second->SetFloat3("Ia", Vec3f(0.2));
+			it->second->SetFloat3("Ia", Vec3f(s_Data.ambient));
 
 			it->second->SetInt("u_AlbedoTexture", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::ALBEDO));
 			it->second->SetInt("u_NormalTexture", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(Material::MAT_TEXTURE_TYPE::NORMAL));
@@ -292,6 +302,7 @@ void longmarch::Renderer3D::Init()
 			it->second->SetInt("g_Albedo_Emssive", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::ALBEDO_EMSSIVE));
 			it->second->SetInt("g_BackedAO_Metallic_Roughness", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::BAKEDAO_METALLIC_ROUGHNESS));
 			it->second->SetInt("u_DynamicSSAO", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM));
+			it->second->SetInt("u_DynamicSSGI", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM) + 1);
 			it->second->SetInt("u_DynamicSSR", s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM) + 1);
 
 			it->second->SetInt("u_FragTexture", s_Data.fragTexture_0_slot);
@@ -315,12 +326,12 @@ void longmarch::Renderer3D::Init()
 		LongMarch_Vector<std::string> clusteredShader = { "BuildAABBGridCompShader", "CullLightsCompShader","ClusterShader", "ClusterDebugShader"};
 		LongMarch_Vector<std::string> deferredShader = { "GBufferShader", "DeferredShader" };
 
-		s_Data.ListRenderShadersToPopulateData.insert(s_Data.ListRenderShadersToPopulateData.end(), forwardShader.begin(), forwardShader.end());
-		s_Data.ListRenderShadersToPopulateData.insert(s_Data.ListRenderShadersToPopulateData.end(), clusteredShader.begin(), clusteredShader.end());
-		s_Data.ListRenderShadersToPopulateData.insert(s_Data.ListRenderShadersToPopulateData.end(), deferredShader.begin(), deferredShader.end());
+		s_Data.ListRenderShadersToPopulateShadowData.insert(s_Data.ListRenderShadersToPopulateShadowData.end(), forwardShader.begin(), forwardShader.end());
+		s_Data.ListRenderShadersToPopulateShadowData.insert(s_Data.ListRenderShadersToPopulateShadowData.end(), clusteredShader.begin(), clusteredShader.end());
+		s_Data.ListRenderShadersToPopulateShadowData.insert(s_Data.ListRenderShadersToPopulateShadowData.end(), deferredShader.begin(), deferredShader.end());
 
-		LongMarch_Vector<std::string> MiscShader = {"ToneMapping", "ParticleShader", "BBoxShader", "SkyboxShader", "TAAShader", "MotionBlur", "DynamicSSAOShader", "GaussianBlur_AO", "DynamicSSRShader", "DOF_Blend"};
-		s_Data.ListShadersToPopulateData = s_Data.ListRenderShadersToPopulateData;
+		LongMarch_Vector<std::string> MiscShader = {"ToneMapping", "ParticleShader", "BBoxShader", "SkyboxShader", "TAAShader", "MotionBlur", "DynamicSSAOShader", "DynamicSSGIShader", "BilateralBlur", "DynamicSSRShader", "DOF_Blend"};
+		s_Data.ListShadersToPopulateData = s_Data.ListRenderShadersToPopulateShadowData;
 		s_Data.ListShadersToPopulateData.insert(s_Data.ListShadersToPopulateData.end(), MiscShader.begin(), MiscShader.end());
 
 		/**************************************************************
@@ -650,7 +661,8 @@ void longmarch::Renderer3D::Init()
 			queue->Subscribe(EngineGraphicsEventType::TOGGLE_SMAA, &Renderer3D::_ON_TOGGLE_SMAA);
 			queue->Subscribe(EngineGraphicsEventType::SWITCH_TONE_MAPPING, &Renderer3D::_ON_SWITCH_TONEMAP_MODE);
 			queue->Subscribe(EngineGraphicsEventType::SET_GAMMA_VALUE, &Renderer3D::_ON_SET_GAMMA_VALUE);
-			queue->Subscribe(EngineGraphicsEventType::SET_AO_VALUE, &Renderer3D::_ON_SET_AO_VALUE);
+			queue->Subscribe(EngineGraphicsEventType::SET_SSGI_VALUE, &Renderer3D::_ON_SET_SSGI_VALUE);
+			queue->Subscribe(EngineGraphicsEventType::SET_SSAO_VALUE, &Renderer3D::_ON_SET_SSAO_VALUE);
 			queue->Subscribe(EngineGraphicsEventType::SET_SSR_VALUE, &Renderer3D::_ON_SET_SSR_VALUE);
 			queue->Subscribe(EngineGraphicsEventType::SET_BLOOM_VALUE, &Renderer3D::_ON_SET_BLOOM_VALUE); 
 			queue->Subscribe(EngineGraphicsEventType::SET_DOF_VALUE, &Renderer3D::_ON_SET_DOF_VALUE);
@@ -722,19 +734,29 @@ void longmarch::Renderer3D::_ON_SET_GAMMA_VALUE(EventQueue<EngineGraphicsEventTy
 	s_Data.value_gamma = event->m_value;
 }
 
-void longmarch::Renderer3D::_ON_SET_AO_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e)
+void longmarch::Renderer3D::_ON_SET_SSGI_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e)
 {
-	auto event = std::static_pointer_cast<SetAOValueEvent>(e);
-	s_Data.AOSettings.enable = event->m_enable;
-	s_Data.AOSettings.ao_gaussian_kernal = event->m_gaussKernel;
-	s_Data.AOSettings.ao_gaussian_kernal = (glm::clamp)(s_Data.AOSettings.ao_gaussian_kernal, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX);
-	s_Data.AOSettings.ao_samples = event->m_sample;
-	s_Data.AOSettings.ao_sample_radius = event->m_sampleRadius;
-	s_Data.AOSettings.ao_sample_resolution_downScale = event->m_sampleResolutionDownScale;
-	s_Data.AOSettings.ao_scale = event->m_scale;
-	s_Data.AOSettings.ao_power = event->m_power;
-	s_Data.AOSettings.enable_indirect_light_bounce = event->m_enable_indirect_bounce;
-	s_Data.AOSettings.indirect_light_bounce_scale= event->m_indirect_bounce_scale;
+	auto event = std::static_pointer_cast<SetSSGIValueEvent>(e);
+	s_Data.SSGISettings.enable = event->m_enable;
+	s_Data.SSGISettings.gi_gaussian_kernal = event->m_gaussKernel;
+	s_Data.SSGISettings.gi_gaussian_kernal = (glm::clamp)(s_Data.SSGISettings.gi_gaussian_kernal, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX);
+	s_Data.SSGISettings.gi_samples = event->m_sample;
+	s_Data.SSGISettings.gi_sample_radius = event->m_sampleRadius;
+	s_Data.SSGISettings.gi_sample_resolution_downScale = event->m_sampleResolutionDownScale;
+	s_Data.SSGISettings.gi_strength = event->m_strength;
+}
+
+void longmarch::Renderer3D::_ON_SET_SSAO_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e)
+{
+	auto event = std::static_pointer_cast<SetSSAOValueEvent>(e);
+	s_Data.SSAOSettings.enable = event->m_enable;
+	s_Data.SSAOSettings.ao_gaussian_kernal = event->m_gaussKernel;
+	s_Data.SSAOSettings.ao_gaussian_kernal = (glm::clamp)(s_Data.SSAOSettings.ao_gaussian_kernal, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX);
+	s_Data.SSAOSettings.ao_samples = event->m_sample;
+	s_Data.SSAOSettings.ao_sample_radius = event->m_sampleRadius;
+	s_Data.SSAOSettings.ao_sample_resolution_downScale = event->m_sampleResolutionDownScale;
+	s_Data.SSAOSettings.ao_scale = event->m_scale;
+	s_Data.SSAOSettings.ao_power = event->m_power;
 }
 
 void longmarch::Renderer3D::_ON_SET_SSR_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e)
@@ -2116,6 +2138,7 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 		{
 			const auto& shaderProg = s_Data.ShaderMap[shaderName];
 			shaderProg->Bind();
+			shaderProg->SetFloat3("Ia", Vec3f(s_Data.ambient));
 			shaderProg->SetInt("hasEnvLighting", s_Data.EnvMapping.enable_env_mapping && s_Data.EnvMapping.CurrentEnvMapName != "");
 			shaderProg->SetFloat("u_Time", Engine::GetTotalTime());
 			shaderProg->SetInt("u_numLights", s_Data.NUM_LIGHT);
@@ -2222,7 +2245,7 @@ void longmarch::Renderer3D::_PopulateShadowPassVariables()
 					}
 				}
 			}
-			for (auto&& shaderName : s_Data.ListRenderShadersToPopulateData)
+			for (auto&& shaderName : s_Data.ListRenderShadersToPopulateShadowData)
 			{
 				const auto& shaderProg = s_Data.ShaderMap[shaderName];
 				shaderProg->Bind();
@@ -2262,7 +2285,7 @@ void longmarch::Renderer3D::_PopulateShadowPassVariables()
 					}
 				}
 			}
-			for (auto&& shaderName : s_Data.ListRenderShadersToPopulateData)
+			for (auto&& shaderName : s_Data.ListRenderShadersToPopulateShadowData)
 			{
 				const auto& shaderProg = s_Data.ShaderMap[shaderName];
 				shaderProg->Bind();
@@ -2302,7 +2325,7 @@ void longmarch::Renderer3D::_PopulateShadowPassVariables()
 					}
 				}
 			}
-			for (auto&& shaderName : s_Data.ListRenderShadersToPopulateData)
+			for (auto&& shaderName : s_Data.ListRenderShadersToPopulateShadowData)
 			{
 				const auto& shaderProg = s_Data.ShaderMap[shaderName];
 				shaderProg->Bind();
@@ -2386,6 +2409,23 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 	if (s_Data.RENDER_PIPE == Renderer3D::RENDER_PIPE::DEFERRED)
 	{
 		{
+			Renderer3D::_BeginDynamicSSGIPass(s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer);
+			auto temp = s_Data.gpuBuffer.CurrentFrameBuffer;
+			Renderer3D::_BeginSSGIPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_2);
+
+			//// Since both depth buffer and stencil buffer are NOT transfered automatically
+			//// we manuuly transfer depth from old frame buffer to new frame buffer
+			//// Notice CurrentFrameBuffer is now FrameBuffer_2 as we have assigned in the previous function call
+			//RenderCommand::TransferDepthBit(
+			//	temp->GetRendererID(),
+			//	temp->GetBufferSize().x,
+			//	temp->GetBufferSize().y,
+
+			//	s_Data.gpuBuffer.CurrentFrameBuffer->GetRendererID(),
+			//	s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().x,
+			//	s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().y
+			//);
+
 			// Perform SSR after rendering all opaques, ignore transparents and particles for now
 			Renderer3D::_BeginDynamicSSRPass(
 				camera,
@@ -2393,21 +2433,8 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 				f_setVFCullingParam,
 				f_setDistanceCullingParam,
 				f_setRenderShaderName,
-				s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer);
-			auto old = s_Data.gpuBuffer.CurrentFrameBuffer;
-			Renderer3D::_BeginSSRPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_2);
-			
-			// Since both depth buffer and stencil buffer are NOT transfered automatically
-			// Transfer depth from old frame buffer to new frame buffer
-			RenderCommand::TransferDepthBit(
-				old->GetRendererID(),
-				old->GetBufferSize().x,
-				old->GetBufferSize().y,
-
-				s_Data.gpuBuffer.CurrentFrameBuffer->GetRendererID(),
-				s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().x,
-				s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().y
-			);
+				s_Data.gpuBuffer.CurrentFrameBuffer);
+			Renderer3D::_BeginSSRPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_1);
 		}
 	}
 	{
@@ -2418,24 +2445,123 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 	}
 }
 
+void longmarch::Renderer3D::_BeginDynamicSSGIPass(const std::shared_ptr<FrameBuffer>& colorBuffer_in)
+{
+	if (s_Data.SSGISettings.enable)
+	{
+		GPU_TIME(DynamicSSGI);
+		{
+			// Clear SSGI buffer regardless if SSGI is enabled because it will always be used
+			if (auto downscale = s_Data.SSGISettings.gi_sample_resolution_downScale;
+				s_Data.gpuBuffer.CurrentDynamicSSGIBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the SSGI with potentially downscaled resolution
+			{
+				s_Data.gpuBuffer.CurrentDynamicSSGIBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+			}
+
+			RenderCommand::DepthTest(true, true);
+			RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0)); // Clear w component to 1 as it stores the SSGI value, and 1 stands for no occlusion
+
+			s_Data.gpuBuffer.CurrentDynamicSSGIBuffer->Bind();
+			RenderCommand::Clear();
+		}
+
+		//------------------------------------------------------------------------------
+
+		// SSGI/SSDO pass
+		RenderCommand::PolyModeFill();			// Draw full model
+		RenderCommand::Blend(false);			// Disable blend
+		RenderCommand::DepthTest(false, false);	// Disable depth test
+		RenderCommand::CullFace(false, false);
+
+		auto& GIBuffer = s_Data.gpuBuffer.CurrentDynamicSSGIBuffer;
+		Vec2u traget_resoluation = GIBuffer->GetBufferSize();
+		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+
+		const auto& gi_shader = s_Data.ShaderMap["DynamicSSGIShader"];
+		s_Data.CurrentShader = gi_shader;
+		s_Data.CurrentShader->Bind();
+		s_Data.CurrentShader->SetFloat("scale_indirect_bounce", s_Data.SSGISettings.gi_strength);
+		s_Data.CurrentShader->SetInt("num_sample", s_Data.SSGISettings.gi_samples);
+		s_Data.CurrentShader->SetFloat("sample_radius", s_Data.SSGISettings.gi_sample_radius);
+		GIBuffer->Bind();
+
+		// Bind g buffer content
+		s_Data.gpuBuffer.CurrentGBuffer->BindTextures(
+			{
+				GBuffer::GBUFFER_TEXTURE_TYPE::DEPTH,
+				GBuffer::GBUFFER_TEXTURE_TYPE::NORMAL,
+				GBuffer::GBUFFER_TEXTURE_TYPE::ALBEDO_EMSSIVE,
+			},
+			s_Data.fragTexture_empty_slot
+			);
+
+		// Bind prev frame buffer
+		colorBuffer_in->BindTexture(s_Data.fragTexture_3_slot);
+
+		// Render quad
+		Renderer3D::_RenderFullScreenQuad();
+
+		//------------------------------------------------------------------------------
+
+		// Bilaterl blurring
+		const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur"];
+		Vec2u traget_resoluation2(traget_resoluation);
+		static auto GIBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+		if (GIBackBuffer->GetBufferSize() != traget_resoluation2)
+		{
+			GIBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+		}
+		auto kernel_size = s_Data.SSGISettings.gi_gaussian_kernal;
+#ifdef LongMarch_SCALE_GUASSIAN_KERNEL_WITH_RESOLUTION
+		auto kernel_ratio = std::min(traget_resoluation2.x, traget_resoluation2.y) / 1080.0f;
+		kernel_size *= kernel_ratio;
+		kernel_size = std::max(kernel_size, LongMarch_GUASSIAN_KERNEL_MIN);
+#endif
+		auto [length, offset, weight] = s_Data.gpuBuffer.GuassinKernelHalfBilinear[kernel_size];
+		{
+			s_Data.CurrentShader = guassian_shader;
+			s_Data.CurrentShader->Bind();
+			s_Data.CurrentShader->SetInt("u_length", length);
+			weight->Bind(1);
+			offset->Bind(2);
+			{
+				RenderCommand::SetViewport(0, 0, traget_resoluation2.x, traget_resoluation2.y);
+				// Bind shadow buffer
+				GIBackBuffer->Bind();
+				s_Data.CurrentShader->SetInt("u_Horizontal", 1);
+				GIBuffer->BindTexture(s_Data.fragTexture_0_slot);
+				_RenderFullScreenQuad();
+			}
+			{
+				RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+				// Bind shadow buffer
+				GIBuffer->Bind();
+				s_Data.CurrentShader->SetInt("u_Horizontal", 0);
+				GIBackBuffer->BindTexture(s_Data.fragTexture_0_slot);
+				_RenderFullScreenQuad();
+			}
+		}
+	}
+}
+
 void longmarch::Renderer3D::_BeginDynamicSSAOPass(const std::shared_ptr<FrameBuffer>& colorBuffer_in)
 {
 	{
-		// Clear AO buffer regardless if AO is enabled because it will always be used
-		if (auto downscale = s_Data.AOSettings.ao_sample_resolution_downScale;
-			s_Data.gpuBuffer.CurrentDynamicSSAOBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the AO with potentially downscaled resolution
+		// Clear SSAO buffer regardless if SSAO is enabled because it will always be used
+		if (auto downscale = s_Data.SSAOSettings.ao_sample_resolution_downScale;
+			s_Data.gpuBuffer.CurrentDynamicSSAOBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the SSAO with potentially downscaled resolution
 		{
 			s_Data.gpuBuffer.CurrentDynamicSSAOBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::UINT8_R);
 		}
 
 		RenderCommand::DepthTest(true, true);
-		RenderCommand::SetClearColor(Vec4f(1, 1, 1, 1)); // Clear w component to 1 as it stores the AO value, and 1 stands for no occlusion
+		RenderCommand::SetClearColor(Vec4f(1, 1, 1, 1)); // Clear w component to 1 as it stores the SSAO value, and 1 stands for no occlusion
 
 		s_Data.gpuBuffer.CurrentDynamicSSAOBuffer->Bind();
 		RenderCommand::Clear();
 	}
 
-	if (s_Data.AOSettings.enable)
+	if (s_Data.SSAOSettings.enable)
 	{
 		GPU_TIME(DynamicSSAO);
 
@@ -2454,16 +2580,12 @@ void longmarch::Renderer3D::_BeginDynamicSSAOPass(const std::shared_ptr<FrameBuf
 		const auto& ao_shader = s_Data.ShaderMap["DynamicSSAOShader"];
 		s_Data.CurrentShader = ao_shader;
 		s_Data.CurrentShader->Bind();
-		s_Data.CurrentShader->SetInt("enabled_indirect_bounce", s_Data.AOSettings.enable_indirect_light_bounce); // TODO, remove this parameter after SSGI is implemeted
-		s_Data.CurrentShader->SetFloat("scale_indirect_bounce", s_Data.AOSettings.indirect_light_bounce_scale); // TODO, remove this parameter after SSGI is implemeted
-		s_Data.CurrentShader->SetInt("num_sample", s_Data.AOSettings.ao_samples);
-		s_Data.CurrentShader->SetFloat("sample_radius", s_Data.AOSettings.ao_sample_radius);
-		s_Data.CurrentShader->SetFloat("scale_s", s_Data.AOSettings.ao_scale);
-		s_Data.CurrentShader->SetFloat("power_k", s_Data.AOSettings.ao_power);
+		s_Data.CurrentShader->SetInt("num_sample", s_Data.SSAOSettings.ao_samples);
+		s_Data.CurrentShader->SetFloat("sample_radius", s_Data.SSAOSettings.ao_sample_radius);
+		s_Data.CurrentShader->SetFloat("scale_s", s_Data.SSAOSettings.ao_scale);
+		s_Data.CurrentShader->SetFloat("power_k", s_Data.SSAOSettings.ao_power);
 		AOBuffer->Bind();
 
-		// Bind skybox
-		_BindSkyBoxTexture();
 		// Bind g buffer content
 		s_Data.gpuBuffer.CurrentGBuffer->BindTextures(
 			{
@@ -2482,14 +2604,14 @@ void longmarch::Renderer3D::_BeginDynamicSSAOPass(const std::shared_ptr<FrameBuf
 		//------------------------------------------------------------------------------
 
 		// Bilaterl blurring
-		const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur_AO"];
+		const auto& guassian_shader = s_Data.ShaderMap["BilateralBlur"];
 		Vec2u traget_resoluation2(traget_resoluation);
 		static auto AOBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::UINT8_R);
 		if (AOBackBuffer->GetBufferSize() != traget_resoluation2)
 		{
 			AOBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::UINT8_R);
 		}
-		auto kernel_size = s_Data.AOSettings.ao_gaussian_kernal;
+		auto kernel_size = s_Data.SSAOSettings.ao_gaussian_kernal;
 #ifdef LongMarch_SCALE_GUASSIAN_KERNEL_WITH_RESOLUTION
 		auto kernel_ratio = std::min(traget_resoluation2.x, traget_resoluation2.y) / 1080.0f;
 		kernel_size *= kernel_ratio;
@@ -3022,6 +3144,95 @@ void longmarch::Renderer3D::BeginPostProcessing()
 	}
 }
 
+void longmarch::Renderer3D::_BeginSSGIPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
+{
+	if (s_Data.SSGISettings.enable)
+	{
+		GPU_TIME(SSGI_Pass);
+		RenderCommand::PolyModeFill();			// Draw full model
+		RenderCommand::DepthTest(false, false);	// Disable depth testing
+		RenderCommand::CullFace(false, false);	// Disable face culling
+		RenderCommand::Blend(false);
+
+		if (framebuffer_out)
+		{
+			framebuffer_out->Bind();
+			Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
+			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+		}
+		else
+		{
+			RenderCommand::BindDefaultFrameBuffer();
+			Vec2u traget_resoluation = s_Data.window_size;
+			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+		}
+
+		s_Data.CurrentShader = s_Data.ShaderMap["DynamicSSGIBlendShader"];
+		s_Data.CurrentShader->Bind();
+		framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
+		s_Data.gpuBuffer.CurrentDynamicSSAOBuffer->BindTexture(s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM));
+		s_Data.gpuBuffer.CurrentDynamicSSGIBuffer->BindTexture(s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM) + 1);
+		// Render quad
+		Renderer3D::_RenderFullScreenQuad();
+	}
+	else
+	{
+		RenderCommand::TransferColorBit(
+			framebuffer_in->GetRendererID(),
+			framebuffer_in->GetBufferSize().x,
+			framebuffer_in->GetBufferSize().y,
+
+			framebuffer_out->GetRendererID(),
+			framebuffer_out->GetBufferSize().x,
+			framebuffer_out->GetBufferSize().y
+		);
+	}
+	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
+}
+
+//void longmarch::Renderer3D::_BeginSSAOPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
+//{
+//	if (s_Data.SSRSettings.enable)
+//	{
+//		RenderCommand::PolyModeFill();			// Draw full model
+//		RenderCommand::DepthTest(false, false);	// Disable depth testing
+//		RenderCommand::CullFace(false, false);	// Disable face culling
+//		RenderCommand::Blend(false);
+//
+//		if (framebuffer_out)
+//		{
+//			framebuffer_out->Bind();
+//			Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
+//			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+//		}
+//		else
+//		{
+//			RenderCommand::BindDefaultFrameBuffer();
+//			Vec2u traget_resoluation = s_Data.window_size;
+//			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
+//		}
+//
+//		s_Data.CurrentShader = s_Data.ShaderMap["DynamicSSAOColorShader"];
+//		s_Data.CurrentShader->Bind();
+//		framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
+//		s_Data.gpuBuffer.CurrentDynamicSSAOBuffer->BindTexture(s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM));
+//		// Render quad
+//		Renderer3D::_RenderFullScreenQuad();
+//	}
+//	else
+//	{
+//		RenderCommand::TransferColorBit(
+//			framebuffer_in->GetRendererID(),
+//			framebuffer_in->GetBufferSize().x,
+//			framebuffer_in->GetBufferSize().y,
+//
+//			framebuffer_out->GetRendererID(),
+//			framebuffer_out->GetBufferSize().x,
+//			framebuffer_out->GetBufferSize().y
+//		);
+//	}
+//	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
+//}
 
 void longmarch::Renderer3D::_BeginSSRPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
@@ -3046,7 +3257,7 @@ void longmarch::Renderer3D::_BeginSSRPass(const std::shared_ptr<FrameBuffer>& fr
 			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 		}
 
-		s_Data.CurrentShader = s_Data.ShaderMap["DynamicSSRColorShader"];
+		s_Data.CurrentShader = s_Data.ShaderMap["DynamicSSRBlendShader"];
 		s_Data.CurrentShader->Bind();
 		framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
 		s_Data.gpuBuffer.CurrentDynamicSSRBuffer->BindTexture(s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM) + 1);
@@ -3066,50 +3277,6 @@ void longmarch::Renderer3D::_BeginSSRPass(const std::shared_ptr<FrameBuffer>& fr
 		);
 	}
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
-}
-
-void longmarch::Renderer3D::_BeginSSAOPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
-{
-	//if (s_Data.SSRSettings.enable)
-	//{
-	//	RenderCommand::PolyModeFill();			// Draw full model
-	//	RenderCommand::DepthTest(false, false);	// Disable depth testing
-	//	RenderCommand::CullFace(false, false);	// Disable face culling
-	//	RenderCommand::Blend(false);
-
-	//	if (framebuffer_out)
-	//	{
-	//		framebuffer_out->Bind();
-	//		Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
-	//		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-	//	}
-	//	else
-	//	{
-	//		RenderCommand::BindDefaultFrameBuffer();
-	//		Vec2u traget_resoluation = s_Data.window_size;
-	//		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-	//	}
-
-	//	s_Data.CurrentShader = s_Data.ShaderMap["DynamicSSAOColorShader"];
-	//	s_Data.CurrentShader->Bind();
-	//	framebuffer_in->BindTexture(s_Data.fragTexture_0_slot);
-	//	s_Data.gpuBuffer.CurrentDynamicSSAOBuffer->BindTexture(s_Data.fragTexture_empty_slot + LongMarch_ToUnderlying(GBuffer::GBUFFER_TEXTURE_TYPE::NUM));
-	//	// Render quad
-	//	Renderer3D::_RenderFullScreenQuad();
-	//}
-	//else
-	//{
-	//	RenderCommand::TransferColorBit(
-	//		framebuffer_in->GetRendererID(),
-	//		framebuffer_in->GetBufferSize().x,
-	//		framebuffer_in->GetBufferSize().y,
-
-	//		framebuffer_out->GetRendererID(),
-	//		framebuffer_out->GetBufferSize().x,
-	//		framebuffer_out->GetBufferSize().y
-	//	);
-	//}
-	//s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
 void longmarch::Renderer3D::_BeginTAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)

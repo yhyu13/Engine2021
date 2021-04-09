@@ -369,7 +369,7 @@ namespace longmarch
 			// Shaders
 			LongMarch_UnorderedMap_node<std::string, std::shared_ptr<Shader>> ShaderMap;
 			std::shared_ptr<Shader> CurrentShader; 
-			LongMarch_Vector<std::string> ListRenderShadersToPopulateData;
+			LongMarch_Vector<std::string> ListRenderShadersToPopulateShadowData;
 			LongMarch_Vector<std::string> ListShadersToPopulateData;
 
 			Vec4f cube_directions[6];
@@ -415,12 +415,12 @@ namespace longmarch
 
 			bool enable_debug_cluster_light;
 
-
 			bool enable_fxaa;
 			bool enable_taa;
 
 			int toneMapping_mode;
 			float value_gamma;
+			float ambient;
 
 			bool enable_drawingBoundingVolume;
 			bool enable_wireframe;
@@ -445,15 +445,23 @@ namespace longmarch
 			struct
 			{
 				bool enable;
+				uint32_t gi_samples;
+				uint32_t gi_gaussian_kernal;
+				uint32_t gi_sample_resolution_downScale;
+				float gi_sample_radius;
+				float gi_strength;
+			} SSGISettings;
+
+			struct
+			{
+				bool enable;
 				uint32_t ao_samples;
 				uint32_t ao_gaussian_kernal;
 				uint32_t ao_sample_resolution_downScale;
 				float ao_sample_radius;
 				float ao_scale;
 				float ao_power;
-				bool enable_indirect_light_bounce;
-				float indirect_light_bounce_scale;
-			} AOSettings;
+			} SSAOSettings;
 
 			struct
 			{
@@ -521,8 +529,8 @@ namespace longmarch
 						return indcies[(frameIndex) % 2];
 					}
 					default:
-						ENGINE_EXCEPT(L"Unsupported SMAA mode!");
-						break;
+						ENGINE_EXCEPT(L"Unsupported SMAA mode!"); 
+						return Vec4f(0);
 					}
 				}
 
@@ -543,7 +551,7 @@ namespace longmarch
 					}
 					default:
 						ENGINE_EXCEPT(L"Unsupported SMAA mode!");
-						break;
+						return Vec2f(0);
 					}
 				}
 			} SMAASettings;
@@ -705,14 +713,16 @@ namespace longmarch
 			const std::function<void(bool, const Vec3f&, float, float)>& f_setDistanceCullingParam,
 			const std::function<void(const std::string&)>& f_setRenderShaderName,
 			const std::shared_ptr<FrameBuffer>& colorBuffer_in);
+		static void _BeginDynamicSSGIPass(const std::shared_ptr<FrameBuffer>& colorBuffer_in);
 
 		static void _BeginDeferredLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginForwardLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginClusterLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _RenderBoundingBox(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 
+		static void _BeginSSGIPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
+		//static void _BeginSSAOPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginSSRPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
-		static void _BeginSSAOPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 
 		static void _BeginTAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginFXAAPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
@@ -741,7 +751,8 @@ namespace longmarch
 		static void _ON_SET_ENV_MAPPING(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
 		static void _ON_SWITCH_TONEMAP_MODE(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_SET_GAMMA_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e);
-		static void _ON_SET_AO_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e);
+		static void _ON_SET_SSGI_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e);
+		static void _ON_SET_SSAO_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_SET_SSR_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_SET_BLOOM_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		static void _ON_SET_DOF_VALUE(EventQueue<EngineGraphicsEventType>::EventPtr e);

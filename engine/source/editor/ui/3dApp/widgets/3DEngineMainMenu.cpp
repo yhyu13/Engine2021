@@ -152,7 +152,8 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static auto MotionBlurConfig = graphicsConfig["Motion-blur"];
 		static auto EnvMapConfig = graphicsConfig["Env-mapping"];
 		static auto SMAAConfig = graphicsConfig["SMAA"];
-		static auto AOConfig = graphicsConfig["AO"];
+		static auto SSGIConfig = graphicsConfig["SSGI"];
+		static auto SSAOConfig = graphicsConfig["SSAO"];
 		static auto SSRConfig = graphicsConfig["SSR"];
 		static auto BloomConfig = graphicsConfig["Bloom"];
 		static auto DOFConfig = graphicsConfig["DOF"];
@@ -214,17 +215,22 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		static bool checkSMAA = SMAAConfig["Enable"].asBool();
 		static int valueSMAAMode = SMAAConfig["Mode"].asInt();
 
-		// AO
-		static bool checkAO = AOConfig["Enable"].asBool();
-		static int valueAOSample = AOConfig["Num-samples"].asInt();
-		static int valueAOSampleResDownScale = AOConfig["Res-down-scale"].asInt();
-		static int valueAOBlurKernel = AOConfig["Gaussian-kernel"].asInt();
-		static float valueAOSampleRadius = AOConfig["Radius"].asFloat();
-		static float valueAOScale = AOConfig["Scale"].asFloat();
-		static float valueAOPower = AOConfig["Power"].asFloat();
-		// Indirect Bounce of light
-		static bool checkIndBonLit = AOConfig["Indirect-bounce"].asBool();
-		static float valueIndBonLitScale = AOConfig["Indirect-bounce-strength"].asFloat();
+		// SSGI
+		static bool checkSSGI = SSGIConfig["Enable"].asBool();
+		static int valueSSGISample = SSGIConfig["Num-samples"].asInt();
+		static int valueSSGISampleResDownScale = SSGIConfig["Res-down-scale"].asInt();
+		static int valueSSGIBlurKernel = SSGIConfig["Gaussian-kernel"].asInt();
+		static float valueSSGISampleRadius = SSGIConfig["Radius"].asFloat();
+		static float valueSSGIStrength = SSGIConfig["Strength"].asFloat();
+
+		// SSAO
+		static bool checkSSAO = SSAOConfig["Enable"].asBool();
+		static int valueSSAOSample = SSAOConfig["Num-samples"].asInt();
+		static int valueSSAOSampleResDownScale = SSAOConfig["Res-down-scale"].asInt();
+		static int valueSSAOBlurKernel = SSAOConfig["Gaussian-kernel"].asInt();
+		static float valueSSAOSampleRadius = SSAOConfig["Radius"].asFloat();
+		static float valueSSAOScale = SSAOConfig["Scale"].asFloat();
+		static float valueSSAOPower = SSAOConfig["Power"].asFloat();
 
 		// SSR
 		static bool checkSSR = SSRConfig["Enable"].asBool();
@@ -288,17 +294,23 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				valueSMAAMode = SMAAConfig["Mode"].asInt();
 			}
 			{
-				// AO
-				checkAO = AOConfig["Enable"].asBool();
-				valueAOSample = AOConfig["Num-samples"].asInt();
-				valueAOSampleResDownScale = AOConfig["Res-down-scale"].asInt();
-				valueAOBlurKernel = AOConfig["Gaussian-kernel"].asInt();
-				valueAOSampleRadius = AOConfig["Radius"].asFloat();
-				valueAOScale = AOConfig["Scale"].asFloat();
-				valueAOPower = AOConfig["Power"].asFloat();
-				// Indirect Bounce of light
-				checkIndBonLit = AOConfig["Indirect-bounce"].asBool();
-				valueIndBonLitScale = AOConfig["Indirect-bounce-strength"].asFloat();
+				// SSGI
+				checkSSGI = SSGIConfig["Enable"].asBool();
+				valueSSGISample = SSGIConfig["Num-samples"].asInt();
+				valueSSGISampleResDownScale = SSGIConfig["Res-down-scale"].asInt();
+				valueSSGIBlurKernel = SSGIConfig["Gaussian-kernel"].asInt();
+				valueSSGISampleRadius = SSGIConfig["Radius"].asFloat();
+				valueSSGIStrength = SSGIConfig["Strength"].asFloat();
+			}
+			{
+				// SSAO
+				checkSSAO = SSAOConfig["Enable"].asBool();
+				valueSSAOSample = SSAOConfig["Num-samples"].asInt();
+				valueSSAOSampleResDownScale = SSAOConfig["Res-down-scale"].asInt();
+				valueSSAOBlurKernel = SSAOConfig["Gaussian-kernel"].asInt();
+				valueSSAOSampleRadius = SSAOConfig["Radius"].asFloat();
+				valueSSAOScale = SSAOConfig["Scale"].asFloat();
+				valueSSAOPower = SSAOConfig["Power"].asFloat();
 			}
 			{
 				// SSR
@@ -371,7 +383,11 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 				graphicEventQueue->Publish(e);
 			}
 			{
-				auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
+				auto e = MemoryManager::Make_shared<SetSSGIValueEvent>(checkSSGI, valueSSGISample, valueSSGISampleResDownScale, valueSSGIBlurKernel, valueSSGISampleRadius, valueSSGIStrength);
+				graphicEventQueue->Publish(e);
+			}
+			{
+				auto e = MemoryManager::Make_shared<SetSSAOValueEvent>(checkSSAO, valueSSAOSample, valueSSAOSampleResDownScale, valueSSAOBlurKernel, valueSSAOSampleRadius, valueSSAOScale, valueSSAOPower);
 				graphicEventQueue->Publish(e);
 			}
 			{
@@ -419,17 +435,23 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 					SMAAConfig["Mode"] = valueSMAAMode;
 				} 
 				{
-					auto& AOConfig = graphicsConfig["AO"]; 
-					AOConfig["Enable"] = checkAO;
-					AOConfig["Num-samples"] = valueAOSample;
-					AOConfig["Res-down-scale"] = valueAOSampleResDownScale;
-					AOConfig["Gaussian-kernel"] = valueAOBlurKernel;
-					AOConfig["Radius"] = valueAOSampleRadius;
-					AOConfig["Scale"] = valueAOScale;
-					AOConfig["Power"] = valueAOPower;
-					// Indirect Bounce of light
-					AOConfig["Indirect-bounce"] = checkIndBonLit;
-					AOConfig["Indirect-bounce-strength"] = valueIndBonLitScale;
+					auto& SSGIConfig = graphicsConfig["SSGI"];
+					SSGIConfig["Enable"] = checkSSGI;
+					SSGIConfig["Num-samples"] = valueSSGISample;
+					SSGIConfig["Res-down-scale"] = valueSSGISampleResDownScale;
+					SSGIConfig["Gaussian-kernel"] = valueSSGIBlurKernel;
+					SSGIConfig["Radius"] = valueSSGISampleRadius;
+					SSGIConfig["Strength"] = valueSSGIStrength;
+				}
+				{
+					auto& SSAOConfig = graphicsConfig["SSAO"]; 
+					SSAOConfig["Enable"] = checkSSAO;
+					SSAOConfig["Num-samples"] = valueSSAOSample;
+					SSAOConfig["Res-down-scale"] = valueSSAOSampleResDownScale;
+					SSAOConfig["Gaussian-kernel"] = valueSSAOBlurKernel;
+					SSAOConfig["Radius"] = valueSSAOSampleRadius;
+					SSAOConfig["Scale"] = valueSSAOScale;
+					SSAOConfig["Power"] = valueSSAOPower;
 				}
 				{
 					auto& SSRConfig = graphicsConfig["SSR"]; 
@@ -575,53 +597,88 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 					ImGui::TreePop();
 				}
 				ImGui::Dummy(ImVec2(0, yoffset_item));
-				// AO
-				if (ImGui::TreeNode("SSAO"))
+				// SSGI
+				if (ImGui::TreeNode("SSGI"))
 				{
-					if (ImGui::Checkbox("Enable", &checkAO))
 					{
-						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
+						float Ia = Renderer3D::s_Data.ambient;
+						if (ImGui::DragFloat("Ia", &Ia, 0.01, 0, 1, "%.2f"))
+						{
+							Renderer3D::s_Data.ambient = Ia;
+						}
+					}
+					if (ImGui::Checkbox("Enable", &checkSSGI))
+					{
+						auto e = MemoryManager::Make_shared<SetSSGIValueEvent>(checkSSGI, valueSSGISample, valueSSGISampleResDownScale, valueSSGIBlurKernel, valueSSGISampleRadius, valueSSGIStrength);
 						graphicEventQueue->Publish(e);
 					}
-					if (ImGui::SliderInt("Resolution Down Scale", &valueAOSampleResDownScale, 1, 4, "%d"))
+					if (ImGui::SliderInt("Resolution Down Scale", &valueSSGISampleResDownScale, 1, 4, "%d"))
 					{
-						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
+						auto e = MemoryManager::Make_shared<SetSSGIValueEvent>(checkSSGI, valueSSGISample, valueSSGISampleResDownScale, valueSSGIBlurKernel, valueSSGISampleRadius, valueSSGIStrength);
 						graphicEventQueue->Publish(e);
 					}
-					if (ImGui::SliderInt("Samples", &valueAOSample, 5, 80, "%d"))
+					if (ImGui::SliderInt("Samples", &valueSSGISample, 5, 80, "%d"))
 					{
-						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
+						auto e = MemoryManager::Make_shared<SetSSGIValueEvent>(checkSSGI, valueSSGISample, valueSSGISampleResDownScale, valueSSGIBlurKernel, valueSSGISampleRadius, valueSSGIStrength);
 						graphicEventQueue->Publish(e);
 					}
-					if (ImGui::SliderInt("Gauss Kernel", &valueAOBlurKernel, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX, "%d"))
+					if (ImGui::SliderInt("Gauss Kernel", &valueSSGIBlurKernel, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX, "%d"))
 					{
-						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
+						auto e = MemoryManager::Make_shared<SetSSGIValueEvent>(checkSSGI, valueSSGISample, valueSSGISampleResDownScale, valueSSGIBlurKernel, valueSSGISampleRadius, valueSSGIStrength);
 						graphicEventQueue->Publish(e);
 					}
 					ImGuiUtil::InlineHelpMarker("Kernel size is scaled with buffer size against 1080p (e.g. 540p buffer size will have half the size of the kernel)");
-					if (ImGui::SliderFloat("Sample Radius", &valueAOSampleRadius, 0.01f, 20.0f, "%.2f"))
+					if (ImGui::SliderFloat("Sample Radius", &valueSSGISampleRadius, 0.01f, 20.0f, "%.2f"))
 					{
-						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
+						auto e = MemoryManager::Make_shared<SetSSGIValueEvent>(checkSSGI, valueSSGISample, valueSSGISampleResDownScale, valueSSGIBlurKernel, valueSSGISampleRadius, valueSSGIStrength);
 						graphicEventQueue->Publish(e);
 					}
-					if (ImGui::SliderFloat("Scale", &valueAOScale, 0.1f, 10.0f, "%.1f"))
+					if (ImGui::SliderFloat("Strength", &valueSSGIStrength, 0.1f, 10.0f, "%.1f"))
 					{
-						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
+						auto e = MemoryManager::Make_shared<SetSSGIValueEvent>(checkSSGI, valueSSGISample, valueSSGISampleResDownScale, valueSSGIBlurKernel, valueSSGISampleRadius, valueSSGIStrength);
 						graphicEventQueue->Publish(e);
 					}
-					if (ImGui::SliderFloat("Power", &valueAOPower, 0.1f, 10.0f, "%.1f"))
+					ImGui::Separator();
+					ImGui::TreePop();
+				}
+				ImGui::Dummy(ImVec2(0, yoffset_item));
+				// SSAO
+				if (ImGui::TreeNode("SSAO"))
+				{
+					if (ImGui::Checkbox("Enable", &checkSSAO))
 					{
-						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
+						auto e = MemoryManager::Make_shared<SetSSAOValueEvent>(checkSSAO, valueSSAOSample, valueSSAOSampleResDownScale, valueSSAOBlurKernel, valueSSAOSampleRadius, valueSSAOScale, valueSSAOPower);
 						graphicEventQueue->Publish(e);
 					}
-					if (ImGui::Checkbox("Indirect Bounce", &checkIndBonLit))
+					if (ImGui::SliderInt("Resolution Down Scale", &valueSSAOSampleResDownScale, 1, 4, "%d"))
 					{
-						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
+						auto e = MemoryManager::Make_shared<SetSSAOValueEvent>(checkSSAO, valueSSAOSample, valueSSAOSampleResDownScale, valueSSAOBlurKernel, valueSSAOSampleRadius, valueSSAOScale, valueSSAOPower);
 						graphicEventQueue->Publish(e);
 					}
-					if (ImGui::SliderFloat("Indirect Bounce Strength", &valueIndBonLitScale, 0.1f, 10.0f, "%.1f"))
+					if (ImGui::SliderInt("Samples", &valueSSAOSample, 5, 80, "%d"))
 					{
-						auto e = MemoryManager::Make_shared<SetAOValueEvent>(checkAO, valueAOSample, valueAOSampleResDownScale, valueAOBlurKernel, valueAOSampleRadius, valueAOScale, valueAOPower, checkIndBonLit, valueIndBonLitScale);
+						auto e = MemoryManager::Make_shared<SetSSAOValueEvent>(checkSSAO, valueSSAOSample, valueSSAOSampleResDownScale, valueSSAOBlurKernel, valueSSAOSampleRadius, valueSSAOScale, valueSSAOPower);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Gauss Kernel", &valueSSAOBlurKernel, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetSSAOValueEvent>(checkSSAO, valueSSAOSample, valueSSAOSampleResDownScale, valueSSAOBlurKernel, valueSSAOSampleRadius, valueSSAOScale, valueSSAOPower);
+						graphicEventQueue->Publish(e);
+					}
+					ImGuiUtil::InlineHelpMarker("Kernel size is scaled with buffer size against 1080p (e.g. 540p buffer size will have half the size of the kernel)");
+					if (ImGui::SliderFloat("Sample Radius", &valueSSAOSampleRadius, 0.01f, 20.0f, "%.2f"))
+					{
+						auto e = MemoryManager::Make_shared<SetSSAOValueEvent>(checkSSAO, valueSSAOSample, valueSSAOSampleResDownScale, valueSSAOBlurKernel, valueSSAOSampleRadius, valueSSAOScale, valueSSAOPower);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderFloat("Scale", &valueSSAOScale, 0.1f, 10.0f, "%.1f"))
+					{
+						auto e = MemoryManager::Make_shared<SetSSAOValueEvent>(checkSSAO, valueSSAOSample, valueSSAOSampleResDownScale, valueSSAOBlurKernel, valueSSAOSampleRadius, valueSSAOScale, valueSSAOPower);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderFloat("Power", &valueSSAOPower, 0.1f, 10.0f, "%.1f"))
+					{
+						auto e = MemoryManager::Make_shared<SetSSAOValueEvent>(checkSSAO, valueSSAOSample, valueSSAOSampleResDownScale, valueSSAOBlurKernel, valueSSAOSampleRadius, valueSSAOScale, valueSSAOPower);
 						graphicEventQueue->Publish(e);
 					}
 					ImGui::Separator();

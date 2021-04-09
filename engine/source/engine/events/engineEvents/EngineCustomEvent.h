@@ -278,19 +278,37 @@ namespace longmarch
 		float m_value;
 	};
 
-	struct SetAOValueEvent : public Event<EngineGraphicsEventType> {
-		explicit SetAOValueEvent(bool enable, int sample, int sameleResDownSacle, int gaussKernel, float radius, float scale, float power, bool bounce, float bounce_strength)
+	struct SetSSGIValueEvent : public Event<EngineGraphicsEventType> {
+		explicit SetSSGIValueEvent(bool enable, int sample, int sameleResDownSacle, int gaussKernel, float radius, float strength)
 			:
-			Event(EngineGraphicsEventType::SET_AO_VALUE),
+			Event(EngineGraphicsEventType::SET_SSGI_VALUE),
+			m_enable(enable),
+			m_sample(sample),
+			m_sampleResolutionDownScale(sameleResDownSacle),
+			m_gaussKernel(gaussKernel),
+			m_sampleRadius(radius),
+			m_strength(strength)
+		{
+		}
+		bool m_enable;
+		int m_sample;
+		int m_gaussKernel;
+		int m_sampleResolutionDownScale;
+		float m_sampleRadius;
+		float m_strength;
+	};
+
+	struct SetSSAOValueEvent : public Event<EngineGraphicsEventType> {
+		explicit SetSSAOValueEvent(bool enable, int sample, int sameleResDownSacle, int gaussKernel, float radius, float scale, float power)
+			:
+			Event(EngineGraphicsEventType::SET_SSAO_VALUE),
 			m_enable(enable),
 			m_sample(sample),
 			m_sampleResolutionDownScale(sameleResDownSacle),
 			m_gaussKernel(gaussKernel),
 			m_sampleRadius(radius),
 			m_scale(scale),
-			m_power(power),
-			m_enable_indirect_bounce(bounce),
-			m_indirect_bounce_scale(bounce_strength)
+			m_power(power)
 		{
 		}
 		bool m_enable;
@@ -300,8 +318,6 @@ namespace longmarch
 		float m_sampleRadius;
 		float m_scale;
 		float m_power;
-		bool m_enable_indirect_bounce;
-		float m_indirect_bounce_scale;
 	};
 
 	struct SetSSRValueEvent : public Event<EngineGraphicsEventType> {

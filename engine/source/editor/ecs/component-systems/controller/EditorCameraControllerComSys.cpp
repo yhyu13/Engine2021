@@ -725,16 +725,18 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 	Vec3f global_v;
 	static Vec3f friction_global_v;
 	constexpr float v_speed = 7.f;
-	static float v_max = 30.f;
-	constexpr float rotation_speed = 180.f;
+	static float v_max = 50.f;
+	static float v_max1 = v_max;
+	static float v_max2 = 2.0 * v_max;
+	constexpr float rotation_speed = 300.f;
 	static float speed_up_multi = 1.0f;
 	bool bUINotHoldMouse = !ImGuiUtil::IsMouseCaptured(true);
 	bool bUINotHoldKeyBoard = !ImGuiUtil::IsKeyBoardCaptured(true);
 
 	// Apply friction (for editor camera to slow down on releasing control)
 	{
-		friction_local_v *= powf(0.001f, dt);
-		friction_global_v *= powf(0.001f, dt);
+		friction_local_v *= powf(0.001f, 2.0 * dt);
+		friction_global_v *= powf(0.001f, 2.0 * dt);
 	}
 	if ((input->IsKeyTriggered(KEY_LEFT_ALT) && bUINotHoldKeyBoard) || input->IsGamepadButtonTriggered(GAMEPAD_BUTTON_RIGHT_THUMB))
 	{
@@ -755,14 +757,12 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 		}
 	}
 
-
-
 	// Keyboard & Mouse inputs
 	{
 		if (input->IsKeyTriggered(KEY_LEFT_SHIFT) && bUINotHoldKeyBoard)
 		{
 			speed_up_multi = (speed_up_multi == 1.0f) ? 2.0f : (speed_up_multi == 2.0f) ? 1.0f : 1.0f;
-			v_max = (v_max == 30.0f) ? 40.0f : (v_max == 40.0f) ? 30.0f : 30.0f;
+			v_max = (v_max == v_max1) ? v_max2 : (v_max == v_max2) ? v_max1 : v_max;
 		}
 
 		if (input->IsMouseButtonReleased(MOUSE_BUTTON_MIDDLE) || input->IsMouseButtonReleased(MOUSE_BUTTON_RIGHT))
@@ -867,19 +867,19 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 
 				if (input->IsKeyPressed(KEY_W))
 				{
-					friction_local_v += v_speed * Geommath::WorldFront;
+					friction_local_v += speed_up_multi * v_speed * Geommath::WorldFront;
 				}
 				if (input->IsKeyPressed(KEY_S))
 				{
-					friction_local_v += -v_speed * Geommath::WorldFront;
+					friction_local_v += speed_up_multi * -v_speed * Geommath::WorldFront;
 				}
 				if (input->IsKeyPressed(KEY_D))
 				{
-					friction_local_v += v_speed * Geommath::WorldRight;
+					friction_local_v += speed_up_multi * v_speed * Geommath::WorldRight;
 				}
 				if (input->IsKeyPressed(KEY_A))
 				{
-					friction_local_v += -v_speed * Geommath::WorldRight;
+					friction_local_v += speed_up_multi * -v_speed * Geommath::WorldRight;
 				}
 				mouse_delta_pixel = input->GetCursorPositionDeltaXY();
 				constexpr float pixel_threshold = 1.0f;

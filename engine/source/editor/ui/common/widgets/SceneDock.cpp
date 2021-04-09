@@ -74,7 +74,9 @@ void longmarch::SceneDock::Render()
 	}
 	
 	{
-		// Mouse over scene dock should not be captured by ImGui
+		// Scene dock is placed at the last to render
+		// When moving the editor camera in the scene dock, the cursor is set to hide and free
+		// Set ignore capture so that the camera movement is not interrupted by cursor moving into other imgui widgets
 		switch (Engine::GetWindow()->GetCursorMode())
 		{
 		case Window::CURSOR_MODE::HIDDEN_AND_FREE:
@@ -111,6 +113,20 @@ void longmarch::SceneDock::Render()
 		if (prop.IsResizable)
 		{
 			cam->cameraSettings.aspectRatioWbyH = float(prop.m_width) / float(prop.m_height);
+		}
+
+		{
+			// Scene dock is placed at the last to render
+			// When moving the editor camera in the scene dock, the cursor is set to hide and free
+			// Set ignore capture so that the camera movement is not interrupted by cursor moving into other imgui widgets
+			switch (Engine::GetWindow()->GetCursorMode())
+			{
+			case Window::CURSOR_MODE::HIDDEN_AND_FREE:
+				ImGuiUtil::IgnoreMouseCaptured = ImGuiUtil::IgnoreKeyBoardCaptured = true;
+				break;
+			default:
+				break;
+			}
 		}
 	}
 #endif // !USE_SCENE_DOCK

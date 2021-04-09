@@ -256,7 +256,9 @@ namespace longmarch
 			UINT8_R,
 			UINT8_RGBA, 
 			FLOAT16_R,
+			FLOAT16_RGB,
 			FLOAT16_RGBA,
+			FLOAT32_R,
 		};
 
 		virtual ~FrameBuffer() = default;

@@ -340,9 +340,19 @@ namespace longmarch {
 			channel = GL_RED;
 			data_type = GL_FLOAT;
 			break;
+		case longmarch::FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB:
+			format = GL_RGB16F;
+			channel = GL_RGB;
+			data_type = GL_FLOAT;
+			break;
 		case longmarch::FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA:
 			format = GL_RGBA16F;
 			channel = GL_RGBA;
+			data_type = GL_FLOAT;
+			break;
+		case longmarch::FrameBuffer::BUFFER_FORMAT::FLOAT32_R:
+			format = GL_R32F;
+			channel = GL_RED;
 			data_type = GL_FLOAT;
 			break;
 		default:

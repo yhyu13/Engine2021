@@ -245,14 +245,17 @@ namespace longmarch
 			std::shared_ptr<FrameBuffer> PrevFinalFrameBuffer; // Previous frame's final frame buffer
 			std::shared_ptr<FrameBuffer> CurrentFinalFrameBuffer; // Frame buffer before blitting to default frame buffer
 			std::shared_ptr<FrameBuffer> PrevOpaqueLightingFrameBuffer; // Stores opaque lighting color
+			
 			std::shared_ptr<FrameBuffer> CurrentFrameBuffer;
 			std::shared_ptr<FrameBuffer> FrameBuffer_1;
 			std::shared_ptr<FrameBuffer> FrameBuffer_2;
 			std::shared_ptr<FrameBuffer> FrameBuffer_3;
 			std::shared_ptr<FrameBuffer> FrameBuffer_4;
-			std::shared_ptr<FrameBuffer> CurrentDynamicAOBuffer;
+			std::shared_ptr<FrameBuffer> PrevDynamicSSGIBuffer;
+			std::shared_ptr<FrameBuffer> CurrentDynamicSSGIBuffer;
+			std::shared_ptr<FrameBuffer> CurrentDynamicSSAOBuffer;
+			std::shared_ptr<FrameBuffer> CurrentDynamicSSRBuffer; 
 			std::shared_ptr<ShadowBuffer> CurrentBackFaceDepthBuffer;
-			std::shared_ptr<FrameBuffer> CurrentDynamicSSRBuffer;
 			std::shared_ptr<FrameBuffer> CurrentDynamicBloomBuffer;
 			std::shared_ptr<FrameBuffer> CurrentDynamicDOFBuffer;
 			std::shared_ptr<FrameBuffer> CurrentDynamicDOFDepthBuffer_1;
@@ -694,7 +697,7 @@ namespace longmarch
 
 		static void _BindSkyBoxTexture();
 		static void _BeginSkyBoxPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
-		static void _BeginDynamicAOPass(const std::shared_ptr<FrameBuffer>& colorBuffer_in);
+		static void _BeginDynamicSSAOPass(const std::shared_ptr<FrameBuffer>& colorBuffer_in);
 		static void _BeginDynamicSSRPass(
 			const PerspectiveCamera* camera,
 			const std::function<void()>& f_render,

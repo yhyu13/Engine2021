@@ -76,7 +76,7 @@
 		"SMAA":
 		{
 			"Enable" :true,
-			"Mode" : 0, // 0 = SMAA 1X, 1 = SMAA T2X
+			"Mode" : 1, // 0 = SMAA 1X, 1 = SMAA T2X
 		},
 
 		"SSGI":

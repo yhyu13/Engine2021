@@ -526,7 +526,7 @@ namespace longmarch
 							Vec4f(1, 1, 1, 0),
 							Vec4f(2, 2, 2, 0)
 						};
-						return indcies[(frameIndex) % 2];
+						return indcies[frameIndex];
 					}
 					default:
 						ENGINE_EXCEPT(L"Unsupported SMAA mode!"); 
@@ -547,7 +547,7 @@ namespace longmarch
 							Vec2f(0.25f, -0.25f),
 							Vec2f(-0.25f,  0.25f)
 						};
-						return jitters[(frameIndex) % 2];
+						return jitters[frameIndex];
 					}
 					default:
 						ENGINE_EXCEPT(L"Unsupported SMAA mode!");

@@ -76,10 +76,21 @@
 		"SMAA":
 		{
 			"Enable" :true,
-			"Mode" : 0, // 0 = SMAA 1X, 1 = SMAA T2X
+			"Mode" : 1, // 0 = SMAA 1X, 1 = SMAA T2X
 		},
 
-		"AO":
+		"SSGI":
+		{
+			"Enable": false,
+			"Gaussian-kernel":90,
+			"Num-samples":40,
+			"Res-down-scale":3,
+			"Radius":1.0,
+			"Strength":10.0,
+		}
+		,
+
+		"SSAO":
 		{
 			"Enable": true,
 			"Gaussian-kernel":60,
@@ -88,8 +99,6 @@
 			"Radius":4.0,
 			"Scale":2.0,
 			"Power":2.0,
-			"Indirect-bounce":false, // SSDO inspired indirect bounce light, expensive on interior
-			"Indirect-bounce-strength":10.0,
 		}
 		,
 

@@ -705,7 +705,7 @@ namespace longmarch
 
 		static void _BindSkyBoxTexture();
 		static void _BeginSkyBoxPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
-		static void _BeginDynamicSSAOPass(const std::shared_ptr<FrameBuffer>& colorBuffer_in);
+		static void _BeginDynamicSSAOPass();
 		static void _BeginDynamicSSRPass(
 			const PerspectiveCamera* camera,
 			const std::function<void()>& f_render,

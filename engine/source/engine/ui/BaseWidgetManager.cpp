@@ -64,7 +64,7 @@ void longmarch::BaseWidgetManager::ResetCaptureMouseAndKeyboard()
 void longmarch::BaseWidgetManager::CaptureMouseAndKeyboardOnHover(bool resetIgnoreCapture)
 {
 	ImGuiIO& io = ImGui::GetIO();
-	bool isWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows) || ImGui::IsItemHovered(ImGuiHoveredFlags_RectOnly);
+	bool isWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) || ImGui::IsAnyItemHovered();
 	// Set ImGui capture inputs on window focused
 	if (isWindowHovered)
 	{

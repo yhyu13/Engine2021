@@ -382,7 +382,7 @@ void longmarch::Renderer3D::Init()
 			s_Data.gpuBuffer.CurrentFrameBuffer = nullptr;
 			s_Data.gpuBuffer.PrevFinalFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
 			s_Data.gpuBuffer.CurrentFinalFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
-			s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
+			s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
 			s_Data.gpuBuffer.FrameBuffer_1 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
 			s_Data.gpuBuffer.FrameBuffer_2 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
 			s_Data.gpuBuffer.FrameBuffer_3 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
@@ -852,7 +852,7 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 		if (s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer->GetBufferSize() != s_Data.resolution)
 		{
 			s_Data.window_size_changed_this_frame = true;
-			s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
+			s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
 		}
 		if (s_Data.gpuBuffer.FrameBuffer_1->GetBufferSize() != s_Data.resolution)
 		{
@@ -1410,8 +1410,8 @@ void longmarch::Renderer3D::BeginShadowing(
 				const auto& light_pos = currentLight.Pos;
 				const auto& radius = lightCom->pointLight.radius;
 
-				auto Max = light_pos + 1.f * radius;
-				auto Min = light_pos - 1.f * radius;
+				auto Max = light_pos + 1.42f * radius;
+				auto Min = light_pos - 1.42f * radius;
 				AABB approx_shape{ Min , Max };
 				approx_shape.RenderShape();
 				bool culled = approx_shape.VFCTest(camera->GetViewFrustumInViewSpace(), camera->GetViewMatrix());
@@ -1678,11 +1678,10 @@ void longmarch::Renderer3D::BeginShadowing(
 				const auto& light_pv = light_projection_mat * light_view_mat;
 				auto clipping_vf = Geommath::Frustum::FromProjection(light_projection_mat);
 
-				// Calculate the 1st approximate light view matrix
 				Vec3f split_world_NDCCentroid;
 				ViewFrustumCorners split_world_NDCCorners;
 				Geommath::Frustum::GetCornersAndCentroid(light_pv, s_Data.enable_reverse_z, split_world_NDCCorners, split_world_NDCCentroid);
-				// Find VF conrners in light's view space for the the ortho bounding
+				// Find VF conrners in light's view space for the the shadow map bounding
 				Vec3f Min((std::numeric_limits<float>::max)());
 				Vec3f Max((std::numeric_limits<float>::lowest)());
 				for (int i = 0; i < 8; ++i)
@@ -2123,14 +2122,16 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 		ppv = camera->GetPrevViewProjectionMatrix();
 	}
 
+	v_inv = Geommath::SmartInverse(v);
+	p_inv = Geommath::SmartInverse(p);
 	if (s_Data.SMAASettings.enable)
 	{
-		p = s_Data.SMAASettings.JitteredMatrix(p, s_Data.resolution.x, s_Data.resolution.y, s_Data.frameIndex);
+		// Do we need to jitter projection matrix? 
+		// Not really. Because the projection matrix is used in many other post processing shader that are irralavent to temporal supersampling.
+		// Just jitter the PV matrix and Prev PV matrix is all good to generated temporal supersampling for SMAA T2X
 		pv = s_Data.SMAASettings.JitteredMatrix(pv, s_Data.resolution.x, s_Data.resolution.y, s_Data.frameIndex);
 		ppv = s_Data.SMAASettings.JitteredMatrix(ppv, s_Data.resolution.x, s_Data.resolution.y, s_Data.frameIndex);
 	}
-	v_inv = Geommath::SmartInverse(v);
-	p_inv = Geommath::SmartInverse(p);
 
 	// Update shader uniforms
 	{
@@ -2386,7 +2387,7 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 		break;
 	case RENDER_PIPE::DEFERRED:
 		// Perform SSAO/SSDO after rendering all opaques, ignore transparents and particles.
-		Renderer3D::_BeginDynamicSSAOPass(s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer);
+		Renderer3D::_BeginDynamicSSAOPass();
 		Renderer3D::_BeginDeferredLightingPass(s_Data.gpuBuffer.CurrentFrameBuffer);
 		break;
 	case RENDER_PIPE::FORWARD:
@@ -2409,22 +2410,8 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 	if (s_Data.RENDER_PIPE == Renderer3D::RENDER_PIPE::DEFERRED)
 	{
 		{
-			Renderer3D::_BeginDynamicSSGIPass(s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer);
-			auto temp = s_Data.gpuBuffer.CurrentFrameBuffer;
-			Renderer3D::_BeginSSGIPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_2);
-
-			//// Since both depth buffer and stencil buffer are NOT transfered automatically
-			//// we manuuly transfer depth from old frame buffer to new frame buffer
-			//// Notice CurrentFrameBuffer is now FrameBuffer_2 as we have assigned in the previous function call
-			//RenderCommand::TransferDepthBit(
-			//	temp->GetRendererID(),
-			//	temp->GetBufferSize().x,
-			//	temp->GetBufferSize().y,
-
-			//	s_Data.gpuBuffer.CurrentFrameBuffer->GetRendererID(),
-			//	s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().x,
-			//	s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().y
-			//);
+			//Renderer3D::_BeginDynamicSSGIPass(s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer);
+			//Renderer3D::_BeginSSGIPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_1);
 
 			// Perform SSR after rendering all opaques, ignore transparents and particles for now
 			Renderer3D::_BeginDynamicSSRPass(
@@ -2544,7 +2531,7 @@ void longmarch::Renderer3D::_BeginDynamicSSGIPass(const std::shared_ptr<FrameBuf
 	}
 }
 
-void longmarch::Renderer3D::_BeginDynamicSSAOPass(const std::shared_ptr<FrameBuffer>& colorBuffer_in)
+void longmarch::Renderer3D::_BeginDynamicSSAOPass()
 {
 	{
 		// Clear SSAO buffer regardless if SSAO is enabled because it will always be used
@@ -2594,9 +2581,6 @@ void longmarch::Renderer3D::_BeginDynamicSSAOPass(const std::shared_ptr<FrameBuf
 			},
 			s_Data.fragTexture_empty_slot
 			);
-
-		// Bind prev frame buffer
-		colorBuffer_in->BindTexture(s_Data.fragTexture_3_slot);
 
 		// Render quad
 		Renderer3D::_RenderFullScreenQuad();
@@ -3090,34 +3074,19 @@ void longmarch::Renderer3D::BeginPostProcessing()
 	RenderCommand::CullFace(false, false);	// Disable face culling
 	RenderCommand::Blend(false);			// Disable blending
 
-	// Whater ever the current frambuffer is, transfer its color info to framebuffer 2 which out assumed framebuffer at the begnning of post processing pass
-	if (s_Data.gpuBuffer.CurrentFrameBuffer != s_Data.gpuBuffer.FrameBuffer_2)
-	{
-		RenderCommand::TransferColorBit(
-			s_Data.gpuBuffer.CurrentFrameBuffer->GetRendererID(),
-			s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().x,
-			s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().y,
-
-			s_Data.gpuBuffer.FrameBuffer_2->GetRendererID(),
-			s_Data.gpuBuffer.FrameBuffer_2->GetBufferSize().x,
-			s_Data.gpuBuffer.FrameBuffer_2->GetBufferSize().y
-		);
-		s_Data.gpuBuffer.CurrentFrameBuffer = s_Data.gpuBuffer.FrameBuffer_2;
-	}
-
 	Renderer3D::_BeginBloomPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_1);
 
 	if (s_Data.enable_deferredShading)
 	{
-		Renderer3D::_BeginDOFPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_2);
+		Renderer3D::_BeginDOFPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_1);
 		Renderer3D::_BeginMotionBlurPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_1);
-		Renderer3D::_BeginTAAPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_2);
+		Renderer3D::_BeginTAAPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_1);
 		Renderer3D::_BeginSMAAPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_3, s_Data.gpuBuffer.FrameBuffer_4, s_Data.gpuBuffer.FrameBuffer_1);
-		Renderer3D::_BeginFXAAPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_2);
+		Renderer3D::_BeginFXAAPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_1);
 	}
 	else
 	{
-		Renderer3D::_BeginSMAAPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_3, s_Data.gpuBuffer.FrameBuffer_4, s_Data.gpuBuffer.FrameBuffer_2);
+		Renderer3D::_BeginSMAAPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_3, s_Data.gpuBuffer.FrameBuffer_4, s_Data.gpuBuffer.FrameBuffer_1);
 		Renderer3D::_BeginFXAAPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_1);
 	}
 

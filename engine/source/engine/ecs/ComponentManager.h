@@ -7,28 +7,9 @@
 
 namespace longmarch
 {
-#define RESERVE_SIZE 8
+#define RESERVE_SIZE 2048
 
 	class GameWorld;
-
-	template<typename ComponentType>
-	struct ComponentData
-	{
-		ComponentData()
-		{
-			m_data.reserve(RESERVE_SIZE);
-		}
-		LongMarch_Vector<ComponentType> m_data;
-	};
-
-	struct EntityData
-	{
-		EntityData()
-		{
-			m_data.reserve(RESERVE_SIZE);
-		}
-		LongMarch_Vector<Entity> m_data;
-	};
 
 	class BaseComponentManager : public BaseAtomicClassNC
 	{
@@ -60,7 +41,11 @@ namespace longmarch
 	{
 	public:
 		NONCOPYABLE(ComponentManager);
-		ComponentManager() = default;
+		ComponentManager()
+		{
+			m_components.reserve(RESERVE_SIZE);
+			m_entities.reserve(RESERVE_SIZE);
+		}
 
 		//! Never store a pointer to a component because it might subject to change upon resize
 		ComponentType* GetComponentByEntity(const Entity& entity) const
@@ -68,7 +53,7 @@ namespace longmarch
 			LOCK_GUARD_NC();
 			if (auto it = m_entitiesAndComponentIndexes.find(entity); it != m_entitiesAndComponentIndexes.end())
 			{
-				return const_cast<ComponentType*>(&(m_components.m_data[it->second]));
+				return const_cast<ComponentType*>(&(m_components[it->second]));
 			}
 			else
 			{
@@ -81,9 +66,9 @@ namespace longmarch
 			if (!HasEntity(entity))
 			{
 				LOCK_GUARD_NC();
-				uint32_t index = m_components.m_data.size();
-				m_components.m_data.emplace_back(component);
-				m_entities.m_data.emplace_back(entity);
+				uint32_t index = m_components.size();
+				m_components.emplace_back(component);
+				m_entities.emplace_back(entity);
 				m_entitiesAndComponentIndexes.emplace(entity, index);
 			}
 		}
@@ -113,19 +98,18 @@ namespace longmarch
 			if (auto it = m_entitiesAndComponentIndexes.find(entity); it != m_entitiesAndComponentIndexes.end())
 			{
 				uint32_t index = it->second;
-				uint32_t lastIndex = m_components.m_data.size() - 1;
 
 				// First, make the last entity points the current index. And remove the current entity
-				m_entitiesAndComponentIndexes[m_entities.m_data[lastIndex]] = index;
-				m_entitiesAndComponentIndexes.erase(entity);
+				m_entitiesAndComponentIndexes[m_entities.back()] = index;
+				m_entitiesAndComponentIndexes.erase(it);
 
 				// Move the component data from last index to the index of the component data just removed
-				std::swap(m_components.m_data[index], m_components.m_data[lastIndex]);
-				m_components.m_data.pop_back();
+				std::swap(m_components[index], m_components.back());
+				m_components.pop_back();
 
 				// Swap the current entity with the last entity
-				std::swap(m_entities.m_data[index], m_entities.m_data[lastIndex]);
-				m_entities.m_data.pop_back();
+				std::swap(m_entities[index], m_entities.back());
+				m_entities.pop_back();
 
 				return true;
 			}
@@ -144,7 +128,7 @@ namespace longmarch
 
 		virtual void SetWorld(GameWorld* world) const
 		{
-			for (auto& com : m_components.m_data)
+			for (auto& com : m_components)
 			{
 				com.SetWorld(world);
 			}
@@ -152,11 +136,13 @@ namespace longmarch
 
 	private:
 		// Stores all the component instances in an array
-		ComponentData<ComponentType> m_components;
+		LongMarch_Vector<ComponentType> m_components;
 		// Stores all entities indexed by the index of the component instance in m_components
-		EntityData m_entities;
+		LongMarch_Vector<Entity> m_entities;
 		// Maps the entity to the index of the component instance in the m_components
-		LongMarch_UnorderedMap_Par_flat<Entity, uint32_t> m_entitiesAndComponentIndexes;
+		LongMarch_UnorderedMap_flat<Entity, uint32_t> m_entitiesAndComponentIndexes;
 	};
+
 #undef RESERVE_SIZE
 }
+

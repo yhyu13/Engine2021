@@ -1,11 +1,10 @@
 #pragma once
+#include "engine/EngineEssential.h"
 #include "Entity.h"
-#include "engine/core/exception/EngineException.h"
-#include "engine/core/thread/Lock.h"
-#include "engine/core/utility/TypeHelper.h"
 
 namespace longmarch
 {
+#define RESERVE_SIZE 2048
 	/**
 	 * @brief Entity managers takes care of assigning entity-ids to entities during their creations.
 	 *
@@ -23,7 +22,9 @@ namespace longmarch
 		inline const Entity Create(EntityType type)
 		{
 			LOCK_GUARD_NC();
-			m_typeToEntity[type].push_back(++m_entityID);
+			auto& ids = m_typeToEntity[type];
+			ids.reserve(RESERVE_SIZE);
+			ids.push_back(++m_entityID);
 			return Entity(m_entityID, type);
 		}
 
@@ -31,11 +32,16 @@ namespace longmarch
 		inline void Destroy(const Entity& entity)
 		{
 			LOCK_GUARD_NC();
-			std::vector<EntityID>& vec = m_typeToEntity[entity.m_type];
-			vec.erase(std::remove(vec.begin(), vec.end(), entity.m_id), vec.end());
+			auto& ids = m_typeToEntity[entity.m_type];
+			if (auto index = LongMarch_findFristIndex(ids, entity.m_id); 
+				index != -1)
+			{
+				std::swap(ids[index], ids.back());
+				ids.pop_back();
+			}
 		}
 
-		inline const std::vector<EntityID> GetAllEntityIDWithType(EntityType type) const
+		inline const LongMarch_Vector<EntityID> GetAllEntityIDWithType(EntityType type) const
 		{
 			LOCK_GUARD_NC();
 			if (auto it = m_typeToEntity.find(type); it != m_typeToEntity.end())
@@ -44,7 +50,7 @@ namespace longmarch
 			}
 			else
 			{
-				return std::vector<EntityID>();
+				return LongMarch_Vector<EntityID>();
 			}
 		}
 
@@ -74,7 +80,8 @@ namespace longmarch
 		}
 
 	private:
-		LongMarch_UnorderedMap_Par_node<EntityType, std::vector<EntityID>> m_typeToEntity;
+		LongMarch_UnorderedMap_Par_node<EntityType, LongMarch_Vector<EntityID>> m_typeToEntity;
 		EntityID m_entityID{};
 	};
+#undef RESERVE_SIZE
 }

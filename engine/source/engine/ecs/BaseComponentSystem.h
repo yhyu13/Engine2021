@@ -12,7 +12,7 @@ namespace longmarch
 #define  EARLY_RETURN(dt) {if (!dt) return; }
 #endif // !EARLY_RETURN
 
-#define RESERVE_SIZE 8
+#define RESERVE_SIZE 2048
 
 	/**
 	 * @brief Systems are the places where the actual game-code goes. The entities and
@@ -156,13 +156,13 @@ namespace longmarch
 		inline void RemoveEntity(const Entity& entity)
 		{
 			LOCK_GUARD_NC();
-			// c++ 20 Uniform container ensured erase!
-			std::erase(m_bufferedRegisteredEntities, entity);
-			// Erase remove idiom
-			/*if (!m_bufferedRegisteredEntities.empty())
+			// Should use the same poping strategy as component manager to counter memory diffusion
+			if (auto index = LongMarch_findFristIndex(m_bufferedRegisteredEntities, entity); 
+				index != -1)
 			{
-				m_bufferedRegisteredEntities.erase(std::remove(m_bufferedRegisteredEntities.begin(), m_bufferedRegisteredEntities.end(), entity), m_bufferedRegisteredEntities.end());
-			}*/
+				std::swap(m_bufferedRegisteredEntities[index], m_bufferedRegisteredEntities.back());
+				m_bufferedRegisteredEntities.pop_back();
+			}
 		}
 
 		inline BitMaskSignature& GetSystemSignature()
@@ -175,5 +175,6 @@ namespace longmarch
 		BitMaskSignature m_systemSignature;
 		mutable GameWorld* m_parentWorld{ nullptr };
 	};
+
 #undef RESERVE_SIZE
 }

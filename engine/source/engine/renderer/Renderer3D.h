@@ -19,15 +19,15 @@ namespace longmarch
 #endif
 
 #ifndef MAX_SPOT_LIGHT_SHADOWS
-#define MAX_SPOT_LIGHT_SHADOWS 8 // Must match "./asset/shader/include/LighStruch.h"
+#define MAX_SPOT_LIGHT_SHADOWS 3 // Must match "./asset/shader/include/LighStruch.h"
 #endif
 
 #ifndef MAX_POINT_LIGHT_SHADOWS
-#define MAX_POINT_LIGHT_SHADOWS 8 // Must match "./asset/shader/include/LighStruch.h"
+#define MAX_POINT_LIGHT_SHADOWS 3 // Must match "./asset/shader/include/LighStruch.h"
 #endif
 
 #ifndef LongMarch_MAX_NUM_DIRECTIONAL_SHADOW
-#define LongMarch_MAX_NUM_DIRECTIONAL_SHADOW 2 // Must match "./asset/shader/include/LighStruch.h"
+#define LongMarch_MAX_NUM_DIRECTIONAL_SHADOW 1 // Must match "./asset/shader/include/LighStruch.h"
 #endif
 
 #ifndef LongMarch_MAX_SHADOW_PASS_BATCH
@@ -35,7 +35,7 @@ namespace longmarch
 #endif
 
 #ifndef LongMarch_MAX_SCENE_PASS_BATCH
-#define LongMarch_MAX_SCENE_PASS_BATCH 64 // After this number of textures are to be drawn, the batch buffer is flushed to render because this is the max number of textures that gpu shader has registerd
+#define LongMarch_MAX_SCENE_PASS_BATCH 20 // After this number of textures are to be drawn, the batch buffer is flushed to render because this is the max number of textures that gpu shader has registerd
 #endif
 
 #ifndef LongMarch_GUASSIAN_KERNEL_MIN

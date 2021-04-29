@@ -3,8 +3,9 @@
 #include "../../Buffer.h"
 #include "OpenGLUtil.h"
 
-namespace longmarch {
-	class OpenGLIndexedIndirectCommandBuffer :public IndexedIndirectCommandBuffer
+namespace longmarch 
+{
+	class OpenGLIndexedIndirectCommandBuffer : public IndexedIndirectCommandBuffer
 	{
 	public:
 		OpenGLIndexedIndirectCommandBuffer(const void* data, size_t size);
@@ -27,7 +28,7 @@ namespace longmarch {
 		size_t m_Capcity;
 	};
 
-	class OpenGLVertexBuffer :public VertexBuffer
+	class OpenGLVertexBuffer : public VertexBuffer
 	{
 	public:
 		OpenGLVertexBuffer(const void* data, size_t size);
@@ -58,7 +59,7 @@ namespace longmarch {
 		size_t m_Capcity;
 	};
 
-	class OpenGLIndexBuffer :public IndexBuffer
+	class OpenGLIndexBuffer : public IndexBuffer
 	{
 	public:
 		OpenGLIndexBuffer(const void* indices, size_t size, size_t elementSize);
@@ -84,7 +85,7 @@ namespace longmarch {
 		size_t m_Capcity;
 	};
 
-	class OpenGLUniformBuffer :public UniformBuffer
+	class OpenGLUniformBuffer : public UniformBuffer
 	{
 	public:
 		OpenGLUniformBuffer(const void* data, size_t size);
@@ -106,7 +107,7 @@ namespace longmarch {
 		BufferLayout m_Layout;
 	};
 
-	class OpenGLShaderStorageBuffer :public ShaderStorageBuffer
+	class OpenGLShaderStorageBuffer : public ShaderStorageBuffer
 	{
 	public:
 		OpenGLShaderStorageBuffer(const void* data, size_t size);
@@ -127,7 +128,7 @@ namespace longmarch {
 		BufferLayout m_Layout;
 	};
 
-	class OpenGLFrameBuffer :public FrameBuffer
+	class OpenGLFrameBuffer : public FrameBuffer
 	{
 	public:
 		OpenGLFrameBuffer(uint32_t width, uint32_t height, FrameBuffer::BUFFER_FORMAT format);
@@ -148,7 +149,7 @@ namespace longmarch {
 		uint32_t m_DepthID;
 	};
 
-	class OpenGLShadowBuffer :public ShadowBuffer
+	class OpenGLShadowBuffer : public ShadowBuffer
 	{
 	public:
 		OpenGLShadowBuffer(uint32_t width, uint32_t height);
@@ -168,7 +169,7 @@ namespace longmarch {
 		uint32_t m_DepthID;
 	};
 
-	class OpenGLCompareShadowBuffer :public ShadowBuffer
+	class OpenGLCompareShadowBuffer : public ShadowBuffer
 	{
 	public:
 		OpenGLCompareShadowBuffer(uint32_t width, uint32_t height);
@@ -188,7 +189,7 @@ namespace longmarch {
 		uint32_t m_DepthID;
 	};
 
-	class OpenGLMSMShadowBuffer :public ShadowBuffer
+	class OpenGLMSMShadowBuffer : public ShadowBuffer
 	{
 	public:
 		OpenGLMSMShadowBuffer(uint32_t width, uint32_t height);
@@ -208,7 +209,7 @@ namespace longmarch {
 		uint32_t m_RenderTargetID;
 	};
 
-	class OpenGLMSMCubeShadowBuffer :public ShadowBuffer
+	class OpenGLMSMCubeShadowBuffer : public ShadowBuffer
 	{
 	public:
 		OpenGLMSMCubeShadowBuffer(uint32_t width, uint32_t height);
@@ -228,7 +229,7 @@ namespace longmarch {
 		uint32_t m_RenderTargetID;
 	};
 
-	class OpenGLShadowArrayBuffer :public ShadowBuffer
+	class OpenGLShadowArrayBuffer : public ShadowBuffer
 	{
 	public:
 		OpenGLShadowArrayBuffer(uint32_t width, uint32_t height, uint32_t depth);
@@ -249,7 +250,7 @@ namespace longmarch {
 		uint32_t m_RenderTargetID;
 	};
 
-	class OpenGLCompareShadowArrayBuffer :public ShadowBuffer
+	class OpenGLCompareShadowArrayBuffer : public ShadowBuffer
 	{
 	public:
 		OpenGLCompareShadowArrayBuffer(uint32_t width, uint32_t height, uint32_t depth);
@@ -270,7 +271,7 @@ namespace longmarch {
 		uint32_t m_RenderTargetID;
 	};
 
-	class OpenGLMSMShadowArrayBuffer :public ShadowBuffer
+	class OpenGLMSMShadowArrayBuffer : public ShadowBuffer
 	{
 	public:
 		OpenGLMSMShadowArrayBuffer(uint32_t width, uint32_t height, uint32_t depth);
@@ -291,7 +292,7 @@ namespace longmarch {
 		uint32_t m_RenderTargetID;
 	};
 
-	class OpenGLSkyBoxBuffer :public SkyBoxBuffer
+	class OpenGLSkyBoxBuffer : public SkyBoxBuffer
 	{
 	public:
 		OpenGLSkyBoxBuffer(uint32_t width, uint32_t height, SkyBoxBuffer::BUFFER_FORMAT type);
@@ -360,7 +361,7 @@ namespace longmarch {
 		uint32_t m_RenderVelocityID;
 	};
 
-	class OpenGLComputeBuffer :public ComputeBuffer
+	class OpenGLComputeBuffer : public ComputeBuffer
 	{
 	public:
 		OpenGLComputeBuffer(uint32_t width, uint32_t height, ComputeBuffer::BUFFER_FORMAT type);

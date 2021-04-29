@@ -22,9 +22,6 @@ namespace longmarch {
 		virtual void ClearDepthOnly() override;
 		virtual void Clear() override;
 
-		virtual unsigned int CreateAndBindFBO() override;
-		virtual void DestoryAndUnBindFBO(unsigned int fbo) override;
-
 		virtual void DrawTriangleIndexed(const std::shared_ptr<VertexArray>& vertexArray) override;
 		virtual void DrawLineIndexed(const std::shared_ptr<VertexArray>& vertexArray) override;
 		virtual void DrawTriangleIndexedInstanced(const std::shared_ptr<VertexArray>& vertexArray, uint32_t count) override;
@@ -32,6 +29,7 @@ namespace longmarch {
 		virtual void MultiDrawTriangleIndexedIndirect(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<IndexedIndirectCommandBuffer>& commandBuffer) override;
 
 		virtual void DispatchCompute(uint32_t num_groups_x, uint32_t num_groups_y, uint32_t num_groups_z) override;
+		virtual void PlaceMemoryBarrier(MemoryBarrierBitEnum e) override;
 
 		virtual void PolyModeFill() override;
 		virtual void PolyModeLine() override;

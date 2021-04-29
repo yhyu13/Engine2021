@@ -31,6 +31,13 @@ namespace longmarch
 		
 		// Cubemap semaless
 		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+		// Enable 3D texture
+		glEnable(GL_TEXTURE_3D);
+
+		GLint MaxTextureImageUnits = 0;
+		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &MaxTextureImageUnits);
+		ENGINE_INFO(Str("Max fragment texture : %d", MaxTextureImageUnits));
 	}
 
 	void OpenGLRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
@@ -56,20 +63,6 @@ namespace longmarch
 	void OpenGLRendererAPI::Clear()
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	}
-
-	GLuint OpenGLRendererAPI::CreateAndBindFBO()
-	{
-		GLuint fbo;
-		glGenFramebuffers(1, &fbo);
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-		return fbo;
-	}
-
-	void OpenGLRendererAPI::DestoryAndUnBindFBO(unsigned int fbo)
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glDeleteFramebuffers(1, &fbo);
 	}
 
 	void OpenGLRendererAPI::DrawTriangleIndexed(const std::shared_ptr<VertexArray>& vertexArray)
@@ -170,6 +163,25 @@ namespace longmarch
 	void OpenGLRendererAPI::DispatchCompute(uint32_t num_groups_x, uint32_t num_groups_y, uint32_t num_groups_z)
 	{
 		glDispatchCompute(num_groups_x, num_groups_y, num_groups_z);
+	}
+
+	void OpenGLRendererAPI::PlaceMemoryBarrier(MemoryBarrierBitEnum e)
+	{
+		switch (e)
+		{
+		case longmarch::RendererAPI::MemoryBarrierBitEnum::SHADER_STORAGE_BUFFER_BARRIER:
+			glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+			break;
+		case longmarch::RendererAPI::MemoryBarrierBitEnum::SHADER_IMAGE_ACCESS_BARRIER:
+			glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+			break;
+		case longmarch::RendererAPI::MemoryBarrierBitEnum::SHADER_TEXTURE_FETCH_BARRIER:
+			glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);
+			break;
+		default:
+			ENGINE_EXCEPT(L"Unkown RendererAPI::MemoryBarrierBitEnum!");
+			break;
+		}
 	}
 
 	void OpenGLRendererAPI::PolyModeFill() 

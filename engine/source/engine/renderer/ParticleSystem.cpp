@@ -32,8 +32,8 @@ namespace longmarch {
 
 			m_BufferData.ParticleVertexBuffer = VertexBuffer::Create(vertices, sizeof(vertices));
 			m_BufferData.ParticleVertexBuffer->SetLayout({
-				{ ShaderDataType::Float3, "a_Position" },
-				{ ShaderDataType::Float2, "a_TexCoord" }
+				{ VertexDataType::Float3, "a_Position" },
+				{ VertexDataType::Float2, "a_TexCoord" }
 				});
 			m_BufferData.ParticleVertexArray->AddVertexBuffer(m_BufferData.ParticleVertexBuffer);
 

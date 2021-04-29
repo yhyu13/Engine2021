@@ -4,27 +4,27 @@
 
 namespace longmarch {
 
-	static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
+	static GLenum VertexDataTypeToOpenGLBaseType(VertexDataType type)
 	{
 		switch (type)
 		{
-		case longmarch::ShaderDataType::Float:    return GL_FLOAT;
-		case longmarch::ShaderDataType::Float2:   return GL_FLOAT;
-		case longmarch::ShaderDataType::Float3:   return GL_FLOAT;
-		case longmarch::ShaderDataType::Float4:   return GL_FLOAT;
-		case longmarch::ShaderDataType::HFloat:    return GL_HALF_FLOAT;
-		case longmarch::ShaderDataType::HFloat2:   return GL_HALF_FLOAT;
-		case longmarch::ShaderDataType::HFloat3:   return GL_HALF_FLOAT;
-		case longmarch::ShaderDataType::HFloat4:   return GL_HALF_FLOAT;
-		case longmarch::ShaderDataType::Int:      return GL_INT;
-		case longmarch::ShaderDataType::Int2:     return GL_INT;
-		case longmarch::ShaderDataType::Int3:     return GL_INT;
-		case longmarch::ShaderDataType::Int4:     return GL_INT;
-		case longmarch::ShaderDataType::uInt:	 return GL_UNSIGNED_INT;
-		case longmarch::ShaderDataType::Bool:     return GL_BOOL;
+		case longmarch::VertexDataType::Float:    return GL_FLOAT;
+		case longmarch::VertexDataType::Float2:   return GL_FLOAT;
+		case longmarch::VertexDataType::Float3:   return GL_FLOAT;
+		case longmarch::VertexDataType::Float4:   return GL_FLOAT;
+		case longmarch::VertexDataType::HFloat:    return GL_HALF_FLOAT;
+		case longmarch::VertexDataType::HFloat2:   return GL_HALF_FLOAT;
+		case longmarch::VertexDataType::HFloat3:   return GL_HALF_FLOAT;
+		case longmarch::VertexDataType::HFloat4:   return GL_HALF_FLOAT;
+		case longmarch::VertexDataType::Int:      return GL_INT;
+		case longmarch::VertexDataType::Int2:     return GL_INT;
+		case longmarch::VertexDataType::Int3:     return GL_INT;
+		case longmarch::VertexDataType::Int4:     return GL_INT;
+		case longmarch::VertexDataType::uInt:	 return GL_UNSIGNED_INT;
+		case longmarch::VertexDataType::Bool:     return GL_BOOL;
 		}
 
-		ASSERT(false, "Unknown ShaderDataType!");
+		ASSERT(false, "Unknown VertexDataType!");
 		return 0;
 	}
 
@@ -64,11 +64,11 @@ namespace longmarch {
 			glEnableVertexAttribArray(index);
 			if (element.IsIntegralDataType())
 			{
-				glVertexAttribIPointer(index, element.GetComponentCount(), ShaderDataTypeToOpenGLBaseType(element.Type), layout.GetStride(), (const void*)element.Offset);
+				glVertexAttribIPointer(index, element.GetComponentCount(), VertexDataTypeToOpenGLBaseType(element.Type), layout.GetStride(), (const void*)element.Offset);
 			}
 			else
 			{
-				glVertexAttribPointer(index, element.GetComponentCount(), ShaderDataTypeToOpenGLBaseType(element.Type), element.Normalized ? GL_TRUE : GL_FALSE, layout.GetStride(), (const void*)element.Offset);
+				glVertexAttribPointer(index, element.GetComponentCount(), VertexDataTypeToOpenGLBaseType(element.Type), element.Normalized ? GL_TRUE : GL_FALSE, layout.GetStride(), (const void*)element.Offset);
 			}
 			glVertexAttribDivisor(index, element.Diviser);
 			index++;

@@ -380,21 +380,21 @@ void longmarch::Renderer3D::Init()
 
 			// Frame buffer
 			s_Data.gpuBuffer.CurrentFrameBuffer = nullptr;
-			s_Data.gpuBuffer.PrevFinalFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
-			s_Data.gpuBuffer.CurrentFinalFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
-			s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
-			s_Data.gpuBuffer.FrameBuffer_1 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
-			s_Data.gpuBuffer.FrameBuffer_2 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
-			s_Data.gpuBuffer.FrameBuffer_3 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
-			s_Data.gpuBuffer.FrameBuffer_4 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
+			s_Data.gpuBuffer.PrevFinalFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
+			s_Data.gpuBuffer.CurrentFinalFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
+			s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
+			s_Data.gpuBuffer.FrameBuffer_1 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
+			s_Data.gpuBuffer.FrameBuffer_2 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
+			s_Data.gpuBuffer.FrameBuffer_3 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
+			s_Data.gpuBuffer.FrameBuffer_4 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
 
-			s_Data.gpuBuffer.PrevDynamicSSGIBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
-			s_Data.gpuBuffer.CurrentDynamicSSGIBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
-			s_Data.gpuBuffer.CurrentDynamicSSAOBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::UINT8_R);
-			s_Data.gpuBuffer.CurrentDynamicSSRBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+			s_Data.gpuBuffer.PrevDynamicSSGIBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
+			s_Data.gpuBuffer.CurrentDynamicSSGIBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
+			s_Data.gpuBuffer.CurrentDynamicSSAOBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::UINT_R8);
+			s_Data.gpuBuffer.CurrentDynamicSSRBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 			s_Data.gpuBuffer.CurrentBackFaceDepthBuffer = ShadowBuffer::Create(1, 1, ShadowBuffer::SHADOW_MAP_TYPE::BASIC);
-			s_Data.gpuBuffer.CurrentDynamicBloomBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
-			s_Data.gpuBuffer.CurrentDynamicDOFBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+			s_Data.gpuBuffer.CurrentDynamicBloomBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
+			s_Data.gpuBuffer.CurrentDynamicDOFBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 			s_Data.gpuBuffer.CurrentDynamicDOFDepthBuffer_1 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT32_R);
 			s_Data.gpuBuffer.CurrentDynamicDOFDepthBuffer_2 = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT32_R);
 				
@@ -437,8 +437,8 @@ void longmarch::Renderer3D::Init()
 			};
 			auto QuadVertexBuffer = VertexBuffer::Create(quadVertices, sizeof(quadVertices));
 			QuadVertexBuffer->SetLayout({
-				{ ShaderDataType::Float3, "a_Position" },
-				{ ShaderDataType::Float2, "a_TexCoord" }
+				{ VertexDataType::Float3, "a_Position" },
+				{ VertexDataType::Float2, "a_TexCoord" }
 				});
 			s_Data.gpuBuffer.FullScreenQuadVAO->AddVertexBuffer(QuadVertexBuffer);
 			// The quad indices will be used to draw as triangles
@@ -464,15 +464,15 @@ void longmarch::Renderer3D::Init()
 			};
 			auto BBoxVertexBuffer = VertexBuffer::Create(cubeVertices, sizeof(cubeVertices));
 			BBoxVertexBuffer->SetLayout({
-				{ ShaderDataType::Float3, "a_Position" }
+				{ VertexDataType::Float3, "a_Position" }
 				});
 			s_Data.gpuBuffer.BBoxVAO->AddVertexBuffer(BBoxVertexBuffer);
 			s_Data.gpuBuffer.BBoxInstBO = VertexBuffer::Create(nullptr, 0);
 			s_Data.gpuBuffer.BBoxInstBO->SetLayout({
-				{ ShaderDataType::Float4, "a_ModelTre_Col1" , 1},
-				{ ShaderDataType::Float4, "a_ModelTre_Col2" , 1},
-				{ ShaderDataType::Float4, "a_ModelTre_Col3" , 1},
-				{ ShaderDataType::Float4, "a_ModelTre_Col4" , 1},
+				{ VertexDataType::Float4, "a_ModelTre_Col1" , 1},
+				{ VertexDataType::Float4, "a_ModelTre_Col2" , 1},
+				{ VertexDataType::Float4, "a_ModelTre_Col3" , 1},
+				{ VertexDataType::Float4, "a_ModelTre_Col4" , 1},
 				});
 			s_Data.gpuBuffer.BBoxVAO->AddVertexBuffer(s_Data.gpuBuffer.BBoxInstBO);
 			// The BBox indices will be used to draw as lines
@@ -500,8 +500,8 @@ void longmarch::Renderer3D::Init()
 			auto quadVBO = VertexBuffer::Create(quadVertices, sizeof(quadVertices));
 
 			quadVBO->SetLayout({
-				{ ShaderDataType::Float2, "position" },
-				{ ShaderDataType::Float2, "uv" }
+				{ VertexDataType::Float2, "position" },
+				{ VertexDataType::Float2, "uv" }
 				});
 			s_Data.gpuBuffer.particleVAO->AddVertexBuffer(quadVBO);
 			uint8_t squareIndices[6] = {
@@ -511,12 +511,12 @@ void longmarch::Renderer3D::Init()
 			s_Data.gpuBuffer.particleVAO->SetIndexBuffer(QuadIndexBuffer);
 			s_Data.gpuBuffer.particleInstBO = VertexBuffer::Create(nullptr, MAX_PARTICLE_INSTANCES * PARTICLE_INSTANCED_DATA_LENGTH * sizeof(GLfloat));
 			s_Data.gpuBuffer.particleInstBO->SetLayout({
-				{ ShaderDataType::Float4, "model_col0", 1},
-				{ ShaderDataType::Float4, "model_col1", 1},
-				{ ShaderDataType::Float4, "model_col2", 1},
-				{ ShaderDataType::Float4, "model_col3", 1},
-				{ ShaderDataType::Float4, "uv_offsets", 1},
-				{ ShaderDataType::Float, "blend_factor", 1}
+				{ VertexDataType::Float4, "model_col0", 1},
+				{ VertexDataType::Float4, "model_col1", 1},
+				{ VertexDataType::Float4, "model_col2", 1},
+				{ VertexDataType::Float4, "model_col3", 1},
+				{ VertexDataType::Float4, "uv_offsets", 1},
+				{ VertexDataType::Float, "blend_factor", 1}
 				});
 			s_Data.gpuBuffer.particleVAO->AddVertexBuffer(s_Data.gpuBuffer.particleInstBO);
 		}
@@ -571,9 +571,9 @@ void longmarch::Renderer3D::Init()
 			};
 			auto CubeVertexBuffer = VertexBuffer::Create(cubeVertices, sizeof(cubeVertices));
 			CubeVertexBuffer->SetLayout({
-				{ ShaderDataType::Float3, "a_Position" },
-				{ ShaderDataType::Float3, "a_Normal" },
-				{ ShaderDataType::Float2, "a_TexCoord" }
+				{ VertexDataType::Float3, "a_Position" },
+				{ VertexDataType::Float3, "a_Normal" },
+				{ VertexDataType::Float2, "a_TexCoord" }
 				});
 			s_Data.gpuBuffer.FullScreenCubeVAO->AddVertexBuffer(CubeVertexBuffer);
 			// Cbe indices will be used to draw triangles
@@ -595,46 +595,46 @@ void longmarch::Renderer3D::Init()
 			s_Data.multiDrawBuffer.MultiDraw_VBO = VertexBuffer::Create(nullptr, 0);
 #if MESH_VERTEX_DATA_FORMAT == 0
 			s_Data.multiDrawBuffer.MultiDraw_VBO->SetLayout({
-					{ ShaderDataType::Float3, "a_VertexPnt" },
-					{ ShaderDataType::Float3, "a_VertexNrm" },
-					{ ShaderDataType::Float2, "a_VertexTex" },
-					{ ShaderDataType::Float3, "a_VertexTan" }
+					{ VertexDataType::Float3, "a_VertexPnt" },
+					{ VertexDataType::Float3, "a_VertexNrm" },
+					{ VertexDataType::Float2, "a_VertexTex" },
+					{ VertexDataType::Float3, "a_VertexTan" }
 				});
 #elif MESH_VERTEX_DATA_FORMAT == 1
 			s_Data.multiDrawBuffer.MultiDraw_VBO->SetLayout({
-					{ ShaderDataType::Float3, "a_VertexPnt" },
-					{ ShaderDataType::Float4, "a_VertexNrm" },
-					{ ShaderDataType::Float2, "a_VertexTex" }
+					{ VertexDataType::Float3, "a_VertexPnt" },
+					{ VertexDataType::Float4, "a_VertexNrm" },
+					{ VertexDataType::Float2, "a_VertexTex" }
 				});
 #elif MESH_VERTEX_DATA_FORMAT == 2
 			s_Data.multiDrawBuffer.MultiDraw_VBO->SetLayout({
-					{ ShaderDataType::Float3, "a_VertexPnt" },
-					{ ShaderDataType::Float2, "a_VertexNrm" },
-					{ ShaderDataType::Float2, "a_VertexTex" },
-					{ ShaderDataType::Float2, "a_VertexTan" }
+					{ VertexDataType::Float3, "a_VertexPnt" },
+					{ VertexDataType::Float2, "a_VertexNrm" },
+					{ VertexDataType::Float2, "a_VertexTex" },
+					{ VertexDataType::Float2, "a_VertexTan" }
 				});
 #elif MESH_VERTEX_DATA_FORMAT == 3
 			s_Data.multiDrawBuffer.MultiDraw_VBO->SetLayout({
-					{ ShaderDataType::Float3, "a_VertexPnt" },
-					{ ShaderDataType::HFloat2, "a_VertexNrm" },
-					{ ShaderDataType::HFloat2, "a_VertexTex" },
-					{ ShaderDataType::HFloat2, "a_VertexTan" }
+					{ VertexDataType::Float3, "a_VertexPnt" },
+					{ VertexDataType::HFloat2, "a_VertexNrm" },
+					{ VertexDataType::HFloat2, "a_VertexTex" },
+					{ VertexDataType::HFloat2, "a_VertexTan" }
 				});
 #elif MESH_VERTEX_DATA_FORMAT == 4
 			s_Data.multiDrawBuffer.MultiDraw_VBO->SetLayout({
-					{ ShaderDataType::HFloat4, "a_VertexPnt" },
-					{ ShaderDataType::HFloat2, "a_VertexNrm" },
-					{ ShaderDataType::HFloat2, "a_VertexTex" },
-					{ ShaderDataType::HFloat2, "a_VertexTan" },
-					{ ShaderDataType::HFloat2, "a_BoneIndexWeight1" },
-					{ ShaderDataType::HFloat2, "a_BoneIndexWeight2" },
-					{ ShaderDataType::HFloat2, "a_BoneIndexWeight3" }
+					{ VertexDataType::HFloat4, "a_VertexPnt" },
+					{ VertexDataType::HFloat2, "a_VertexNrm" },
+					{ VertexDataType::HFloat2, "a_VertexTex" },
+					{ VertexDataType::HFloat2, "a_VertexTan" },
+					{ VertexDataType::HFloat2, "a_BoneIndexWeight1" },
+					{ VertexDataType::HFloat2, "a_BoneIndexWeight2" },
+					{ VertexDataType::HFloat2, "a_BoneIndexWeight3" }
 				});
 #endif
 			s_Data.multiDrawBuffer.MultiDraw_VAO->AddVertexBuffer(s_Data.multiDrawBuffer.MultiDraw_VBO);
 			s_Data.multiDrawBuffer.MultiDraw_InstBO = VertexBuffer::Create(nullptr, TWO_16 * sizeof(uint32_t));
 			s_Data.multiDrawBuffer.MultiDraw_InstBO->SetLayout({
-					{ ShaderDataType::uInt, "a_InstanceId", 1}
+					{ VertexDataType::uInt, "a_InstanceId", 1}
 				});
 			s_Data.multiDrawBuffer.MultiDraw_VAO->AddVertexBuffer(s_Data.multiDrawBuffer.MultiDraw_InstBO);
 			s_Data.multiDrawBuffer.MultiDraw_IBO = IndexBuffer::Create(nullptr, 0, sizeof(MeshData::TriData) / 3);
@@ -842,37 +842,37 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 		if (s_Data.gpuBuffer.PrevFinalFrameBuffer->GetBufferSize() != s_Data.resolution)
 		{
 			s_Data.window_size_changed_this_frame = true;
-			s_Data.gpuBuffer.PrevFinalFrameBuffer = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
+			s_Data.gpuBuffer.PrevFinalFrameBuffer = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
 		}
 		if (s_Data.gpuBuffer.CurrentFinalFrameBuffer->GetBufferSize() != s_Data.resolution)
 		{
 			s_Data.window_size_changed_this_frame = true;
-			s_Data.gpuBuffer.CurrentFinalFrameBuffer = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
+			s_Data.gpuBuffer.CurrentFinalFrameBuffer = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
 		}
 		if (s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer->GetBufferSize() != s_Data.resolution)
 		{
 			s_Data.window_size_changed_this_frame = true;
-			s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+			s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 		}
 		if (s_Data.gpuBuffer.FrameBuffer_1->GetBufferSize() != s_Data.resolution)
 		{
 			s_Data.window_size_changed_this_frame = true;
-			s_Data.gpuBuffer.FrameBuffer_1 = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
+			s_Data.gpuBuffer.FrameBuffer_1 = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
 		}
 		if (s_Data.gpuBuffer.FrameBuffer_2->GetBufferSize() != s_Data.resolution)
 		{
 			s_Data.window_size_changed_this_frame = true;
-			s_Data.gpuBuffer.FrameBuffer_2 = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
+			s_Data.gpuBuffer.FrameBuffer_2 = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
 		}
 		if (s_Data.gpuBuffer.FrameBuffer_3->GetBufferSize() != s_Data.resolution)
 		{
 			s_Data.window_size_changed_this_frame = true;
-			s_Data.gpuBuffer.FrameBuffer_3 = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
+			s_Data.gpuBuffer.FrameBuffer_3 = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
 		}
 		if (s_Data.gpuBuffer.FrameBuffer_4->GetBufferSize() != s_Data.resolution)
 		{
 			s_Data.window_size_changed_this_frame = true;
-			s_Data.gpuBuffer.FrameBuffer_4 = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
+			s_Data.gpuBuffer.FrameBuffer_4 = FrameBuffer::Create(s_Data.resolution.x, s_Data.resolution.y, FrameBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
 		}
 
 		// Enable depth testing and wirte to depth buffer just for the clearing commend
@@ -927,7 +927,7 @@ void longmarch::Renderer3D::BeginRendering(const PerspectiveCamera* camera)
 		// Transfer cleared fbo to default frame buffer in order to clear it as well.
 		constexpr int default_framebuffer_rendererID = 0;
 		RenderCommand::TransferColorBit(
-			s_Data.gpuBuffer.CurrentFrameBuffer->GetRendererID(),
+			s_Data.gpuBuffer.CurrentFrameBuffer->GetFrameBufferID(),
 			s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().x,
 			s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().y,
 
@@ -1336,11 +1336,11 @@ void longmarch::Renderer3D::BeginShadowing(
 							//RenderCommand::SetClearColor(Vec4f(1, 1, 1, 1));
 							//RenderCommand::Clear();
 							//RenderCommand::TransferDepthBit(
-							//	shadowBuffer->GetRendererID(),
+							//	shadowBuffer->GetFrameBufferID(),
 							//	traget_resoluation.x,
 							//	traget_resoluation.y,
 
-							//	shadowBuffer3->GetRendererID(),
+							//	shadowBuffer3->GetFrameBufferID(),
 							//	traget_resoluation3.x,
 							//	traget_resoluation3.y
 							//);
@@ -1833,7 +1833,7 @@ void longmarch::Renderer3D::BeginShadowing(
 		shadowBuffer3 = ComputeBuffer::Create(
 			traget_resoluation3.x,
 			traget_resoluation3.y,
-			ComputeBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
+			ComputeBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
 		s_Data.gpuBuffer.ShadowComputeBufferList_Buffered[j] = shadowBuffer3;
 	}
 	Vec2u traget_resoluation4 = Vec2u(s_Data.resolution_shadowMap);
@@ -1843,7 +1843,7 @@ void longmarch::Renderer3D::BeginShadowing(
 		shadowBuffer4 = ComputeBuffer::Create(
 			traget_resoluation4.x,
 			traget_resoluation4.y,
-			ComputeBuffer::BUFFER_FORMAT::FLOAT16_RGBA);
+			ComputeBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
 		s_Data.gpuBuffer.ShadowComputeBufferList_Buffered_2nd[j] = shadowBuffer4;
 	}
 
@@ -1866,10 +1866,10 @@ void longmarch::Renderer3D::BeginShadowing(
 			const auto& traget_resoluation3 = shadowBuffer3->GetBufferSize();
 			const auto& traget_resoluation4 = shadowBuffer4->GetBufferSize();
 
-			RenderCommand::TransferColorBit(shadowBuffer->GetRendererID(),
+			RenderCommand::TransferColorBit(shadowBuffer->GetFrameBufferID(),
 				traget_resoluation.x,
 				traget_resoluation.y,
-				shadowBuffer3->GetRendererID(),
+				shadowBuffer3->GetFrameBufferID(),
 				traget_resoluation3.x,
 				traget_resoluation3.y
 			);
@@ -1919,10 +1919,10 @@ void longmarch::Renderer3D::BeginShadowing(
 			const auto& traget_resoluation = shadowBuffer->GetBufferSize();
 			const auto& traget_resoluation3 = shadowBuffer3->GetBufferSize();
 			const auto& traget_resoluation4 = shadowBuffer4->GetBufferSize();
-			RenderCommand::TransferColorBit(shadowBuffer3->GetRendererID(),
+			RenderCommand::TransferColorBit(shadowBuffer3->GetFrameBufferID(),
 				traget_resoluation3.x,
 				traget_resoluation3.y,
-				shadowBuffer->GetRendererID(),
+				shadowBuffer->GetFrameBufferID(),
 				traget_resoluation.x,
 				traget_resoluation.y
 			);
@@ -2003,7 +2003,7 @@ void longmarch::Renderer3D::_BeginClusterBuildGrid(const PerspectiveCamera* came
 	s_Data.CurrentShader = s_Data.ShaderMap["BuildAABBGridCompShader"];
 	s_Data.CurrentShader->Bind();
 	RenderCommand::DispatchCompute(s_Data.ClusterData.gridSizeX, s_Data.ClusterData.gridSizeY, s_Data.ClusterData.gridSizeZ);
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	RenderCommand::PlaceMemoryBarrier(RendererAPI::MemoryBarrierBitEnum::SHADER_STORAGE_BUFFER_BARRIER);
 }
 
 void longmarch::Renderer3D::_BeginLightCullingPass(const PerspectiveCamera* camera)
@@ -2012,7 +2012,7 @@ void longmarch::Renderer3D::_BeginLightCullingPass(const PerspectiveCamera* came
 	s_Data.CurrentShader = s_Data.ShaderMap["CullLightsCompShader"];
 	s_Data.CurrentShader->Bind();
 	RenderCommand::DispatchCompute(1, 1, 4);
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	RenderCommand::PlaceMemoryBarrier(RendererAPI::MemoryBarrierBitEnum::SHADER_STORAGE_BUFFER_BARRIER);
 }
 
 void longmarch::Renderer3D::_BeginDebugCluster(const std::shared_ptr<FrameBuffer>& framebuffer_out)
@@ -2397,15 +2397,15 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 
 	// Fill in prev frame buffer from current frame buffer before skybox pass
 	RenderCommand::TransferColorBit(
-		s_Data.gpuBuffer.CurrentFrameBuffer->GetRendererID(),
+		s_Data.gpuBuffer.CurrentFrameBuffer->GetFrameBufferID(),
 		s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().x,
 		s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().y,
 
-		s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer->GetRendererID(),
+		s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer->GetFrameBufferID(),
 		s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer->GetBufferSize().x,
 		s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer->GetBufferSize().y
 	);
-	s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer->GenerateMipmaps();
+	s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer->GenerateMipMapLevel();
 
 	if (s_Data.RENDER_PIPE == Renderer3D::RENDER_PIPE::DEFERRED)
 	{
@@ -2442,7 +2442,7 @@ void longmarch::Renderer3D::_BeginDynamicSSGIPass(const std::shared_ptr<FrameBuf
 			if (auto downscale = s_Data.SSGISettings.gi_sample_resolution_downScale;
 				s_Data.gpuBuffer.CurrentDynamicSSGIBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the SSGI with potentially downscaled resolution
 			{
-				s_Data.gpuBuffer.CurrentDynamicSSGIBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+				s_Data.gpuBuffer.CurrentDynamicSSGIBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 			}
 
 			RenderCommand::DepthTest(true, true);
@@ -2493,10 +2493,10 @@ void longmarch::Renderer3D::_BeginDynamicSSGIPass(const std::shared_ptr<FrameBuf
 		// Bilaterl blurring
 		const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur"];
 		Vec2u traget_resoluation2(traget_resoluation);
-		static auto GIBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+		static auto GIBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 		if (GIBackBuffer->GetBufferSize() != traget_resoluation2)
 		{
-			GIBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+			GIBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 		}
 		auto kernel_size = s_Data.SSGISettings.gi_gaussian_kernal;
 #ifdef LongMarch_SCALE_GUASSIAN_KERNEL_WITH_RESOLUTION
@@ -2538,7 +2538,7 @@ void longmarch::Renderer3D::_BeginDynamicSSAOPass()
 		if (auto downscale = s_Data.SSAOSettings.ao_sample_resolution_downScale;
 			s_Data.gpuBuffer.CurrentDynamicSSAOBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the SSAO with potentially downscaled resolution
 		{
-			s_Data.gpuBuffer.CurrentDynamicSSAOBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::UINT8_R);
+			s_Data.gpuBuffer.CurrentDynamicSSAOBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::UINT_R8);
 		}
 
 		RenderCommand::DepthTest(true, true);
@@ -2590,10 +2590,10 @@ void longmarch::Renderer3D::_BeginDynamicSSAOPass()
 		// Bilaterl blurring
 		const auto& guassian_shader = s_Data.ShaderMap["BilateralBlur"];
 		Vec2u traget_resoluation2(traget_resoluation);
-		static auto AOBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::UINT8_R);
+		static auto AOBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::UINT_R8);
 		if (AOBackBuffer->GetBufferSize() != traget_resoluation2)
 		{
-			AOBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::UINT8_R);
+			AOBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::UINT_R8);
 		}
 		auto kernel_size = s_Data.SSAOSettings.ao_gaussian_kernal;
 #ifdef LongMarch_SCALE_GUASSIAN_KERNEL_WITH_RESOLUTION
@@ -2651,7 +2651,7 @@ void longmarch::Renderer3D::_BeginDynamicSSRPass(
 			if (auto downscale = s_Data.SSRSettings.ssr_sample_resolution_downScale;
 				s_Data.gpuBuffer.CurrentDynamicSSRBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the SSR with potentially downscaled resolution
 			{
-				s_Data.gpuBuffer.CurrentDynamicSSRBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+				s_Data.gpuBuffer.CurrentDynamicSSRBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 			}
 
 			if (auto downscale = s_Data.SSRSettings.ssr_sample_resolution_downScale;
@@ -2754,10 +2754,10 @@ void longmarch::Renderer3D::_BeginDynamicSSRPass(
 		// Bilaterl blurring
 		const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur"];
 		Vec2u traget_resoluation2(traget_resoluation);
-		static auto SSRBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+		static auto SSRBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 		if (SSRBackBuffer->GetBufferSize() != traget_resoluation2)
 		{
-			SSRBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+			SSRBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 		}
 		auto kernel_size = s_Data.SSRSettings.ssr_gaussian_kernal;
 #ifdef LongMarch_SCALE_GUASSIAN_KERNEL_WITH_RESOLUTION
@@ -3094,15 +3094,15 @@ void longmarch::Renderer3D::BeginPostProcessing()
 	{
 		// Fill in prev frame buffer from current frame buffer
 		RenderCommand::TransferColorBit(
-			s_Data.gpuBuffer.CurrentFrameBuffer->GetRendererID(),
+			s_Data.gpuBuffer.CurrentFrameBuffer->GetFrameBufferID(),
 			s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().x,
 			s_Data.gpuBuffer.CurrentFrameBuffer->GetBufferSize().y,
 
-			s_Data.gpuBuffer.PrevFinalFrameBuffer->GetRendererID(),
+			s_Data.gpuBuffer.PrevFinalFrameBuffer->GetFrameBufferID(),
 			s_Data.gpuBuffer.PrevFinalFrameBuffer->GetBufferSize().x,
 			s_Data.gpuBuffer.PrevFinalFrameBuffer->GetBufferSize().y
 		);
-		s_Data.gpuBuffer.PrevFinalFrameBuffer->GenerateMipmaps();
+		s_Data.gpuBuffer.PrevFinalFrameBuffer->GenerateMipMapLevel();
 	}
 	
 	Renderer3D::_BeginToneMappingPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.CurrentFinalFrameBuffer);
@@ -3147,11 +3147,11 @@ void longmarch::Renderer3D::_BeginSSGIPass(const std::shared_ptr<FrameBuffer>& f
 	else
 	{
 		RenderCommand::TransferColorBit(
-			framebuffer_in->GetRendererID(),
+			framebuffer_in->GetFrameBufferID(),
 			framebuffer_in->GetBufferSize().x,
 			framebuffer_in->GetBufferSize().y,
 
-			framebuffer_out->GetRendererID(),
+			framebuffer_out->GetFrameBufferID(),
 			framebuffer_out->GetBufferSize().x,
 			framebuffer_out->GetBufferSize().y
 		);
@@ -3191,11 +3191,11 @@ void longmarch::Renderer3D::_BeginSSGIPass(const std::shared_ptr<FrameBuffer>& f
 //	else
 //	{
 //		RenderCommand::TransferColorBit(
-//			framebuffer_in->GetRendererID(),
+//			framebuffer_in->GetFrameBufferID(),
 //			framebuffer_in->GetBufferSize().x,
 //			framebuffer_in->GetBufferSize().y,
 //
-//			framebuffer_out->GetRendererID(),
+//			framebuffer_out->GetFrameBufferID(),
 //			framebuffer_out->GetBufferSize().x,
 //			framebuffer_out->GetBufferSize().y
 //		);
@@ -3236,11 +3236,11 @@ void longmarch::Renderer3D::_BeginSSRPass(const std::shared_ptr<FrameBuffer>& fr
 	else
 	{
 		RenderCommand::TransferColorBit(
-			framebuffer_in->GetRendererID(),
+			framebuffer_in->GetFrameBufferID(),
 			framebuffer_in->GetBufferSize().x,
 			framebuffer_in->GetBufferSize().y,
 
-			framebuffer_out->GetRendererID(),
+			framebuffer_out->GetFrameBufferID(),
 			framebuffer_out->GetBufferSize().x,
 			framebuffer_out->GetBufferSize().y
 		);
@@ -3290,11 +3290,11 @@ void longmarch::Renderer3D::_BeginTAAPass(const std::shared_ptr<FrameBuffer>& fr
 	else
 	{
 		RenderCommand::TransferColorBit(
-			framebuffer_in->GetRendererID(),
+			framebuffer_in->GetFrameBufferID(),
 			framebuffer_in->GetBufferSize().x,
 			framebuffer_in->GetBufferSize().y,
 
-			framebuffer_out->GetRendererID(),
+			framebuffer_out->GetFrameBufferID(),
 			framebuffer_out->GetBufferSize().x,
 			framebuffer_out->GetBufferSize().y
 		);
@@ -3338,11 +3338,11 @@ void longmarch::Renderer3D::_BeginFXAAPass(const std::shared_ptr<FrameBuffer>& f
 	else
 	{
 		RenderCommand::TransferColorBit(
-			framebuffer_in->GetRendererID(),
+			framebuffer_in->GetFrameBufferID(),
 			framebuffer_in->GetBufferSize().x,
 			framebuffer_in->GetBufferSize().y,
 
-			framebuffer_out->GetRendererID(),
+			framebuffer_out->GetFrameBufferID(),
 			framebuffer_out->GetBufferSize().x,
 			framebuffer_out->GetBufferSize().y
 		);
@@ -3380,11 +3380,11 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 		// Wieght calculation
 		{
 			RenderCommand::TransferStencilBit(
-				framebuffer_edge->GetRendererID(),
+				framebuffer_edge->GetFrameBufferID(),
 				framebuffer_edge->GetBufferSize().x,
 				framebuffer_edge->GetBufferSize().y,
 
-				framebuffer_blend->GetRendererID(),
+				framebuffer_blend->GetFrameBufferID(),
 				framebuffer_blend->GetBufferSize().x,
 				framebuffer_blend->GetBufferSize().y
 			);
@@ -3509,11 +3509,11 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 	else
 	{
 		RenderCommand::TransferColorBit(
-			framebuffer_in->GetRendererID(),
+			framebuffer_in->GetFrameBufferID(),
 			framebuffer_in->GetBufferSize().x,
 			framebuffer_in->GetBufferSize().y,
 
-			framebuffer_out->GetRendererID(),
+			framebuffer_out->GetFrameBufferID(),
 			framebuffer_out->GetBufferSize().x,
 			framebuffer_out->GetBufferSize().y
 		);
@@ -3564,11 +3564,11 @@ void longmarch::Renderer3D::_BeginMotionBlurPass(const std::shared_ptr<FrameBuff
 	else
 	{
 		RenderCommand::TransferColorBit(
-			framebuffer_in->GetRendererID(),
+			framebuffer_in->GetFrameBufferID(),
 			framebuffer_in->GetBufferSize().x,
 			framebuffer_in->GetBufferSize().y,
 
-			framebuffer_out->GetRendererID(),
+			framebuffer_out->GetFrameBufferID(),
 			framebuffer_out->GetBufferSize().x,
 			framebuffer_out->GetBufferSize().y
 		);
@@ -3584,7 +3584,7 @@ void longmarch::Renderer3D::_BeginBloomPass(const std::shared_ptr<FrameBuffer>& 
 		if (auto downscale = s_Data.BloomSettings.bloom_sample_resolution_downScale;
 			s_Data.gpuBuffer.CurrentDynamicBloomBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the Bloom with potentially downscaled resolution
 		{
-			s_Data.gpuBuffer.CurrentDynamicBloomBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+			s_Data.gpuBuffer.CurrentDynamicBloomBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 		}
 		RenderCommand::DepthTest(true, true);
 		RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0));
@@ -3617,10 +3617,10 @@ void longmarch::Renderer3D::_BeginBloomPass(const std::shared_ptr<FrameBuffer>& 
 		// Blur brightness map
 		const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur"];
 		Vec2u traget_resoluation2(traget_resoluation);
-		static auto BrightnessBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+		static auto BrightnessBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 		if (BrightnessBackBuffer->GetBufferSize() != traget_resoluation2)
 		{
-			BrightnessBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+			BrightnessBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 		}
 		auto kernel_size = s_Data.BloomSettings.bloom_gaussian_kernal;
 #ifdef LongMarch_SCALE_GUASSIAN_KERNEL_WITH_RESOLUTION
@@ -3683,11 +3683,11 @@ void longmarch::Renderer3D::_BeginBloomPass(const std::shared_ptr<FrameBuffer>& 
 	else
 	{
 		RenderCommand::TransferColorBit(
-			framebuffer_in->GetRendererID(),
+			framebuffer_in->GetFrameBufferID(),
 			framebuffer_in->GetBufferSize().x,
 			framebuffer_in->GetBufferSize().y,
 
-			framebuffer_out->GetRendererID(),
+			framebuffer_out->GetFrameBufferID(),
 			framebuffer_out->GetBufferSize().x,
 			framebuffer_out->GetBufferSize().y
 		);
@@ -3704,7 +3704,7 @@ void longmarch::Renderer3D::_BeginDOFPass(const std::shared_ptr<FrameBuffer>& fr
 		if (auto downscale = s_Data.DOFSettings.dof_sample_resolution_downScale;
 			s_Data.gpuBuffer.CurrentDynamicDOFBuffer->GetBufferSize() != s_Data.resolution / downscale) // Render the Bloom with potentially downscaled resolution
 		{
-			s_Data.gpuBuffer.CurrentDynamicDOFBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+			s_Data.gpuBuffer.CurrentDynamicDOFBuffer = FrameBuffer::Create(s_Data.resolution.x / downscale, s_Data.resolution.y / downscale, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 		}
 		RenderCommand::DepthTest(true, true);
 		RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0));
@@ -3722,11 +3722,11 @@ void longmarch::Renderer3D::_BeginDOFPass(const std::shared_ptr<FrameBuffer>& fr
 		Vec2u traget_resoluation = DOFBuffer->GetBufferSize();
 
 		RenderCommand::TransferColorBit(
-			framebuffer_in->GetRendererID(),
+			framebuffer_in->GetFrameBufferID(),
 			framebuffer_in->GetBufferSize().x,
 			framebuffer_in->GetBufferSize().y,
 
-			DOFBuffer->GetRendererID(),
+			DOFBuffer->GetFrameBufferID(),
 			traget_resoluation.x,
 			traget_resoluation.y
 		);
@@ -3762,10 +3762,10 @@ void longmarch::Renderer3D::_BeginDOFPass(const std::shared_ptr<FrameBuffer>& fr
 		// Blur DOF map
 		const auto& guassian_shader = s_Data.ShaderMap["GaussianBlur"];
 		Vec2u traget_resoluation2(traget_resoluation);
-		static auto BrightnessBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+		static auto BrightnessBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.x, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 		if (BrightnessBackBuffer->GetBufferSize() != traget_resoluation2)
 		{
-			BrightnessBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+			BrightnessBackBuffer = FrameBuffer::Create(traget_resoluation2.x, traget_resoluation2.y, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 		}
 		auto kernel_size = s_Data.DOFSettings.dof_gaussian_kernal;
 #ifdef LongMarch_SCALE_GUASSIAN_KERNEL_WITH_RESOLUTION
@@ -3797,7 +3797,7 @@ void longmarch::Renderer3D::_BeginDOFPass(const std::shared_ptr<FrameBuffer>& fr
 				_RenderFullScreenQuad();
 			}
 		}
-		DOFBuffer->GenerateMipmaps();
+		DOFBuffer->GenerateMipMapLevel();
 
 		// Blend original map with blurred brightness map
 		{
@@ -3838,11 +3838,11 @@ void longmarch::Renderer3D::_BeginDOFPass(const std::shared_ptr<FrameBuffer>& fr
 	else
 	{
 		RenderCommand::TransferColorBit(
-			framebuffer_in->GetRendererID(),
+			framebuffer_in->GetFrameBufferID(),
 			framebuffer_in->GetBufferSize().x,
 			framebuffer_in->GetBufferSize().y,
 
-			framebuffer_out->GetRendererID(),
+			framebuffer_out->GetFrameBufferID(),
 			framebuffer_out->GetBufferSize().x,
 			framebuffer_out->GetBufferSize().y
 		);
@@ -3908,7 +3908,7 @@ void longmarch::Renderer3D::SubmitFrameBufferToScreen()
 	*/
 	constexpr int default_framebuffer_rendererID = 0;
 	RenderCommand::TransferColorBit(
-		s_Data.gpuBuffer.CurrentFinalFrameBuffer->GetRendererID(),
+		s_Data.gpuBuffer.CurrentFinalFrameBuffer->GetFrameBufferID(),
 		s_Data.gpuBuffer.CurrentFinalFrameBuffer->GetBufferSize().x,
 		s_Data.gpuBuffer.CurrentFinalFrameBuffer->GetBufferSize().y,
 
@@ -4316,17 +4316,17 @@ bool longmarch::Renderer3D::_BeginRenderBatch()
 	uint32_t instance_count = 0;
 	{
 		//ENG_TIME("Prepare instance buffer");
-		for (auto&& [mesh, indices] : mesh_list)
+		for (auto&& [mesh, mesh_instance_indices] : mesh_list)
 		{
 			auto it = cmd_map.find(mesh);
 			ENGINE_EXCEPT_IF(it == cmd_map.end(), L" MeshData is not registered to commend buffer! Call Renderer3D::BuildAllMesh() before drawing after loading new meshes!");
 			// Push draw command
 			auto& cmd = it->second;
-			uint32_t num_indices = indices.size();
-			_multiDrawBuffer.MultiDraw_CmdBuffer.emplace_back(cmd.indexCount, num_indices, cmd.firstIndex, cmd.baseVertex, instance_count);
+			uint32_t num_instances = mesh_instance_indices.size();
+			_multiDrawBuffer.MultiDraw_CmdBuffer.emplace_back(cmd.indexCount, num_instances, cmd.firstIndex, cmd.baseVertex, instance_count);
 			// Push instance indicies
-			instance_count += num_indices;
-			std::move(indices.begin(), indices.end(), std::back_inserter(instance_indices));
+			instance_count += num_instances;
+			std::move(mesh_instance_indices.begin(), mesh_instance_indices.end(), std::back_inserter(instance_indices));
 		}
 	}
 	{
@@ -4591,7 +4591,7 @@ void longmarch::Renderer3D::BuildAllTexture()
 				const auto& equirectangle_image = s_Data.gpuBuffer.EnvEquiMaps[name];
 				uint32_t cube_width = glm::roundEven(sqrtf(3.0f) / 6.0f * equirectangle_image->GetWidth());
 				cube_width = NEAREST_POW2(cube_width); // use nearest power of 2, even though the total pixels after convertion is not equal
-				skybox_buffer_map["original"] = SkyBoxBuffer::Create(cube_width, cube_width, SkyBoxBuffer::BUFFER_FORMAT::Float16);
+				skybox_buffer_map["original"] = SkyBoxBuffer::Create(cube_width, cube_width, SkyBoxBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 
 				// Render from equirectangular to cubemap
 				auto cmd = [&]()
@@ -4604,7 +4604,7 @@ void longmarch::Renderer3D::BuildAllTexture()
 				RenderFullScreenCube(cmd);
 
 				// Generate skybox mipmaps
-				skybox_buffer_map["original"]->GenerateMipmaps();
+				skybox_buffer_map["original"]->GenerateMipMapLevel();
 			}
 		}
 		/**************************************************************
@@ -4669,7 +4669,7 @@ void longmarch::Renderer3D::BuildAllTexture()
 						auto pvMatrixBuffer = UniformBuffer::Create(matrices.GetPtr(), sizeof(PointLightPVMatrix_GPU));
 
 						uint32_t cube_width = 32;
-						skybox_buffer_map["irradiance"] = SkyBoxBuffer::Create(cube_width, cube_width, SkyBoxBuffer::BUFFER_FORMAT::Float16);
+						skybox_buffer_map["irradiance"] = SkyBoxBuffer::Create(cube_width, cube_width, SkyBoxBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 
 						// If the diffuse irradiance equirectangular map is not present,
 						// we create it first and then write it to a equirectangular map
@@ -4701,7 +4701,7 @@ void longmarch::Renderer3D::BuildAllTexture()
 							setting.linear_filter = false;
 							setting.float_type = true;
 							auto hdr_irradiance_texture = Texture2D::Create(setting);
-							auto temp_fbo = FrameBuffer::Create(texture_width, texture_height, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+							auto temp_fbo = FrameBuffer::Create(texture_width, texture_height, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 
 							auto cmd = [&]()
 							{
@@ -4749,7 +4749,7 @@ void longmarch::Renderer3D::BuildAllTexture()
 					const auto& equirectangle_image = ResourceManager<Texture2D>::GetInstance()->TryGet(diffuse_name)->Get();
 					uint32_t cube_width = glm::roundEven(sqrtf(3.0f) / 6.0f * equirectangle_image->GetWidth());
 					cube_width = NEAREST_POW2(cube_width); // use nearest power of 2, even though the total pixels after convertion is not equal
-					skybox_buffer_map["irradiance"] = SkyBoxBuffer::Create(cube_width, cube_width, SkyBoxBuffer::BUFFER_FORMAT::Float16);
+					skybox_buffer_map["irradiance"] = SkyBoxBuffer::Create(cube_width, cube_width, SkyBoxBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 
 					// Render from equirectangular to cubemap
 					auto cmd = [&]()
@@ -4791,7 +4791,7 @@ void longmarch::Renderer3D::BuildAllTexture()
 					setting.float_type = true;
 
 					auto BRDF_ISM_texture = Texture2D::Create(setting);
-					auto temp_fbo = FrameBuffer::Create(texture_width, texture_height, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+					auto temp_fbo = FrameBuffer::Create(texture_width, texture_height, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 
 					auto cmd = [&]()
 					{
@@ -4822,7 +4822,7 @@ void longmarch::Renderer3D::BuildAllTexture()
 				auto& skybox_buffer_map = item.second;
 
 				uint32_t cube_width = 512;
-				skybox_buffer_map["radiance"] = SkyBoxBuffer::Create(cube_width, cube_width, SkyBoxBuffer::BUFFER_FORMAT::Float16);
+				skybox_buffer_map["radiance"] = SkyBoxBuffer::Create(cube_width, cube_width, SkyBoxBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 
 				const auto& skybox_map_buffer = skybox_buffer_map["original"];
 				auto& radiance_map_buffer = skybox_buffer_map["radiance"];
@@ -4865,7 +4865,7 @@ void longmarch::Renderer3D::BuildAllTexture()
 
 								RenderCommand::SetViewport(0, 0, mipmap_cube_width, mipmap_cube_width);
 								radiance_map_buffer->Bind();
-								radiance_map_buffer->BindMipMap(i);
+								radiance_map_buffer->BindMipMapLevel(i);
 								RenderCommand::Clear();
 								skybox_map_buffer->BindTexture(s_Data.fragTexture_0_slot);
 							};
@@ -4891,7 +4891,7 @@ void longmarch::Renderer3D::BuildAllTexture()
 								setting.linear_filter = false;
 								setting.float_type = true;
 								auto hdr_radiance_texture = Texture2D::Create(setting);
-								auto temp_fbo = FrameBuffer::Create(texture_width, texture_height, FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB);
+								auto temp_fbo = FrameBuffer::Create(texture_width, texture_height, FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16);
 
 								auto cmd = [&]()
 								{
@@ -4944,7 +4944,7 @@ void longmarch::Renderer3D::BuildAllTexture()
 
 							RenderCommand::SetViewport(0, 0, mipmap_cube_width, mipmap_cube_width);
 							radiance_map_buffer->Bind();
-							radiance_map_buffer->BindMipMap(i);
+							radiance_map_buffer->BindMipMapLevel(i);
 							RenderCommand::Clear();
 							equirectangle_image->BindTexture(s_Data.fragTexture_0_slot);
 						};

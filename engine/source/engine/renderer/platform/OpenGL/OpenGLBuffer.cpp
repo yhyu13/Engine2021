@@ -10,57 +10,6 @@
 namespace longmarch 
 {
 	/**************************************************************
-	*	Indexed Indirect Command Buffer
-	**************************************************************/
-	OpenGLIndexedIndirectCommandBuffer::OpenGLIndexedIndirectCommandBuffer(const void* data, size_t size)
-	{
-		if (data != nullptr)
-		{
-			ASSERT(size % GetElementSize() == 0, "OpenGLIndexedIndirectCommandBuffer must have integral multiples of IndexedIndirectCommandBuffer!");
-			m_Count = size / GetElementSize();
-			m_Capcity = size;
-		}
-		else
-		{
-			m_Count = 0;
-			m_Capcity = size;
-		}
-		glCreateBuffers(1, &m_RendererID);
-		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_RendererID);
-		glBufferData(GL_DRAW_INDIRECT_BUFFER, size, data, GL_DYNAMIC_DRAW);
-		GLCHECKERROR;
-	}
-	OpenGLIndexedIndirectCommandBuffer::~OpenGLIndexedIndirectCommandBuffer()
-	{
-		glDeleteBuffers(1, &m_RendererID);
-	}
-	void OpenGLIndexedIndirectCommandBuffer::Bind() const
-	{
-		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_RendererID);
-		GLCHECKERROR;
-	}
-	void OpenGLIndexedIndirectCommandBuffer::Unbind() const
-	{
-		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-		GLCHECKERROR;
-	}
-	void OpenGLIndexedIndirectCommandBuffer::UpdateBufferData(const void* data, size_t size)
-	{
-		if (data != nullptr)
-		{
-			ASSERT(size % GetElementSize() == 0, "OpenGLIndexedIndirectCommandBuffer must have integral multiples of DrawIndexedIndirectCommand!");
-			m_Count = size / GetElementSize();
-			m_Capcity = size;
-		}
-		else
-		{
-			m_Count = 0;
-			m_Capcity = size;
-		}
-		glNamedBufferData(m_RendererID, size, data, GL_DYNAMIC_DRAW);
-		GLCHECKERROR;
-	}
-	/**************************************************************
 	*	Vertex Buffer
 	**************************************************************/
 	OpenGLVertexBuffer::OpenGLVertexBuffer(const void* data, size_t size)
@@ -107,7 +56,7 @@ namespace longmarch
 
 	void OpenGLVertexBuffer::CopyBufferData(size_t write_offset, const std::shared_ptr<VertexBuffer>& read_buffer, size_t read_offset)
 	{
-		glCopyNamedBufferSubData(read_buffer->GetRendererID(), m_RendererID, read_offset, write_offset, read_buffer->GetCount() * read_buffer->GetElementSize() - read_offset);
+		glCopyNamedBufferSubData(read_buffer->GetFrameBufferID(), m_RendererID, read_offset, write_offset, read_buffer->GetCount() * read_buffer->GetElementSize() - read_offset);
 		GLCHECKERROR;
 	}
 
@@ -190,7 +139,7 @@ namespace longmarch
 
 	void OpenGLIndexBuffer::CopyBufferData(size_t write_offset, const std::shared_ptr<IndexBuffer>& read_buffer, size_t read_offset)
 	{
-		glCopyNamedBufferSubData(read_buffer->GetRendererID(), m_RendererID, read_offset, write_offset, read_buffer->GetCount() * read_buffer->GetElementSize() - read_offset);
+		glCopyNamedBufferSubData(read_buffer->GetFrameBufferID(), m_RendererID, read_offset, write_offset, read_buffer->GetCount() * read_buffer->GetElementSize() - read_offset);
 		GLCHECKERROR;
 	}
 
@@ -314,6 +263,77 @@ namespace longmarch
 	}
 
 	/**************************************************************
+	*	Indexed Indirect Command Buffer
+	**************************************************************/
+	OpenGLIndexedIndirectCommandBuffer::OpenGLIndexedIndirectCommandBuffer(const void* data, size_t size)
+	{
+		if (data != nullptr)
+		{
+			ASSERT(size % GetElementSize() == 0, "OpenGLIndexedIndirectCommandBuffer must have integral multiples of IndexedIndirectCommandBuffer!");
+			m_Count = size / GetElementSize();
+			m_Capcity = size;
+		}
+		else
+		{
+			m_Count = 0;
+			m_Capcity = size;
+		}
+		glCreateBuffers(1, &m_RendererID);
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_RendererID);
+		glBufferData(GL_DRAW_INDIRECT_BUFFER, size, data, GL_DYNAMIC_DRAW);
+		GLCHECKERROR;
+	}
+	OpenGLIndexedIndirectCommandBuffer::~OpenGLIndexedIndirectCommandBuffer()
+	{
+		glDeleteBuffers(1, &m_RendererID);
+	}
+	void OpenGLIndexedIndirectCommandBuffer::Bind() const
+	{
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_RendererID);
+		GLCHECKERROR;
+	}
+	void OpenGLIndexedIndirectCommandBuffer::Unbind() const
+	{
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+		GLCHECKERROR;
+	}
+	void OpenGLIndexedIndirectCommandBuffer::UpdateBufferData(const void* data, size_t size)
+	{
+		if (data != nullptr)
+		{
+			ASSERT(size % GetElementSize() == 0, "OpenGLIndexedIndirectCommandBuffer must have integral multiples of DrawIndexedIndirectCommand!");
+			m_Count = size / GetElementSize();
+			m_Capcity = size;
+		}
+		else
+		{
+			m_Count = 0;
+			m_Capcity = size;
+		}
+		glNamedBufferData(m_RendererID, size, data, GL_DYNAMIC_DRAW);
+		GLCHECKERROR;
+	}
+
+	/**************************************************************
+	*	OpenGLBaseTextureBuffer
+	**************************************************************/
+	void OpenGLBaseTextureBuffer::Bind() const
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+		GLCHECKERROR;
+	}
+	void OpenGLBaseTextureBuffer::Unbind() const
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		GLCHECKERROR;
+	}
+	void OpenGLBaseTextureBuffer::BindTexture(uint32_t slot)
+	{
+		glBindTextureUnit(slot, m_RenderTargetID);
+		GLCHECKERROR;
+	}
+
+	/**************************************************************
 	*	Frame Buffer
 	**************************************************************/
 	OpenGLFrameBuffer::OpenGLFrameBuffer(uint32_t width, uint32_t height, FrameBuffer::BUFFER_FORMAT type)
@@ -327,27 +347,22 @@ namespace longmarch
 		uint32_t data_type;
 		switch (type)
 		{
-		case longmarch::FrameBuffer::BUFFER_FORMAT::UINT8_R:
+		case longmarch::FrameBuffer::BUFFER_FORMAT::UINT_R8:
 			format = GL_R8;
 			channel = GL_RED;
 			data_type = GL_UNSIGNED_BYTE;
 			break;
-		case longmarch::FrameBuffer::BUFFER_FORMAT::UINT8_RGBA:
+		case longmarch::FrameBuffer::BUFFER_FORMAT::UINT_RGBA8:
 			format = GL_RGBA8;
 			channel = GL_RGBA;
 			data_type = GL_UNSIGNED_BYTE;
 			break;
-		case longmarch::FrameBuffer::BUFFER_FORMAT::FLOAT16_R:
-			format = GL_R16F;
-			channel = GL_RED;
-			data_type = GL_FLOAT;
-			break;
-		case longmarch::FrameBuffer::BUFFER_FORMAT::FLOAT16_RGB:
+		case longmarch::FrameBuffer::BUFFER_FORMAT::FLOAT_RGB16:
 			format = GL_RGB16F;
 			channel = GL_RGB;
 			data_type = GL_FLOAT;
 			break;
-		case longmarch::FrameBuffer::BUFFER_FORMAT::FLOAT16_RGBA:
+		case longmarch::FrameBuffer::BUFFER_FORMAT::FLOAT_RGBA16:
 			format = GL_RGBA16F;
 			channel = GL_RGBA;
 			data_type = GL_FLOAT;
@@ -406,23 +421,7 @@ namespace longmarch
 		glDeleteTextures(1, &m_RenderTargetID);
 		glDeleteRenderbuffers(1, &m_DepthID);
 	}
-	void OpenGLFrameBuffer::Bind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-		GLCHECKERROR;
-	}
-	void OpenGLFrameBuffer::Unbind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
-	}
-	void OpenGLFrameBuffer::BindTexture(uint32_t slot) const
-	{
-		glBindTextureUnit(slot, m_RenderTargetID);
-		GLCHECKERROR;
-	}
-
-	void OpenGLFrameBuffer::GenerateMipmaps() const
+	void OpenGLFrameBuffer::GenerateMipMapLevel() const
 	{
 		glBindTexture(GL_TEXTURE_2D, m_RenderTargetID);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -438,7 +437,6 @@ namespace longmarch
 		m_height = height;
 		m_type = ShadowBuffer::SHADOW_MAP_TYPE::BASIC;
 
-		GLCHECKERROR;
 		glGenFramebuffers(1, &m_RendererID);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 
@@ -483,24 +481,6 @@ namespace longmarch
 		glDeleteTextures(1, &m_RenderTargetID);
 		glDeleteRenderbuffers(1, &m_DepthID);
 	}
-
-	void OpenGLShadowBuffer::Bind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-		GLCHECKERROR;
-	}
-
-	void OpenGLShadowBuffer::Unbind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
-	}
-
-	void OpenGLShadowBuffer::BindTexture(uint32_t slot) const
-	{
-		glBindTextureUnit(slot, m_RenderTargetID);
-		GLCHECKERROR;
-	}
 	/**************************************************************
 	*	Compare Shadow Buffer
 	**************************************************************/
@@ -516,8 +496,6 @@ namespace longmarch
 
 		// Even though we can simply write depth component into 2D texture, but since we used reverse Z, we need to alter the z value in shader.
 		// So we use a depth render buffer, together with a color texture that stores the depth value.
-		
-		//Create a renderbuffer object for depth attachment (we won't be sampling these)
 		glGenRenderbuffers(1, &m_DepthID);
 		glBindRenderbuffer(GL_RENDERBUFFER, m_DepthID);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height);
@@ -541,6 +519,22 @@ namespace longmarch
 		GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
 		glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
 
+		//glGenTextures(1, &m_RenderTargetID);
+		//glBindTexture(GL_TEXTURE_2D, m_RenderTargetID);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, SHADOW_COMPARE);
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_ATTACHMENT, GL_FLOAT, NULL);
+		//// Disable writes to the color buffer
+		//glDrawBuffer(GL_NONE);
+		//// Disable reads from the color buffer
+		//glReadBuffer(GL_NONE);
+
 		// Check for completeness/correctness
 		int status = (int)glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (status != int(GL_FRAMEBUFFER_COMPLETE))
@@ -555,22 +549,7 @@ namespace longmarch
 	{
 		glDeleteFramebuffers(1, &m_RendererID);
 		glDeleteTextures(1, &m_RenderTargetID);
-		glDeleteRenderbuffers(1, &m_DepthID);
-	}
-	void OpenGLCompareShadowBuffer::Bind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-		GLCHECKERROR;
-	}
-	void OpenGLCompareShadowBuffer::Unbind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
-	}
-	void OpenGLCompareShadowBuffer::BindTexture(uint32_t slot) const
-	{
-		glBindTextureUnit(slot, m_RenderTargetID);
-		GLCHECKERROR;
+		//glDeleteRenderbuffers(1, &m_DepthID);
 	}
 	/**************************************************************
 	*	Moment Shadow Buffer
@@ -626,21 +605,6 @@ namespace longmarch
 		glDeleteFramebuffers(1, &m_RendererID);
 		glDeleteRenderbuffers(1, &m_DepthID);
 		glDeleteTextures(1, &m_RenderTargetID);
-	}
-	void OpenGLMSMShadowBuffer::Bind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-		GLCHECKERROR;
-	}
-	void OpenGLMSMShadowBuffer::Unbind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
-	}
-	void OpenGLMSMShadowBuffer::BindTexture(uint32_t slot) const
-	{
-		glBindTextureUnit(slot, m_RenderTargetID);
-		GLCHECKERROR;
 	}
 	/**************************************************************
 	*	Cube Moment Shadow Buffer
@@ -708,21 +672,6 @@ namespace longmarch
 		glDeleteTextures(1, &m_DepthID);
 		glDeleteTextures(1, &m_RenderTargetID);
 	}
-	void OpenGLMSMCubeShadowBuffer::Bind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-		GLCHECKERROR;
-	}
-	void OpenGLMSMCubeShadowBuffer::Unbind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
-	}
-	void OpenGLMSMCubeShadowBuffer::BindTexture(uint32_t slot) const
-	{
-		glBindTextureUnit(slot, m_RenderTargetID);
-		GLCHECKERROR;
-	}
 	/**************************************************************
 	*	OpenGLShadowArrayBuffer Buffer
 	**************************************************************/
@@ -775,24 +724,9 @@ namespace longmarch
 		glDeleteRenderbuffers(1, &m_DepthID);
 		glDeleteTextures(1, &m_RenderTargetID);
 	}
-	void OpenGLShadowArrayBuffer::Bind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-		GLCHECKERROR;
-	}
 	void OpenGLShadowArrayBuffer::BindLayer(uint32_t slot) const
 	{
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_RenderTargetID, 0, slot);
-		GLCHECKERROR;
-	}
-	void OpenGLShadowArrayBuffer::Unbind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
-	}
-	void OpenGLShadowArrayBuffer::BindTexture(uint32_t slot) const
-	{
-		glBindTextureUnit(slot, m_RenderTargetID);
 		GLCHECKERROR;
 	}
 	/**************************************************************
@@ -848,27 +782,12 @@ namespace longmarch
 	OpenGLCompareShadowArrayBuffer::~OpenGLCompareShadowArrayBuffer()
 	{
 		glDeleteFramebuffers(1, &m_RendererID);
-		glDeleteRenderbuffers(1, &m_DepthID);
 		glDeleteTextures(1, &m_RenderTargetID);
-	}
-	void OpenGLCompareShadowArrayBuffer::Bind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-		GLCHECKERROR;
+		//glDeleteRenderbuffers(1, &m_DepthID);
 	}
 	void OpenGLCompareShadowArrayBuffer::BindLayer(uint32_t slot) const
 	{
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_RenderTargetID, 0, slot);
-		GLCHECKERROR;
-	}
-	void OpenGLCompareShadowArrayBuffer::Unbind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
-	}
-	void OpenGLCompareShadowArrayBuffer::BindTexture(uint32_t slot) const
-	{
-		glBindTextureUnit(slot, m_RenderTargetID);
 		GLCHECKERROR;
 	}
 	/**************************************************************
@@ -921,24 +840,9 @@ namespace longmarch
 		glDeleteRenderbuffers(1, &m_DepthID);
 		glDeleteTextures(1, &m_RenderTargetID);
 	}
-	void OpenGLMSMShadowArrayBuffer::Bind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-		GLCHECKERROR;
-	}
 	void OpenGLMSMShadowArrayBuffer::BindLayer(uint32_t slot) const
 	{
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_RenderTargetID, 0, slot);
-		GLCHECKERROR;
-	}
-	void OpenGLMSMShadowArrayBuffer::Unbind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
-	}
-	void OpenGLMSMShadowArrayBuffer::BindTexture(uint32_t slot) const
-	{
-		glBindTextureUnit(slot, m_RenderTargetID);
 		GLCHECKERROR;
 	}
 	/**************************************************************
@@ -953,10 +857,10 @@ namespace longmarch
 		uint32_t format;
 		switch (type)
 		{
-		case longmarch::SkyBoxBuffer::BUFFER_FORMAT::Float16:
+		case longmarch::SkyBoxBuffer::BUFFER_FORMAT::FLOAT_RGB16:
 			format = GL_RGB16F;
 			break;
-		case longmarch::SkyBoxBuffer::BUFFER_FORMAT::Float32:
+		case longmarch::SkyBoxBuffer::BUFFER_FORMAT::FLOAT32_RGB:
 			format = GL_RGB32F;
 			break;
 		default:
@@ -1014,27 +918,12 @@ namespace longmarch
 		glDeleteFramebuffers(1, &m_RendererID);
 		glDeleteTextures(1, &m_RenderTargetID);
 	}
-	void OpenGLSkyBoxBuffer::Bind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-		GLCHECKERROR;
-	}
-	void OpenGLSkyBoxBuffer::Unbind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
-	}
-	void OpenGLSkyBoxBuffer::BindTexture(uint32_t slot) const
-	{
-		glBindTextureUnit(slot, m_RenderTargetID);
-		GLCHECKERROR;
-	}
-	void OpenGLSkyBoxBuffer::BindMipMap(uint32_t level) const
+	void OpenGLSkyBoxBuffer::BindMipMapLevel(uint32_t level) const
 	{
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_RenderTargetID, level);
 		GLCHECKERROR;
 	}
-	void OpenGLSkyBoxBuffer::GenerateMipmaps() const
+	void OpenGLSkyBoxBuffer::GenerateMipMapLevel() const
 	{
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_RenderTargetID);
 		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
@@ -1138,25 +1027,15 @@ namespace longmarch
 		glDeleteTextures(1, &m_Render_Albedo_Emssive_ID);
 		glDeleteTextures(1, &m_Render_AO_Metallic_Roughness_ID);
 	}
-	void OpenGLGBuffer::Bind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-		GLCHECKERROR;
-	}
-	void OpenGLGBuffer::Unbind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
-	}
 	void OpenGLGBuffer::BindTextures(const std::vector<GBUFFER_TEXTURE_TYPE>& texToBind, uint32_t offset) const
 	{
 		for (auto& tex : texToBind)
 		{
-			glBindTextureUnit((GLuint)tex + offset, GetTexutureID(tex));
+			glBindTextureUnit((GLuint)tex + offset, GetGBufferTexutureID(tex));
 			GLCHECKERROR;
 		}
 	}
-	uint32_t OpenGLGBuffer::GetTexutureID(GBUFFER_TEXTURE_TYPE tex) const
+	uint32_t OpenGLGBuffer::GetGBufferTexutureID(GBUFFER_TEXTURE_TYPE tex) const
 	{
 		switch (tex)
 		{
@@ -1249,25 +1128,15 @@ namespace longmarch
 		glDeleteTextures(1, &m_RenderNormalID);
 		glDeleteTextures(1, &m_RenderVelocityID);
 	}
-	void OpenGLThinGBuffer::Bind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-		GLCHECKERROR;
-	}
-	void OpenGLThinGBuffer::Unbind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
-	}
 	void OpenGLThinGBuffer::BindTextures(const std::vector<GBUFFER_TEXTURE_TYPE>& texToBind, uint32_t offset) const
 	{
 		for (auto& tex : texToBind)
 		{
-			glBindTextureUnit((GLuint)tex + offset, GetTexutureID(tex));
+			glBindTextureUnit((GLuint)tex + offset, GetGBufferTexutureID(tex));
 			GLCHECKERROR;
 		}
 	}
-	uint32_t OpenGLThinGBuffer::GetTexutureID(GBUFFER_TEXTURE_TYPE tex) const
+	uint32_t OpenGLThinGBuffer::GetGBufferTexutureID(GBUFFER_TEXTURE_TYPE tex) const
 	{
 		switch (tex)
 		{
@@ -1291,15 +1160,15 @@ namespace longmarch
 	{
 		m_width = width;
 		m_height = height;
-		m_buffer_format = type;
+		m_format = type;
 
 		uint32_t format;
 		switch (type)
 		{
-		case longmarch::ComputeBuffer::BUFFER_FORMAT::Float16:
+		case longmarch::ComputeBuffer::BUFFER_FORMAT::FLOAT_RGBA16:
 			format = GL_RGBA16F;
 			break;
-		case longmarch::ComputeBuffer::BUFFER_FORMAT::Float32:
+		case longmarch::ComputeBuffer::BUFFER_FORMAT::FLOAT_RGBA32:
 			format = GL_RGBA32F;
 			break;
 		default:
@@ -1310,13 +1179,14 @@ namespace longmarch
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 
 		glGenTextures(1, &m_RenderTargetID);
-		glBindTexture(GL_TEXTURE_2D, m_RenderTargetID);
+		glBindTexture(GL_TEXTURE_2D, m_RenderTargetID); 
 		glTexStorage2D(GL_TEXTURE_2D, 1, format, width, height);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_RenderTargetID, 0);
+
+		glDrawBuffers(0, GL_NONE);
 
 		// Check for completeness/correctness
 		int status = (int)glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -1334,45 +1204,211 @@ namespace longmarch
 		glDeleteFramebuffers(1, &m_RendererID);
 		glDeleteTextures(1, &m_RenderTargetID);
 	}
-	void OpenGLComputeBuffer::Bind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-		GLCHECKERROR;
-	}
-	void OpenGLComputeBuffer::Unbind() const
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
-	}
-	void OpenGLComputeBuffer::BindTexture(uint32_t slot, ComputeBuffer::TEXTURE_BIND_MODE mode) const
+	void OpenGLComputeBuffer::BindImage(uint32_t slot, BaseTextureBuffer::IMAGE_BIND_MODE mode) const
 	{
 		uint32_t format;
-		switch (m_buffer_format)
+		switch (m_format)
 		{
-		case longmarch::ComputeBuffer::BUFFER_FORMAT::Float16:
+		case longmarch::ComputeBuffer::BUFFER_FORMAT::FLOAT_RGBA16:
 			format = GL_RGBA16F;
 			break;
-		case longmarch::ComputeBuffer::BUFFER_FORMAT::Float32:
+		case longmarch::ComputeBuffer::BUFFER_FORMAT::FLOAT_RGBA32:
 			format = GL_RGBA32F;
 			break;
 		default:
 			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Unknown ComputeBuffer::BUFFER_FORMAT type!");
 		}
+
 		uint32_t texture_mode;
 		switch (mode)
 		{
-		case longmarch::ComputeBuffer::TEXTURE_BIND_MODE::READ_ONLY:
+		case longmarch::BaseTextureBuffer::IMAGE_BIND_MODE::READ_ONLY:
 			texture_mode = GL_READ_ONLY;
 			break;
-		case longmarch::ComputeBuffer::TEXTURE_BIND_MODE::WRITE_ONLY:
+		case longmarch::BaseTextureBuffer::IMAGE_BIND_MODE::WRITE_ONLY:
 			texture_mode = GL_WRITE_ONLY;
 			break;
-		case longmarch::ComputeBuffer::TEXTURE_BIND_MODE::READ_WRITE:
+		case longmarch::BaseTextureBuffer::IMAGE_BIND_MODE::READ_WRITE:
 			texture_mode = GL_READ_WRITE;
 			break;
 		default:
 			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Unknown ComputeBuffer::TEXTURE_BIND_MODE type!");
 		}
-		glBindImageTexture(slot, m_RenderTargetID, 0, GL_FALSE, 0, texture_mode, format);
+		glBindImageTexture(slot, m_RenderTargetID, 0, GL_FALSE, 0, texture_mode, format); 
+		GLCHECKERROR;
+	}
+
+
+	/**************************************************************
+	*	Voxel Buffer
+	**************************************************************/
+	OpenGLVoxelBuffer::OpenGLVoxelBuffer(uint32_t width, uint32_t height, uint32_t depth, VoxelBuffer::BUFFER_TYPE type)
+	{
+		m_type = type;
+		uint32_t min_filter = GL_NEAREST;
+		uint32_t max_filter = GL_NEAREST;
+		uint32_t format;
+		uint32_t internal_format;
+		switch (m_type)
+		{
+		case longmarch::VoxelBuffer::BUFFER_TYPE::STATIC_FLAG:
+			m_format = longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_R8;
+			format = GL_R8;
+			internal_format = GL_RED;
+			break;
+		case longmarch::VoxelBuffer::BUFFER_TYPE::ALBEDO:
+			m_format = longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_RGBA8;
+			format = GL_RGBA8;
+			internal_format = GL_RGBA;
+			break;
+		case longmarch::VoxelBuffer::BUFFER_TYPE::NORMAL:
+			m_format = longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_RGB10A2;
+			format = GL_RGB10_A2;
+			internal_format = GL_RGBA;
+			break;
+		case longmarch::VoxelBuffer::BUFFER_TYPE::EMISSIVE:
+			m_format = longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_RGBA8;
+			format = GL_RGBA8;
+			internal_format = GL_RGBA;
+			break;
+		case longmarch::VoxelBuffer::BUFFER_TYPE::RADIANCE:
+			m_format = longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_RGBA8;
+			format = GL_RGBA8;
+			internal_format = GL_RGBA;
+			min_filter = GL_LINEAR;
+			max_filter = GL_LINEAR;
+			break;
+		case longmarch::VoxelBuffer::BUFFER_TYPE::RADIANCE_MIPMAP:
+			m_format = longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_RGBA8;
+			format = GL_RGBA8;
+			internal_format = GL_RGBA;
+			min_filter = GL_LINEAR_MIPMAP_LINEAR;
+			max_filter = GL_LINEAR;
+			break;
+		case longmarch::VoxelBuffer::BUFFER_TYPE::NUM:
+			break;
+		default:
+			break;
+		}
+
+		glGenFramebuffers(1, &m_RendererID);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+
+		glGenTextures(1, &m_RenderTargetID);
+		glBindTexture(GL_TEXTURE_3D, m_RenderTargetID);
+
+		glTexStorage3D(GL_TEXTURE_3D, 1, format, width, height, depth);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, min_filter);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, max_filter);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		glDrawBuffers(0, GL_NONE);
+
+		// Check for completeness/correctness
+		int status = (int)glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (status != int(GL_FRAMEBUFFER_COMPLETE))
+		{
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"FBO Error : " + wStr(status));
+		}
+		// Unbind the fbo until it's ready to be used
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		GLCHECKERROR;
+	}
+	OpenGLVoxelBuffer::~OpenGLVoxelBuffer()
+	{
+		glDeleteFramebuffers(1, &m_RendererID);
+		glDeleteTextures(1, &m_RenderTargetID);
+	}
+	void OpenGLVoxelBuffer::BindImage(uint32_t slot, BaseTextureBuffer::IMAGE_BIND_MODE mode) const
+	{
+		uint32_t format;
+		switch (m_format)
+		{
+		case longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_R8:
+			format = GL_R8;
+			break;
+		case longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_RGBA8:
+			format = GL_RGBA8;
+			break;
+		case longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_RGB10A2:
+			format = GL_RGB10_A2;
+			break;
+		case longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_RG16:
+			format = GL_RG16;
+			break; 
+		case longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_R32UI:
+			format = GL_R32UI;
+			break;
+		default:
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Unknown ComputeBuffer::BUFFER_FORMAT type!");
+		}
+
+		uint32_t texture_mode;
+		switch (mode)
+		{
+		case longmarch::BaseTextureBuffer::IMAGE_BIND_MODE::READ_ONLY:
+			texture_mode = GL_READ_ONLY;
+			break;
+		case longmarch::BaseTextureBuffer::IMAGE_BIND_MODE::WRITE_ONLY:
+			texture_mode = GL_WRITE_ONLY;
+			break;
+		case longmarch::BaseTextureBuffer::IMAGE_BIND_MODE::READ_WRITE:
+			texture_mode = GL_READ_WRITE;
+			break;
+		default:
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Unknown ComputeBuffer::TEXTURE_BIND_MODE type!");
+		}
+		glBindImageTexture(slot, m_RenderTargetID, 0, GL_TRUE, 0, texture_mode, format);
+		GLCHECKERROR;
+	}
+	void OpenGLVoxelBuffer::BindImage(uint32_t slot, BaseTextureBuffer::IMAGE_BIND_MODE mode, VoxelBuffer::BUFFER_FORMAT _format) const
+	{
+		uint32_t format;
+		switch (_format)
+		{
+		case longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_R8:
+			format = GL_R8;
+			break;
+		case longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_RGBA8:
+			format = GL_RGBA8;
+			break;
+		case longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_RGB10A2:
+			format = GL_RGB10_A2;
+			break;
+		case longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_RG16:
+			format = GL_RG16;
+			break;
+		case longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_R32UI:
+			format = GL_R32UI;
+			break;
+		default:
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Unknown ComputeBuffer::BUFFER_FORMAT type!");
+		}
+
+		uint32_t texture_mode;
+		switch (mode)
+		{
+		case longmarch::BaseTextureBuffer::IMAGE_BIND_MODE::READ_ONLY:
+			texture_mode = GL_READ_ONLY;
+			break;
+		case longmarch::BaseTextureBuffer::IMAGE_BIND_MODE::WRITE_ONLY:
+			texture_mode = GL_WRITE_ONLY;
+			break;
+		case longmarch::BaseTextureBuffer::IMAGE_BIND_MODE::READ_WRITE:
+			texture_mode = GL_READ_WRITE;
+			break;
+		default:
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Unknown ComputeBuffer::TEXTURE_BIND_MODE type!");
+		}
+		glBindImageTexture(slot, m_RenderTargetID, 0, GL_TRUE, 0, texture_mode, format);
+		GLCHECKERROR;
+	}
+	void OpenGLVoxelBuffer::GenerateMipMapLevel() const
+	{
+		glBindTexture(GL_TEXTURE_3D, m_RenderTargetID);
+		glGenerateMipmap(GL_TEXTURE_3D);
+		GLCHECKERROR;
 	}
 }

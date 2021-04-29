@@ -4,7 +4,8 @@
 #include "engine/core/EngineCore.h"
 #include "engine/math/Geommath.h"
 
-namespace longmarch {
+namespace longmarch 
+{
 	class ENGINE_API RendererAPI
 	{
 	public:
@@ -49,15 +50,19 @@ namespace longmarch {
 			ALPHA_BLEND_2  //!< The transparency blending function by alpha, which also blends alpha values by alpha blending (i.e. result.a = src.a + (1-src.a) * dest.a)
 		};
 
+		enum class MemoryBarrierBitEnum : uint8_t
+		{
+			SHADER_STORAGE_BUFFER_BARRIER = 0,
+			SHADER_IMAGE_ACCESS_BARRIER,
+			SHADER_TEXTURE_FETCH_BARRIER,
+		};
+
 		virtual void Init() = 0;
 		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
 		virtual void SetClearColor(const glm::vec4& color) = 0;
 		virtual void ClearColorOnly() = 0;
 		virtual void ClearDepthOnly() = 0;
 		virtual void Clear() = 0;
-
-		virtual unsigned int CreateAndBindFBO() = 0;
-		virtual void DestoryAndUnBindFBO(unsigned int fbo) = 0;
 
 		virtual void DrawTriangleIndexed(const std::shared_ptr<VertexArray>& vertexArray) = 0;
 		virtual void DrawLineIndexed(const std::shared_ptr<VertexArray>& vertexArray) = 0;
@@ -66,6 +71,7 @@ namespace longmarch {
 		virtual void MultiDrawTriangleIndexedIndirect(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<IndexedIndirectCommandBuffer>& commandBuffer) = 0;
 		
 		virtual void DispatchCompute(uint32_t num_groups_x, uint32_t num_groups_y, uint32_t num_groups_z) = 0;
+		virtual void PlaceMemoryBarrier(MemoryBarrierBitEnum e) = 0;
 
 		virtual void PolyModeFill() = 0;
 		virtual void PolyModeLine() = 0;

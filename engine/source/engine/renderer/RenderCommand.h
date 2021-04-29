@@ -40,16 +40,6 @@ namespace longmarch
 			s_RendererAPI->Clear();
 		}
 
-		inline static unsigned int CreateAndBindFBO()
-		{
-			return s_RendererAPI->CreateAndBindFBO();
-		}
-
-		inline static void DestoryAndUnBindFBO(unsigned int fbo)
-		{
-			s_RendererAPI->DestoryAndUnBindFBO(fbo);
-		}
-
 		inline static void DrawTriangleIndexed(const std::shared_ptr<VertexArray>& vertexArray)
 		{
 			s_RendererAPI->DrawTriangleIndexed(vertexArray);
@@ -78,6 +68,11 @@ namespace longmarch
 		inline static void DispatchCompute(uint32_t num_groups_x, uint32_t num_groups_y, uint32_t num_groups_z)
 		{
 			s_RendererAPI->DispatchCompute(num_groups_x, num_groups_y, num_groups_z);
+		}
+
+		inline static void PlaceMemoryBarrier(longmarch::RendererAPI::MemoryBarrierBitEnum e)
+		{
+			s_RendererAPI->PlaceMemoryBarrier(e);
 		}
 
 		inline static void PolyModeFill()

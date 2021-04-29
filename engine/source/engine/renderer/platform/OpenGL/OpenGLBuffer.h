@@ -5,35 +5,11 @@
 
 namespace longmarch 
 {
-	class OpenGLIndexedIndirectCommandBuffer : public IndexedIndirectCommandBuffer
-	{
-	public:
-		OpenGLIndexedIndirectCommandBuffer(const void* data, size_t size);
-
-		virtual ~OpenGLIndexedIndirectCommandBuffer();
-
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
-
-		virtual void UpdateBufferData(const void* data, size_t size) override;
-
-		inline virtual size_t GetCapacity() const override { return m_Capcity; };
-		inline virtual size_t GetCount() const override { return m_Count; }
-		inline virtual size_t GetElementSize() const override { return sizeof(DrawIndexedIndirectCommand); }
-		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
-
-	private:
-		uint32_t m_RendererID;
-		size_t m_Count;
-		size_t m_Capcity;
-	};
-
-	class OpenGLVertexBuffer : public VertexBuffer
+	class OpenGLVertexBuffer final : public VertexBuffer
 	{
 	public:
 		OpenGLVertexBuffer(const void* data, size_t size);
-
-		virtual ~OpenGLVertexBuffer();
+		~OpenGLVertexBuffer();
 
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
@@ -45,26 +21,23 @@ namespace longmarch
 		virtual void UpdateBufferData(const void* data, size_t size) override;
 		virtual void UpdateBufferSubData(const void* data, size_t size, size_t write_offset) override;
 
-		inline virtual const BufferLayout& GetLayout() const override { return m_Layout; }
-		inline virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; }
+		inline virtual const VertexBufferLayout& GetLayout() const override { return m_Layout; }
+		inline virtual void SetLayout(const VertexBufferLayout& layout) override { m_Layout = layout; }
 
 		inline virtual size_t GetCapacity() const override { return m_Capcity; };
 		inline virtual size_t GetCount() const override { return m_Count; }
-		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
 
 	private:
-		BufferLayout m_Layout;
-		uint32_t m_RendererID;
+		VertexBufferLayout m_Layout;
 		size_t m_Count;
 		size_t m_Capcity;
 	};
 
-	class OpenGLIndexBuffer : public IndexBuffer
+	class OpenGLIndexBuffer final : public IndexBuffer
 	{
 	public:
 		OpenGLIndexBuffer(const void* indices, size_t size, size_t elementSize);
-
-		virtual ~OpenGLIndexBuffer();
+		~OpenGLIndexBuffer();
 
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
@@ -78,260 +51,188 @@ namespace longmarch
 
 		inline virtual size_t GetCapacity() const override { return m_Capcity; };
 		inline virtual size_t GetCount() const override { return m_Count; }
-		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
+
 	private:
-		uint32_t m_RendererID;
 		size_t m_Count;
 		size_t m_Capcity;
 	};
 
-	class OpenGLUniformBuffer : public UniformBuffer
+	class OpenGLUniformBuffer final : public UniformBuffer
 	{
 	public:
 		OpenGLUniformBuffer(const void* data, size_t size);
-
-		virtual ~OpenGLUniformBuffer();
+		~OpenGLUniformBuffer();
 
 		virtual void Bind(uint32_t slot) const override;
 		virtual void Unbind() const override;
 		virtual void UpdateBufferData(const void* data, size_t size) override;
 
-		inline virtual const BufferLayout& GetLayout() const override { return m_Layout; }
-		inline virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; }
+		inline virtual const VertexBufferLayout& GetLayout() const override { return m_Layout; }
+		inline virtual void SetLayout(const VertexBufferLayout& layout) override { m_Layout = layout; }
 
 		static void* GetUniformBufferMapping(size_t size, size_t offset);
 		static void EndUniformBufferMapping();
 
 	private:
-		uint32_t m_RendererID;
-		BufferLayout m_Layout;
+		VertexBufferLayout m_Layout;
 	};
 
-	class OpenGLShaderStorageBuffer : public ShaderStorageBuffer
+	class OpenGLShaderStorageBuffer final : public ShaderStorageBuffer
 	{
 	public:
 		OpenGLShaderStorageBuffer(const void* data, size_t size);
-
-		virtual ~OpenGLShaderStorageBuffer();
+		~OpenGLShaderStorageBuffer();
 
 		virtual void Bind(uint32_t slot) const override;
 		virtual void Unbind() const override;
 		virtual void UpdateBufferData(const void* data, size_t size) override;
 
-		inline virtual const BufferLayout& GetLayout() const override { return m_Layout; }
-		inline virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; }
+		inline virtual const VertexBufferLayout& GetLayout() const override { return m_Layout; }
+		inline virtual void SetLayout(const VertexBufferLayout& layout) override { m_Layout = layout; }
 
 		static void* GetShaderStorageBufferMapping(size_t size, size_t offset);
 		static void EndShaderStorageBufferMapping();
+
 	private:
-		uint32_t m_RendererID;
-		BufferLayout m_Layout;
+		VertexBufferLayout m_Layout;
 	};
 
-	class OpenGLFrameBuffer : public FrameBuffer
+	class OpenGLIndexedIndirectCommandBuffer final : public IndexedIndirectCommandBuffer
+	{
+	public:
+		OpenGLIndexedIndirectCommandBuffer(const void* data, size_t size);
+		~OpenGLIndexedIndirectCommandBuffer();
+
+		virtual void Bind() const override;
+		virtual void Unbind() const override;
+
+		virtual void UpdateBufferData(const void* data, size_t size) override;
+
+		inline virtual size_t GetCapacity() const override { return m_Capcity; };
+		inline virtual size_t GetCount() const override { return m_Count; }
+		inline virtual size_t GetElementSize() const override { return sizeof(DrawIndexedIndirectCommand); }
+
+	private:
+		size_t m_Count;
+		size_t m_Capcity;
+	};
+
+	class OpenGLBaseTextureBuffer : public virtual BaseTextureBuffer
+	{
+	public:
+		virtual void Bind() const;
+		virtual void Unbind() const;
+		virtual void BindTexture(uint32_t slot);
+	};
+
+	class OpenGLFrameBuffer final : public FrameBuffer, public OpenGLBaseTextureBuffer
 	{
 	public:
 		OpenGLFrameBuffer(uint32_t width, uint32_t height, FrameBuffer::BUFFER_FORMAT format);
+		~OpenGLFrameBuffer();
 
-		virtual ~OpenGLFrameBuffer();
-
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
-		virtual void BindTexture(uint32_t slot) const override;
-		virtual void GenerateMipmaps() const override;
-
-		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
-		inline virtual uint32_t GetRenderTargetID() const override { return m_RenderTargetID; }
-
+		virtual void GenerateMipMapLevel() const override;
+	
 	private:
-		uint32_t m_RendererID;
-		uint32_t m_RenderTargetID;
 		uint32_t m_DepthID;
 	};
 
-	class OpenGLShadowBuffer : public ShadowBuffer
+	class OpenGLShadowBuffer final : public ShadowBuffer, public OpenGLBaseTextureBuffer
 	{
 	public:
 		OpenGLShadowBuffer(uint32_t width, uint32_t height);
-
-		virtual ~OpenGLShadowBuffer();
-
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
-		virtual void BindTexture(uint32_t slot) const override;
-
-		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
-		inline virtual uint32_t GetRenderTargetID() const override { return m_RenderTargetID; }
+		~OpenGLShadowBuffer();
 
 	private:
-		uint32_t m_RendererID;
-		uint32_t m_RenderTargetID;
 		uint32_t m_DepthID;
 	};
 
-	class OpenGLCompareShadowBuffer : public ShadowBuffer
+	class OpenGLCompareShadowBuffer final : public ShadowBuffer, public OpenGLBaseTextureBuffer
 	{
 	public:
 		OpenGLCompareShadowBuffer(uint32_t width, uint32_t height);
-
-		virtual ~OpenGLCompareShadowBuffer();
-
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
-		virtual void BindTexture(uint32_t slot) const override;
-
-		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
-		inline virtual uint32_t GetRenderTargetID() const override { return m_RenderTargetID; }
+		~OpenGLCompareShadowBuffer();
 
 	private:
-		uint32_t m_RendererID;
-		uint32_t m_RenderTargetID;
 		uint32_t m_DepthID;
 	};
 
-	class OpenGLMSMShadowBuffer : public ShadowBuffer
+	class OpenGLMSMShadowBuffer final : public ShadowBuffer, public OpenGLBaseTextureBuffer
 	{
 	public:
 		OpenGLMSMShadowBuffer(uint32_t width, uint32_t height);
-
-		virtual ~OpenGLMSMShadowBuffer();
-
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
-		virtual void BindTexture(uint32_t slot) const override;
-
-		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
-		inline virtual uint32_t GetRenderTargetID() const override { return m_RenderTargetID; }
+		~OpenGLMSMShadowBuffer();
 
 	private:
-		uint32_t m_RendererID;
 		uint32_t m_DepthID;
-		uint32_t m_RenderTargetID;
 	};
 
-	class OpenGLMSMCubeShadowBuffer : public ShadowBuffer
+	class OpenGLMSMCubeShadowBuffer final : public ShadowBuffer, public OpenGLBaseTextureBuffer
 	{
 	public:
 		OpenGLMSMCubeShadowBuffer(uint32_t width, uint32_t height);
-
-		virtual ~OpenGLMSMCubeShadowBuffer();
-
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
-		virtual void BindTexture(uint32_t slot) const override;
-
-		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
-		inline virtual uint32_t GetRenderTargetID() const override { return m_RenderTargetID; }
+		~OpenGLMSMCubeShadowBuffer();
 
 	private:
-		uint32_t m_RendererID;
 		uint32_t m_DepthID;
-		uint32_t m_RenderTargetID;
 	};
 
-	class OpenGLShadowArrayBuffer : public ShadowBuffer
+	class OpenGLShadowArrayBuffer final : public ShadowBuffer, public OpenGLBaseTextureBuffer
 	{
 	public:
 		OpenGLShadowArrayBuffer(uint32_t width, uint32_t height, uint32_t depth);
-
-		virtual ~OpenGLShadowArrayBuffer();
-
-		virtual void Bind() const override;
+		~OpenGLShadowArrayBuffer();
+		
 		virtual void BindLayer(uint32_t slot) const override;
-		virtual void Unbind() const override;
-		virtual void BindTexture(uint32_t slot) const override;
-
-		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
-		inline virtual uint32_t GetRenderTargetID() const override { return m_RenderTargetID; }
 
 	private:
-		uint32_t m_RendererID;
 		uint32_t m_DepthID;
-		uint32_t m_RenderTargetID;
 	};
 
-	class OpenGLCompareShadowArrayBuffer : public ShadowBuffer
+	class OpenGLCompareShadowArrayBuffer final : public ShadowBuffer, public OpenGLBaseTextureBuffer
 	{
 	public:
 		OpenGLCompareShadowArrayBuffer(uint32_t width, uint32_t height, uint32_t depth);
+		~OpenGLCompareShadowArrayBuffer();
 
-		virtual ~OpenGLCompareShadowArrayBuffer();
-
-		virtual void Bind() const override;
 		virtual void BindLayer(uint32_t slot) const override;
-		virtual void Unbind() const override;
-		virtual void BindTexture(uint32_t slot) const override;
-
-		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
-		inline virtual uint32_t GetRenderTargetID() const override { return m_RenderTargetID; }
 
 	private:
-		uint32_t m_RendererID;
 		uint32_t m_DepthID;
-		uint32_t m_RenderTargetID;
 	};
 
-	class OpenGLMSMShadowArrayBuffer : public ShadowBuffer
+	class OpenGLMSMShadowArrayBuffer final : public ShadowBuffer, public OpenGLBaseTextureBuffer
 	{
 	public:
 		OpenGLMSMShadowArrayBuffer(uint32_t width, uint32_t height, uint32_t depth);
+		~OpenGLMSMShadowArrayBuffer();
 
-		virtual ~OpenGLMSMShadowArrayBuffer();
-
-		virtual void Bind() const override;
 		virtual void BindLayer(uint32_t slot) const override;
-		virtual void Unbind() const override;
-		virtual void BindTexture(uint32_t slot) const override;
-
-		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
-		inline virtual uint32_t GetRenderTargetID() const override { return m_RenderTargetID; }
 
 	private:
-		uint32_t m_RendererID;
 		uint32_t m_DepthID;
-		uint32_t m_RenderTargetID;
 	};
 
-	class OpenGLSkyBoxBuffer : public SkyBoxBuffer
+	class OpenGLSkyBoxBuffer final : public SkyBoxBuffer, public OpenGLBaseTextureBuffer
 	{
 	public:
 		OpenGLSkyBoxBuffer(uint32_t width, uint32_t height, SkyBoxBuffer::BUFFER_FORMAT type);
+		~OpenGLSkyBoxBuffer();
 
-		virtual ~OpenGLSkyBoxBuffer();
-
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
-		virtual void BindTexture(uint32_t slot) const override;
-		virtual void BindMipMap(uint32_t level) const override;
-		virtual void GenerateMipmaps() const override;
-
-		inline virtual uint32_t GetMaxMipMapLevel() const { return m_max_level; };
-		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
-		inline virtual uint32_t GetRenderTargetID() const override { return m_RenderTargetID; }
-
-	private:
-		uint32_t m_max_level;
-		uint32_t m_RendererID;
-		uint32_t m_RenderTargetID;
+		virtual void BindMipMapLevel(uint32_t level) const override;
+		virtual void GenerateMipMapLevel() const override;
 	};
 
-	class OpenGLGBuffer : public GBuffer
+	class OpenGLGBuffer final : public GBuffer, public OpenGLBaseTextureBuffer
 	{
 	public:
 		OpenGLGBuffer(uint32_t width, uint32_t height);
+		~OpenGLGBuffer();
 
-		virtual ~OpenGLGBuffer();
-
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
-
-		inline uint32_t GetRendererID() const { return m_RendererID; }
-		virtual uint32_t GetTexutureID(GBUFFER_TEXTURE_TYPE tex) const override;
-
+		virtual uint32_t GetGBufferTexutureID(GBUFFER_TEXTURE_TYPE tex) const override;
 		virtual void BindTextures(const std::vector<GBUFFER_TEXTURE_TYPE>& texToBind, uint32_t offset) const override;
 
 	private:
-		uint32_t m_RendererID;
 		uint32_t m_DepthID;
 		uint32_t m_RenderNormalID;
 		uint32_t m_RenderVelocityID;
@@ -339,44 +240,38 @@ namespace longmarch
 		uint32_t m_Render_AO_Metallic_Roughness_ID;
 	};
 
-	class OpenGLThinGBuffer : public GBuffer
+	class OpenGLThinGBuffer final : public GBuffer, public OpenGLBaseTextureBuffer
 	{
 	public:
 		OpenGLThinGBuffer(uint32_t width, uint32_t height);
+		~OpenGLThinGBuffer();
 
-		virtual ~OpenGLThinGBuffer();
-
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
-
-		inline uint32_t GetRendererID() const { return m_RendererID; }
-		virtual uint32_t GetTexutureID(GBUFFER_TEXTURE_TYPE tex) const override;
-
+		virtual uint32_t GetGBufferTexutureID(GBUFFER_TEXTURE_TYPE tex) const override;
 		virtual void BindTextures(const std::vector<GBUFFER_TEXTURE_TYPE>& texToBind, uint32_t offset) const override;
 
 	private:
-		uint32_t m_RendererID;
 		uint32_t m_DepthID;
 		uint32_t m_RenderNormalID;
 		uint32_t m_RenderVelocityID;
 	};
 
-	class OpenGLComputeBuffer : public ComputeBuffer
+	class OpenGLComputeBuffer final : public ComputeBuffer, public OpenGLBaseTextureBuffer
 	{
 	public:
 		OpenGLComputeBuffer(uint32_t width, uint32_t height, ComputeBuffer::BUFFER_FORMAT type);
+		~OpenGLComputeBuffer();
 
-		virtual ~OpenGLComputeBuffer();
+		virtual void BindImage(uint32_t slot, BaseTextureBuffer::IMAGE_BIND_MODE mode) const override;
+	};
 
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
-		virtual void BindTexture(uint32_t slot, ComputeBuffer::TEXTURE_BIND_MODE mode) const override;
+	class OpenGLVoxelBuffer final : public VoxelBuffer, public OpenGLBaseTextureBuffer
+	{
+	public:
+		OpenGLVoxelBuffer(uint32_t width, uint32_t height, uint32_t depth, VoxelBuffer::BUFFER_TYPE type);
+		~OpenGLVoxelBuffer();
 
-		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
-		inline virtual uint32_t GetRenderTargetID() const override { return m_RenderTargetID; }
-
-	private:
-		uint32_t m_RendererID;
-		uint32_t m_RenderTargetID;
+		virtual void BindImage(uint32_t slot, BaseTextureBuffer::IMAGE_BIND_MODE mode) const override;
+		virtual void BindImage(uint32_t slot, BaseTextureBuffer::IMAGE_BIND_MODE mode, VoxelBuffer::BUFFER_FORMAT format) const override;
+		virtual void GenerateMipMapLevel() const override;
 	};
 }

@@ -73,8 +73,8 @@ namespace longmarch {
 
 		s_Data->QuadVertexBuffer = VertexBuffer::Create(quadVertices, sizeof(quadVertices));
 		s_Data->QuadVertexBuffer->SetLayout({
-			{ ShaderDataType::Float3, "a_Position" },
-			{ ShaderDataType::Float2, "a_TexCoord" }
+			{ VertexDataType::Float3, "a_Position" },
+			{ VertexDataType::Float2, "a_TexCoord" }
 			});
 		s_Data->FullScreenQuadVAO->AddVertexBuffer(s_Data->QuadVertexBuffer);
 

@@ -5,7 +5,8 @@
 #include "engine/core/utility/TypeHelper.h"
 #include "OpenGLUtil.h"
 
-namespace longmarch {
+namespace longmarch 
+{
 	class OpenGLShader : public Shader
 	{
 	public:
@@ -38,7 +39,7 @@ namespace longmarch {
 		void UploadUniformMat3(const std::string& name, const glm::mat3& matrix);
 		void UploadUniformMat4(const std::string& name, const glm::mat4& matrix);
 
-		uint32_t GetRendererID() { return m_RendererID; }
+		uint32_t GetShaderID() { return m_RendererID; }
 
 	private:
 		GLint GetUniformLocationCached(const std::string& name);

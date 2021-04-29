@@ -19,40 +19,40 @@ bool longmarch::MeshData::Init()
 			m_BufferData.MeshVertexBuffer = VertexBuffer::Create(GetVertexDataPtr(), GetVertexDataSize());
 #if MESH_VERTEX_DATA_FORMAT == 0
 			m_BufferData.MeshVertexBuffer->SetLayout({
-				{ ShaderDataType::Float3, "a_VertexPnt" },
-				{ ShaderDataType::Float3, "a_VertexNrm" },
-				{ ShaderDataType::Float2, "a_VertexTex" },
-				{ ShaderDataType::Float3, "a_VertexTan" }
+				{ VertexDataType::Float3, "a_VertexPnt" },
+				{ VertexDataType::Float3, "a_VertexNrm" },
+				{ VertexDataType::Float2, "a_VertexTex" },
+				{ VertexDataType::Float3, "a_VertexTan" }
 				});
 #elif MESH_VERTEX_DATA_FORMAT == 1
 			m_BufferData.MeshVertexBuffer->SetLayout({
-				{ ShaderDataType::Float3, "a_VertexPnt" },
-				{ ShaderDataType::Float4, "a_VertexNrm" },
-				{ ShaderDataType::Float2, "a_VertexTex" }
+				{ VertexDataType::Float3, "a_VertexPnt" },
+				{ VertexDataType::Float4, "a_VertexNrm" },
+				{ VertexDataType::Float2, "a_VertexTex" }
 				});
 #elif MESH_VERTEX_DATA_FORMAT == 2
 			m_BufferData.MeshVertexBuffer->SetLayout({
-				{ ShaderDataType::Float3, "a_VertexPnt" },
-				{ ShaderDataType::Float2, "a_VertexNrm" },
-				{ ShaderDataType::Float2, "a_VertexTex" },
-				{ ShaderDataType::Float2, "a_VertexTan" }
+				{ VertexDataType::Float3, "a_VertexPnt" },
+				{ VertexDataType::Float2, "a_VertexNrm" },
+				{ VertexDataType::Float2, "a_VertexTex" },
+				{ VertexDataType::Float2, "a_VertexTan" }
 				});
 #elif MESH_VERTEX_DATA_FORMAT == 3
 			m_BufferData.MeshVertexBuffer->SetLayout({
-				{ ShaderDataType::Float3, "a_VertexPnt" },
-				{ ShaderDataType::HFloat2, "a_VertexNrm" },
-				{ ShaderDataType::HFloat2, "a_VertexTex" },
-				{ ShaderDataType::HFloat2, "a_VertexTan" }
+				{ VertexDataType::Float3, "a_VertexPnt" },
+				{ VertexDataType::HFloat2, "a_VertexNrm" },
+				{ VertexDataType::HFloat2, "a_VertexTex" },
+				{ VertexDataType::HFloat2, "a_VertexTan" }
 				});
 #elif MESH_VERTEX_DATA_FORMAT == 4
 			m_BufferData.MeshVertexBuffer->SetLayout({
-				{ ShaderDataType::HFloat4, "a_VertexPnt" },
-				{ ShaderDataType::HFloat2, "a_VertexNrm" },
-				{ ShaderDataType::HFloat2, "a_VertexTex" },
-				{ ShaderDataType::HFloat2, "a_VertexTan" },
-				{ ShaderDataType::HFloat2, "a_BoneIndexWeight1" },
-				{ ShaderDataType::HFloat2, "a_BoneIndexWeight2" },
-				{ ShaderDataType::HFloat2, "a_BoneIndexWeight3" }
+				{ VertexDataType::HFloat4, "a_VertexPnt" },
+				{ VertexDataType::HFloat2, "a_VertexNrm" },
+				{ VertexDataType::HFloat2, "a_VertexTex" },
+				{ VertexDataType::HFloat2, "a_VertexTan" },
+				{ VertexDataType::HFloat2, "a_BoneIndexWeight1" },
+				{ VertexDataType::HFloat2, "a_BoneIndexWeight2" },
+				{ VertexDataType::HFloat2, "a_BoneIndexWeight3" }
 				});
 #endif
 			m_BufferData.MeshVertexArray->AddVertexBuffer(m_BufferData.MeshVertexBuffer);

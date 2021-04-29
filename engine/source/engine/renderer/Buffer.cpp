@@ -3,7 +3,8 @@
 #include "Renderer2D.h"
 #include "platform/OpenGL/OpenGLBuffer.h"
 
-namespace longmarch {
+namespace longmarch 
+{
 	std::shared_ptr<IndexedIndirectCommandBuffer> IndexedIndirectCommandBuffer::Create(const void* data, size_t size)
 	{
 		switch (Renderer2D::GetAPI())
@@ -207,6 +208,17 @@ namespace longmarch {
 		{
 		case RendererAPI::API::None: ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
 		case RendererAPI::API::OpenGL: return MemoryManager::Make_shared<OpenGLComputeBuffer>(width, height, format);
+		}
+
+		ASSERT(false, "Unknown RendererAPI!");
+		return nullptr;
+	}
+	std::shared_ptr<VoxelBuffer> VoxelBuffer::Create(uint32_t width, uint32_t height, uint32_t depth, VoxelBuffer::BUFFER_TYPE type)
+	{
+		switch (Renderer2D::GetAPI())
+		{
+		case RendererAPI::API::None: ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
+		case RendererAPI::API::OpenGL: return MemoryManager::Make_shared<OpenGLVoxelBuffer>(width, height, depth, type);
 		}
 
 		ASSERT(false, "Unknown RendererAPI!");

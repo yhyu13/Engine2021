@@ -91,8 +91,8 @@ namespace longmarch {
 
 		//m_SpriteVertexBuffer->UpdateBufferData(&m_Vertices[0], m_Vertices.size() * sizeof(float));
 		//m_SpriteVertexBuffer->SetLayout({
-		//	{ ShaderDataType::Float3, "a_Position" },
-		//	{ ShaderDataType::Float2, "a_TexCoord" }
+		//	{ VertexDataType::Float3, "a_Position" },
+		//	{ VertexDataType::Float2, "a_TexCoord" }
 		//	});
 		//m_SpriteVertexArray->AddVertexBuffer(m_SpriteVertexBuffer);
 		//Renderer2D::DrawSprite(m_SpriteVertexArray, m_Position, m_Scale, m_Rotation, m_Texture2D, m_ShaderName, m_alpha);

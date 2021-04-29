@@ -64,8 +64,8 @@ namespace longmarch
 
 	OpenGLShader::OpenGLShader(const fs::path& vertexShaderPath, const fs::path& fragmentShaderPath, const fs::path& geomtryShaderPath)
 	{
+		// Compile vertex shader
 		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
 		const std::string vertexShaderString = GetShaderString(vertexShaderPath);
 		const GLchar* source = vertexShaderString.c_str();
 		glShaderSource(vertexShader, 1, &source, 0);
@@ -88,11 +88,12 @@ namespace longmarch
 			return;
 		}
 
+		// Try to compile geomtry shader
 		GLuint geomtryShader = 0;
-		if (geomtryShaderPath != "")
+		bool hasGeomtryShader = (geomtryShaderPath != "");
+		if (hasGeomtryShader)
 		{
 			geomtryShader = glCreateShader(GL_GEOMETRY_SHADER);
-
 			const std::string geomtryShaderString = GetShaderString(geomtryShaderPath);
 			const GLchar* source2 = geomtryShaderString.c_str();
 			glShaderSource(geomtryShader, 1, &source2, 0);
@@ -115,8 +116,8 @@ namespace longmarch
 			}
 		}
 
+		// Compile fragment shader
 		GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
 		const std::string fragmentShaderString = GetShaderString(fragmentShaderPath);
 		const GLchar* source2 = fragmentShaderString.c_str();
 		glShaderSource(fragmentShader, 1, &source2, 0);
@@ -138,11 +139,12 @@ namespace longmarch
 			return;
 		}
 
+		// Create shader program and link
 		m_RendererID = glCreateProgram();
 		GLuint program = m_RendererID;
 		
 		glAttachShader(program, vertexShader);
-		if (geomtryShaderPath != "")
+		if (hasGeomtryShader)
 		{
 			glAttachShader(program, geomtryShader);
 		}
@@ -161,26 +163,26 @@ namespace longmarch
 
 			glDeleteProgram(program);
 			glDeleteShader(vertexShader);
-			if (geomtryShaderPath != "")
+			if (hasGeomtryShader)
 			{
 				glDetachShader(program, geomtryShader);
 			}
 			glDeleteShader(fragmentShader);
 
 			ENGINE_ERROR("{0}", infoLog.data());
-			ASSERT(false, "Shader link failure");
+			ASSERT(false, "Shader link failure: " + fragmentShaderPath.string());
 
 			return;
 		}
 
 		glDetachShader(program, vertexShader);
-		if (geomtryShaderPath != "")
+		if (hasGeomtryShader)
 		{
 			glDetachShader(program, geomtryShader);
 		}
 		glDetachShader(program, fragmentShader);
 
-		ENGINE_INFO("Fragment shader compilation success: " + fragmentShaderPath.string());
+		ENGINE_DEBUG("Shader compilation success: " + fragmentShaderPath.string());
 	}
 
 	OpenGLShader::~OpenGLShader()

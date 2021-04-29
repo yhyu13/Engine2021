@@ -22,7 +22,7 @@ namespace longmarch {
 		virtual void SetIntV(const std::string& name, int count, const int* value) = 0;
 		virtual void SetFloat3V(const std::string& name, int count, const glm::vec3* value) = 0;
 
-		virtual uint32_t GetRendererID() = 0;
+		virtual uint32_t GetShaderID() = 0;
 
 		static std::shared_ptr<Shader> Create(const std::string& vertexShaderPath, const std::string& fragmentShaderPath, const std::string& geomtryShaderPath = "");
 		static std::shared_ptr<Shader> Create(const std::string& computeShaderPath);

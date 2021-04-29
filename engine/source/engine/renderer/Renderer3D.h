@@ -35,7 +35,7 @@ namespace longmarch
 #endif
 
 #ifndef LongMarch_MAX_SCENE_PASS_BATCH
-#define LongMarch_MAX_SCENE_PASS_BATCH 20 // After this number of textures are to be drawn, the batch buffer is flushed to render because this is the max number of textures that gpu shader has registerd
+#define LongMarch_MAX_SCENE_PASS_BATCH 16 // After this number of textures are to be drawn, the batch buffer is flushed to render because this is the max number of textures that gpu shader has registerd
 #endif
 
 #ifndef LongMarch_GUASSIAN_KERNEL_MIN
@@ -291,6 +291,10 @@ namespace longmarch
 			std::shared_ptr<VertexArray> particleVAO;
 			std::shared_ptr<VertexBuffer> particleInstBO;
 		};
+		struct VoxelBuffer
+		{
+
+		};
 
 		struct MultiDrawBuffer
 		{
@@ -332,8 +336,8 @@ namespace longmarch
 
 			struct MultiDrawRenderPassCallback
 			{
-				std::function<void()>* submitCallback;  // Multidraw shared
-				std::function<void()>* clearCallback;  // Multidraw shared
+				std::function<void()>* submitCallback{ nullptr };  // Multidraw shared
+				std::function<void()>* clearCallback{ nullptr };  // Multidraw shared
 			} multiDrawRenderPassCallback;
 		};
 		struct CPUBuffer
@@ -429,20 +433,20 @@ namespace longmarch
 
 			RENDER_PIPE RENDER_PIPE;
 
-			struct
+			struct MotionBlur
 			{
 				bool enable_motionblur;
 				int motionblur_shutterSpeed;
 			} MotionBlur;
 
-			struct
+			struct EnvMapping
 			{
 				bool enable_env_mapping;
 				std::string CurrentEnvMapName;
 				std::string brdf_lut_name;
 			} EnvMapping;
 
-			struct
+			struct SSGISettings
 			{
 				bool enable;
 				uint32_t gi_samples;
@@ -452,7 +456,7 @@ namespace longmarch
 				float gi_strength;
 			} SSGISettings;
 
-			struct
+			struct SSAOSettings
 			{
 				bool enable;
 				uint32_t ao_samples;
@@ -462,8 +466,8 @@ namespace longmarch
 				float ao_scale;
 				float ao_power;
 			} SSAOSettings;
-
-			struct
+			
+			struct SSRSettings
 			{
 				bool enable;
 				bool enable_debug{ false };
@@ -471,7 +475,7 @@ namespace longmarch
 				uint32_t ssr_sample_resolution_downScale;
 			} SSRSettings;
 
-			struct
+			struct BloomSettings
 			{
 				bool enable;
 				uint32_t bloom_gaussian_kernal;
@@ -480,7 +484,7 @@ namespace longmarch
 				float bloom_blend_strength;
 			} BloomSettings;
 
-			struct
+			struct DOFSettings
 			{
 				bool enable;
 				bool enable_debug{ false };
@@ -496,7 +500,7 @@ namespace longmarch
 				Vec3f ws_target;
 			} DOFSettings;
 
-			struct
+			struct SMAASettings
 			{
 				bool enable;
 				int mode; //!< 0 = 1X, 1 = T2X
@@ -556,13 +560,16 @@ namespace longmarch
 				}
 			} SMAASettings;
 
-			struct ClusterStorage {
-				struct VolumeTileAABB {
+			struct ClusterStorage 
+			{
+				struct VolumeTileAABB 
+				{
 					Vec4f minPoint;
 					Vec4f maxPoint;
 				} frustrum;
 
-				struct ScreenToView {
+				struct ScreenToView 
+				{
 					Mat4 inverseProjectionMat;
 					unsigned int tileSizes[4];
 					unsigned int screenWidth;

@@ -48,7 +48,10 @@ namespace longmarch
 		struct
 		{
 			std::function<void(double)> mainRenderPipeline;
+
+			ImFont* m_font_1k;
+			ImFont* m_font_2k;
+			ImFont* m_font_4k;
 		}m_Data;
-		ImFont* m_font;
 	};
 }

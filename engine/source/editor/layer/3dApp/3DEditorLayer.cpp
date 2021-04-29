@@ -20,7 +20,11 @@ void longmarch::_3DEditorLayer::Init()
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		(void)io;
-		m_font = io.Fonts->AddFontFromFileTTF(FileSystem::ResolveProtocol("$asset:ImGui/Roboto-Regular.ttf").string().c_str(), 18.0f);
+		float base_font_size = 18.0f;
+		auto path = FileSystem::ResolveProtocol("$asset:ImGui/Roboto-Regular.ttf").string();
+		m_Data.m_font_1k = io.Fonts->AddFontFromFileTTF(path.c_str(), base_font_size);
+		m_Data.m_font_2k = io.Fonts->AddFontFromFileTTF(path.c_str(), 1.414f * base_font_size);
+		m_Data.m_font_4k = io.Fonts->AddFontFromFileTTF(path.c_str(), 2.0f * base_font_size);
 	}
 	{
 		auto queue = EventQueue<EditorEventType>::GetInstance();
@@ -80,7 +84,22 @@ void longmarch::_3DEditorLayer::OnDetach()
 void longmarch::_3DEditorLayer::OnImGuiRender()
 {
 	ENG_TIME("Engine ImGUI Render");
-	ImGui::PushFont(m_font);
+	ImFont* font;
+	{
+		if (auto height = Engine::GetWindow()->GetHeight(); height > 2000)
+		{
+			font = m_Data.m_font_4k;
+		}
+		else if (height > 1400)
+		{
+			font = m_Data.m_font_2k;
+		}
+		else
+		{
+			font = m_Data.m_font_1k;
+		}
+	}
+	ImGui::PushFont(font);
 	auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
 	manager->BeginFrame();
 	manager->RenderUI();

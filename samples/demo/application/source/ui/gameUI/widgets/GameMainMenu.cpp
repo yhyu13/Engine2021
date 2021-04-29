@@ -9,7 +9,7 @@ void longmarch::GameMainMenu::Render()
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, GetStyle());
 	ImVec2 windowsize = ImVec2(GetWindowSize_X(), GetWindowSize_Y());
 	ImVec2 mainMenuWindowSize = PosScaleBySize(m_Size, windowsize);
-	ImGui::SetNextWindowSize(mainMenuWindowSize);
+	ImGui::SetNextWindowSize(mainMenuWindowSize, ImGuiCond_Once);
 	if (!ImGui::Begin("Main Menu", &m_IsVisible))
 	{
 		// Early out if the window is collapsed, as an optimization.

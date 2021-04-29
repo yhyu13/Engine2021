@@ -28,10 +28,14 @@ void longmarch::MainGameLayer::Init()
 		// Register _3DEngineWidgetManager
 		ServiceLocator::ProvideSingleton<_3DGameWidgetManager>(APP_WIG_MAN_NAME, MemoryManager::Make_shared<_3DGameWidgetManager>());
 	}
-	{
+	{	
 		ImGuiIO& io = ImGui::GetIO();
 		(void)io;
-		m_font = io.Fonts->AddFontFromFileTTF(FileSystem::ResolveProtocol("$asset:ImGui/ComicNeue-Bold.ttf").string().c_str(), 20.0f);
+		float base_font_size = 20.0f;
+		auto path = FileSystem::ResolveProtocol("$asset:ImGui/ComicNeue-Bold.ttf").string();
+		m_Data.m_font_1k = io.Fonts->AddFontFromFileTTF(path.c_str(), base_font_size);
+		m_Data.m_font_2k = io.Fonts->AddFontFromFileTTF(path.c_str(), 1.414f * base_font_size);
+		m_Data.m_font_4k = io.Fonts->AddFontFromFileTTF(path.c_str(), 2.0f * base_font_size);
 	}
 	{
 		auto queue = EventQueue<EngineIOEventType>::GetInstance();
@@ -141,7 +145,22 @@ void longmarch::MainGameLayer::OnDetach()
 void longmarch::MainGameLayer::OnImGuiRender()
 {
 	APP_TIME("ImGUI Render");
-	ImGui::PushFont(m_font);
+	ImFont* font;
+	{
+		if (auto height = Engine::GetWindow()->GetHeight(); height > 2000)
+		{
+			font = m_Data.m_font_4k;
+		}
+		else if (height > 1400)
+		{
+			font = m_Data.m_font_2k;
+		}
+		else
+		{
+			font = m_Data.m_font_1k;
+		}
+	}
+	ImGui::PushFont(font);
 	auto manager = ServiceLocator::GetSingleton<BaseGameWidgetManager>(APP_WIG_MAN_NAME);
 	manager->BeginFrame();
 	manager->RenderUI();

@@ -103,7 +103,7 @@ void longmarch::Renderer3D::Init()
 		s_Data.enable_shadow = graphicsConfiguration["Shadow"].asBool();
 		s_Data.enable_debug_cluster_light = graphicsConfiguration["Debug-cluster-light"].asBool();;
 		s_Data.gBuffer_display_mode = 0;
-		s_Data.toneMapping_mode = 0;
+		s_Data.toneMapping_mode = 0; // Choose the first tonemap method
 		s_Data.value_gamma = 2.2f;
 		s_Data.ambient = 0.1f;
 
@@ -401,6 +401,20 @@ void longmarch::Renderer3D::Init()
 			// GBuffer
 			s_Data.gpuBuffer.CurrentGBuffer = GBuffer::Create(1, 1, GBuffer::GBUFFER_TYPE::DEFAULT);
 			s_Data.gpuBuffer.CurrentThinGBuffer = GBuffer::Create(1, 1, GBuffer::GBUFFER_TYPE::THIN);
+
+			// Voxel buffer
+			{
+				constexpr uint32_t dimension = 64;
+				s_Data.gpuBuffer.voxelAlbedo = VoxelBuffer::Create(dimension, dimension, dimension, VoxelBuffer::BUFFER_TYPE::ALBEDO);
+				s_Data.gpuBuffer.voxelNormal = VoxelBuffer::Create(dimension, dimension, dimension, VoxelBuffer::BUFFER_TYPE::NORMAL);
+				s_Data.gpuBuffer.voxelEmissive = VoxelBuffer::Create(dimension, dimension, dimension, VoxelBuffer::BUFFER_TYPE::EMISSIVE);
+				s_Data.gpuBuffer.voxelRadiance = VoxelBuffer::Create(dimension, dimension, dimension, VoxelBuffer::BUFFER_TYPE::RADIANCE);
+				for (int i = 0; i < 6; ++i)
+				{
+					s_Data.gpuBuffer.voxelRadiance_mimaps[i] = VoxelBuffer::Create(dimension / 2, dimension / 2, dimension / 2, VoxelBuffer::BUFFER_TYPE::RADIANCE_MIPMAP);
+					s_Data.gpuBuffer.voxelRadiance_mimaps[i]->GenerateMipMapLevel();
+				}
+			}
 
 			// IBL related buffers
 			{

@@ -190,7 +190,7 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 		// TAA
 		static bool checkTAA = graphicsConfig["TAA"].asBool();
 		// Tone mapping
-		static const char* toneMapModes[]{ "AcesFilm", "Uncharted2", "Filmic","Reinhard" };
+		static const char* toneMapModes[]{ "AcesFilm", "Luminance", "Uncharted2", "Filmic","Reinhard" };
 		static int selected_toneMap = 0;
 		// Gamma
 		static float valueGamma = 2.2f;

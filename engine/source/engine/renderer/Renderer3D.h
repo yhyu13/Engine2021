@@ -15,7 +15,7 @@ namespace longmarch
 {
 	// TODO Serialize these macros in engine configuration json for more dynamic changes
 #ifndef LongMarch_MAX_LIGHT
-#define LongMarch_MAX_LIGHT 1024 // Must match "./asset/shader/include/LighStruch.h"
+#define LongMarch_MAX_LIGHT 128 // Must match "./asset/shader/include/LighStruch.h"
 #endif
 
 #ifndef MAX_SPOT_LIGHT_SHADOWS
@@ -283,17 +283,22 @@ namespace longmarch
 			std::shared_ptr<ShaderStorageBuffer> LightGridBuffer;
 			std::shared_ptr<ShaderStorageBuffer> LightIndexGlobalCountBuffer;
 
+			// Utility
 			std::shared_ptr<VertexArray> FullScreenQuadVAO;
 			std::shared_ptr<VertexArray> BBoxVAO;
 			std::shared_ptr<VertexBuffer> BBoxInstBO;
 			std::shared_ptr<VertexArray> FullScreenCubeVAO;
 
+			// Particle
 			std::shared_ptr<VertexArray> particleVAO;
 			std::shared_ptr<VertexBuffer> particleInstBO;
-		};
-		struct VoxelBuffer
-		{
 
+			// Voxel GI
+			std::shared_ptr<VoxelBuffer> voxelAlbedo;
+			std::shared_ptr<VoxelBuffer> voxelNormal;
+			std::shared_ptr<VoxelBuffer> voxelEmissive;
+			std::shared_ptr<VoxelBuffer> voxelRadiance;
+			std::shared_ptr<VoxelBuffer> voxelRadiance_mimaps[6];
 		};
 
 		struct MultiDrawBuffer

@@ -549,7 +549,7 @@ namespace longmarch
 	{
 		glDeleteFramebuffers(1, &m_RendererID);
 		glDeleteTextures(1, &m_RenderTargetID);
-		//glDeleteRenderbuffers(1, &m_DepthID);
+		glDeleteRenderbuffers(1, &m_DepthID);
 	}
 	/**************************************************************
 	*	Moment Shadow Buffer
@@ -783,7 +783,7 @@ namespace longmarch
 	{
 		glDeleteFramebuffers(1, &m_RendererID);
 		glDeleteTextures(1, &m_RenderTargetID);
-		//glDeleteRenderbuffers(1, &m_DepthID);
+		glDeleteRenderbuffers(1, &m_DepthID);
 	}
 	void OpenGLCompareShadowArrayBuffer::BindLayer(uint32_t slot) const
 	{
@@ -1253,35 +1253,35 @@ namespace longmarch
 		{
 		case longmarch::VoxelBuffer::BUFFER_TYPE::STATIC_FLAG:
 			m_format = longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_R8;
-			format = GL_R8;
-			internal_format = GL_RED;
+			internal_format = GL_R8;
+			format = GL_RED;
 			break;
 		case longmarch::VoxelBuffer::BUFFER_TYPE::ALBEDO:
 			m_format = longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_RGBA8;
-			format = GL_RGBA8;
-			internal_format = GL_RGBA;
+			internal_format = GL_RGBA8;
+			format = GL_RGBA;
 			break;
 		case longmarch::VoxelBuffer::BUFFER_TYPE::NORMAL:
 			m_format = longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_RGB10A2;
-			format = GL_RGB10_A2;
-			internal_format = GL_RGBA;
+			internal_format = GL_RGB10_A2;
+			format = GL_RGBA;
 			break;
 		case longmarch::VoxelBuffer::BUFFER_TYPE::EMISSIVE:
 			m_format = longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_RGBA8;
-			format = GL_RGBA8;
-			internal_format = GL_RGBA;
+			internal_format = GL_RGBA8;
+			format = GL_RGBA;
 			break;
 		case longmarch::VoxelBuffer::BUFFER_TYPE::RADIANCE:
 			m_format = longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_RGBA8;
-			format = GL_RGBA8;
-			internal_format = GL_RGBA;
+			internal_format = GL_RGBA8;
+			format = GL_RGBA;
 			min_filter = GL_LINEAR;
 			max_filter = GL_LINEAR;
 			break;
 		case longmarch::VoxelBuffer::BUFFER_TYPE::RADIANCE_MIPMAP:
 			m_format = longmarch::VoxelBuffer::BUFFER_FORMAT::UINT_RGBA8;
-			format = GL_RGBA8;
-			internal_format = GL_RGBA;
+			internal_format = GL_RGBA8;
+			format = GL_RGBA;
 			min_filter = GL_LINEAR_MIPMAP_LINEAR;
 			max_filter = GL_LINEAR;
 			break;
@@ -1291,20 +1291,15 @@ namespace longmarch
 			break;
 		}
 
-		glGenFramebuffers(1, &m_RendererID);
-		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-
 		glGenTextures(1, &m_RenderTargetID);
 		glBindTexture(GL_TEXTURE_3D, m_RenderTargetID);
 
-		glTexStorage3D(GL_TEXTURE_3D, 1, format, width, height, depth);
 		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, min_filter);
 		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, max_filter);
 		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-		glDrawBuffers(0, GL_NONE);
+		glTexImage3D(GL_TEXTURE_3D, 0, internal_format, width, height, depth, 0, format, GL_UNSIGNED_BYTE, NULL);
 
 		// Check for completeness/correctness
 		int status = (int)glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -1312,13 +1307,10 @@ namespace longmarch
 		{
 			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"FBO Error : " + wStr(status));
 		}
-		// Unbind the fbo until it's ready to be used
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		GLCHECKERROR;
 	}
 	OpenGLVoxelBuffer::~OpenGLVoxelBuffer()
 	{
-		glDeleteFramebuffers(1, &m_RendererID);
 		glDeleteTextures(1, &m_RenderTargetID);
 	}
 	void OpenGLVoxelBuffer::BindImage(uint32_t slot, BaseTextureBuffer::IMAGE_BIND_MODE mode) const

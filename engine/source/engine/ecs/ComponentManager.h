@@ -20,6 +20,7 @@ namespace longmarch
 	public:
 		virtual BaseComponentInterface* GetBaseComponentByEntity(const Entity& entity) const = 0;
 		virtual bool RemoveComponentFromEntity(const Entity& entity) = 0;
+		virtual void ReorderComponentFromEntity(const Entity& entity) = 0;
 		virtual bool HasEntity(const Entity& entity) const = 0;
 		virtual std::shared_ptr<BaseComponentManager> Copy() const = 0;
 		virtual void SetWorld(GameWorld* world) const = 0; //!< Set the gameworld for all managed components
@@ -61,7 +62,7 @@ namespace longmarch
 			}
 		}
 
-		void AddComponentToEntity(const Entity& entity, const ComponentType& component)
+		bool AddComponentToEntity(const Entity& entity, const ComponentType& component)
 		{
 			if (!HasEntity(entity))
 			{
@@ -70,6 +71,11 @@ namespace longmarch
 				m_components.emplace_back(component);
 				m_entities.emplace_back(entity);
 				m_entitiesAndComponentIndexes.emplace(entity, index);
+				return true;
+			}
+			else
+			{
+				return false;
 			}
 		}
 
@@ -114,6 +120,24 @@ namespace longmarch
 				return true;
 			}
 			return false;
+		}
+
+		virtual void ReorderComponentFromEntity(const Entity& entity) override
+		{
+			LOCK_GUARD_NC();
+			if (auto it = m_entitiesAndComponentIndexes.find(entity); it != m_entitiesAndComponentIndexes.end())
+			{
+				uint32_t index = it->second;
+
+				// First, make the last entity points the current index. 
+				std::swap(m_entitiesAndComponentIndexes[m_entities.back()], m_entitiesAndComponentIndexes[entity]);
+
+				// Move the component data from last index to the index of the component data
+				std::swap(m_components[index], m_components.back());
+
+				// Swap the current entity with the last entity
+				std::swap(m_entities[index], m_entities.back());
+			}
 		}
 
 		virtual std::shared_ptr<BaseComponentManager> Copy() const

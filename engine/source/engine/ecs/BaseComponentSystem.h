@@ -165,6 +165,17 @@ namespace longmarch
 			}
 		}
 
+		//! Update entity on component changes, using swap back strategy
+		inline void ReorderEntity(const Entity& entity)
+		{
+			LOCK_GUARD_NC();
+			if (auto index = LongMarch_findFristIndex(m_bufferedRegisteredEntities, entity);
+				index != -1)
+			{
+				std::swap(m_bufferedRegisteredEntities[index], m_bufferedRegisteredEntities.back());
+			}
+		}
+
 		inline BitMaskSignature& GetSystemSignature()
 		{
 			return m_systemSignature;

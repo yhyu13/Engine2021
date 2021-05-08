@@ -22,6 +22,14 @@ void longmarch::BaseEngineWidgetManager::PushBackSelectedEntityBuffered(const En
 	}
 }
 
+void longmarch::BaseEngineWidgetManager::EraseSelectedEntityBuffered(const Entity& e)
+{
+	if (int index = LongMarch_findFristIndex(m_SelectedEntityBuffer, e); index != -1)
+	{
+		m_SelectedEntityBuffer.erase(m_SelectedEntityBuffer.begin() + index);
+	}
+}
+
 const LongMarch_Vector<Entity> longmarch::BaseEngineWidgetManager::GetAllSelectedEntity()
 {
 	return m_SelectedEntity;

@@ -36,7 +36,7 @@ void longmarch::EditorPickingComSys::RenderUI()
 		ImGuizmo::BeginFrame();
 		ImGuizmo::SetDrawlist(m_sceneDockDrawList);
 		{
-			if (auto e = m_pickingPass.GetPickedEntity(); e.Valid())
+			if (auto e = m_pickingPass.GetPickedEntity(); e.Valid() && m_parentWorld->HasEntity(e))
 			{
 				auto manager = ServiceLocator::GetSingleton<BaseEngineWidgetManager>(ENG_WIG_MAN_NAME);
 				if (auto es = manager->GetAllSelectedEntityBuffered(); es.empty())

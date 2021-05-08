@@ -24,7 +24,7 @@ void longmarch::EntityGCComSys::PostRenderUpdate(double dt)
 
 void longmarch::EntityGCComSys::GC()
 {
-	LOCK_GUARD_NC();
+	// Do not add lock here since RemoveEntityAndComponents will invoke remove entity  
 	for (auto& entity : m_GCList)
 	{
 		DEBUG_PRINT("Engine GC : Delete " + Str(entity));

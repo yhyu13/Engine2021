@@ -21,7 +21,9 @@ namespace longmarch {
 		virtual void EndFrame() override;
 
 		//! UI side of picking system (add entity to picked entity buffer)
-		void PushBackSelectedEntityBuffered(const Entity& e); 
+		void PushBackSelectedEntityBuffered(const Entity& e);
+		//! UI side of picking system (remove entity from picked entity buffer)
+		void EraseSelectedEntityBuffered(const Entity& e);
 		//! UI side of picking system (use this inside any ImGui's Render() function)
 		const LongMarch_Vector<Entity> GetAllSelectedEntity(); 
 		//! UI side of picking system (use this anywhere outside ImGui's Render() function)

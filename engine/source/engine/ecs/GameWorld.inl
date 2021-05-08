@@ -2,7 +2,7 @@
 #include "GameWorld.h"
 
 namespace longmarch
-{
+{	
 	template<typename ComponentType>
 	inline bool GameWorld::HasComponent(const Entity& entity)  const
 	{
@@ -15,12 +15,15 @@ namespace longmarch
 	{
 		ComponentManager<ComponentType>* manager = _GetComponentManager<ComponentType>();
 		component.SetWorld(this);
-		manager->AddComponentToEntity(entity, component);
+		if(manager->AddComponentToEntity(entity, component))
 		{
-			LOCK_GUARD_NC();
-			BitMaskSignature currentMask = m_entityMasks[entity];
-			m_entityMasks[entity].AddComponent<ComponentType>(); // update the component-mask for the entity once a new component has been added
-			_UpdateEntityForAllComponentSystems(entity, currentMask); // update the component-systems
+			// Reorder (swap back) component memory lcoation such that cache locality is preserved
+			for (auto& componentIndex : m_entityMasks[entity].GetAllComponentIndex())
+			{
+				ENGINE_EXCEPT_IF(componentIndex >= m_componentManagers.size(), L"Entity " + str2wstr(Str(entity)) + L"is requesting all components before some component managers are initilaized!");
+				m_componentManagers[componentIndex]->ReorderComponentFromEntity(entity);
+			}
+			_TryAddEntityForAllComponentSystems<ComponentType>(entity);
 		}
 	}
 
@@ -30,10 +33,7 @@ namespace longmarch
 		ComponentManager<ComponentType>* manager = _GetComponentManager<ComponentType>();
 		if (manager->RemoveComponentFromEntity(entity))
 		{
-			LOCK_GUARD_NC();
-			BitMaskSignature oldMask = m_entityMasks[entity];
-			m_entityMasks[entity].RemoveComponent<ComponentType>();
-			_UpdateEntityForAllComponentSystems(entity, oldMask);
+			_TryRemoveEntityForAllComponentSystems<ComponentType>(entity);
 		}
 	}
 	
@@ -55,7 +55,11 @@ namespace longmarch
 		else
 		{
 			LongMarch_Vector<Entity> ret;
-			BitMaskSignature mask; mask.AddComponent<Components...>();
+			ret.reserve(128);
+			BitMaskSignature mask; 
+			mask.AddComponent<Components...>();
+			// entity mask does not gaurantee locallity of components of returned entities
+			// need implement entity instances
 			for (const auto& [entity, entity_mask] : m_entityMasks)
 			{
 				if (entity_mask.IsAMatch(mask))
@@ -97,18 +101,57 @@ namespace longmarch
 		});
 	}
 
+	template<typename ComponentType>
+	void longmarch::GameWorld::_TryAddEntityForAllComponentSystems(const Entity& entity)
+	{
+		LOCK_GUARD_NC();
+		BitMaskSignature& updatedMask = m_entityMasks[entity];
+		BitMaskSignature oldMask = updatedMask;
+		updatedMask.AddComponent<ComponentType>(); // update the component-mask for the entity once a new component has been added
+		for (auto&& system : m_systems) 
+		{
+			BitMaskSignature systemSignature = system->GetSystemSignature();
+			if (updatedMask.IsNewMatch(oldMask, systemSignature))
+			{
+				system->AddEntity(entity);
+			}
+			else if (oldMask.IsAMatch(systemSignature))
+			{
+				// Swap back entity such that access preserve cache locality
+				system->ReorderEntity(entity);
+			}
+		}
+	}
+
+	template<typename ComponentType>
+	void longmarch::GameWorld::_TryRemoveEntityForAllComponentSystems(const Entity& entity)
+	{
+		LOCK_GUARD_NC();
+		BitMaskSignature& updatedMask = m_entityMasks[entity];
+		BitMaskSignature oldMask = updatedMask;
+		updatedMask.RemoveComponent<ComponentType>(); // update the component-mask for the entity once a new component has been added
+		for (auto&& system : m_systems)
+		{
+			BitMaskSignature systemSignature = system->GetSystemSignature();
+			if (updatedMask.IsNoLongerMatched(oldMask, systemSignature))
+			{
+				system->RemoveEntity(entity);
+			}
+		}
+	}
+
 	//! Get the component-manager for a given component-type. Example usage: _GetComponentManager<ComponentType>();
 	
 	template<typename ComponentType>
 	ComponentManager<ComponentType>* GameWorld::_GetComponentManager() const
 	{
-		const uint32_t family = GetComponentTypeIndex<ComponentType>();
+		const uint32_t componentIndex = GetComponentTypeIndex<ComponentType>();
 		LockNC();
-		if (family >= m_componentManagers.size())
+		if (componentIndex >= m_componentManagers.size())
 		{
-			m_componentManagers.resize(static_cast<size_t>(family) + 1);
+			m_componentManagers.resize(static_cast<size_t>(componentIndex) + 1);
 		}
-		auto& manager = m_componentManagers[family];
+		auto& manager = m_componentManagers[componentIndex];
 		if (!manager)
 		{
 			manager = std::move(MemoryManager::Make_shared<ComponentManager<ComponentType>>());

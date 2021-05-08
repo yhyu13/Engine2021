@@ -147,6 +147,9 @@ namespace longmarch
 		*/
 		EntityDecorator GenerateEntity3DNoCollision(EntityType type, bool active, bool add_to_root);
 
+		//! Check if entity is valid and exists in this gameworld
+		bool HasEntity(const Entity& entity) const;
+
 		//! Helper method that links an entity to a new parent, remove older parent as well.
 		void AddChildHelper(Entity parent, Entity child);
 
@@ -234,11 +237,15 @@ namespace longmarch
 		//! Call InitSystem before InitScene
 		void InitScene(const fs::path& scene_file);
 
-		//! Helper function for adding/removing entity from component system
-		void _UpdateEntityForAllComponentSystems(const Entity& entity, BitMaskSignature& oldMask);
-
 		//! Helper method for pareach
 		void _ParEach2(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split = -1) const;
+
+		//! Helper function for adding/removing entity from component system
+		template<typename ComponentType>
+		void _TryAddEntityForAllComponentSystems(const Entity& entity);
+
+		template<typename ComponentType>
+		void _TryRemoveEntityForAllComponentSystems(const Entity& entity);
 
 		//! Get the component-manager for a given component-type. Example usage: _GetComponentManager<ComponentType>();
 		template<typename ComponentType>

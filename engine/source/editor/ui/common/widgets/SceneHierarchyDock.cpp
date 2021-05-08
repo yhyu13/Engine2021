@@ -69,6 +69,7 @@ void longmarch::SceneHierarchyDock::Render()
 							auto e_type = ObjectFactory::s_instance->GetEntityTypeFromName(list_char_ptr[selected_entity_type]);
 							auto e = GameWorld::GetCurrent()->GenerateEntity3DNoCollision(e_type, true, false);
 							GameWorld::GetCurrent()->AddChildHelper(entity_0, e);
+							m_addEntityPopup = []() {};
 						}
 						ImGui::SameLine();
 						if (ImGui::Button("Cancel", ImVec2(80, 0)))
@@ -103,23 +104,27 @@ void longmarch::SceneHierarchyDock::Render()
 
 					if (ImGui::BeginPopupModal("RemoveEntityTypePopup", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize))
 					{
-						std::string name(Str(entity_0));
 						if (auto nameCom = GameWorld::GetCurrent()->GetComponent<IDNameCom>(entity_0); nameCom.Valid())
 						{
-							name = nameCom->GetUniqueName();
+							ImGui::Text(Str("Are you sure to remove: " + nameCom->GetName() + "(" + nameCom->GetUniqueName() + ")?").c_str());
+							if (ImGui::Button("Yes", ImVec2(80, 0)))
+							{
+								auto queue = EventQueue<EngineEventType>::GetInstance();
+								auto e = MemoryManager::Make_shared<EngineGCRecursiveEvent>(EntityDecorator{ entity_0 , GameWorld::GetCurrent() });
+								queue->Publish(e);
+								m_PerEntitySelectionMask.erase(entity_0);
+								m_addEntityPopup = []() {};
+							}
+							ImGui::SameLine();
+							if (ImGui::Button("Cancel", ImVec2(80, 0)))
+							{
+								ImGui::CloseCurrentPopup();
+								m_addEntityPopup = []() {};
+							}
 						}
-						ImGui::Text(Str("Are you sure to remove: " + name + " ?").c_str());
-						if (ImGui::Button("Yes", ImVec2(80, 0)))
+						else
 						{
-							auto queue = EventQueue<EngineEventType>::GetInstance();
-							auto e = MemoryManager::Make_shared<EngineGCRecursiveEvent>(EntityDecorator{ entity_0 , GameWorld::GetCurrent() });
-							queue->Publish(e);
-						}
-						ImGui::SameLine();
-						if (ImGui::Button("Cancel", ImVec2(80, 0)))
-						{
-							ImGui::CloseCurrentPopup();
-							m_addEntityPopup = []() {};
+							ENGINE_EXCEPT(str2wstr(Str(entity_0)) + L" does not contain a IDName component but it should!");
 						}
 						ImGui::EndPopup();
 					}

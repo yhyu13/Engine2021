@@ -222,25 +222,6 @@ void longmarch::GameWorld::InitScene(const fs::path& scene_file)
 	ObjectFactory::s_instance->LoadGameWorldScene(scene_file, this);
 }
 
-//! Helper function for adding/removing entity from component system
-
-void longmarch::GameWorld::_UpdateEntityForAllComponentSystems(const Entity& entity, BitMaskSignature& oldMask)
-{
-	// Do not place thread lock here!
-	BitMaskSignature updatedMask = m_entityMasks[entity];
-	for (auto&& system : m_systems) {
-		BitMaskSignature systemSignature = system->GetSystemSignature();
-		if (updatedMask.IsNewMatch(oldMask, systemSignature))
-		{
-			system->AddEntity(entity);
-		}
-		else if (updatedMask.IsNoLongerMatched(oldMask, systemSignature))
-		{
-			system->RemoveEntity(entity);
-		}
-	}
-}
-
 void longmarch::GameWorld::InitSystemAndScene(const fs::path& _file)
 {
 	if (fs::exists(_file))
@@ -253,7 +234,7 @@ void longmarch::GameWorld::InitSystemAndScene(const fs::path& _file)
 
 void longmarch::GameWorld::Init() {
 	ENGINE_EXCEPT_IF(m_systems.empty(), L"Calling Init() on an empty GameWorld!");
-	for (auto&& system : m_systems)
+	for (auto& system : m_systems)
 	{
 		system->SetWorld(this);
 		system->Init();
@@ -263,7 +244,7 @@ void longmarch::GameWorld::Init() {
 void longmarch::GameWorld::Update(double frameTime)
 {
 	if (m_paused) frameTime = 0.0;
-	for (auto&& system : m_systems)
+	for (auto& system : m_systems)
 	{
 		system->Update(frameTime);
 	}
@@ -272,7 +253,7 @@ void longmarch::GameWorld::Update(double frameTime)
 void longmarch::GameWorld::Update2(double frameTime)
 {
 	if (m_paused) frameTime = 0.0;
-	for (auto&& system : m_systems)
+	for (auto& system : m_systems)
 	{
 		system->Update2(frameTime);
 	}
@@ -281,7 +262,7 @@ void longmarch::GameWorld::Update2(double frameTime)
 void longmarch::GameWorld::Update3(double frameTime)
 {
 	if (m_paused) frameTime = 0.0;
-	for (auto&& system : m_systems)
+	for (auto& system : m_systems)
 	{
 		system->Update3(frameTime);
 	}
@@ -314,7 +295,7 @@ void longmarch::GameWorld::MultiThreadJoin()
 void longmarch::GameWorld::PreRenderUpdate(double frameTime)
 {
 	if (m_paused) frameTime = 0.0;
-	for (auto&& system : m_systems)
+	for (auto& system : m_systems)
 	{
 		system->PreRenderUpdate(frameTime);
 	}
@@ -322,7 +303,7 @@ void longmarch::GameWorld::PreRenderUpdate(double frameTime)
 
 void longmarch::GameWorld::Render(double frameTime)
 {
-	for (auto&& system : m_systems)
+	for (auto& system : m_systems)
 	{
 		system->Render();
 	}
@@ -330,7 +311,7 @@ void longmarch::GameWorld::Render(double frameTime)
 
 void longmarch::GameWorld::Render2(double frameTime)
 {
-	for (auto&& system : m_systems)
+	for (auto& system : m_systems)
 	{
 		system->Render2();
 	}
@@ -339,7 +320,7 @@ void longmarch::GameWorld::Render2(double frameTime)
 void longmarch::GameWorld::PostRenderUpdate(double frameTime)
 {
 	if (m_paused) frameTime = 0.0;
-	for (auto&& system : m_systems)
+	for (auto& system : m_systems)
 	{
 		system->PostRenderUpdate(frameTime);
 	}
@@ -347,7 +328,7 @@ void longmarch::GameWorld::PostRenderUpdate(double frameTime)
 
 void longmarch::GameWorld::RenderUI()
 {
-	for (auto&& system : m_systems)
+	for (auto& system : m_systems)
 	{
 		system->RenderUI();
 	}
@@ -378,7 +359,7 @@ void longmarch::GameWorld::RemoveFromParentHelper(Entity e)
 
 void longmarch::GameWorld::RemoveAllEntities()
 {
-	for (auto&& system : m_systems)
+	for (auto& system : m_systems)
 	{
 		system->RemoveAllEntities();
 	}
@@ -424,6 +405,19 @@ EntityDecorator longmarch::GameWorld::GenerateEntity3DNoCollision(EntityType typ
 	return entity;
 }
 
+bool longmarch::GameWorld::HasEntity(const Entity& entity) const
+{
+	LOCK_GUARD_NC();
+	if (entity.Valid() && m_entityMasks.contains(entity))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 void longmarch::GameWorld::AddChildHelper(Entity parent, Entity child)
 {
 	RemoveFromParentHelper(child);
@@ -433,7 +427,8 @@ void longmarch::GameWorld::AddChildHelper(Entity parent, Entity child)
 	}
 }
 
-void longmarch::GameWorld::RegisterSystem(const std::shared_ptr<BaseComponentSystem>& system, const std::string& name) {
+void longmarch::GameWorld::RegisterSystem(const std::shared_ptr<BaseComponentSystem>& system, const std::string& name) 
+{
 	LOCK_GUARD_NC();
 	system->SetWorld(this);
 	m_systems.emplace_back(system);
@@ -476,7 +471,9 @@ const LongMarch_Vector<std::pair<std::string, std::shared_ptr<BaseComponentSyste
 
 void longmarch::GameWorld::RemoveEntity(const Entity& entity)
 {
+	LOCK_GUARD_NC();
 	m_entityManager->Destroy(entity);
+	m_entityMasks.erase(entity);
 }
 
 void longmarch::GameWorld::RemoveEntityAndComponents(const Entity& entity)
@@ -542,15 +539,22 @@ const LongMarch_Vector<BaseComponentInterface*> longmarch::GameWorld::GetAllComp
 void longmarch::GameWorld::RemoveAllComponent(const Entity& entity)
 {
 	LOCK_GUARD_NC();
-	BitMaskSignature oldMask = m_entityMasks[entity];
-	for (auto& family : m_entityMasks[entity].GetAllComponentIndex())
+	for (auto& componentIndex : m_entityMasks[entity].GetAllComponentIndex())
 	{
-		ENGINE_EXCEPT_IF(family >= m_componentManagers.size(), L"Entity " + str2wstr(Str(entity)) + L"is requesting all components before some component managers are initilaized!");
-		m_componentManagers[family]->RemoveComponentFromEntity(entity);
+		ENGINE_EXCEPT_IF(componentIndex >= m_componentManagers.size(), L"Entity " + str2wstr(Str(entity)) + L"is requesting all components before some component managers are initilaized!");
+		m_componentManagers[componentIndex]->RemoveComponentFromEntity(entity);
 	}
 	// Clear bit mask and remove entity from component systems
-	m_entityMasks[entity].Reset();
-	_UpdateEntityForAllComponentSystems(entity, oldMask);
+	auto& oldMask = m_entityMasks[entity];
+	for (auto& system : m_systems)
+	{
+		BitMaskSignature systemSignature = system->GetSystemSignature();
+		if (oldMask.IsAMatch(systemSignature))
+		{
+			system->RemoveEntity(entity);
+		}
+	}
+	oldMask.Reset();
 }
 
 void longmarch::GameWorld::ForEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func) const

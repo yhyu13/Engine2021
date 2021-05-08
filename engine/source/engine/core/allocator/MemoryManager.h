@@ -72,7 +72,7 @@ namespace longmarch
 			return new (Allocate(sizeof(T))) T(std::forward<Arguments>(args)...);
 #else
 			//DEBUG_PRINT("New : " + Str(typeid(T).name()) + " " + Str(sizeof(T)) + " " + Str(s_AllocatedSize));
-			return new T(parameters...);
+			return new T(std::forward<Arguments>(args)...);
 #endif // CUSTOM_ALLOCATOR
 		}
 

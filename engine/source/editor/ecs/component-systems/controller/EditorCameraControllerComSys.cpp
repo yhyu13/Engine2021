@@ -520,13 +520,13 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			Test Sol Lua5.4.0 Binding
 		*/
 		{
+			int x = 0;
 			sol::state lua;
 			lua.open_libraries(sol::lib::base);
-			int x = 0;
 			lua.set_function("beep", [&x] { ++x; DEBUG_PRINT("LUA is up!"); });
 			lua.script("beep()");
 			ASSERT(x == 1, "Lua function test failed!");
-			lua.script("print(\"LUA is up from LUA!!!!!!!!!!!!!!!!!!!!!!!!!!!!\")");
+			lua.script("print(\"LUA is up from LUA!!\")");
 		}
 		{
 			struct vars {
@@ -539,9 +539,10 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			ASSERT(lua.get<vars>("beep").boop == 1, "Lua value test failed!");
 		}
 		{
-			// Call multithread c++ function
-			sol::state lua;
+			// Lua function call multithread c++ function
 			std::atomic_int x = 0;
+			sol::state lua;
+			lua.open_libraries(sol::lib::base);
 			lua.set_function("beep", [&x] { 
 				std::thread ts[6];
 				for (auto& t : ts)
@@ -555,7 +556,117 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			});
 			lua.script("beep()");
 			ASSERT(x == 6, "Lua multithread test failed!");
-			lua.script("print(\"LUA calls multithreaded method from LUA!!!!!!!!!!!!!!!!!!!!!!!!!!!!\")");
+			lua.script("print(\"LUA calls multithreaded method from LUA!!\")");
+		}
+
+		{
+			// C++ threads call lua function in a critical section
+			sol::state lua;
+			lua.open_libraries();
+			lua["i"] = 0;
+			lua.script(R"(
+				function test()
+				i = i + 1
+				end
+				)"
+			);
+			std::mutex mutex;
+			std::thread ts[6];
+			for (auto& t : ts)
+			{
+				t = std::thread([&lua, &mutex] {
+					std::lock_guard<std::mutex> lock{ mutex };
+					// give it a try
+					lua.script("test()");
+					});
+			}
+			for (auto& t : ts)
+			{
+				t.join();
+			}
+
+			// check
+			int i = lua["i"];
+			ASSERT(i == 6, "Lua transfer test simple failed!");
+		}
+
+		{
+			// Transfer lua object within the same state (e.g. transfer local objects as global objects)
+			sol::state lua; 
+			lua.open_libraries();
+			sol::function transferred_into;
+			lua["i"] = 0;
+			lua["f"] = [&lua, &transferred_into](sol::object t, sol::this_state this_L) {
+				std::cout << "state of main     : " << (void*)lua.lua_state() << std::endl;
+				std::cout << "state of function : " << (void*)this_L.lua_state() << std::endl;
+				// pass original lua_State* (or sol::state/sol::state_view)
+				// transfers ownership from the state of "t",
+				// to the "lua" sol::state
+				transferred_into = sol::function(lua, t);
+			};
+			
+			auto t1 = std::thread([&lua] {
+				lua.script(R"(
+				function test()
+				co = coroutine.create(
+					function()
+						local g = function() i = i + 1 end
+						f(g)
+						g = nil
+						collectgarbage()
+					end
+				)
+				coroutine.resume(co)
+				co = nil
+				collectgarbage()
+				end
+				)"
+				);
+				// give it a try
+				lua.script("test()");
+				});
+			t1.join();
+
+			auto t2 = std::thread([&transferred_into] {
+				// call g in another thread
+				transferred_into();
+				});
+			t2.join();
+
+			// check
+			int i = lua["i"];
+			ASSERT(i == 1, "Lua transfer test main thread invoke failed!");
+		}
+
+		{
+			// Transfer lua variable between state
+			sol::state lua;
+			sol::state lua2;
+			lua.open_libraries();
+			lua["i"] = 0;
+			lua2["i"] = 0;
+			
+			auto t1 = std::thread([&lua] {
+				lua.script(R"(
+				function test()
+				i = i + 1
+				end
+				)"
+				);
+				// give it a try
+				lua.script("test()");
+				});
+			t1.join();
+
+			auto t2 = std::thread([&lua, &lua2] {
+				auto i = lua["i"];
+				lua2["i"] = i;
+				});
+			t2.join();
+
+			// check
+			int i = lua["i"];
+			ASSERT(i == 1, "Lua transfer test main thread invoke failed!");
 		}
 
 		/*

@@ -18,7 +18,7 @@ namespace longmarch
 		void SetParticleSystem(const std::shared_ptr<ParticleSystem3D>& particleSystem);
 		void Update(const double frametime, const PerspectiveCamera* camera);
 		//! Prepare to draw particles with a given view matrix, call before calling Draw()
-		void PrepareDrawWithViewMatrix(const Mat4& viewMatrix);
+		void PrepareDrawDataWithViewMatrix(const Mat4& viewMatrix);
 
 		void Draw();
 		void Draw(const std::function<void(const Renderer3D::ParticleInstanceDrawData&)>& drawFunc);

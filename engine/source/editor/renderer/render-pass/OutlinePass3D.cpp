@@ -87,7 +87,7 @@ void longmarch::OutlinePass::BeginRenderPass()
 				{
 					// TODO : outline particle, need to write a specialized shader
 					/*particle->SetRendering(scene->GetShouldDraw());
-					particle->PrepareDrawWithViewMatrix(camera->GetViewMatrix());
+					particle->PrepareDrawDataWithViewMatrix(camera->GetViewMatrix());
 					scene->Draw(particle.GetPtr());*/
 				}
 				else
@@ -171,7 +171,7 @@ void longmarch::OutlinePass::BeginRenderPass()
 				{
 					// TODO : outline particle, need to write a specialized shader
 					/*particle->SetRendering(scene->GetShouldDraw());
-					particle->PrepareDrawWithViewMatrix(camera->GetViewMatrix());
+					particle->PrepareDrawDataWithViewMatrix(camera->GetViewMatrix());
 					scene->Draw(particle.GetPtr());*/
 				}
 				else

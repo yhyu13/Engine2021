@@ -24,30 +24,29 @@ namespace longmarch
 		m_particleSystem->Update(frametime, camera->GetWorldPosition());
 	}
 
-	void Particle3DCom::PrepareDrawWithViewMatrix(const Mat4& viewMatrix)
+	void Particle3DCom::PrepareDrawDataWithViewMatrix(const Mat4& viewMatrix)
 	{
 		LOCK_GUARD2();
 		// Quite expensive matrix calculation on CPU
 		if (m_render)
 		{
 			m_instancedDataList.clear();
+			const auto& particles = m_particleSystem->GetParticles();
+			const auto& texture = m_particleSystem->GetTexture();
+
 			// Draw calls for particle systems
 			// Collect data for all particles in a map [texture, vector of particle instanced data]	
-			Renderer3D::ParticleInstanceData_CPU instanceData;
+			Renderer3D::ParticleInstanceData_CPU instanceData;			
+			instanceData.textureRows = texture->GetTextureRowCount();
+			instanceData.entity = m_this;
+			instanceData.Reserve(particles.size());
 			for (auto& particle : m_particleSystem->GetParticles())
 			{
 				instanceData.models.push_back(GetModelViewMatrix(particle, viewMatrix));
-
-				Vec4f textureOffsets(particle.m_currentTextureOffset.xy, particle.m_nextTextureOffset.xy);
-				instanceData.textureOffsets.push_back(textureOffsets);
-
+				instanceData.textureOffsets.push_back(Vec4f{ particle.m_currentTextureOffset.xy, particle.m_nextTextureOffset.xy });
 				instanceData.blendFactors.push_back(particle.m_blendFactor);
 			}
-			auto texture = m_particleSystem->GetTexture();
-			instanceData.textureRows = texture->GetTextureRowCount();
-			instanceData.entity = m_this;
-
-			m_instancedDataList.emplace_back(texture, instanceData);
+			m_instancedDataList.emplace_back(std::move(texture), std::move(instanceData));
 		}
 	}
 

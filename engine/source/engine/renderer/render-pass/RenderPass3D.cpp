@@ -105,7 +105,7 @@ void longmarch::RenderPass3D::RenderWithModeTransparent(Renderer3D::RenderObj_CP
 	}
 	if (isParticle)
 	{
-		particle->PrepareDrawWithViewMatrix(m_vfcParam.WorldSpaceToViewSpace);
+		particle->PrepareDrawDataWithViewMatrix(m_vfcParam.WorldSpaceToViewSpace);
 		scene->Draw(particle.GetPtr(), m_drawBind_Particle);
 	}
 	else

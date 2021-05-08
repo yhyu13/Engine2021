@@ -525,8 +525,37 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			int x = 0;
 			lua.set_function("beep", [&x] { ++x; DEBUG_PRINT("LUA is up!"); });
 			lua.script("beep()");
-			ASSERT(x == 1, "Lua test failed!");
+			ASSERT(x == 1, "Lua function test failed!");
 			lua.script("print(\"LUA is up from LUA!!!!!!!!!!!!!!!!!!!!!!!!!!!!\")");
+		}
+		{
+			struct vars {
+				int boop = 0;
+			};
+			sol::state lua;
+			lua.new_usertype<vars>("vars", "boop", &vars::boop);
+			lua.script("beep = vars.new()\n"
+				"beep.boop = 1");
+			ASSERT(lua.get<vars>("beep").boop == 1, "Lua value test failed!");
+		}
+		{
+			// Call multithread c++ function
+			sol::state lua;
+			std::atomic_int x = 0;
+			lua.set_function("beep", [&x] { 
+				std::thread ts[6];
+				for (auto& t : ts)
+				{
+					t = std::thread([&x] { ++x; });
+				}
+				for (auto& t : ts)
+				{
+					t.join();
+				}
+			});
+			lua.script("beep()");
+			ASSERT(x == 6, "Lua multithread test failed!");
+			lua.script("print(\"LUA calls multithreaded method from LUA!!!!!!!!!!!!!!!!!!!!!!!!!!!!\")");
 		}
 
 		/*

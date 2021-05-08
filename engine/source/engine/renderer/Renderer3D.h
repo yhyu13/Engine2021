@@ -93,6 +93,12 @@ namespace longmarch
 		constexpr static int PARTICLE_INSTANCED_DATA_LENGTH = 21;
 		struct ParticleInstanceData_CPU
 		{
+			void Reserve(size_t size)
+			{
+				models.reserve(size);
+				textureOffsets.reserve(size);
+				blendFactors.reserve(size);
+			}
 			LongMarch_Vector<Mat4> models; // model matrix for each particle in the particle-system
 			LongMarch_Vector<Vec4f> textureOffsets; // texture offsets for each particle in the particle-system
 			LongMarch_Vector<float> blendFactors; // blend factor for each particle in the particle-system

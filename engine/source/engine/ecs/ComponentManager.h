@@ -7,7 +7,7 @@
 
 namespace longmarch
 {
-#define RESERVE_SIZE 2048
+#define RESERVE_SIZE 1
 
 	class GameWorld;
 
@@ -20,7 +20,6 @@ namespace longmarch
 	public:
 		virtual BaseComponentInterface* GetBaseComponentByEntity(const Entity& entity) const = 0;
 		virtual bool RemoveComponentFromEntity(const Entity& entity) = 0;
-		virtual void ReorderComponentFromEntity(const Entity& entity) = 0;
 		virtual bool HasEntity(const Entity& entity) const = 0;
 		virtual std::shared_ptr<BaseComponentManager> Copy() const = 0;
 		virtual void SetWorld(GameWorld* world) const = 0; //!< Set the gameworld for all managed components
@@ -48,7 +47,7 @@ namespace longmarch
 			m_entities.reserve(RESERVE_SIZE);
 		}
 
-		//! Never store a pointer to a component because it might subject to change upon resize
+		//! ComponentType* is local and temporals because it might subject to change upon resize
 		ComponentType* GetComponentByEntity(const Entity& entity) const
 		{
 			LOCK_GUARD_NC();
@@ -120,24 +119,6 @@ namespace longmarch
 				return true;
 			}
 			return false;
-		}
-
-		virtual void ReorderComponentFromEntity(const Entity& entity) override
-		{
-			LOCK_GUARD_NC();
-			if (auto it = m_entitiesAndComponentIndexes.find(entity); it != m_entitiesAndComponentIndexes.end())
-			{
-				uint32_t index = it->second;
-
-				// First, make the last entity points the current index. 
-				std::swap(m_entitiesAndComponentIndexes[m_entities.back()], m_entitiesAndComponentIndexes[entity]);
-
-				// Move the component data from last index to the index of the component data
-				std::swap(m_components[index], m_components.back());
-
-				// Swap the current entity with the last entity
-				std::swap(m_entities[index], m_entities.back());
-			}
 		}
 
 		virtual std::shared_ptr<BaseComponentManager> Copy() const

@@ -44,7 +44,7 @@ BaseComponentInterface* longmarch::MainObjectFactory::AddComponentByName(const s
 		if (const auto& it = m.find(com_type); it != m.end())
 		{
 			/*
-				2, Modify this switch statement for new compoent systems
+				2, Modify this switch statement for new component
 			*/
 			switch (it->second)
 			{
@@ -54,7 +54,7 @@ BaseComponentInterface* longmarch::MainObjectFactory::AddComponentByName(const s
 				{
 					e.AddComponent(AIControllerCom(e));
 				}
-				com = e.GetComponent<AIControllerCom>();
+				com = e.GetComponent<AIControllerCom>().GetPtr();
 			}
 			break;
 			case 2:
@@ -63,7 +63,7 @@ BaseComponentInterface* longmarch::MainObjectFactory::AddComponentByName(const s
 				{
 					e.AddComponent(Particle3DCom(e));
 				}
-				com = e.GetComponent<Particle3DCom>();
+				com = e.GetComponent<Particle3DCom>().GetPtr();
 			}
 			break;
 			default:

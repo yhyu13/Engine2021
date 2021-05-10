@@ -81,7 +81,7 @@ const std::string longmarch::ObjectFactory::GetEntityNameFromType(EntityType e_t
 BaseComponentInterface* longmarch::ObjectFactory::AddComponentByName(const std::string& com_type, EntityDecorator entity) const
 {
 	/*
-	 1, Modify this map for new compoent
+	 1, Modify this map for new component
 	*/
 	static const std::unordered_map<std::string, int> m{
 	{"Transform3DCom", 1},
@@ -97,7 +97,7 @@ BaseComponentInterface* longmarch::ObjectFactory::AddComponentByName(const std::
 	if (const auto& it = m.find(com_type); it != m.end())
 	{
 		/*
-			2, Modify this switch statement for new compoent systems
+			2, Modify this switch statement for new component
 		*/
 		switch (it->second)
 		{

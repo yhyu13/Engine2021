@@ -4,7 +4,7 @@
 
 namespace longmarch
 {
-#define RESERVE_SIZE 2048
+#define RESERVE_SIZE 1
 	/**
 	 * @brief Entity managers takes care of assigning entity-ids to entities during their creations.
 	 *

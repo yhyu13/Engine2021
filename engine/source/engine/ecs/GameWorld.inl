@@ -17,12 +17,6 @@ namespace longmarch
 		component.SetWorld(this);
 		if(manager->AddComponentToEntity(entity, component))
 		{
-			// Reorder (swap back) component memory lcoation such that cache locality is preserved
-			for (auto& componentIndex : m_entityMasks[entity].GetAllComponentIndex())
-			{
-				ENGINE_EXCEPT_IF(componentIndex >= m_componentManagers.size(), L"Entity " + str2wstr(Str(entity)) + L"is requesting all components before some component managers are initilaized!");
-				m_componentManagers[componentIndex]->ReorderComponentFromEntity(entity);
-			}
 			_TryAddEntityForAllComponentSystems<ComponentType>(entity);
 		}
 	}
@@ -114,11 +108,6 @@ namespace longmarch
 			if (updatedMask.IsNewMatch(oldMask, systemSignature))
 			{
 				system->AddEntity(entity);
-			}
-			else if (oldMask.IsAMatch(systemSignature))
-			{
-				// Swap back entity such that access preserve cache locality
-				system->ReorderEntity(entity);
 			}
 		}
 	}

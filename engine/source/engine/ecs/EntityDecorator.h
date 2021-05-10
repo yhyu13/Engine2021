@@ -11,15 +11,6 @@ namespace longmarch
 	template<typename ComponentType>
 	class ComponentDecorator;
 
-	/**
-	 * @brief Entity decorators are the wrapper constructs for entities.
-	 *
-	 *	These decorators help in creating useful abstractions for
-	 *	entity specific operations.
-	 *
-	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
-	 */
-
 	struct EntityDecorator
 	{
 		EntityDecorator() = default;

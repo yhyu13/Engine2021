@@ -12,7 +12,7 @@ namespace longmarch
 #define  EARLY_RETURN(dt) {if (!dt) return; }
 #endif // !EARLY_RETURN
 
-#define RESERVE_SIZE 2048
+#define RESERVE_SIZE 1
 
 	/**
 	 * @brief Systems are the places where the actual game-code goes. The entities and
@@ -162,17 +162,6 @@ namespace longmarch
 			{
 				std::swap(m_bufferedRegisteredEntities[index], m_bufferedRegisteredEntities.back());
 				m_bufferedRegisteredEntities.pop_back();
-			}
-		}
-
-		//! Update entity on component changes, using swap back strategy
-		inline void ReorderEntity(const Entity& entity)
-		{
-			LOCK_GUARD_NC();
-			if (auto index = LongMarch_findFristIndex(m_bufferedRegisteredEntities, entity);
-				index != -1)
-			{
-				std::swap(m_bufferedRegisteredEntities[index], m_bufferedRegisteredEntities.back());
 			}
 		}
 

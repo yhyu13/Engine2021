@@ -71,7 +71,7 @@ namespace longmarch
 		ResourceManager<Scene3DNode>::ResourceHandle m_objDatasHandle{ nullptr };
 		SceneDataRef m_objDatasRef{ nullptr }; // Reference to the scene meshs and materials that this component would draw
 		
-		std::string m_shaderName = { "" }; // Name of a custom shader used to rendering
+		std::string m_shaderName{ "" }; // Name of a custom shader used to rendering
 
 		Entity m_this; // Bookkeeper of which entity this component belong to
 		

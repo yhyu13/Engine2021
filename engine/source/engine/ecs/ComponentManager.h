@@ -89,14 +89,6 @@ namespace longmarch
 			return static_cast<BaseComponentInterface*>(GetComponentByEntity(entity));
 		}
 
-		/*
-			Remove component from an entity.
-			Every time we remove an entity, we update the component list by moving
-			the last component-instance in the list to take the place of the removed
-			component instance.
-			Return true on removing an existing entity.
-			Return false on that entity does not exist
-		*/
 		virtual bool RemoveComponentFromEntity(const Entity& entity) override
 		{
 			LOCK_GUARD_NC();

@@ -5,7 +5,7 @@
 namespace longmarch
 {
 	/*
-	Data class that stores references to children entities
+	Data class that stores ID and name of a entity (which is used as a mean to indentification from UI/editor)
 	*/
 	struct CACHE_ALIGN16 IDNameCom final: BaseComponent<IDNameCom> 
 	{
@@ -22,7 +22,6 @@ namespace longmarch
 		
 	private:
 		Entity m_this;
-		std::string m_name = { "" };
-
+		std::string m_name{ "" };
 	};
 }

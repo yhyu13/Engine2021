@@ -158,27 +158,27 @@ namespace longmarch
 		virtual void Copy(BaseComponentInterface* other) override;
 
 	private:
-		Mat4 prev_parentTr = { Mat4(1.0f) };
-		Mat4 parentTr = { Mat4(1.0f) };
-		Quaternion prev_rtp_rotation = { Geommath::UnitQuat };	// Prev frame Global rotation
-		Quaternion rtp_rotation = { Geommath::UnitQuat };		// Global rotation
-		Vec3f parent_g_rotational_velocity = { Vec3f(0.0f) };			// Parent Global rotational velocity
-		Vec3f rtp_rotational_velocity = { Vec3f(0.0f) };			// Relative to parent rotational velocity
-		Vec3f l_rotational_velocity = { Vec3f(0.0f) };			// Local rotational velocity
-		Vec3f prev_rtp_pos = { Vec3f(0.0f) };					// Prev frame Location relative to parent parent 's frame
-		Vec3f rtp_pos = { Vec3f(0.0f) };						// Location relative to parent in parent 's frame
-		Vec3f rtp_velocity = { Vec3f(0.0f) };					// Velocity relative to parent in parent 's frame
-		Vec3f l_velocity = { Vec3f(0.0f) };						// Velocity relative to local frame
-		Vec3f parent_g_total_velocity = { Vec3f(0.0f) };		// Velocity relative to origin (root) in origin (root) 's frame
-		Vec3f rtp_scale = { Vec3f(1.0f) };
-		Vec3f l_scale = { Vec3f(1.0f) };						// Local scale does not pass onto children scene objects but apply on the current scene model
+		Mat4 prev_parentTr{ Mat4(1.0f) };
+		Mat4 parentTr{ Mat4(1.0f) };
+		Quaternion prev_rtp_rotation{ Geommath::UnitQuat };	// Prev frame Global rotation
+		Quaternion rtp_rotation{ Geommath::UnitQuat };		// Global rotation
+		Vec3f parent_g_rotational_velocity{ Vec3f(0.0f) };			// Parent Global rotational velocity
+		Vec3f rtp_rotational_velocity{ Vec3f(0.0f) };			// Relative to parent rotational velocity
+		Vec3f l_rotational_velocity{ Vec3f(0.0f) };			// Local rotational velocity
+		Vec3f prev_rtp_pos{ Vec3f(0.0f) };					// Prev frame Location relative to parent parent 's frame
+		Vec3f rtp_pos{ Vec3f(0.0f) };						// Location relative to parent in parent 's frame
+		Vec3f rtp_velocity{ Vec3f(0.0f) };					// Velocity relative to parent in parent 's frame
+		Vec3f l_velocity{ Vec3f(0.0f) };						// Velocity relative to local frame
+		Vec3f parent_g_total_velocity{ Vec3f(0.0f) };		// Velocity relative to origin (root) in origin (root) 's frame
+		Vec3f rtp_scale{ Vec3f(1.0f) };
+		Vec3f l_scale{ Vec3f(1.0f) };						// Local scale does not pass onto children scene objects but apply on the current scene model
 
 	public:
 		Entity m_this;
-		bool m_apply_parent_trans = { true };
-		bool m_apply_parent_rot = { true };
-		bool m_apply_parent_scale = { false };
-		float m_orientation = 0.0f;
+		bool m_apply_parent_trans{ true };
+		bool m_apply_parent_rot{ true };
+		bool m_apply_parent_scale{ false };
+		float m_orientation0{ .0f };
 
 #ifdef DEBUG_DRAW
 	public:

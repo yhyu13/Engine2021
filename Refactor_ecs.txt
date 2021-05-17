@@ -26,7 +26,7 @@ struct CACHE_ALIGN32 TypeNameCom final : BaseComponent<TypeNameCom>
 
 	void SetTypeName(cosnt char* typeName)
 	{
-		if (std::strlen(&m_type))
+		if (std::strlen(m_type))
 		{
 			throw exception;
 		}
@@ -42,18 +42,18 @@ struct CACHE_ALIGN32 TypeNameCom final : BaseComponent<TypeNameCom>
 
 	bool IsSameType(cosnt char* typeName) const
 	{
-		return strcmp(&m_type, typeName) == 0;
+		return strcmp(m_type, typeName) == 0;
 	}
 
 	bool IsBaseTypeOf(const char* typeName) const
 	{
-		if (std::strlen(&m_type) > std::strlen(typeName))
+		if (std::strlen(m_type) > std::strlen(typeName))
 		{
 			return false;
 		}
 		else
 		{
-			for (int i = 0; i < std::strlen(&m_type); ++i)
+			for (int i = 0; i < std::strlen(m_type); ++i)
 			{
 				if (typeName[i] != m_type[i])
 				{
@@ -66,7 +66,7 @@ struct CACHE_ALIGN32 TypeNameCom final : BaseComponent<TypeNameCom>
 
 	bool IsDerivedTypeOf(const char* typeName) const
 	{
-		if (std::strlen(&m_type) < std::strlen(typeName))
+		if (std::strlen(m_type) < std::strlen(typeName))
 		{
 			return false;
 		}

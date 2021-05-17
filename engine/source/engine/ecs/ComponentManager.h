@@ -66,7 +66,7 @@ namespace longmarch
 			if (!HasEntity(entity))
 			{
 				LOCK_GUARD_NC();
-				uint32_t index = m_components.size();
+				int index = m_components.size();
 				m_components.emplace_back(component);
 				m_entities.emplace_back(entity);
 				m_entitiesAndComponentIndexes.emplace(entity, index);
@@ -102,20 +102,17 @@ namespace longmarch
 			LOCK_GUARD_NC();
 			if (auto it = m_entitiesAndComponentIndexes.find(entity); it != m_entitiesAndComponentIndexes.end())
 			{
-				uint32_t index = it->second;
-
-				// First, make the last entity points the current index. And remove the current entity
-				m_entitiesAndComponentIndexes[m_entities.back()] = index;
+				auto index = it->second;
+				m_components.erase(m_components.begin() + index);
+				m_entities.erase(m_entities.begin() + index);
 				m_entitiesAndComponentIndexes.erase(it);
-
-				// Move the component data from last index to the index of the component data just removed
-				std::swap(m_components[index], m_components.back());
-				m_components.pop_back();
-
-				// Swap the current entity with the last entity
-				std::swap(m_entities[index], m_entities.back());
-				m_entities.pop_back();
-
+				for (auto i = index; i < m_entities.size(); ++i)
+				{
+					auto& e = m_entities[i];
+					auto& id = m_entitiesAndComponentIndexes[e];
+					--id;
+					ASSERT(id >= 0, "Bad remove ECS, index out of range!");
+				}
 				return true;
 			}
 			return false;
@@ -145,7 +142,7 @@ namespace longmarch
 		// Stores all entities indexed by the index of the component instance in m_components
 		LongMarch_Vector<Entity> m_entities;
 		// Maps the entity to the index of the component instance in the m_components
-		LongMarch_UnorderedMap_flat<Entity, uint32_t> m_entitiesAndComponentIndexes;
+		LongMarch_UnorderedMap_flat<Entity, int> m_entitiesAndComponentIndexes;
 	};
 
 #undef RESERVE_SIZE

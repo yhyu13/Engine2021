@@ -4347,7 +4347,7 @@ bool longmarch::Renderer3D::_BeginRenderBatch()
 		// Update instance buffer
 		auto ptr = &(instance_indices[0]);
 		auto size = instance_indices.size() * sizeof(uint32_t);
-		_multiDrawBuffer.MultiDraw_InstBO->UpdateBufferSubData(ptr, size, 0);
+		_multiDrawBuffer.MultiDraw_InstBO->UpdateBufferData(ptr, size);
 	}
 	{
 		// Update bone offset buffer

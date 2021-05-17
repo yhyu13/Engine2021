@@ -49,11 +49,10 @@ namespace longmarch
 		else
 		{
 			LongMarch_Vector<Entity> ret;
-			ret.reserve(128);
+			ret.reserve(64);
 			BitMaskSignature mask; 
 			mask.AddComponent<Components...>();
-			// entity mask does not gaurantee locallity of components of returned entities
-			// need implement entity instances
+
 			for (const auto& [entity, entity_mask] : m_entityMasks)
 			{
 				if (entity_mask.IsAMatch(mask))
@@ -61,6 +60,8 @@ namespace longmarch
 					ret.emplace_back(entity);
 				}
 			}
+			// Sorting entity to incremental order such that the 2nd predicate of ECS is fullfilled
+			std::sort(ret.begin(), ret.end(), std::less<Entity>());
 			return ret;
 		}
 	}

@@ -157,11 +157,11 @@ namespace longmarch
 		{
 			LOCK_GUARD_NC();
 			// Should use the same poping strategy as component manager to counter memory diffusion
-			if (auto index = LongMarch_findFristIndex(m_bufferedRegisteredEntities, entity); 
+			auto& vec = m_bufferedRegisteredEntities;
+			if (auto index = LongMarch_findFristIndex(vec, entity); 
 				index != -1)
 			{
-				std::swap(m_bufferedRegisteredEntities[index], m_bufferedRegisteredEntities.back());
-				m_bufferedRegisteredEntities.pop_back();
+				vec.erase(vec.begin() + index);
 			}
 		}
 

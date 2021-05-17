@@ -40,7 +40,10 @@ namespace longmarch
 				auto anima = e.GetComponent<Animation3DCom>();
 				auto scene = e.GetComponent<Scene3DCom>();
 				auto sceneNode = scene->GetSceneData(false);
-				anima->UpdateAnimation(dt, sceneNode.get());
+				if (sceneNode)
+				{
+					anima->UpdateAnimation(dt, sceneNode.get());
+				}
 			}
 			).wait();
 		}

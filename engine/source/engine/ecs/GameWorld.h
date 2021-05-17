@@ -258,7 +258,7 @@ namespace longmarch
 	private:
 		// E
 		std::shared_ptr<EntityManager> m_entityManager; //!< Contains all entities and their compoenent bit masks
-		LongMarch_UnorderedMap_Par<Entity, BitMaskSignature> m_entityMasks; //!< Contains all entities and their compoenent bit masks
+		LongMarch_UnorderedMap_Par_flat<Entity, BitMaskSignature> m_entityMasks; //!< Contains all entities and their compoenent bit masks
 		// C
 		mutable LongMarch_Vector<std::shared_ptr<BaseComponentManager>> m_componentManagers; //!< Contains all component managers which are indexed by component indices
 		// S

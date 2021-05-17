@@ -4,7 +4,6 @@
 
 namespace longmarch
 {
-#define RESERVE_SIZE 1
 	/**
 	 * @brief Entity managers takes care of assigning entity-ids to entities during their creations.
 	 *
@@ -23,21 +22,19 @@ namespace longmarch
 		{
 			LOCK_GUARD_NC();
 			auto& ids = m_typeToEntity[type];
-			ids.reserve(RESERVE_SIZE);
 			ids.push_back(++m_entityID);
 			return Entity(m_entityID, type);
 		}
 
-		//! Simply remove the entity from the entity manager, if you want to remove all components, consult GameWorld
+		// Should use the same poping strategy as component manager to counter memory diffusion
 		inline void Destroy(const Entity& entity)
 		{
 			LOCK_GUARD_NC();
-			auto& ids = m_typeToEntity[entity.m_type];
-			if (auto index = LongMarch_findFristIndex(ids, entity.m_id); 
+			auto& vec = m_typeToEntity[entity.m_type];
+			if (auto index = LongMarch_findFristIndex(vec, entity.m_id); 
 				index != -1)
 			{
-				std::swap(ids[index], ids.back());
-				ids.pop_back();
+				vec.erase(vec.begin() + index);
 			}
 		}
 
@@ -83,5 +80,4 @@ namespace longmarch
 		LongMarch_UnorderedMap_Par_node<EntityType, LongMarch_Vector<EntityID>> m_typeToEntity;
 		EntityID m_entityID{};
 	};
-#undef RESERVE_SIZE
 }

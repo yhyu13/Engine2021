@@ -430,7 +430,15 @@ void longmarch::Scene3DCom::ImGuiRender()
 			int index = LongMarch_findFristIndex(vs, meshName);
 			if (ImGui::Combo("Scene Mesh", &index, &vc[0], vc.size()))
 			{
-				Scene3DManager::GetInstance()->LoadSceneNodeToEntity(EntityDecorator{ m_this, m_world }, vs[index]);
+				const auto& name = vs[index];
+				if (name != "None")
+				{
+					Scene3DManager::GetInstance()->LoadSceneNodeToEntity(EntityDecorator{ m_this, m_world }, vs[index]);
+				}
+				else
+				{
+					m_objDatasRef = nullptr;
+				}
 			}
 		}
 		if (!m_objDatasRef)
@@ -518,7 +526,7 @@ void longmarch::Scene3DCom::ImGuiRender()
 							int index = LongMarch_findFristIndex(vs, texture_name);
 							if (ImGui::Combo(LongMarch_ImGuiHashTagName("Albedo", "alb_tex" + Str(data.get())), &index, &vc[0], vc.size()))
 							{
-								auto name = vs[index];
+								const auto& name = vs[index];
 								if (name != "None")
 								{
 									mat->SetTexture(name, name, Material::MAT_TEXTURE_TYPE::ALBEDO);
@@ -536,7 +544,7 @@ void longmarch::Scene3DCom::ImGuiRender()
 							int index = LongMarch_findFristIndex(vs, texture_name);
 							if (ImGui::Combo(LongMarch_ImGuiHashTagName("Normal", "nrm_tex" + Str(data.get())), &index, &vc[0], vc.size()))
 							{
-								auto name = vs[index];
+								const auto& name = vs[index];
 								if (name != "None")
 								{
 									mat->SetTexture(name, name, Material::MAT_TEXTURE_TYPE::NORMAL);
@@ -554,7 +562,7 @@ void longmarch::Scene3DCom::ImGuiRender()
 							int index = LongMarch_findFristIndex(vs, texture_name);
 							if (ImGui::Combo(LongMarch_ImGuiHashTagName("Metallic", "met_tex" + Str(data.get())), &index, &vc[0], vc.size()))
 							{
-								auto name = vs[index];
+								const auto& name = vs[index];
 								if (name != "None")
 								{
 									mat->SetTexture(name, name, Material::MAT_TEXTURE_TYPE::METALLIC);
@@ -572,7 +580,7 @@ void longmarch::Scene3DCom::ImGuiRender()
 							int index = LongMarch_findFristIndex(vs, texture_name);
 							if (ImGui::Combo(LongMarch_ImGuiHashTagName("Roughness", "roug_tex" + Str(data.get())), &index, &vc[0], vc.size()))
 							{
-								auto name = vs[index];
+								const auto& name = vs[index];
 								if (name != "None")
 								{
 									mat->SetTexture(name, name, Material::MAT_TEXTURE_TYPE::ROUGHNESS);
@@ -590,7 +598,7 @@ void longmarch::Scene3DCom::ImGuiRender()
 							int index = LongMarch_findFristIndex(vs, texture_name);
 							if (ImGui::Combo(LongMarch_ImGuiHashTagName("Ambient Occlusion", "ao_tex" + Str(data.get())), &index, &vc[0], vc.size()))
 							{
-								auto name = vs[index];
+								const auto& name = vs[index];
 								if (name != "None")
 								{
 									mat->SetTexture(name, name, Material::MAT_TEXTURE_TYPE::BACKEDAO);

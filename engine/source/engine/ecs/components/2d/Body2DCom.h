@@ -9,10 +9,9 @@
 namespace longmarch
 {
 	
-	struct CACHE_ALIGN32 Body2DCom final : BaseComponent<Body2DCom>
+	struct CACHE_ALIGN16 Body2DCom final : BaseComponent<Body2DCom>
 	{
 	public:
-
 		Body2DCom() = default;
 		Body2DCom(float posx, float posy)
 			:m_PosX(posx), m_PosY(posy), m_Mass(0), m_AccX(0), m_AccY(0),
@@ -133,22 +132,22 @@ namespace longmarch
 			m_VelY = VelY;
 		}
 
-		void SetVelocity(glm::vec2& velocity)
+		void SetVelocity(Vec2f& velocity)
 		{
 			m_VelX = velocity.x;
 			m_VelY = velocity.y;
 		}
 
-		void SetPos3D(const glm::vec3& pos)
+		void SetPos3D(const Vec3f& pos)
 		{
 			m_PosX = pos.x;
 			m_PosY = pos.y;
 			m_PosZ = pos.z;
 		}
 
-		const vec3& GetPos3D()
+		const Vec3f& GetPos3D()
 		{
-			return vec3(m_PosX, m_PosY, m_PosZ);
+			return Vec3f(m_PosX, m_PosY, m_PosZ);
 		}
 
 		void SetRestitution(float rest)
@@ -161,20 +160,20 @@ namespace longmarch
 			m_Mass = mass;
 		}
 
-		void SetPos(const vec2& v)
+		void SetPos(const Vec2f& v)
 		{
 			m_PosX = v.x;
 			m_PosY = v.y;
 		}
 
-		const vec2 GetPos() const
+		const Vec2f GetPos() const
 		{
-			return vec2(m_PosX, m_PosY);
+			return Vec2f(m_PosX, m_PosY);
 		}
 
-		const vec2 GetVelocity() const
+		const Vec2f GetVelocity() const
 		{
-			return vec2(m_VelX, m_VelY);
+			return Vec2f(m_VelX, m_VelY);
 		}
 
 		void Integrate(float dt)

@@ -115,7 +115,7 @@ namespace longmarch {
 		Renderer2D::AddBatch(m_Position, m_Scale, m_Rotation, glm::vec4(1.0f, 1.0f, 1.0f, m_alpha), m_VertexData, m_TexCoord, m_Texture2D);
 	}
 	void Sprite::SetSpritePosition(const glm::vec3& pos) { m_Position = pos; }
-	void Sprite::SetSpriteTexture(std::shared_ptr<Texture2D>& texture2D) {
+	void Sprite::SetSpriteTexture(const std::shared_ptr<Texture2D>& texture2D) {
 		m_Texture2D = texture2D;
 		m_SpriteWidth = GetTextureWidth();
 		m_SpriteHeight = GetTextureHeight();

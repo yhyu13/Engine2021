@@ -5,7 +5,8 @@
 
 namespace longmarch
 {
-	struct CACHE_ALIGN32 Transform2DCom final : BaseComponent<Transform2DCom> {
+	struct CACHE_ALIGN16 Transform2DCom final : BaseComponent<Transform2DCom> 
+	{
 		Transform2DCom()
 		{
 			pos = Vec3f(0);

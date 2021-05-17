@@ -1,0 +1,120 @@
+Refactor goal : implement Instance based ECS system
+
+0. Predicates
+
+1, For entity A, B in { all entities }, if (A < B), then for all components of the same type of A and B, address(Com_A) + N * sizeof(Com_A) = address(Com_B), where N is a samll finite integer.
+
+2, For S in { all systems }, any iteration on entities within the logic flow of S should be incremental, meaning for entity A in {a iteration of entities}, A < A_next.
+
+These are the Two Predicates of ECS
+
+1.
+In order to replace the current implementation of the struct Entity, which is
+
+struct CACHE_ALIGN8 Entity
+{
+	EntityID m_id{ 0 };
+	EntityType m_type{ 0 };
+}
+
+We need to implement a type component, which can be defined as the following:
+
+#define TYPE_NAME_MAX_LEN 32
+struct CACHE_ALIGN32 TypeNameCom final : BaseComponent<TypeNameCom>
+{
+	char m_type[TYPE_NAME_MAX_LEN] = "";
+
+	void SetTypeName(cosnt char* typeName)
+	{
+		if (std::strlen(&m_type))
+		{
+			throw exception;
+		}
+		if (std::strlen(typeName) <= TYPE_NAME_MAX_LEN)
+		{
+			strcpy(m_type, typeName);
+		}
+		else
+		{
+			throw exception;
+		}
+	}
+
+	bool IsSameType(cosnt char* typeName) const
+	{
+		return strcmp(&m_type, typeName) == 0;
+	}
+
+	bool IsBaseTypeOf(const char* typeName) const
+	{
+		if (std::strlen(&m_type) > std::strlen(typeName))
+		{
+			return false;
+		}
+		else
+		{
+			for (int i = 0; i < std::strlen(&m_type); ++i)
+			{
+				if (typeName[i] != m_type[i])
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+	}
+
+	bool IsDerivedTypeOf(const char* typeName) const
+	{
+		if (std::strlen(&m_type) < std::strlen(typeName))
+		{
+			return false;
+		}
+		else
+		{
+			for (int i = 0; i < std::strlen(typeName); ++i)
+			{
+				if (typeName[i] != m_type[i])
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+	}
+}
+#undef TYPE_NAME_MAX_LEN
+
+The new Entity struct should be simply
+
+struct CACHE_ALIGN8 Entity
+{
+	uint64_t m_id{ 0 };
+}
+
+Now, instead of using Entity to hold its type info, we need the GameWorld to hold the type info of each entity
+
+Entity GameWorld::GenerateEntityWithTypeName(const std::string& typeName)
+{
+	
+}
+
+void GameWorld::BindEntityWithTypeName(Entity e, const std::string& typeName)
+{
+	auto& vec = m_typeNameToEntitiesMap[typeName];
+	if (int index = LongMarch_lowerBoundFindIndex(vec, e); index != -1) [[unlikely]]
+	{
+		vec.insert(index, e);
+	}
+	else [[likely]]
+	{
+		vec.push_back(e);
+	}
+}
+
+Since we already manage entity type by gameworld, we simply transfer all functionality from EntityManager to GameWorld.
+
+2. Refactory insert erase mechanism to compliance with the predicate
+
+
+

@@ -6,10 +6,9 @@
 namespace longmarch 
 {
 	template<typename T>
-	class CACHE_ALIGN32 LongMarch_Bitset 
+	class CACHE_ALIGN16 LongMarch_Bitset 
 	{
 	public:
-
 		inline void Reset()
 		{
 			m_mask = m_mask2 = m_mask3 = m_mask4 = 0ull;

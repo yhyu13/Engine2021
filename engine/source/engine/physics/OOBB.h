@@ -4,7 +4,7 @@
 
 namespace longmarch
 {
-	class CACHE_ALIGN32 OOBB final: public Shape
+	class CACHE_ALIGN16 OOBB final: public Shape
 	{
 	public:
 		NONCOPYABLE(OOBB);

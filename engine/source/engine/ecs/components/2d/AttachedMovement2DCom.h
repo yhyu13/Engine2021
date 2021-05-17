@@ -1,27 +1,28 @@
 #pragma once
 
 #include "engine/ecs/BaseComponent.h"
+#include "engine/math/Geommath.h"
 
 namespace longmarch
 {
 	/* Data class of sprite */
-	struct CACHE_ALIGN32 AttachedMovementCom final : BaseComponent<AttachedMovementCom> {
-
+	struct CACHE_ALIGN16 AttachedMovementCom final : BaseComponent<AttachedMovementCom> 
+	{
 		AttachedMovementCom()
 		{
 			followPos = false;
 			followRot = false;
 			followVelocity = false;
-			rPos = vec2(0);
-			rVelocity = vec2(0);
+			rPos = Vec2f(0);
+			rVelocity = Vec2f(0);
 			rRot = 0;
 		}
 
 		bool followPos;
 		bool followRot;
 		bool followVelocity;
-		vec2 rPos;
-		vec2 rVelocity;
+		Vec2f rPos;
+		Vec2f rVelocity;
 		float rRot;
 	};
 }

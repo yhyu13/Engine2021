@@ -6,8 +6,8 @@
 namespace longmarch
 {
 	/* Data class of sprite */
-	struct CACHE_ALIGN32 ParticleCom : BaseComponent<ParticleCom> {
-
+	struct CACHE_ALIGN16 ParticleCom : BaseComponent<ParticleCom> 
+	{
 		ParticleCom()
 			:
 			m_ParticleActive(true),

@@ -7,8 +7,8 @@ namespace longmarch
 	/*
 	Data class that stores references to children entities
 	*/
-	struct CACHE_ALIGN32 IDNameCom final: BaseComponent<IDNameCom> {
-
+	struct CACHE_ALIGN16 IDNameCom final: BaseComponent<IDNameCom> 
+	{
 		IDNameCom() = default;
 		explicit IDNameCom(const Entity& _this, const std::string& _name = "");
 		void SetName(const std::string& name);

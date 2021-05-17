@@ -19,7 +19,7 @@ namespace longmarch {
 		void DrawInternal(const glm::vec2& rect, const glm::vec2& texCoord, const glm::vec2& texCoordOffset);
 
 		void SetSpritePosition(const glm::vec3& pos);
-		void SetSpriteTexture(std::shared_ptr<Texture2D>& texture2D);
+		void SetSpriteTexture(const std::shared_ptr<Texture2D>& texture2D);
 
 		uint32_t GetTextureWidth() const;
 		uint32_t GetTextureHeight() const;

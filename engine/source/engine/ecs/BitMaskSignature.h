@@ -20,9 +20,9 @@ namespace longmarch {
 	 *
 	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
-	class CACHE_ALIGN32 BitMaskSignature {
+	class CACHE_ALIGN16 BitMaskSignature 
+	{
 	public:
-
 		inline void Reset()
 		{
 			m_mask = m_mask2 = m_mask3 = m_mask4 = 0ull;

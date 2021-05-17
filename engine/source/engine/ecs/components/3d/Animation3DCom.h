@@ -7,7 +7,7 @@
 namespace longmarch
 {
 	//! Data class that stores references to the current animation and maintain an animation state map
-	struct CACHE_ALIGN32 Animation3DCom final : BaseComponent<Animation3DCom>
+	struct CACHE_ALIGN16 Animation3DCom final : BaseComponent<Animation3DCom>
 	{
 	public:
 		struct AnimationSetting

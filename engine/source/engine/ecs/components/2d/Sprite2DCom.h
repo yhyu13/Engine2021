@@ -1,13 +1,15 @@
 #pragma once
 
 #include "engine/ecs/BaseComponent.h"
-#include "engine/allocator/ResouceManager.h"
+#include "engine/core/allocator/MemoryManager.h"
+#include "engine/core/asset-manager/ResourceManager.h"
 #include "engine/renderer/Sprite.h"
 
 namespace longmarch
 {
 	/* Data class of sprite */
-	struct CACHE_ALIGN32 Sprite2DCom final : BaseComponent<Sprite2DCom>{
+	struct CACHE_ALIGN16 Sprite2DCom final : BaseComponent<Sprite2DCom>
+	{
 		Sprite2DCom()
 		{
 			m_sprite = MemoryManager::Make_shared<Sprite>();
@@ -20,7 +22,7 @@ namespace longmarch
 
 		void SetTexture(const std::string & name)
 		{
-			m_sprite->SetSpriteTexture(ResourceManager<Texture2D>::GetInstance()->Get(name));
+			m_sprite->SetSpriteTexture(ResourceManager<Texture2D>::GetInstance()->TryGet(name)->TryGet());
 			m_name = name;
 		}
 

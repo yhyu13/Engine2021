@@ -140,19 +140,19 @@ namespace longmarch {
 		}
 
 		// return true if old mask does not contain all 1s in target but this mask does
-		inline bool IsNewMatch(BitMaskSignature& oldMask, BitMaskSignature& target) const noexcept 
+		inline bool IsNewMatch(const BitMaskSignature& oldMask, const BitMaskSignature& target) const noexcept
 		{
 			return !oldMask.IsAMatch(target) && this->IsAMatch(target);
 		}
 
 		// return true if old mask does contain all 1s in target but this mask does not
-		inline bool IsNoLongerMatched(BitMaskSignature& oldMask, BitMaskSignature& target) const noexcept 
+		inline bool IsNoLongerMatched(const BitMaskSignature& oldMask, const BitMaskSignature& target) const noexcept
 		{
 			return oldMask.IsAMatch(target) && !this->IsAMatch(target);
 		}
 
 		// return true if this mask contain all 1s in target
-		inline bool IsAMatch(BitMaskSignature& target) const noexcept 
+		inline bool IsAMatch(const BitMaskSignature& target) const noexcept 
 		{
 			return
 				((m_mask & target.m_mask) == target.m_mask)

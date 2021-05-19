@@ -153,19 +153,19 @@ namespace longmarch
 		}
 
 		// return true if old mask does not contain all 1s in target but this mask does
-		inline bool IsNewMatch(LongMarch_Bitset& oldMask, LongMarch_Bitset& target) const noexcept 
+		inline bool IsNewMatch(const LongMarch_Bitset& oldMask, const LongMarch_Bitset& target) const noexcept
 		{
 			return !oldMask.IsAMatch(target) && this->IsAMatch(target);
 		}
 
 		// return true if old mask does contain all 1s in target but this mask does not
-		inline bool IsNoLongerMatched(LongMarch_Bitset& oldMask, LongMarch_Bitset& target) const noexcept 
+		inline bool IsNoLongerMatched(const LongMarch_Bitset& oldMask, const LongMarch_Bitset& target) const noexcept
 		{
 			return oldMask.IsAMatch(target) && !this->IsAMatch(target);
 		}
 
 		// return true if this mask contain all 1s in target
-		inline bool IsAMatch(LongMarch_Bitset& target) const noexcept 
+		inline bool IsAMatch(const LongMarch_Bitset& target) const noexcept
 		{
 			return
 				((m_mask & target.m_mask) == target.m_mask)

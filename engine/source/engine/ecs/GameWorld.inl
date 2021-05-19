@@ -61,14 +61,6 @@ namespace longmarch
 				}
 			}
 
-			//for (const auto& [entity, entity_mask] : m_entityMaskMap)
-			//{
-			//	if (entity_mask.IsAMatch(mask))
-			//	{
-			//		ret.emplace_back(entity);
-			//	}
-			//}
-			// 
 			// Sorting entity to incremental order such that the 2nd predicate of ECS is fullfilled
 			std::sort(ret.begin(), ret.end(), std::less<Entity>());
 			return ret;
@@ -76,7 +68,6 @@ namespace longmarch
 	}
 
 	//! Unity ECS like for each function
-
 	template<class ...Components>
 	inline void GameWorld::ForEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func) const
 	{
@@ -88,7 +79,6 @@ namespace longmarch
 	}
 
 	//! Unity ECS like for each function (single worker thread), func is moved
-
 	template<class ...Components>
 	[[nodiscard]]
 	inline auto GameWorld::BackEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func) const
@@ -116,10 +106,9 @@ namespace longmarch
 		LongMarch_EraseRemove(m_maskEntityVecMap[oldMask], entity);
 		m_maskEntityVecMap[updatedMask].push_back(entity);
 		// Update all system
-		for (auto&& system : m_systems) 
+		for (auto& system : m_systems) 
 		{
-			BitMaskSignature systemSignature = system->GetSystemSignature();
-			if (updatedMask.IsNewMatch(oldMask, systemSignature))
+			if (updatedMask.IsNewMatch(oldMask, system->GetSystemSignature()))
 			{
 				system->AddEntity(entity);
 			}
@@ -137,10 +126,9 @@ namespace longmarch
 		LongMarch_EraseRemove(m_maskEntityVecMap[oldMask], entity);
 		m_maskEntityVecMap[updatedMask].push_back(entity);
 		// Update all system
-		for (auto&& system : m_systems)
+		for (auto& system : m_systems)
 		{
-			BitMaskSignature systemSignature = system->GetSystemSignature();
-			if (updatedMask.IsNoLongerMatched(oldMask, systemSignature))
+			if (updatedMask.IsNoLongerMatched(oldMask, system->GetSystemSignature()))
 			{
 				system->RemoveEntity(entity);
 			}

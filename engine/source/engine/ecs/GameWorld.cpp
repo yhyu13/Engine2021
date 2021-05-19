@@ -559,7 +559,7 @@ void longmarch::GameWorld::RemoveAllComponent(const Entity& entity)
 	auto& oldMask = m_entityMaskMap[entity];
 	for (auto& system : m_systems)
 	{
-		BitMaskSignature systemSignature = system->GetSystemSignature();
+		const auto& systemSignature = system->GetSystemSignature();
 		if (oldMask.IsAMatch(systemSignature))
 		{
 			system->RemoveEntity(entity);

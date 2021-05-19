@@ -265,7 +265,7 @@ namespace longmarch
 		// S
 		LongMarch_Vector<std::shared_ptr<BaseComponentSystem>> m_systems; //!< In order array of all systems
 		LongMarch_Vector<std::string> m_systemsName; //!< In order array of all names of systems
-		LongMarch_UnorderedMap_flat<std::string, std::shared_ptr<BaseComponentSystem>> m_systemsNameMap; //!< System LUT based on names, iterating over this container does not gaurantee in orderness
+		LongMarch_UnorderedMap_flat<std::string, std::shared_ptr<BaseComponentSystem>> m_systemsNameMap; //!< System LUT based on names, iterating over this container does not gaurantee orderness
 		// Misc
 		LongMarch_Vector<std::future<void>> m_jobs; //! Holds multithreaded job that are created in a instance of gameworld
 		std::string m_name; //£¡Name of the game world

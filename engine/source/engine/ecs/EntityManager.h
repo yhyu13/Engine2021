@@ -30,12 +30,19 @@ namespace longmarch
 		inline void Destroy(const Entity& entity)
 		{
 			LOCK_GUARD_NC();
-			auto& vec = m_typeToEntity[entity.m_type];
-			if (auto index = LongMarch_findFristIndex(vec, entity.m_id); 
-				index != -1)
-			{
-				vec.erase(vec.begin() + index);
-			}
+			LongMarch_EraseFirst(m_typeToEntity[entity.m_type], entity.m_id);
+		}
+
+		inline void RemoveAll()
+		{
+			LOCK_GUARD_NC();
+			m_typeToEntity.clear();
+			m_entityID = 0;
+		}
+
+		bool HasEntity(const Entity& entity) const
+		{
+			// TODO
 		}
 
 		inline const LongMarch_Vector<EntityID> GetAllEntityIDWithType(EntityType type) const
@@ -78,6 +85,6 @@ namespace longmarch
 
 	private:
 		LongMarch_UnorderedMap_Par_node<EntityType, LongMarch_Vector<EntityID>> m_typeToEntity;
-		EntityID m_entityID{};
+		EntityID m_entityID;
 	};
 }

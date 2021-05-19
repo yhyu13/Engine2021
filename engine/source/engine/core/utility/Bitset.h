@@ -60,8 +60,9 @@ namespace longmarch
 			return ret;
 		}
 
-		void AddIndex(T index) {
-			uint64_t com = (uint64_t)index;
+		void AddIndex(T index) 
+		{
+			uint64_t com = static_cast<uint64_t>(index);
 			if (com < 64ull)
 			{
 				m_mask |= (1ull << com);
@@ -84,15 +85,17 @@ namespace longmarch
 			}
 		}
 
-		void AddIndex(const LongMarch_Set<T>& sets) {
+		void AddIndex(const LongMarch_Set<T>& sets) 
+		{
 			for (auto& index : sets)
 			{
 				AddIndex(index);
 			}
 		}
 
-		void RemoveComponent(T index) {
-			uint64_t com = (uint64_t)index;
+		void RemoveComponent(T index) 
+		{
+			uint64_t com = static_cast<uint64_t>(index);
 			if (com < 64ull)
 			{
 				m_mask &= ~(1ull << com);
@@ -115,7 +118,8 @@ namespace longmarch
 			}
 		}
 
-		void RemoveIndex(const LongMarch_Set<T>& sets) {
+		void RemoveIndex(const LongMarch_Set<T>& sets) 
+		{
 			for (auto& index : sets)
 			{
 				RemoveComponent(index);
@@ -148,15 +152,21 @@ namespace longmarch
 			}
 		}
 
-		inline bool IsNewMatch(LongMarch_Bitset& oldMask, LongMarch_Bitset& target) const noexcept {
+		// return true if old mask does not contain all 1s in target but this mask does
+		inline bool IsNewMatch(LongMarch_Bitset& oldMask, LongMarch_Bitset& target) const noexcept 
+		{
 			return !oldMask.IsAMatch(target) && this->IsAMatch(target);
 		}
 
-		inline bool IsNoLongerMatched(LongMarch_Bitset& oldMask, LongMarch_Bitset& target) const noexcept {
+		// return true if old mask does contain all 1s in target but this mask does not
+		inline bool IsNoLongerMatched(LongMarch_Bitset& oldMask, LongMarch_Bitset& target) const noexcept 
+		{
 			return oldMask.IsAMatch(target) && !this->IsAMatch(target);
 		}
 
-		inline bool IsAMatch(LongMarch_Bitset& target) const noexcept {
+		// return true if this mask contain all 1s in target
+		inline bool IsAMatch(LongMarch_Bitset& target) const noexcept 
+		{
 			return
 				((m_mask & target.m_mask) == target.m_mask)
 				&& ((m_mask2 & target.m_mask2) == target.m_mask2)
@@ -164,14 +174,24 @@ namespace longmarch
 				&& ((m_mask4 & target.m_mask4) == target.m_mask4);
 		}
 
+		friend inline bool operator==(const LongMarch_Bitset& lhs, const LongMarch_Bitset& rhs)
+		{
+			return lhs.m_mask == rhs.m_mask && lhs.m_mask2 == rhs.m_mask2 && lhs.m_mask3 == rhs.m_mask3 && lhs.m_mask4 == rhs.m_mask4;
+		}
+
+		friend inline bool operator<(const LongMarch_Bitset& lhs, const LongMarch_Bitset& rhs)
+		{
+			return lhs.m_mask < rhs.m_mask || lhs.m_mask2 < rhs.m_mask2 || lhs.m_mask3 < rhs.m_mask3 || lhs.m_mask4 < rhs.m_mask4;
+		}
+
 	private:
 		/*
 			You could create arbitrary many masks that extend the total number of available components
 			256 should be enough.
 		*/
-		uint64_t m_mask = { 0ull };
-		uint64_t m_mask2 = { 0ull };
-		uint64_t m_mask3 = { 0ull };
-		uint64_t m_mask4 = { 0ull };
+		uint64_t m_mask{ 0ull };
+		uint64_t m_mask2{ 0ull };
+		uint64_t m_mask3{ 0ull };
+		uint64_t m_mask4{ 0ull };
 	};
 }

@@ -210,12 +210,19 @@ void longmarch::Animation3DCom::ImGuiRender()
 			const auto animationName = (m_animaRef) ? ResourceManager<Animation3D>::GetInstance()->GetName(m_animaRef) : "None";
 			auto vs = ResourceManager<Animation3D>::GetInstance()->GetAllNames();
 			vs.insert(vs.begin(), std::string("None"));
+			int index = MAX(LongMarch_findFristIndex(vs, animationName), 0);
 			const auto vc = LongMarch_StrVec2ConstChar(vs);
-			int index = LongMarch_findFristIndex(vs, animationName);
 			if (ImGui::Combo("Animation collection", &index, &vc[0], vc.size()))
 			{
-				m_animaRef = ResourceManager<Animation3D>::GetInstance()->TryGet(vc[index])->Get();
-				m_animaRef->skeletonRef = ResourceManager<Skeleton>::GetInstance()->TryGet(vc[index])->Get();
+				if (const std::string& name = vs[index]; name != "None")
+				{
+					m_animaRef = ResourceManager<Animation3D>::GetInstance()->TryGet(name)->Get();
+					m_animaRef->skeletonRef = ResourceManager<Skeleton>::GetInstance()->TryGet(name)->Get();
+				}
+				else
+				{
+					m_animaRef = nullptr;
+				}
 			}
 		}
 		if (!m_animaRef)
@@ -227,11 +234,13 @@ void longmarch::Animation3DCom::ImGuiRender()
 		{
 			auto skeleton_name = ResourceManager<Skeleton>::GetInstance()->GetName(m_animaRef->skeletonRef);
 			auto vs = ResourceManager<Skeleton>::GetInstance()->GetAllNames();
-			const auto vc = LongMarch_StrVec2ConstChar(vs);
-			int index = LongMarch_findFristIndex(vs, skeleton_name);
-			if (index != -1)
+			if (int index = LongMarch_findFristIndex(vs, skeleton_name); index != -1)
 			{
-				ImGui::LabelText("Skeleton", vc[index]);
+				ImGui::LabelText("Skeleton", vs[index].c_str());
+			}
+			else
+			{
+				ImGui::LabelText("Skeleton", "None");
 			}
 		}
 		ImGui::Separator();
@@ -286,9 +295,9 @@ void longmarch::Animation3DCom::ImGuiRender()
 					m_IKResolverRef = MemoryManager::Make_shared<FABRIKResolver>(m_animaRef->skeletonRef);
 				}
 				{
-					auto vs = m_IKResolverRef->skeletonRef->GetAllBoneNames();
+					const auto vs = m_IKResolverRef->skeletonRef->GetAllBoneNames();
+					int index = MAX(LongMarch_findFristIndex(vs, debug.ee_bone_name), 0);
 					const auto vc = LongMarch_StrVec2ConstChar(vs);
-					int index = LongMarch_findFristIndex(vs, debug.ee_bone_name);
 					if (index == -1)
 					{
 						debug.ee_bone_name = vs[0];
@@ -365,8 +374,8 @@ void longmarch::Animation3DCom::ImGuiRender()
 		{
 			auto vs = m_animaRef->GetAllAnimationNames();
 			vs.insert(vs.begin(), std::string("None"));
+			int index = MAX(LongMarch_findFristIndex(vs, currentAnimName), 0);
 			const auto vc = LongMarch_StrVec2ConstChar(vs);
-			int index = LongMarch_findFristIndex(vs, currentAnimName);
 			if (ImGui::Combo("Current Animation", &index, &vc[0], vc.size()))
 			{
 				currentAnimName = vs[index];
@@ -375,4 +384,5 @@ void longmarch::Animation3DCom::ImGuiRender()
 		ImGui::Separator();
 		ImGui::TreePop();
 	}
+	ImGuiUtil::InlineHelpMarker("To preview an animation, please set the Current Animation.");
 }

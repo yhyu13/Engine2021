@@ -426,14 +426,13 @@ void longmarch::Scene3DCom::ImGuiRender()
 			const auto meshName = (m_objDatasRef) ? m_objDatasRef->Name() : "None";
 			auto vs = ResourceManager<Scene3DNode>::GetInstance()->GetAllNames();
 			vs.insert(vs.begin(), std::string("None"));
+			int index = MAX(LongMarch_findFristIndex(vs, meshName), 0);
 			const auto vc = LongMarch_StrVec2ConstChar(vs);
-			int index = LongMarch_findFristIndex(vs, meshName);
 			if (ImGui::Combo("Scene Mesh", &index, &vc[0], vc.size()))
 			{
-				const auto& name = vs[index];
-				if (name != "None")
+				if (const std::string& name = vs[index]; name != "None")
 				{
-					Scene3DManager::GetInstance()->LoadSceneNodeToEntity(EntityDecorator{ m_this, m_world }, vs[index]);
+					Scene3DManager::GetInstance()->LoadSceneNodeToEntity(EntityDecorator{ m_this, m_world }, name);
 				}
 				else
 				{
@@ -523,11 +522,10 @@ void longmarch::Scene3DCom::ImGuiRender()
 						const auto vc = LongMarch_StrVec2ConstChar(vs);
 						{
 							const auto texture_name = rm_texture2D->GetName(mat->textures.albedo_texture);
-							int index = LongMarch_findFristIndex(vs, texture_name);
+							int index = MAX(LongMarch_findFristIndex(vs, texture_name), 0);
 							if (ImGui::Combo(LongMarch_ImGuiHashTagName("Albedo", "alb_tex" + Str(data.get())), &index, &vc[0], vc.size()))
 							{
-								const auto& name = vs[index];
-								if (name != "None")
+								if (const std::string& name = vs[index]; name != "None")
 								{
 									mat->SetTexture(name, name, Material::MAT_TEXTURE_TYPE::ALBEDO);
 								}
@@ -541,11 +539,10 @@ void longmarch::Scene3DCom::ImGuiRender()
 						ImGui::Dummy(ImVec2(0, yoffset_item));
 						{
 							const auto texture_name = rm_texture2D->GetName(mat->textures.normal_texture);
-							int index = LongMarch_findFristIndex(vs, texture_name);
+							int index = MAX(LongMarch_findFristIndex(vs, texture_name), 0);
 							if (ImGui::Combo(LongMarch_ImGuiHashTagName("Normal", "nrm_tex" + Str(data.get())), &index, &vc[0], vc.size()))
 							{
-								const auto& name = vs[index];
-								if (name != "None")
+								if (const std::string& name = vs[index]; name != "None")
 								{
 									mat->SetTexture(name, name, Material::MAT_TEXTURE_TYPE::NORMAL);
 								}
@@ -559,11 +556,10 @@ void longmarch::Scene3DCom::ImGuiRender()
 						ImGui::Dummy(ImVec2(0, yoffset_item));
 						{
 							const auto texture_name = rm_texture2D->GetName(mat->textures.metallic_texture);
-							int index = LongMarch_findFristIndex(vs, texture_name);
+							int index = MAX(LongMarch_findFristIndex(vs, texture_name), 0);
 							if (ImGui::Combo(LongMarch_ImGuiHashTagName("Metallic", "met_tex" + Str(data.get())), &index, &vc[0], vc.size()))
 							{
-								const auto& name = vs[index];
-								if (name != "None")
+								if (const std::string& name = vs[index]; name != "None")
 								{
 									mat->SetTexture(name, name, Material::MAT_TEXTURE_TYPE::METALLIC);
 								}
@@ -577,11 +573,10 @@ void longmarch::Scene3DCom::ImGuiRender()
 						ImGui::Dummy(ImVec2(0, yoffset_item));
 						{
 							const auto texture_name = rm_texture2D->GetName(mat->textures.roughness_texture);
-							int index = LongMarch_findFristIndex(vs, texture_name);
+							int index = MAX(LongMarch_findFristIndex(vs, texture_name), 0);
 							if (ImGui::Combo(LongMarch_ImGuiHashTagName("Roughness", "roug_tex" + Str(data.get())), &index, &vc[0], vc.size()))
 							{
-								const auto& name = vs[index];
-								if (name != "None")
+								if (const std::string& name = vs[index]; name != "None")
 								{
 									mat->SetTexture(name, name, Material::MAT_TEXTURE_TYPE::ROUGHNESS);
 								}
@@ -595,11 +590,10 @@ void longmarch::Scene3DCom::ImGuiRender()
 						ImGui::Dummy(ImVec2(0, yoffset_item));
 						{
 							const auto texture_name = rm_texture2D->GetName(mat->textures.ao_texture);
-							int index = LongMarch_findFristIndex(vs, texture_name);
+							int index = MAX(LongMarch_findFristIndex(vs, texture_name), 0);
 							if (ImGui::Combo(LongMarch_ImGuiHashTagName("Ambient Occlusion", "ao_tex" + Str(data.get())), &index, &vc[0], vc.size()))
 							{
-								const auto& name = vs[index];
-								if (name != "None")
+								if (const std::string& name = vs[index]; name != "None")
 								{
 									mat->SetTexture(name, name, Material::MAT_TEXTURE_TYPE::BACKEDAO);
 								}

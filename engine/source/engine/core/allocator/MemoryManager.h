@@ -188,9 +188,9 @@ namespace longmarch
 			//DEBUG_PRINT("Free vector : " + Str(typeid(T).name()) + " " + Str(n) + " " + Str(sizeof(T)) + " " + Str(n * sizeof(T)) + " " + Str(MemoryManager::s_AllocatedSize));
 		}
 	};
-}
 
-template <class W, class U>
-inline bool operator==(const longmarch::Mallocator <W>&, const longmarch::Mallocator <U>&) { return true; }
-template <class W, class U>
-inline bool operator!=(const longmarch::Mallocator <W>&, const longmarch::Mallocator <U>&) { return false; }
+	template <class W, class U>
+	inline bool operator==(const longmarch::Mallocator<W>&, const longmarch::Mallocator<U>&) { return true; }
+	template <class W, class U>
+	inline bool operator!=(const longmarch::Mallocator<W>&, const longmarch::Mallocator<U>&) { return false; }
+}

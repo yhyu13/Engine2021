@@ -114,7 +114,10 @@ void GameWorld::BindEntityWithTypeName(Entity e, const std::string& typeName)
 
 Since we already manage entity type by gameworld, we simply transfer all functionality from EntityManager to GameWorld.
 
-2. Refactory insert erase mechanism to compliance with the predicate
+2. Refactory insert erase mechanism to compliance with the predicate(X)
+
+3. Refactor bitmask entity dual map such that query all entities with some defined components would be much faster
+Also, move bitmask from gameworld to entity manager
 
 
 

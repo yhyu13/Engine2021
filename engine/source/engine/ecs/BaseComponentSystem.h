@@ -157,12 +157,7 @@ namespace longmarch
 		{
 			LOCK_GUARD_NC();
 			// Should use the same poping strategy as component manager to counter memory diffusion
-			auto& vec = m_bufferedRegisteredEntities;
-			if (auto index = LongMarch_findFristIndex(vec, entity); 
-				index != -1)
-			{
-				vec.erase(vec.begin() + index);
-			}
+			LongMarch_EraseFirst(m_bufferedRegisteredEntities, entity);
 		}
 
 		inline BitMaskSignature& GetSystemSignature()

@@ -49,17 +49,26 @@ namespace longmarch
 		else
 		{
 			LongMarch_Vector<Entity> ret;
-			ret.reserve(64);
+			ret.reserve(128);
 			BitMaskSignature mask; 
 			mask.AddComponent<Components...>();
 
-			for (const auto& [entity, entity_mask] : m_entityMasks)
+			for (const auto& [entity_mask, entities] : m_maskEntityVecMap)
 			{
 				if (entity_mask.IsAMatch(mask))
 				{
-					ret.emplace_back(entity);
+					std::copy(entities.begin(), entities.end(), std::back_inserter(ret));
 				}
 			}
+
+			//for (const auto& [entity, entity_mask] : m_entityMaskMap)
+			//{
+			//	if (entity_mask.IsAMatch(mask))
+			//	{
+			//		ret.emplace_back(entity);
+			//	}
+			//}
+			// 
 			// Sorting entity to incremental order such that the 2nd predicate of ECS is fullfilled
 			std::sort(ret.begin(), ret.end(), std::less<Entity>());
 			return ret;
@@ -100,9 +109,13 @@ namespace longmarch
 	void longmarch::GameWorld::_TryAddEntityForAllComponentSystems(const Entity& entity)
 	{
 		LOCK_GUARD_NC();
-		BitMaskSignature& updatedMask = m_entityMasks[entity];
+		BitMaskSignature& updatedMask = m_entityMaskMap[entity];
 		BitMaskSignature oldMask = updatedMask;
 		updatedMask.AddComponent<ComponentType>(); // update the component-mask for the entity once a new component has been added
+		// Update mask to entity vector
+		LongMarch_EraseRemove(m_maskEntityVecMap[oldMask], entity);
+		m_maskEntityVecMap[updatedMask].push_back(entity);
+		// Update all system
 		for (auto&& system : m_systems) 
 		{
 			BitMaskSignature systemSignature = system->GetSystemSignature();
@@ -117,9 +130,13 @@ namespace longmarch
 	void longmarch::GameWorld::_TryRemoveEntityForAllComponentSystems(const Entity& entity)
 	{
 		LOCK_GUARD_NC();
-		BitMaskSignature& updatedMask = m_entityMasks[entity];
+		BitMaskSignature& updatedMask = m_entityMaskMap[entity];
 		BitMaskSignature oldMask = updatedMask;
 		updatedMask.RemoveComponent<ComponentType>(); // update the component-mask for the entity once a new component has been added
+		// Update mask to entity vector
+		LongMarch_EraseRemove(m_maskEntityVecMap[oldMask], entity);
+		m_maskEntityVecMap[updatedMask].push_back(entity);
+		// Update all system
 		for (auto&& system : m_systems)
 		{
 			BitMaskSignature systemSignature = system->GetSystemSignature();

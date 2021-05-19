@@ -47,15 +47,13 @@ namespace longmarch
 			return *this != Entity();
 		}
 
-		friend inline bool operator==(const Entity& lhs, const Entity& rhs) {
+		friend inline bool operator==(const Entity& lhs, const Entity& rhs) 
+		{
 			return lhs.m_id == rhs.m_id && lhs.m_type == rhs.m_type;
 		}
 
-		friend inline bool operator!=(const Entity& lhs, const Entity& rhs) {
-			return !(lhs.m_id == rhs.m_id && lhs.m_type == rhs.m_type);
-		}
-
-		friend inline bool operator<(const Entity& lhs, const Entity& rhs) {
+		friend inline bool operator<(const Entity& lhs, const Entity& rhs) 
+		{
 			return lhs.m_id < rhs.m_id;
 		}
 

@@ -258,21 +258,21 @@ namespace longmarch
 	private:
 		// E
 		std::shared_ptr<EntityManager> m_entityManager; //!< Contains all entities and their compoenent bit masks
-		LongMarch_UnorderedMap_Par_flat<Entity, BitMaskSignature> m_entityMasks; //!< Contains all entities and their compoenent bit masks
+		LongMarch_UnorderedMap_Par_flat<Entity, BitMaskSignature> m_entityMaskMap; //!< Contains all entities and their compoenent bit masks
+		LongMarch_Map<BitMaskSignature, LongMarch_Vector<Entity>> m_maskEntityVecMap; //!< Contains all entities and their compoenent bit masks
 		// C
 		mutable LongMarch_Vector<std::shared_ptr<BaseComponentManager>> m_componentManagers; //!< Contains all component managers which are indexed by component indices
 		// S
 		LongMarch_Vector<std::shared_ptr<BaseComponentSystem>> m_systems; //!< In order array of all systems
 		LongMarch_Vector<std::string> m_systemsName; //!< In order array of all names of systems
-		LongMarch_UnorderedMap<std::string, std::shared_ptr<BaseComponentSystem>> m_systemsMap; //!< System LUT based on names, iterating over this container does not gaurantee in orderness
+		LongMarch_UnorderedMap_flat<std::string, std::shared_ptr<BaseComponentSystem>> m_systemsNameMap; //!< System LUT based on names, iterating over this container does not gaurantee in orderness
 		// Misc
-		std::string m_name;
+		LongMarch_Vector<std::future<void>> m_jobs; //! Holds multithreaded job that are created in a instance of gameworld
+		std::string m_name; //£¡Name of the game world
 		bool m_paused = { false };
 
-		LongMarch_Vector<std::future<void>> m_jobs;
 	private:
-		// Async load/remove game worlds
-		inline static LongMarch_UnorderedMap<std::string, LongMarch_Unique_ptr<GameWorld>> allManagedWorlds;
+		inline static LongMarch_UnorderedMap_flat<std::string, LongMarch_Unique_ptr<GameWorld>> allManagedWorlds;
 		inline static GameWorld* currentWorld = { nullptr };
 
 		// Multithreaded update

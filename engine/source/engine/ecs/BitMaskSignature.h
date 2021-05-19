@@ -75,8 +75,9 @@ namespace longmarch {
 		}
 
 		template<typename ComponentType>
-		void AddComponent() {
-			uint64_t com = (uint64_t)GetComponentTypeIndex<ComponentType>();
+		void AddComponent() 
+		{
+			uint64_t com = static_cast<uint64_t>(GetComponentTypeIndex<ComponentType>());
 			if (com < 64ull)
 			{
 				m_mask |= (1ull << com);
@@ -106,8 +107,9 @@ namespace longmarch {
 		}
 
 		template<typename ComponentType>
-		void RemoveComponent() {
-			uint64_t com = (uint64_t)GetComponentTypeIndex<ComponentType>();
+		void RemoveComponent() 
+		{
+			uint64_t com = static_cast<uint64_t>(GetComponentTypeIndex<ComponentType>());
 			if (com < 64ull)
 			{
 				m_mask &= ~(1ull << com);
@@ -131,20 +133,27 @@ namespace longmarch {
 		}
 
 		template<typename C1, typename C2, typename... ComponentTypes>
-		void RemoveComponent() {
+		void RemoveComponent() 
+		{
 			RemoveComponent<C1>();
 			RemoveComponent<C2, ComponentTypes...>();
 		}
 
-		inline bool IsNewMatch(BitMaskSignature& oldMask, BitMaskSignature& target) const noexcept {
+		// return true if old mask does not contain all 1s in target but this mask does
+		inline bool IsNewMatch(BitMaskSignature& oldMask, BitMaskSignature& target) const noexcept 
+		{
 			return !oldMask.IsAMatch(target) && this->IsAMatch(target);
 		}
 
-		inline bool IsNoLongerMatched(BitMaskSignature& oldMask, BitMaskSignature& target) const noexcept {
+		// return true if old mask does contain all 1s in target but this mask does not
+		inline bool IsNoLongerMatched(BitMaskSignature& oldMask, BitMaskSignature& target) const noexcept 
+		{
 			return oldMask.IsAMatch(target) && !this->IsAMatch(target);
 		}
 
-		inline bool IsAMatch(BitMaskSignature& target) const noexcept {
+		// return true if this mask contain all 1s in target
+		inline bool IsAMatch(BitMaskSignature& target) const noexcept 
+		{
 			return
 				((m_mask & target.m_mask) == target.m_mask)
 				&& ((m_mask2 & target.m_mask2) == target.m_mask2)
@@ -152,14 +161,24 @@ namespace longmarch {
 				&& ((m_mask4 & target.m_mask4) == target.m_mask4);
 		}
 
+		friend inline bool operator==(const BitMaskSignature& lhs, const BitMaskSignature& rhs)
+		{
+			return lhs.m_mask == rhs.m_mask && lhs.m_mask2 == rhs.m_mask2 && lhs.m_mask3 == rhs.m_mask3 && lhs.m_mask4 == rhs.m_mask4;
+		}
+
+		friend inline bool operator<(const BitMaskSignature& lhs, const BitMaskSignature& rhs) 
+		{
+			return lhs.m_mask < rhs.m_mask || lhs.m_mask2 < rhs.m_mask2 || lhs.m_mask3 < rhs.m_mask3 || lhs.m_mask4 < rhs.m_mask4;
+		}
+
 	private:
 		/*
 			You could create arbitrary many masks that extend the total number of available components
 			256 should be enough.
 		*/
-		uint64_t m_mask = { 0ull };
-		uint64_t m_mask2 = { 0ull };
-		uint64_t m_mask3 = { 0ull };
-		uint64_t m_mask4 = { 0ull };
+		uint64_t m_mask{ 0ull };
+		uint64_t m_mask2{ 0ull };
+		uint64_t m_mask3{ 0ull };
+		uint64_t m_mask4{ 0ull };
 	};
 }

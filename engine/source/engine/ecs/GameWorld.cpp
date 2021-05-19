@@ -124,7 +124,8 @@ GameWorld* longmarch::GameWorld::Clone(const std::string& newName, const std::st
 		{
 			// E
 			newWorld->m_entityManager = from->m_entityManager->Copy();
-			newWorld->m_entityMasks = from->m_entityMasks;
+			newWorld->m_entityMaskMap = from->m_entityMaskMap;
+			newWorld->m_maskEntityVecMap = from->m_maskEntityVecMap;
 
 			// C
 			newWorld->m_componentManagers.clear();
@@ -150,10 +151,10 @@ GameWorld* longmarch::GameWorld::Clone(const std::string& newName, const std::st
 			}
 			ASSERT(newWorld->m_systems.size() == newWorld->m_systemsName.size(), "System pointer and name vector must have the same size!");
 
-			newWorld->m_systemsMap.clear();
+			newWorld->m_systemsNameMap.clear();
 			for (auto i(0u); i < newWorld->m_systemsName.size(); ++i)
 			{
-				newWorld->m_systemsMap[newWorld->m_systemsName[i]] = newWorld->m_systems[i];
+				newWorld->m_systemsNameMap[newWorld->m_systemsName[i]] = newWorld->m_systems[i];
 			}
 		}
 		from->UnlockNC();
@@ -171,8 +172,9 @@ GameWorld* longmarch::GameWorld::Clone(const std::string& newName, GameWorld* fr
 		{
 			// E
 			newWorld->m_entityManager = from->m_entityManager->Copy();
-			newWorld->m_entityMasks = from->m_entityMasks;
-
+			newWorld->m_entityMaskMap = from->m_entityMaskMap;
+			newWorld->m_maskEntityVecMap = from->m_maskEntityVecMap;
+			
 			// C
 			newWorld->m_componentManagers.clear();
 			newWorld->m_componentManagers.resize(from->m_componentManagers.size());
@@ -198,10 +200,10 @@ GameWorld* longmarch::GameWorld::Clone(const std::string& newName, GameWorld* fr
 			}
 			ASSERT(newWorld->m_systems.size() == newWorld->m_systemsName.size(), "System pointer and name vector must have the same size!");
 
-			newWorld->m_systemsMap.clear();
+			newWorld->m_systemsNameMap.clear();
 			for (auto i(0u); i < newWorld->m_systemsName.size(); ++i)
 			{
-				newWorld->m_systemsMap[newWorld->m_systemsName[i]] = newWorld->m_systems[i];
+				newWorld->m_systemsNameMap[newWorld->m_systemsName[i]] = newWorld->m_systems[i];
 			}
 		}
 		from->UnlockNC();
@@ -363,14 +365,15 @@ void longmarch::GameWorld::RemoveAllEntities()
 	{
 		system->RemoveAllEntities();
 	}
-	m_entityMasks.clear();
+	m_entityMaskMap.clear();
+	m_maskEntityVecMap.clear();
 }
 
 void longmarch::GameWorld::RemoveAllComponentSystems()
 {
 	m_systems.clear();
 	m_systemsName.clear();
-	m_systemsMap.clear();
+	m_systemsNameMap.clear();
 }
 
 EntityDecorator longmarch::GameWorld::GenerateEntity(EntityType type, bool active, bool add_to_root)
@@ -408,7 +411,7 @@ EntityDecorator longmarch::GameWorld::GenerateEntity3DNoCollision(EntityType typ
 bool longmarch::GameWorld::HasEntity(const Entity& entity) const
 {
 	LOCK_GUARD_NC();
-	if (entity.Valid() && m_entityMasks.contains(entity))
+	if (entity.Valid() && m_entityMaskMap.contains(entity))
 	{
 		return true;
 	}
@@ -433,12 +436,12 @@ void longmarch::GameWorld::RegisterSystem(const std::shared_ptr<BaseComponentSys
 	system->SetWorld(this);
 	m_systems.emplace_back(system);
 	m_systemsName.emplace_back(name);
-	m_systemsMap[name] = system;
+	m_systemsNameMap[name] = system;
 }
 
 BaseComponentSystem* longmarch::GameWorld::GetComponentSystem(const std::string& name)
 {
-	if (auto it = m_systemsMap.find(name); it != m_systemsMap.end())
+	if (auto it = m_systemsNameMap.find(name); it != m_systemsNameMap.end())
 	{
 		return it->second.get();
 	}
@@ -473,7 +476,15 @@ void longmarch::GameWorld::RemoveEntity(const Entity& entity)
 {
 	LOCK_GUARD_NC();
 	m_entityManager->Destroy(entity);
-	m_entityMasks.erase(entity);
+	m_entityMaskMap.erase(entity);
+	for (auto& [mask, entities] : m_maskEntityVecMap)
+	{
+		if (LongMarch_Contains(entities, entity))
+		{
+			LongMarch_EraseRemove(entities, entity);
+			break; // since only one bitmask can map to this entity, we are safe to early break;
+		}
+	}
 }
 
 void longmarch::GameWorld::RemoveEntityAndComponents(const Entity& entity)
@@ -528,7 +539,7 @@ const LongMarch_Vector<BaseComponentInterface*> longmarch::GameWorld::GetAllComp
 {
 	LOCK_GUARD_NC();
 	LongMarch_Vector<BaseComponentInterface*> ret;
-	for (auto& family : m_entityMasks.at(entity).GetAllComponentIndex())
+	for (auto& family : m_entityMaskMap.at(entity).GetAllComponentIndex())
 	{
 		ENGINE_EXCEPT_IF(family >= m_componentManagers.size(), L"Entity " + str2wstr(Str(entity)) + L"is requesting all components before some component managers are initilaized!");
 		ret.emplace_back(m_componentManagers[family]->GetBaseComponentByEntity(entity));
@@ -539,13 +550,13 @@ const LongMarch_Vector<BaseComponentInterface*> longmarch::GameWorld::GetAllComp
 void longmarch::GameWorld::RemoveAllComponent(const Entity& entity)
 {
 	LOCK_GUARD_NC();
-	for (auto& componentIndex : m_entityMasks[entity].GetAllComponentIndex())
+	for (auto& componentIndex : m_entityMaskMap.at(entity).GetAllComponentIndex())
 	{
 		ENGINE_EXCEPT_IF(componentIndex >= m_componentManagers.size(), L"Entity " + str2wstr(Str(entity)) + L"is requesting all components before some component managers are initilaized!");
 		m_componentManagers[componentIndex]->RemoveComponentFromEntity(entity);
 	}
 	// Clear bit mask and remove entity from component systems
-	auto& oldMask = m_entityMasks[entity];
+	auto& oldMask = m_entityMaskMap[entity];
 	for (auto& system : m_systems)
 	{
 		BitMaskSignature systemSignature = system->GetSystemSignature();
@@ -554,6 +565,8 @@ void longmarch::GameWorld::RemoveAllComponent(const Entity& entity)
 			system->RemoveEntity(entity);
 		}
 	}
+	// Update bitmask
+	LongMarch_EraseRemove(m_maskEntityVecMap[oldMask], entity);
 	oldMask.Reset();
 }
 

@@ -106,20 +106,21 @@ namespace longmarch
 		using Type = T;
 	};
 
-	template <typename T> int LongMarch_sgn(T val) 
+	template <typename T> 
+	inline int LongMarch_sgn(T val)
 	{
 		return (T(0) < val) - (val < T(0));
 	}
 
 	template<typename T1, typename T2, typename... Ts>
-	void LongMarch_HashCombine(std::size_t& s, const T1& v1, const T2& v2, const Ts&... vs) noexcept
+	inline void LongMarch_HashCombine(std::size_t& s, const T1& v1, const T2& v2, const Ts&... vs) noexcept
 	{
 		LongMarch_HashCombine(s, v1);
 		LongMarch_HashCombine(s, v2, vs...);
 	}
 
 	template <class T>
-	void LongMarch_HashCombine(std::size_t& s, const T& v) noexcept
+	inline void LongMarch_HashCombine(std::size_t& s, const T& v) noexcept
 	{
 		std::hash<T> h;
 		s ^= h(v) + 0x9e3779b9 + (s << 6) + (s >> 2);
@@ -132,7 +133,7 @@ namespace longmarch
 	}
 
 	template<typename T, typename C>
-	void LongMarch_Range(C& c, T value_low, T value_high, T stride)
+	inline void LongMarch_Range(C& c, T value_low, T value_high, T stride)
 	{
 		while (value_low <= value_high)
 		{
@@ -142,22 +143,25 @@ namespace longmarch
 	}
 
 	template <typename M, typename V>
-	constexpr void LongMarch_MapInv(const  M& m, V& v) {
-		for (typename M::const_iterator it = m.begin(); it != m.end(); ++it) {
+	inline void LongMarch_MapInv(const  M& m, V& v) {
+		for (typename M::const_iterator it = m.begin(); it != m.end(); ++it) 
+		{
 			v.emplace(it->second, it->first);
 		}
 	}
 
 	template <typename M, typename V>
-	constexpr void LongMarch_MapValueToVec(const  M& m, V& v) {
-		for (typename M::const_iterator it = m.begin(); it != m.end(); ++it) {
+	inline void LongMarch_MapValueToVec(const  M& m, V& v) {
+		for (typename M::const_iterator it = m.begin(); it != m.end(); ++it) 
+		{
 			v.push_back(it->second);
 		}
 	}
 
 	template <typename M, typename V>
-	constexpr void LongMarch_MapKeyToVec(const  M& m, V& v) {
-		for (typename M::const_iterator it = m.begin(); it != m.end(); ++it) {
+	inline void LongMarch_MapKeyToVec(const  M& m, V& v) {
+		for (typename M::const_iterator it = m.begin(); it != m.end(); ++it) 
+		{
 			v.push_back(it->first);
 		}
 	}
@@ -170,24 +174,42 @@ namespace longmarch
 #endif
 
 	template<typename Func, typename T>
-	void LongMarch_ForEach(Func callback, std::initializer_list<std::vector<T>> list) {
-		for (auto& vec : list) {
+	void LongMarch_ForEach(Func callback, std::initializer_list<std::vector<T>> list) 
+	{
+		for (auto& vec : list) 
+		{
 			std::for_each(vec.begin(), vec.end(), callback);
 		}
 	}
 
 	template <typename TValue>
-	constexpr bool LongMarch_Contains(const std::vector<TValue>& c, const TValue& x)
+	inline bool LongMarch_Contains(const std::vector<TValue>& c, const TValue& x)
 	{
 		return std::find(c.begin(), c.end(), x) != c.end();
 	}
 
 	template <typename TValue>
-	constexpr int LongMarch_findFristIndex(const std::vector<TValue>& c, const TValue& x)
+	inline void LongMarch_EraseRemove(std::vector<TValue>& c, const TValue& x)
+	{
+		c.erase(std::remove(c.begin(), c.end(), x), c.end());
+	}
+
+	template <typename TValue>
+	inline int LongMarch_EraseFirst(std::vector<TValue>& c, const TValue& x)
+	{
+		int index = LongMarch_findFristIndex(c, x);
+		if (index != -1)
+		{
+			c.erase(c.begin() + index);
+		}
+		return index;
+	}
+
+	template <typename TValue>
+	inline int LongMarch_findFristIndex(const std::vector<TValue>& c, const TValue& x)
 	{
 		int index = -1;
-		auto it = std::find(c.begin(), c.end(), x);
-		if (it != c.end())
+		if (auto it = std::find(c.begin(), c.end(), x); it != c.end())
 		{
 			index = std::distance(c.begin(), it);
 		}
@@ -195,7 +217,7 @@ namespace longmarch
 	}
 
 	template <typename TValue>
-	constexpr const std::vector<uint32_t> LongMarch_findAllIndices(const std::vector<TValue>& c, const TValue& x, size_t _estimate_reserve = 64)
+	inline const std::vector<uint32_t> LongMarch_findAllIndices(const std::vector<TValue>& c, const TValue& x, size_t _estimate_reserve = 64)
 	{
 		std::vector<uint32_t> indices;
 		indices.reserve(_estimate_reserve);
@@ -212,7 +234,7 @@ namespace longmarch
 
 	//! Find the first index i such that x<=v[i]
 	template <typename TValue>
-	constexpr int LongMarch_lowerBoundFindIndex(std::vector<TValue> v, const TValue& x) 
+	inline int LongMarch_lowerBoundFindIndex(std::vector<TValue> v, const TValue& x)
 	{
 		auto it = std::lower_bound(v.begin(), v.end(), x);
 		if (it == v.end() || !(x <= (*it)))
@@ -227,7 +249,7 @@ namespace longmarch
 	}
 
 	__LongMarch_TRVIAL_TEMPLATE__
-		constexpr const std::vector<const char*> LongMarch_StrVec2ConstChar(const std::vector<std::string>& vs)
+		inline const std::vector<const char*> LongMarch_StrVec2ConstChar(const std::vector<std::string>& vs)
 	{
 		std::vector<const char*> vc;
 		std::transform(vs.begin(), vs.end(), std::back_inserter(vc), [](const std::string& s)->const char* {return s.c_str(); });
@@ -244,24 +266,42 @@ namespace longmarch
 	using LongMarch_Vector = std::vector<T, longmarch::Mallocator<T>>;
 
 	template<typename Func, typename T>
-	void LongMarch_ForEach(Func callback, std::initializer_list<LongMarch_Vector<T>> list) {
-		for (auto& vec : list) {
+	inline void LongMarch_ForEach(Func callback, std::initializer_list<LongMarch_Vector<T>> list)
+	{
+		for (auto& vec : list) 
+		{
 			std::for_each(vec.begin(), vec.end(), callback);
 		}
 	}
 
 	template <typename TValue>
-	constexpr bool LongMarch_Contains(const LongMarch_Vector<TValue>& c, const TValue& x)
+	inline bool LongMarch_Contains(const LongMarch_Vector<TValue>& c, const TValue& x)
 	{
 		return std::find(c.begin(), c.end(), x) != c.end();
+	}
+
+	template <typename TValue>
+	inline void LongMarch_EraseRemove(LongMarch_Vector<TValue>& c, const TValue& x)
+	{
+		c.erase(std::remove(c.begin(), c.end(), x), c.end());
+	}
+
+	template <typename TValue>
+	inline int LongMarch_EraseFirst(LongMarch_Vector<TValue>& c, const TValue& x)
+	{
+		int index = LongMarch_findFristIndex(c, x);
+		if (index != -1)
+		{
+			c.erase(c.begin() + index);
+		}
+		return index;
 	}
 
 	template <typename TValue>
 	inline int LongMarch_findFristIndex(const LongMarch_Vector<TValue>& c, const TValue& x)
 	{
 		int index = -1;
-		auto it = std::find(c.begin(), c.end(), x);
-		if (it != c.end())
+		if (auto it = std::find(c.begin(), c.end(), x); it != c.end())
 		{
 			index = std::distance(c.begin(), it);
 		}
@@ -286,7 +326,7 @@ namespace longmarch
 
 	//! Find the first index i such that x<=v[i]
 	template <typename TValue>
-	constexpr int LongMarch_lowerBoundFindIndex(LongMarch_Vector<TValue> v, const TValue& x) 
+	inline int LongMarch_lowerBoundFindIndex(LongMarch_Vector<TValue> v, const TValue& x)
 	{
 		auto it = std::lower_bound(v.begin(), v.end(), x);
 		if (it == v.end() || !(x<=(*it))) 

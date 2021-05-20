@@ -8,6 +8,7 @@
 #include "../EntityDecorator.h"
 
 #include "../components/ActiveCom.h"
+#include "../components/TypeNameCom.h"
 #include "../components/IDNameCom.h"
 #include "../components/ParentCom.h"
 #include "../components/ChildrenCom.h"

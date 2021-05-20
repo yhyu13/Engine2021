@@ -4,6 +4,7 @@
 #include "engine/ecs/components/ActiveCom.h"
 #include "engine/ecs/components/ParentCom.h"
 #include "engine/ecs/components/ChildrenCom.h"
+#include "engine/ecs/components/TypeNameCom.h"
 #include "engine/ecs/components/IDNameCom.h"
 #include "engine/ecs/components/3d/Scene3DCom.h"
 #include "engine/ecs/components/3d/Transform3DCom.h"
@@ -380,6 +381,7 @@ EntityDecorator longmarch::GameWorld::GenerateEntity(EntityType type, bool activ
 {
 	auto entity = EntityDecorator{ m_entityManager->Create(type), this };
 	entity.AddComponent(ActiveCom(active));
+	entity.AddComponent(TypeNameCom(EngineEntity::TypeNameMapInv[type]));
 	entity.AddComponent(IDNameCom(entity));
 	entity.AddComponent(ParentCom(entity));
 	entity.AddComponent(ChildrenCom(entity));

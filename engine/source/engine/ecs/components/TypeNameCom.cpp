@@ -115,7 +115,7 @@ void longmarch::TypeNameCom::ImGuiRender()
 	if (ImGui::TreeNode("Type Name"))
 	{
 		{
-			ImGui::Text(("Unique ID : " + std::string(GetTypeName())).c_str());
+			ImGui::Text(("Type Name : " + std::string(GetTypeName())).c_str());
 		}
 		ImGui::Separator();
 		ImGui::TreePop();

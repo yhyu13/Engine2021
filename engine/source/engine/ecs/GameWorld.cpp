@@ -413,14 +413,7 @@ EntityDecorator longmarch::GameWorld::GenerateEntity3DNoCollision(EntityType typ
 bool longmarch::GameWorld::HasEntity(const Entity& entity) const
 {
 	LOCK_GUARD_NC();
-	if (entity.Valid() && m_entityMaskMap.contains(entity))
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	return LongMarch_contains(m_entityMaskMap, entity);
 }
 
 void longmarch::GameWorld::AddChildHelper(Entity parent, Entity child)
@@ -541,10 +534,14 @@ const LongMarch_Vector<BaseComponentInterface*> longmarch::GameWorld::GetAllComp
 {
 	LOCK_GUARD_NC();
 	LongMarch_Vector<BaseComponentInterface*> ret;
-	for (auto& family : m_entityMaskMap.at(entity).GetAllComponentIndex())
+	if (auto it = m_entityMaskMap.find(entity); it != m_entityMaskMap.end())
 	{
-		ENGINE_EXCEPT_IF(family >= m_componentManagers.size(), L"Entity " + str2wstr(Str(entity)) + L"is requesting all components before some component managers are initilaized!");
-		ret.emplace_back(m_componentManagers[family]->GetBaseComponentByEntity(entity));
+		const auto& bitSignature = it->second;
+		for (auto& family : bitSignature.GetAllComponentIndex())
+		{
+			ENGINE_EXCEPT_IF(family >= m_componentManagers.size(), L"Entity " + str2wstr(Str(entity)) + L"is requesting all components before some component managers are initilaized!");
+			ret.emplace_back(m_componentManagers[family]->GetBaseComponentByEntity(entity));
+		}
 	}
 	return ret;
 }
@@ -552,24 +549,26 @@ const LongMarch_Vector<BaseComponentInterface*> longmarch::GameWorld::GetAllComp
 void longmarch::GameWorld::RemoveAllComponent(const Entity& entity)
 {
 	LOCK_GUARD_NC();
-	for (auto& componentIndex : m_entityMaskMap.at(entity).GetAllComponentIndex())
+	if (auto it = m_entityMaskMap.find(entity); it != m_entityMaskMap.end())
 	{
-		ENGINE_EXCEPT_IF(componentIndex >= m_componentManagers.size(), L"Entity " + str2wstr(Str(entity)) + L"is requesting all components before some component managers are initilaized!");
-		m_componentManagers[componentIndex]->RemoveComponentFromEntity(entity);
-	}
-	// Clear bit mask and remove entity from component systems
-	auto& oldMask = m_entityMaskMap[entity];
-	for (auto& system : m_systems)
-	{
-		const auto& systemSignature = system->GetSystemSignature();
-		if (oldMask.IsAMatch(systemSignature))
+		auto& bitSignature = it->second;
+		for (auto& componentIndex : bitSignature.GetAllComponentIndex())
 		{
-			system->RemoveEntity(entity);
+			ENGINE_EXCEPT_IF(componentIndex >= m_componentManagers.size(), L"Entity " + str2wstr(Str(entity)) + L"is requesting all components before some component managers are initilaized!");
+			m_componentManagers[componentIndex]->RemoveComponentFromEntity(entity);
 		}
+		// Clear bit mask and remove entity from component systems
+		for (auto& system : m_systems)
+		{
+			if (bitSignature.IsAMatch(system->GetSystemSignature()))
+			{
+				system->RemoveEntity(entity);
+			}
+		}
+		// Update bitmask dual map
+		LongMarch_EraseRemove(m_maskEntityVecMap[bitSignature], entity);
+		bitSignature.Reset();
 	}
-	// Update bitmask
-	LongMarch_EraseRemove(m_maskEntityVecMap[oldMask], entity);
-	oldMask.Reset();
 }
 
 void longmarch::GameWorld::ForEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func) const

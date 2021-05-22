@@ -1,19 +1,20 @@
 #pragma once
 #include "GameWorld.h"
+#include "engine/ecs/components/ActiveCom.h"
 
 namespace longmarch
 {	
 	template<typename ComponentType>
 	inline bool GameWorld::HasComponent(const Entity& entity)  const
 	{
-		ComponentManager<ComponentType>* manager = _GetComponentManager<ComponentType>();
+		ComponentManager<ComponentType>* manager = this->_GetComponentManager<ComponentType>();
 		return manager->HasEntity(entity);
 	}
 
 	template<typename ComponentType>
 	inline void GameWorld::AddComponent(const Entity& entity, const ComponentType& component)
 	{
-		ComponentManager<ComponentType>* manager = _GetComponentManager<ComponentType>();
+		ComponentManager<ComponentType>* manager = this->_GetComponentManager<ComponentType>();
 		component.SetWorld(this);
 		if(manager->AddComponentToEntity(entity, component))
 		{
@@ -24,7 +25,7 @@ namespace longmarch
 	template<typename ComponentType>
 	inline void GameWorld::RemoveComponent(const Entity& entity)
 	{
-		ComponentManager<ComponentType>* manager = _GetComponentManager<ComponentType>();
+		ComponentManager<ComponentType>* manager = this->_GetComponentManager<ComponentType>();
 		if (manager->RemoveComponentFromEntity(entity))
 		{
 			_TryRemoveEntityForAllComponentSystems<ComponentType>(entity);
@@ -34,65 +35,27 @@ namespace longmarch
 	template<typename ComponentType>
 	inline ComponentDecorator<ComponentType> GameWorld::GetComponent(const Entity& entity) const
 	{
-		ComponentManager<ComponentType>* manager = _GetComponentManager<ComponentType>();
+		ComponentManager<ComponentType>* manager = this->_GetComponentManager<ComponentType>();
 		return ComponentDecorator<ComponentType>(EntityDecorator{ entity, this }, manager->GetComponentByEntity(entity));
 	}
 
-	template<class ...Components>
-	inline const LongMarch_Vector<Entity> GameWorld::EntityView() const
+	//! Get the component-manager for a given component-type. Example usage: _GetComponentManager<ComponentType>();
+	template<typename ComponentType>
+	ComponentManager<ComponentType>* GameWorld::_GetComponentManager() const
 	{
-		LOCK_GUARD_NC();
-		if constexpr (sizeof...(Components) == 0)
+		const uint32_t family = GetComponentTypeIndex<ComponentType>();
+		this->LockNC();
+		if (family >= m_componentManagers.size())
 		{
-			return LongMarch_Vector<Entity>();
+			m_componentManagers.resize(static_cast<size_t>(family) + 1);
 		}
-		else
+		auto& manager = m_componentManagers[family];
+		if (!manager)
 		{
-			LongMarch_Vector<Entity> ret;
-			ret.reserve(128);
-			BitMaskSignature mask; 
-			mask.AddComponent<Components...>();
-
-			for (const auto& [entity_mask, entities] : m_maskEntityVecMap)
-			{
-				if (entity_mask.IsAMatch(mask))
-				{
-					std::copy(entities.begin(), entities.end(), std::back_inserter(ret));
-				}
-			}
-
-			// Sorting entity to incremental order such that the 2nd predicate of ECS is fullfilled
-			std::sort(ret.begin(), ret.end(), std::less<Entity>());
-			return ret;
+			manager = std::move(MemoryManager::Make_shared<ComponentManager<ComponentType>>());
 		}
-	}
-
-	//! Unity ECS like for each function
-	template<class ...Components>
-	inline void GameWorld::ForEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func) const
-	{
-		for (const auto& e : EntityView<Components...>())
-		{
-			auto ed = EntityDecorator(e, this);
-			func(ed, *(ed.template GetComponent<Components>().GetPtr())...);
-		}
-	}
-
-	//! Unity ECS like for each function (single worker thread), func is moved
-	template<class ...Components>
-	[[nodiscard]]
-	inline auto GameWorld::BackEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func) const
-	{
-		return StealThreadPool::GetInstance()->enqueue_task([this, func = std::move(func)]() {
-			_MultiThreadExceptionCatcher(
-				[this, &func]() {
-				for (const auto& e : EntityView<Components...>())
-				{
-					auto ed = EntityDecorator(e, this);
-					func(ed, *(ed.template GetComponent<Components>().GetPtr())...);
-				}
-			});
-		});
+		this->UnlockNC();
+		return static_cast<ComponentManager<ComponentType>*>(manager.get());
 	}
 
 	template<typename ComponentType>
@@ -106,7 +69,7 @@ namespace longmarch
 		LongMarch_EraseRemove(m_maskEntityVecMap[oldMask], entity);
 		m_maskEntityVecMap[updatedMask].push_back(entity);
 		// Update all system
-		for (auto& system : m_systems) 
+		for (auto& system : m_systems)
 		{
 			if (updatedMask.IsNewMatch(oldMask, system->GetSystemSignature()))
 			{
@@ -135,28 +98,66 @@ namespace longmarch
 		}
 	}
 
-	//! Get the component-manager for a given component-type. Example usage: _GetComponentManager<ComponentType>();
-	
-	template<typename ComponentType>
-	ComponentManager<ComponentType>* GameWorld::_GetComponentManager() const
+	template<class ...Components>
+	inline const LongMarch_Vector<Entity> GameWorld::EntityView() const
 	{
-		const uint32_t componentIndex = GetComponentTypeIndex<ComponentType>();
-		LockNC();
-		if (componentIndex >= m_componentManagers.size())
+		LOCK_GUARD_NC();
+		if constexpr (sizeof...(Components) == 0)
 		{
-			m_componentManagers.resize(static_cast<size_t>(componentIndex) + 1);
+			return LongMarch_Vector<Entity>();
 		}
-		auto& manager = m_componentManagers[componentIndex];
-		if (!manager)
+		else
 		{
-			manager = std::move(MemoryManager::Make_shared<ComponentManager<ComponentType>>());
+			LongMarch_Vector<Entity> ret;
+			ret.reserve(128);
+			BitMaskSignature mask; 
+			mask.AddComponent<Components...>();
+			for (const auto& [entity_mask, entities] : m_maskEntityVecMap)
+			{
+				if (entity_mask.IsAMatch(mask))
+				{
+					std::copy(entities.begin(), entities.end(), std::back_inserter(ret));
+				}
+			}
+			// Sorting entity to incremental order such that the 2nd predicate of ECS is fullfilled
+			std::sort(ret.begin(), ret.end(), std::less<Entity>());
+			return ret;
 		}
-		UnlockNC();
-		return static_cast<ComponentManager<ComponentType>*>(manager.get());
+	}
+
+	//! Unity ECS like for each function
+	template<class ...Components>
+	inline void GameWorld::ForEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func) const
+	{
+		for (const auto& e : EntityView<Components...>())
+		{
+			if (auto activeCom = this->GetComponent<ActiveCom>(e); activeCom.Valid() && activeCom->IsActive())
+			{
+				auto ed = EntityDecorator(e, this);
+				func(ed, *(ed.template GetComponent<Components>().GetPtr())...);
+			}
+		}
+	}
+
+	//! Unity ECS like for each function (single worker thread), func is moved
+	template<class ...Components>
+	[[nodiscard]]
+	inline auto GameWorld::BackEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func) const
+	{
+		return StealThreadPool::GetInstance()->enqueue_task(
+			[this, func = std::move(func)]() 
+			{
+				this->_MultiThreadExceptionCatcher(
+					[this, &func]() 
+					{
+						this->ForEach<Components...>(func);
+					}
+				);
+			}
+		);
 	}
 
 	//! Helper method for pareach
-
 	template<class... Components>
 	void GameWorld::_ParEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func, int min_split) const
 	{
@@ -188,30 +189,27 @@ namespace longmarch
 				const LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
 				_begin += split_size;
 				_jobs.emplace_back(std::move(pool.enqueue_task([this, func, split_es = std::move(split_es)]() {
-					_MultiThreadExceptionCatcher(
+					this->_MultiThreadExceptionCatcher(
 						[this, &func, &split_es]() {
 						for (const auto& e : split_es)
 						{
-							auto ed = EntityDecorator(e, this);
-							func(ed, *(ed.template GetComponent<Components>().GetPtr())...);
+							this->ForEach<Components...>(func);
 						}
 					});
 				})));
 			}
-			// Check entities left
+			// Check any entities left
 			if (num_e_left <= 0)
 			{
 				split_size += num_e_left;
 				const LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
-				_begin += split_size;
-				ENGINE_EXCEPT_IF(_begin != _end, L"Reach end condition does not meet!");
+				ENGINE_EXCEPT_IF((_begin + split_size) != _end, L"Reach end condition does not meet!");
 				_jobs.emplace_back(std::move(pool.enqueue_task([this, func, split_es = std::move(split_es)]() {
-					_MultiThreadExceptionCatcher(
+					this->_MultiThreadExceptionCatcher(
 						[this, &func, &split_es]() {
 						for (const auto& e : split_es)
 						{
-							auto ed = EntityDecorator(e, this);
-							func(ed, *(ed.template GetComponent<Components>().GetPtr())...);
+							this->ForEach<Components...>(func);
 						}
 					});
 				})));

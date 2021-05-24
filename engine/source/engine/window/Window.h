@@ -48,7 +48,7 @@ namespace longmarch
 			m_monitorHeight(height)
 		{
 			m_input = InputManager::GetInstance();
-			m_input->SetMouseMaxPositions(width, height);
+			m_input->SetMouseMaxPositions(static_cast<float>(width), static_cast<float>(height));
 		}
 	};
 

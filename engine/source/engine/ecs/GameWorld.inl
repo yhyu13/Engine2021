@@ -186,7 +186,7 @@ namespace longmarch
 
 			while ((num_e_left -= split_size) > 0)
 			{
-				const LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
+				LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
 				_begin += split_size;
 				_jobs.emplace_back(std::move(pool.enqueue_task([this, func, split_es = std::move(split_es)]() {
 					this->_MultiThreadExceptionCatcher(
@@ -207,7 +207,7 @@ namespace longmarch
 			if (num_e_left <= 0)
 			{
 				split_size += num_e_left;
-				const LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
+				LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
 				ENGINE_EXCEPT_IF((_begin + split_size) != _end, L"Reach end condition does not meet!");
 				_jobs.emplace_back(std::move(pool.enqueue_task([this, func, split_es = std::move(split_es)]() {
 					this->_MultiThreadExceptionCatcher(

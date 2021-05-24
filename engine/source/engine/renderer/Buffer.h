@@ -20,7 +20,7 @@ namespace longmarch
 		uint32_t Offset;
 		bool Normalized = false;
 
-		VertexBufferElement() {}
+		VertexBufferElement() = default;
 		VertexBufferElement(VertexDataType type, const std::string& name, uint32_t diviser = 0, bool normalized = false)
 			: Name(name), Type(type), Diviser(diviser), Size(VertexDataTypeSize()), Offset(0), Normalized(normalized)
 		{

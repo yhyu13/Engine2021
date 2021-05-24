@@ -70,7 +70,7 @@ void longmarch::EngineEditorHUD::Render()
 void longmarch::EngineEditorHUD::SetupEngineImGuiStyle()
 {
 	static bool _bStyleDark_ = !bStyleDark;
-	static float _alpha_ = fStyleAlpha - 1.0;
+	static float _alpha_ = fStyleAlpha - 1.0f;
 	if (_bStyleDark_ == bStyleDark && _alpha_ == fStyleAlpha)
 	{
 		return;
@@ -108,7 +108,7 @@ void longmarch::EngineEditorHUD::SetupEngineImGuiStyle()
 void longmarch::EngineEditorHUD::ShowEngineFPS()
 {
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
-	float frameTime = FramerateController::GetInstance()->GetFrameTime();
+	auto frameTime = FramerateController::GetInstance()->GetFrameTime();
 	ImVec2 fpsWindowSize = ImVec2(90, 50);
 	ImVec2 waveWindowPos = ImVec2(viewport->Pos.x + viewport->Size.x / 2 - fpsWindowSize.x / 2, viewport->Pos.y + 50);
 	ImGui::SetNextWindowPos(waveWindowPos);

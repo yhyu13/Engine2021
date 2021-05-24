@@ -77,7 +77,7 @@ namespace longmarch {
 		template<typename ComponentType>
 		void AddComponent() 
 		{
-			uint64_t com = static_cast<uint64_t>(GetComponentTypeIndex<ComponentType>());
+			const uint64_t com = static_cast<uint64_t>(GetComponentTypeIndex<ComponentType>());
 			if (com < 64ull)
 			{
 				m_mask |= (1ull << com);
@@ -109,7 +109,7 @@ namespace longmarch {
 		template<typename ComponentType>
 		void RemoveComponent() 
 		{
-			uint64_t com = static_cast<uint64_t>(GetComponentTypeIndex<ComponentType>());
+			const uint64_t com = static_cast<uint64_t>(GetComponentTypeIndex<ComponentType>());
 			if (com < 64ull)
 			{
 				m_mask &= ~(1ull << com);

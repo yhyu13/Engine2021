@@ -867,7 +867,7 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 	constexpr float v_speed = 7.f;
 	static float v_max = 50.f;
 	static float v_max1 = v_max;
-	static float v_max2 = 2.0 * v_max;
+	static float v_max2 = 2.0f * v_max;
 	constexpr float rotation_speed = 300.f;
 	static float speed_up_multi = 1.0f;
 	bool bUINotHoldMouse = !ImGuiUtil::IsMouseCaptured(true);
@@ -875,8 +875,8 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 
 	// Apply friction (for editor camera to slow down on releasing control)
 	{
-		friction_local_v *= powf(0.001f, 2.0 * dt);
-		friction_global_v *= powf(0.001f, 2.0 * dt);
+		friction_local_v *= powf(0.001f, 2.0f * dt);
+		friction_global_v *= powf(0.001f, 2.0f * dt);
 	}
 	if ((input->IsKeyTriggered(KEY_LEFT_ALT) && bUINotHoldKeyBoard) || input->IsGamepadButtonTriggered(GAMEPAD_BUTTON_RIGHT_THUMB))
 	{

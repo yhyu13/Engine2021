@@ -190,12 +190,17 @@ namespace longmarch
 				_begin += split_size;
 				_jobs.emplace_back(std::move(pool.enqueue_task([this, func, split_es = std::move(split_es)]() {
 					this->_MultiThreadExceptionCatcher(
-						[this, &func, &split_es]() {
-						for (const auto& e : split_es)
+						[this, &func, &split_es]() 
 						{
-							this->ForEach<Components...>(func);
-						}
-					});
+							for (const auto& e : split_es)
+							{
+								if (auto activeCom = this->GetComponent<ActiveCom>(e); activeCom.Valid() && activeCom->IsActive())
+								{
+									auto ed = EntityDecorator(e, this);
+									func(ed, *(ed.template GetComponent<Components>().GetPtr())...);
+								}
+							}
+						});
 				})));
 			}
 			// Check any entities left
@@ -206,12 +211,17 @@ namespace longmarch
 				ENGINE_EXCEPT_IF((_begin + split_size) != _end, L"Reach end condition does not meet!");
 				_jobs.emplace_back(std::move(pool.enqueue_task([this, func, split_es = std::move(split_es)]() {
 					this->_MultiThreadExceptionCatcher(
-						[this, &func, &split_es]() {
-						for (const auto& e : split_es)
+						[this, &func, &split_es]() 
 						{
-							this->ForEach<Components...>(func);
-						}
-					});
+							for (const auto& e : split_es)
+							{
+								if (auto activeCom = this->GetComponent<ActiveCom>(e); activeCom.Valid() && activeCom->IsActive())
+								{
+									auto ed = EntityDecorator(e, this);
+									func(ed, *(ed.template GetComponent<Components>().GetPtr())...);
+								}
+							}
+						});
 				})));
 			}
 			for (auto& job : _jobs)

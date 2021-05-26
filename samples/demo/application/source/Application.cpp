@@ -1,6 +1,8 @@
 #include "application-precompiled-header.h"
 #include "layer/MainGameLayer.h"
+#ifndef APP_ONLY
 #include "editor/layer/header/header.h"
+#endif
 #include "engine/Main.h"
 
 namespace longmarch
@@ -16,16 +18,18 @@ namespace longmarch
 			Engine::SwitchCurrentLayer(Layer::LAYER_TYPE::APP_LAYER);
 			Engine::PushLayer(gameLayer);
 			gameLayer->Init();
-			
+#ifndef APP_ONLY
 			// Create the engine layer (engine UI, renderer pipeline)
 			auto engineLayer = MemoryManager::Make_shared<_3DEditorLayer>();
 			Engine::SwitchCurrentLayer(Layer::LAYER_TYPE::ENG_LAYER);
 			Engine::PushLayer(engineLayer);
 			engineLayer->Init();
+#endif
 
 			// Make window visible in the end of construction
 			GetWindow()->SetVisible(true);
-			
+
+#ifndef APP_ONLY
 			// Switch to the intializing layer
 			switch (Engine::GetEngineMode())
 			{
@@ -36,6 +40,9 @@ namespace longmarch
 				Engine::GetInstance()->SwitchCurrentLayer(Layer::LAYER_TYPE::APP_LAYER);
 				break;
 			}
+#else
+			Engine::GetInstance()->SwitchCurrentLayer(Layer::LAYER_TYPE::APP_LAYER);
+#endif
 		}
 	};
 

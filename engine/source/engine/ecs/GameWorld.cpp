@@ -381,7 +381,6 @@ EntityDecorator longmarch::GameWorld::GenerateEntity(EntityType type, bool activ
 {
 	auto entity = EntityDecorator{ m_entityManager->Create(type), this };
 	entity.AddComponent(ActiveCom(active));
-	entity.AddComponent(TypeNameCom(EngineEntity::TypeNameMapInv[type]));
 	entity.AddComponent(IDNameCom(entity));
 	entity.AddComponent(ParentCom(entity));
 	entity.AddComponent(ChildrenCom(entity));

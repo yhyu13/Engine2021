@@ -514,13 +514,20 @@ void longmarch::_3DEngineMainMenu::RenderEngineGraphicSettingMenu()
 						graphicEventQueue->Publish(e);
 					}
 				}
-				ImGui::Dummy(ImVec2(0, yoffset_item));
 				// GPU-sync
 				{
 					if (ImGui::Checkbox("GPU Sync", &checkGPUSync))
 					{
 						auto e = MemoryManager::Make_shared<ToggleGPUSyncEvent>(checkGPUSync);
 						graphicEventQueue->Publish(e);
+					}
+				}
+				// GPU-sync
+				{
+					static bool checkHighPFPSMode = false;
+					if (ImGui::Checkbox("High precision FPS mode", &checkHighPFPSMode))
+					{
+						FramerateController::GetInstance()->SetHighPrecisionMode(checkHighPFPSMode);
 					}
 				}
 				ImGui::Dummy(ImVec2(0, yoffset_item));

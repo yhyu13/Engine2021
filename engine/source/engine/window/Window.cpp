@@ -89,6 +89,8 @@ namespace longmarch {
 		{
 			glfwShowWindow(m_window);
 		}
+		// Vsync needs to be set again on hide/show window
+		SetVSync(m_windowProperties.IsVSync);
 	}
 
 	void Window::SetResolution(int n)

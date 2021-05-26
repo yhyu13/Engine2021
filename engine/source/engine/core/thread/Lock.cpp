@@ -2,7 +2,10 @@
 #include "engine/core/utility/Timer.h"
 #include "Lock.h"
 
-#define DEBUG_TIMER 1
+#ifndef _SHIPPING
+#define DEBUG_TIMER
+#endif // !_SHIPPING
+
 
 namespace longmarch
 {
@@ -14,12 +17,12 @@ longmarch::atomic_flag_guard::atomic_flag_guard(std::atomic_flag& flag) noexcept
 	:
 	m_lock(&flag)
 {
-#if DEBUG_TIMER == 1
+#ifdef DEBUG_TIMER
 	Timer timer;
 #endif
 	while (m_lock->test_and_set(std::memory_order_acq_rel))
 	{
-#if DEBUG_TIMER == 1
+#ifdef DEBUG_TIMER
 		ASSERT(timer.Mark() < 1.0, "Dead lock?");
 #else
 		while (m_lock->test(std::memory_order_relaxed))
@@ -39,13 +42,13 @@ longmarch::atomic_bool_guard::atomic_bool_guard(std::atomic_bool& flag) noexcept
 	:
 	m_lock(&flag)
 {
-#if DEBUG_TIMER == 1
+#ifdef DEBUG_TIMER
 	Timer timer;
 #endif
 	bool expected = false;
 	while (!m_lock->compare_exchange_strong(expected, true, std::memory_order_acq_rel)) {
 		expected = false;
-#if DEBUG_TIMER == 1
+#ifdef DEBUG_TIMER
 		ASSERT(timer.Mark() < 1.0, "Dead lock?");
 #else
 		while (m_lock->load(std::memory_order_relaxed))
@@ -63,12 +66,12 @@ longmarch::atomic_bool_guard::~atomic_bool_guard() noexcept
 
 void longmarch::BaseAtomicClassStatic::LockS() noexcept
 {
-#if DEBUG_TIMER == 1
+#ifdef DEBUG_TIMER
 	Timer timer;
 #endif
 	while (sc_flag.test_and_set(std::memory_order_acq_rel))
 	{
-#if DEBUG_TIMER == 1
+#ifdef DEBUG_TIMER
 		ASSERT(timer.Mark() < 1.0, "Dead lock?");
 #else
 		while (sc_flag.test(std::memory_order_relaxed))
@@ -86,12 +89,12 @@ void longmarch::BaseAtomicClassStatic::UnlockS() noexcept
 
 void longmarch::BaseAtomicClassNI::LockNI() noexcept
 {
-#if DEBUG_TIMER == 1
+#ifdef DEBUG_TIMER
 	Timer timer;
 #endif
 	while (ni_flag.test_and_set(std::memory_order_acq_rel))
 	{
-#if DEBUG_TIMER == 1
+#ifdef DEBUG_TIMER
 		ASSERT(timer.Mark() < 1.0, "Dead lock?");
 #else
 		while (ni_flag.test(std::memory_order_relaxed))
@@ -109,12 +112,12 @@ void longmarch::BaseAtomicClassNI::UnlockNI() noexcept
 
 void longmarch::BaseAtomicClassNC::LockNC() const noexcept
 {
-#if DEBUG_TIMER == 1
+#ifdef DEBUG_TIMER
 	Timer timer;
 #endif
 	while (nc_flag.test_and_set(std::memory_order_acq_rel))
 	{
-#if DEBUG_TIMER == 1
+#ifdef DEBUG_TIMER
 		ASSERT(timer.Mark() < 1.0, "Dead lock?");
 #else
 		while (nc_flag.test(std::memory_order_relaxed))
@@ -132,12 +135,12 @@ void longmarch::BaseAtomicClassNC::UnlockNC() const noexcept
 
 void longmarch::BaseAtomicClass2::Lock2() const noexcept
 {
-#if DEBUG_TIMER == 1
+#ifdef DEBUG_TIMER
 	Timer timer;
 #endif
 	while (m_flag.test_and_set(std::memory_order_acq_rel))
 	{
-#if DEBUG_TIMER == 1
+#ifdef DEBUG_TIMER
 		ASSERT(timer.Mark() < 1.0, "Dead lock?");
 #else
 		while (m_flag.test(std::memory_order_relaxed))

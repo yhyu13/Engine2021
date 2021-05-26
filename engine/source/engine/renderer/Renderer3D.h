@@ -55,10 +55,12 @@ namespace longmarch
 	struct Transform3DCom;
 	struct Body3DCom;
 
-	class ENGINE_API Renderer3D : public BaseAtomicClassNI
+	class ENGINE_API Renderer3D : public BaseAtomicClassNC, public BaseAtomicClassStatic
 	{
 	public:
-		NONINSTANTIABLE(Renderer3D);
+		NONCOPYABLE(Renderer3D);
+		virtual ~Renderer3D() = default;
+
 		enum class LIGHT_TYPE : int32_t // Light type order is critical
 		{
 			DIRECTIONAL = 0,

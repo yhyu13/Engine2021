@@ -14,7 +14,6 @@ namespace longmarch
 	public:
 		Timer()
 		{
-			ENGINE_EXCEPT_IF(std::chrono::steady_clock::is_steady == false, L"C++11 std::chrono::steady_clock::is_steady() returns FALSE.");
 			m_last = std::chrono::steady_clock::now();
 		}
 		//! Init timer with period in secs
@@ -22,7 +21,6 @@ namespace longmarch
 			:
 			m_period(period)
 		{
-			ENGINE_EXCEPT_IF(std::chrono::steady_clock::is_steady == false, L"C++11 std::chrono::steady_clock::is_steady() returns FALSE.");
 			m_last = std::chrono::steady_clock::now();
 		}
 		//! Reset timer to now

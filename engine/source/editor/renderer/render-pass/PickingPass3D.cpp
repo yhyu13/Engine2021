@@ -180,20 +180,18 @@ void longmarch::PickingPass::Render()
 
 void longmarch::PickingPass::UpdateShader()
 {
+	const auto& shader = Renderer3D::s_Data.ShaderMap["PickingSystemShader"];
+	shader->Bind();
+	Mat4 pv;
+	if (Renderer3D::s_Data.enable_reverse_z)
 	{
-		auto shader = Renderer3D::s_Data.ShaderMap["PickingSystemShader"];
-		shader->Bind();
-		Mat4 pv;
-		if (Renderer3D::s_Data.enable_reverse_z)
-		{
-			pv = m_pickingCam.GetReverseZViewProjectionMatrix();
-		}
-		else
-		{
-			pv = m_pickingCam.GetViewProjectionMatrix();
-		}
-		shader->SetMat4("u_PVMatrix", pv);
+		pv = m_pickingCam.GetReverseZViewProjectionMatrix();
 	}
+	else
+	{
+		pv = m_pickingCam.GetViewProjectionMatrix();
+	}
+	shader->SetMat4("u_PVMatrix", pv);
 }
 
 void longmarch::PickingPass::SubmitBatch()
@@ -220,7 +218,7 @@ void longmarch::PickingPass::ClearBatch()
 
 void longmarch::PickingPass::Draw(const Renderer3D::RenderData_CPU& data)
 {
-	auto shader = Renderer3D::s_Data.ShaderMap["PickingSystemShader"];
+	const auto& shader = Renderer3D::s_Data.ShaderMap["PickingSystemShader"];
 	shader->Bind();
 	switch (Renderer3D::s_Data.RENDER_MODE)
 	{
@@ -247,7 +245,7 @@ void longmarch::PickingPass::Draw(const Renderer3D::RenderData_CPU& data)
 
 void longmarch::PickingPass::DrawParticle(const Renderer3D::ParticleInstanceDrawData& data)
 {
-	auto shader = Renderer3D::s_Data.ShaderMap["PickingSystemShader"];
+	const auto& shader = Renderer3D::s_Data.ShaderMap["PickingSystemShader"];
 	shader->Bind();
 
 	auto world = GameWorld::GetCurrent();

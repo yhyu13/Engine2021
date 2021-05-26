@@ -66,6 +66,5 @@ namespace longmarch
 		std::function<void()> m_submitBatchBind;
 		std::function<void()> m_clearBatchBind;
 		GameWorld* m_parentWorld{ nullptr };
-		size_t m_max_batch{ 1024u };
 	};
 }

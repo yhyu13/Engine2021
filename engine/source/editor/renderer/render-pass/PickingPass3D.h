@@ -46,6 +46,7 @@ namespace longmarch
 		std::shared_ptr<FrameBuffer> m_renderTarget{ nullptr };
 		std::shared_ptr<Texture2D> m_renderTexture{ nullptr };
 		std::uint8_t m_blitData[texture_dim * texture_dim * 4u]{ 0u };
-		bool m_shouldRead{ false };
+		bool m_shouldRead{ false };		
+		size_t m_max_batch{ 1024u };
 	};
 }

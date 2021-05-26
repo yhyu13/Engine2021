@@ -322,8 +322,8 @@ void longmarch::Renderer3D::Init()
 			it->second->SetInt("searchTex", s_Data.fragTexture_empty_slot + 2);
 		}
 
-		LongMarch_Vector<std::string> forwardShader = { "ForwardShader", "TransparentForwardShader" , };
-		LongMarch_Vector<std::string> clusteredShader = { "BuildAABBGridCompShader", "CullLightsCompShader","ClusterShader", "ClusterDebugShader"};
+		LongMarch_Vector<std::string> forwardShader = { "ForwardShader", "TransparentForwardShader" };
+		LongMarch_Vector<std::string> clusteredShader = { "BuildAABBGridCompShader", "CullLightsCompShader","ClusterShader", "ClusterDebugShader" };
 		LongMarch_Vector<std::string> deferredShader = { "GBufferShader", "DeferredShader" };
 
 		s_Data.ListRenderShadersToPopulateShadowData.insert(s_Data.ListRenderShadersToPopulateShadowData.end(), forwardShader.begin(), forwardShader.end());
@@ -2423,20 +2423,18 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 
 	if (s_Data.RENDER_PIPE == Renderer3D::RENDER_PIPE::DEFERRED)
 	{
-		{
-			//Renderer3D::_BeginDynamicSSGIPass(s_Data.gpuBuffer.PrevOpaqueLightingFrameBuffer);
-			//Renderer3D::_BeginSSGIPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_1);
+		Renderer3D::_BeginDynamicSSGIPass(s_Data.gpuBuffer.CurrentFrameBuffer);
+		Renderer3D::_BeginSSGIPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.CurrentFrameBuffer);
 
-			// Perform SSR after rendering all opaques, ignore transparents and particles for now
-			Renderer3D::_BeginDynamicSSRPass(
-				camera,
-				f_render,
-				f_setVFCullingParam,
-				f_setDistanceCullingParam,
-				f_setRenderShaderName,
-				s_Data.gpuBuffer.CurrentFrameBuffer);
-			Renderer3D::_BeginSSRPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.FrameBuffer_1);
-		}
+		// Perform SSR after rendering all opaques, ignore transparents and particles for now
+		Renderer3D::_BeginDynamicSSRPass(
+			camera,
+			f_render,
+			f_setVFCullingParam,
+			f_setDistanceCullingParam,
+			f_setRenderShaderName,
+			s_Data.gpuBuffer.CurrentFrameBuffer);
+		Renderer3D::_BeginSSRPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.CurrentFrameBuffer);
 	}
 	{
 		Renderer3D::_BeginSkyBoxPass(s_Data.gpuBuffer.CurrentFrameBuffer);
@@ -3952,7 +3950,7 @@ void longmarch::Renderer3D::_RenderFullScreenCube()
 **************************************************************/
 void longmarch::Renderer3D::RenderBoundingBox(const Mat4& transform)
 {
-	LOCK_GUARD_NI();
+	LOCK_GUARD_S();
 	// Storing transformation matrix for delayed renderering
 	s_Data.cpuBuffer.InstancedDraw_BVModelTr.emplace_back(transform);
 }
@@ -3988,7 +3986,7 @@ void longmarch::Renderer3D::Draw(const RenderData_CPU& data)
 **************************************************************/
 void longmarch::Renderer3D::Draw(Entity entity, const std::shared_ptr<MeshData>& Mesh, const std::shared_ptr<Material>& Mat, const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName)
 {
-	LOCK_GUARD_NI();	// Lock the drawing or pushing draw commends
+	LOCK_GUARD_S();	// Lock the drawing or pushing draw commends
 	if (auto it = s_Data.ShaderMap.find(shaderName); it == s_Data.ShaderMap.end()) [[unlikely]]
 	{
 		ENGINE_EXCEPT(L"Shader called " + str2wstr(shaderName) + L" has not been managed!");
@@ -5041,7 +5039,7 @@ void longmarch::Renderer3D::AppendMeshToMultiDraw(std::shared_ptr<MeshData> Mesh
 
 void longmarch::Renderer3D::ToggleReverseZ(bool enable) 
 { 
-	LOCK_GUARD_NI(); 
+	LOCK_GUARD_S(); 
 	s_Data.enable_reverse_z = enable; 
 	RenderCommand::Reverse_Z(enable); 
 }

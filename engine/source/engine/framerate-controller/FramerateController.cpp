@@ -14,7 +14,7 @@ namespace longmarch
 		return &frameRateController;
 	}
 
-	FramerateController::FramerateController() : m_tickStart(0), m_tickEnd(0), m_ticksPerFrame(0.0f) 
+	FramerateController::FramerateController() : m_tickEnd(0), m_ticksPerFrame(0.0f) 
 	{
 		m_maxFramerate = 60;
 		m_ticksPerFrame = 1000.0 / static_cast<double>(m_maxFramerate);
@@ -24,26 +24,53 @@ namespace longmarch
 	void FramerateController::FrameStart() 
 	{
 		m_timer.Reset();
-		m_tickStart = 0.0;// m_timer.Mark() * 1000.0; // m_timer.Mark() returns time in seconds passed
 	}
 
 	void FramerateController::FrameEnd() 
 	{
-		double m_frameTick;
-		do {
-			// yield to do other work while there is time left over
+		m_tickEnd = m_timer.Mark() * 1000.0; // converting seconds to milliseconds
+		
+		// Doing all three stages of waiting would safe CPU usage from 30% to less than 10% for a 8 cores PC
+		// 1. sleep
+		while (m_ticksPerFrame - m_tickEnd > 6)
+		{
+			// sleep until has roughly +/- 1 millisecond accuracy
+			std::this_thread::sleep_until(std::chrono::steady_clock::now() + std::chrono::milliseconds{ 5 });
+			m_tickEnd = m_timer.Mark() * 1000.0;
+		}
+		while (m_ticksPerFrame - m_tickEnd > 4)
+		{
+			// sleep until has roughly +/- 1 millisecond accuracy
+			std::this_thread::sleep_until(std::chrono::steady_clock::now() + std::chrono::milliseconds{ 3 });
+			m_tickEnd = m_timer.Mark() * 1000.0;
+		}
+		while (m_ticksPerFrame - m_tickEnd > 2)
+		{
+			// sleep until has roughly +/- 1 millisecond accuracy
+			std::this_thread::sleep_until(std::chrono::steady_clock::now() + std::chrono::milliseconds{ 1 });
+			m_tickEnd = m_timer.Mark() * 1000.0;
+		}
+
+		// 2. yield
+		while (m_tickEnd < m_ticksPerFrame * .99)
+		{
+			// yield has roughly +/- 30 microsecond accuracy, it could work as a more accurate sleep function at fine grain.
 			std::this_thread::yield();
 			m_tickEnd = m_timer.Mark() * 1000.0; // converting seconds to milliseconds
-			m_frameTick = (m_tickEnd - m_tickStart);
-		} while (m_frameTick < m_ticksPerFrame);
+		}
 
-		m_frameTime = m_frameTick * 1e-3; // converting milliseconds to seconds
+		// 3. busy wait
+		do {
+			m_tickEnd = m_timer.Mark() * 1000.0; // converting seconds to milliseconds
+		} while (m_tickEnd < m_ticksPerFrame * .9999);
+
+		m_frameTime = m_tickEnd * 1e-3; // converting milliseconds to seconds
 
 #ifndef _SHIPPING
-		Instrumentor::GetEngineInstance()->AddInstrumentorResult({ "Frame Time", m_frameTick, "ms" });
-		Instrumentor::GetEngineInstance()->AddInstrumentorResult({ "FPS", 1000.0 / m_frameTick, "  " });
-		Instrumentor::GetApplicationInstance()->AddInstrumentorResult({ "Frame Time", m_frameTick, "ms" });
-		Instrumentor::GetApplicationInstance()->AddInstrumentorResult({ "FPS", 1000.0 / m_frameTick, "  " });
+		Instrumentor::GetEngineInstance()->AddInstrumentorResult({ "Frame Time", m_tickEnd, "ms" });
+		Instrumentor::GetEngineInstance()->AddInstrumentorResult({ "FPS", 1.0 / m_frameTime, "  " });
+		Instrumentor::GetApplicationInstance()->AddInstrumentorResult({ "Frame Time", m_tickEnd, "ms" });
+		Instrumentor::GetApplicationInstance()->AddInstrumentorResult({ "FPS", 1.0 / m_frameTime, "  " });
 #endif
 	}
 

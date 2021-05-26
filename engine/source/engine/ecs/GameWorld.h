@@ -204,27 +204,27 @@ namespace longmarch
 
 		//! Unity ECS like for each function
 		template<class... Components>
-		void ForEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func) const;
+		void ForEach(typename Identity<std::function<void(const EntityDecorator& e, Components&...)>>::Type func) const;
 
 		//! Unity ECS like for each function (single worker thread), func is moved
 		template<class... Components>
-		[[nodiscard]] auto BackEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func) const;
+		[[nodiscard]] auto BackEach(typename Identity<std::function<void(const EntityDecorator& e, Components&...)>>::Type func) const;
 
 		//! Unity ECS like for each function (multi worker thread), func is moved
 		template<class... Components>
-		[[nodiscard]] auto ParEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func, int min_split = -1) const
+		[[nodiscard]] auto ParEach(typename Identity<std::function<void(const EntityDecorator& e, Components&...)>>::Type func, int min_split = -1) const
 		{
 			return StealThreadPool::GetInstance()->enqueue_task([this, min_split, func = std::move(func)]() { _ParEach<Components...>(func, min_split); });
 		}
 
 		//! Unity ECS like for each function
-		void ForEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func) const;
+		void ForEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(const EntityDecorator& e)>>::Type func) const;
 
 		//! Unity ECS like for each function (single worker thread), func is moved
-		[[nodiscard]] std::future<void> BackEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func) const;
+		[[nodiscard]] std::future<void> BackEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(const EntityDecorator& e)>>::Type func) const;
 
 		//! Unity ECS like for each function (multi worker thread), func is moved
-		[[nodiscard]] std::future<void> ParEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split = -1) const;
+		[[nodiscard]] std::future<void> ParEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(const EntityDecorator& e)>>::Type func, int min_split = -1) const;
 
 	private:
 		//! Helper method that wraps exception handling for thread job
@@ -238,7 +238,7 @@ namespace longmarch
 		void InitScene(const fs::path& scene_file);
 
 		//! Helper method for pareach
-		void _ParEach2(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split = -1) const;
+		void _ParEach2(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(const EntityDecorator& e)>>::Type func, int min_split = -1) const;
 
 		//! Helper function for adding/removing entity from component system
 		template<typename ComponentType>
@@ -253,7 +253,7 @@ namespace longmarch
 
 		//! Helper method for pareach
 		template<class... Components>
-		void _ParEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func, int min_split = -1) const;
+		void _ParEach(typename Identity<std::function<void(const EntityDecorator& e, Components&...)>>::Type func, int min_split = -1) const;
 
 	private:
 		// E

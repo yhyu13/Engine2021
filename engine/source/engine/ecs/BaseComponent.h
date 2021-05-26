@@ -75,7 +75,7 @@ namespace longmarch
 		}
 
 		//! All components of a given type belong to the same type-index. For example, all Position components have the same type-index.
-		constexpr static const uint32_t TypeIndex()
+		static const uint32_t TypeIndex()
 		{
 			static const uint32_t index = ComponentTypeIndex::s_index++;
 			return index;
@@ -92,7 +92,7 @@ namespace longmarch
 	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
 	template <typename ComponentType>
-	constexpr static const uint32_t GetComponentTypeIndex()
+	static const uint32_t GetComponentTypeIndex()
 	{
 		return BaseComponent<ComponentType>::TypeIndex();
 	}

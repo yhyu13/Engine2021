@@ -571,7 +571,7 @@ void longmarch::GameWorld::RemoveAllComponent(const Entity& entity)
 	}
 }
 
-void longmarch::GameWorld::ForEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func) const
+void longmarch::GameWorld::ForEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(const EntityDecorator& e)>>::Type func) const
 {
 	for (const auto& e : es)
 	{ 
@@ -583,13 +583,13 @@ void longmarch::GameWorld::ForEach(const LongMarch_Vector<Entity>& es, typename 
 }
 
 [[nodiscard]]
-std::future<void> longmarch::GameWorld::BackEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func) const
+std::future<void> longmarch::GameWorld::BackEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(const EntityDecorator& e)>>::Type func) const
 {
 	return StealThreadPool::GetInstance()->enqueue_task(
-		[this, func = std::move(func), es]() 
+		[this, es, func = std::move(func)]()
 		{
 			this->_MultiThreadExceptionCatcher(
-				[this, &func, &es]() 
+				[this, &es, &func]()
 				{
 					this->ForEach(es, func);
 				});
@@ -598,12 +598,12 @@ std::future<void> longmarch::GameWorld::BackEach(const LongMarch_Vector<Entity>&
 }
 
 [[nodiscard]]
-std::future<void> longmarch::GameWorld::ParEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split) const
+std::future<void> longmarch::GameWorld::ParEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(const EntityDecorator& e)>>::Type func, int min_split) const
 {
 	return StealThreadPool::GetInstance()->enqueue_task([this, es, min_split, func = std::move(func)]() { _ParEach2(es, func, min_split); });
 }
 
-void longmarch::GameWorld::_ParEach2(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split) const
+void longmarch::GameWorld::_ParEach2(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(const EntityDecorator& e)>>::Type func, int min_split) const
 {
 	try {
 		if (es.empty())
@@ -631,7 +631,7 @@ void longmarch::GameWorld::_ParEach2(const LongMarch_Vector<Entity>& es, typenam
 		{
 			LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
 			_begin += split_size;
-			_jobs.emplace_back(std::move(pool.enqueue_task([this, func, split_es = std::move(split_es)]() {
+			_jobs.emplace_back(std::move(pool.enqueue_task([this, &func, split_es = std::move(split_es)]() {
 				this->_MultiThreadExceptionCatcher(
 					[this, &func, &split_es]()
 					{
@@ -645,7 +645,7 @@ void longmarch::GameWorld::_ParEach2(const LongMarch_Vector<Entity>& es, typenam
 			split_size += num_e_left;
 			LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
 			ENGINE_EXCEPT_IF((_begin+split_size) != _end, L"Reach end condition does not meet!");
-			_jobs.emplace_back(std::move(pool.enqueue_task([this, func, split_es = std::move(split_es)]() {
+			_jobs.emplace_back(std::move(pool.enqueue_task([this, &func, split_es = std::move(split_es)]() {
 				this->_MultiThreadExceptionCatcher(
 					[this, &func, &split_es]()
 					{

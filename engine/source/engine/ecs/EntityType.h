@@ -31,18 +31,6 @@ namespace longmarch
 
 		DEBUG_OBJ,
 
-		PLAYER_PROJECTILE, // = 14
-		ENEMY_PROJECTILE, // = 15
-
-		PLAYER_SHIP, // = 16
-		ASTEROID,
-		ENEMY_SHIP,
-		METEOR,
-		MOON_METEOR,
-		SENTINEL_ENEMY_ROBOT, // suicide ships
-
-		PLAYER_SHIP_EXHAUST,
-
 		NUM
 	};
 
@@ -65,17 +53,7 @@ namespace longmarch
 			{"FREEROAM_CAMERA", LongMarch_ToUnderlying(EngineEntityType::FREEROAM_CAMERA)},
 			{"PLAYER_CAMERA", LongMarch_ToUnderlying(EngineEntityType::PLAYER_CAMERA)},
 
-			{"PLAYER_PROJECTILE", LongMarch_ToUnderlying(EngineEntityType::PLAYER_PROJECTILE)},
-			{"ENEMY_PROJECTILE", LongMarch_ToUnderlying(EngineEntityType::ENEMY_PROJECTILE)},
-
-			{"PLAYER_SHIP", LongMarch_ToUnderlying(EngineEntityType::PLAYER_SHIP)},
-			{"ASTEROID", LongMarch_ToUnderlying(EngineEntityType::ASTEROID)},
-			{"ENEMY_SHIP", LongMarch_ToUnderlying(EngineEntityType::ENEMY_SHIP)},
-			{"METEOR", LongMarch_ToUnderlying(EngineEntityType::METEOR)},
-			{"MOON_METEOR", LongMarch_ToUnderlying(EngineEntityType::MOON_METEOR)},
-			{"SENTINEL_ENEMY_ROBOT", LongMarch_ToUnderlying(EngineEntityType::SENTINEL_ENEMY_ROBOT)},
-
-			{"PLAYER_SHIP_EXHAUST", LongMarch_ToUnderlying(EngineEntityType::PLAYER_SHIP_EXHAUST)}
+			{"DEBUG_OBJ", LongMarch_ToUnderlying(EngineEntityType::DEBUG_OBJ)},
 		};
 		inline static EntityTypeToName TypeNameMapInv =
 		{
@@ -94,17 +72,7 @@ namespace longmarch
 			{LongMarch_ToUnderlying(EngineEntityType::FREEROAM_CAMERA), "FREEROAM_CAMERA"},
 			{LongMarch_ToUnderlying(EngineEntityType::PLAYER_CAMERA), "PLAYER_CAMERA"},
 
-			{LongMarch_ToUnderlying(EngineEntityType::PLAYER_PROJECTILE), "PLAYER_PROJECTILE"},
-			{LongMarch_ToUnderlying(EngineEntityType::ENEMY_PROJECTILE), "ENEMY_PROJECTILE"},
-
-			{LongMarch_ToUnderlying(EngineEntityType::PLAYER_SHIP),"PLAYER_SHIP"},
-			{LongMarch_ToUnderlying(EngineEntityType::ASTEROID),"ASTEROID"},
-			{LongMarch_ToUnderlying(EngineEntityType::ENEMY_SHIP),"ENEMY_SHIP"},
-			{LongMarch_ToUnderlying(EngineEntityType::METEOR),"METEOR"},
-			{LongMarch_ToUnderlying(EngineEntityType::MOON_METEOR),"MOON_METEOR"},
-			{LongMarch_ToUnderlying(EngineEntityType::SENTINEL_ENEMY_ROBOT),"SENTINEL_ENEMY_ROBOT"},
-
-			{LongMarch_ToUnderlying(EngineEntityType::PLAYER_SHIP_EXHAUST),"PLAYER_SHIP_EXHAUST"}
+			{LongMarch_ToUnderlying(EngineEntityType::DEBUG_OBJ), "DEBUG_OBJ"},
 		};
 	};
 }
@@ -115,7 +83,6 @@ std::ostream& operator<<(std::ostream& o, const longmarch::EngineEntityType& n)
 	const char* s = 0;
 #define PROCESS_VAL(p) case(p): s = #p; break;
 	switch (n) {
-		PROCESS_VAL(longmarch::EngineEntityType::EMPTY);
 		PROCESS_VAL(longmarch::EngineEntityType::SCENE_ROOT);
 		PROCESS_VAL(longmarch::EngineEntityType::STATIC_OBJ);
 		PROCESS_VAL(longmarch::EngineEntityType::DYNAMIC_OBJ);

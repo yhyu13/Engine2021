@@ -127,7 +127,7 @@ namespace longmarch
 
 	//! Unity ECS like for each function
 	template<class ...Components>
-	inline void GameWorld::ForEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func) const
+	inline void GameWorld::ForEach(typename Identity<std::function<void(const EntityDecorator& e, Components&...)>>::Type func) const
 	{
 		for (const auto& e : EntityView<Components...>())
 		{
@@ -142,7 +142,7 @@ namespace longmarch
 	//! Unity ECS like for each function (single worker thread), func is moved
 	template<class ...Components>
 	[[nodiscard]]
-	inline auto GameWorld::BackEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func) const
+	inline auto GameWorld::BackEach(typename Identity<std::function<void(const EntityDecorator& e, Components&...)>>::Type func) const
 	{
 		return StealThreadPool::GetInstance()->enqueue_task(
 			[this, func = std::move(func)]() 
@@ -157,9 +157,9 @@ namespace longmarch
 		);
 	}
 
-	//! Helper method for pareach
+	//! Helper method for pareach (defined in Gameworld.h)
 	template<class... Components>
-	void GameWorld::_ParEach(typename Identity<std::function<void(EntityDecorator e, Components&...)>>::Type func, int min_split) const
+	void GameWorld::_ParEach(typename Identity<std::function<void(const EntityDecorator& e, Components&...)>>::Type func, int min_split) const
 	{
 		try {
 			auto es = EntityView<Components...>();
@@ -188,7 +188,7 @@ namespace longmarch
 			{
 				LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
 				_begin += split_size;
-				_jobs.emplace_back(std::move(pool.enqueue_task([this, func, split_es = std::move(split_es)]() {
+				_jobs.emplace_back(std::move(pool.enqueue_task([this, &func, split_es = std::move(split_es)]() {
 					this->_MultiThreadExceptionCatcher(
 						[this, &func, &split_es]() 
 						{
@@ -209,7 +209,7 @@ namespace longmarch
 				split_size += num_e_left;
 				LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
 				ENGINE_EXCEPT_IF((_begin + split_size) != _end, L"Reach end condition does not meet!");
-				_jobs.emplace_back(std::move(pool.enqueue_task([this, func, split_es = std::move(split_es)]() {
+				_jobs.emplace_back(std::move(pool.enqueue_task([this, &func, split_es = std::move(split_es)]() {
 					this->_MultiThreadExceptionCatcher(
 						[this, &func, &split_es]() 
 						{

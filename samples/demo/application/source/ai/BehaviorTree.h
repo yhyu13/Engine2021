@@ -27,7 +27,7 @@ namespace longmarch
 	public:
 		BehaviorTree();
 		void BTDeserialize(const fs::path& filename);
-		void RunBT(EntityDecorator agent, float dt);
+		void RunBT(const EntityDecorator& agent, float dt);
 	};
 
 }

@@ -109,38 +109,38 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			Test: Unity like ForEach function
 		*/
 		ForEach(
-			[](EntityDecorator e)
+			[](const EntityDecorator& e)
 		{ DEBUG_PRINT("I Should not be printed!"); }
 		);
 		BackEach(
-			[](EntityDecorator e)
+			[](const EntityDecorator& e)
 		{ DEBUG_PRINT("I Should not be printed!"); }
 		).wait();
 		ParEach(
-			[](EntityDecorator e)
+			[](const EntityDecorator& e)
 		{ DEBUG_PRINT("I Should not be printed!"); }
 		).wait();
 		m_parentWorld->ForEach<Scene3DCom, Transform3DCom, ActiveCom>(
-			[](EntityDecorator e, Scene3DCom& Scene3DCom_ref, Transform3DCom& Transform3DCom_ref, ActiveCom& ActiveCom_ref)
+			[](const EntityDecorator& e, Scene3DCom& Scene3DCom_ref, Transform3DCom& Transform3DCom_ref, ActiveCom& ActiveCom_ref)
 		{ DEBUG_PRINT("Hello!");
 		}
 		);
 		auto handle1 = m_parentWorld->BackEach<Scene3DCom, Transform3DCom, ActiveCom>(
-			[](EntityDecorator e, Scene3DCom& Scene3DCom_ref, Transform3DCom& Transform3DCom_ref, ActiveCom& ActiveCom_ref)
+			[](const EntityDecorator& e, Scene3DCom& Scene3DCom_ref, Transform3DCom& Transform3DCom_ref, ActiveCom& ActiveCom_ref)
 		{ DEBUG_PRINT("Hello1!");
 		}
 		);
 		auto handle2 = m_parentWorld->BackEach<Scene3DCom, Transform3DCom, ActiveCom>(
-			[](EntityDecorator e, Scene3DCom& Scene3DCom_ref, Transform3DCom& Transform3DCom_ref, ActiveCom& ActiveCom_ref)
+			[](const EntityDecorator& e, Scene3DCom& Scene3DCom_ref, Transform3DCom& Transform3DCom_ref, ActiveCom& ActiveCom_ref)
 		{ DEBUG_PRINT("Hello2!");
 		}
 		);
 		auto handle3 = m_parentWorld->ParEach<Scene3DCom, Transform3DCom, ActiveCom>(
-			[](EntityDecorator e, Scene3DCom& Scene3DCom_ref, Transform3DCom& Transform3DCom_ref, ActiveCom& ActiveCom_ref)
+			[](const EntityDecorator& e, Scene3DCom& Scene3DCom_ref, Transform3DCom& Transform3DCom_ref, ActiveCom& ActiveCom_ref)
 		{ DEBUG_PRINT("Hello3!");
 		}, 20);
 		auto handle4 = m_parentWorld->ParEach<Scene3DCom, Transform3DCom, ActiveCom>(
-			[](EntityDecorator e, Scene3DCom& Scene3DCom_ref, Transform3DCom& Transform3DCom_ref, ActiveCom& ActiveCom_ref)
+			[](const EntityDecorator& e, Scene3DCom& Scene3DCom_ref, Transform3DCom& Transform3DCom_ref, ActiveCom& ActiveCom_ref)
 		{ DEBUG_PRINT("Hello4!");
 		}, 10);
 		{

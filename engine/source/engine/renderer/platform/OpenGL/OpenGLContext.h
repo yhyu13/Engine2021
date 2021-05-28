@@ -7,7 +7,7 @@ struct GLFWwindow;
 
 namespace longmarch {
 
-	class OpenGLContext : public GraphicsContext
+	class OpenGLContext final : public GraphicsContext
 	{
 	public:
 		OpenGLContext(GLFWwindow* windowHandle);

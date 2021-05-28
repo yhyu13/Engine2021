@@ -34,8 +34,10 @@ namespace longmarch
 		void SetCastShadow(bool b);
 		bool IsCastReflection() const;
 		void SetCastReflection(bool b);
-		bool IsTranslucenctRendering() const;
-		void SetTranslucenctRendering(bool v);
+		bool IsParticleRenderType() const;
+		void SetParticleRenderType(bool v);
+		bool IsTranslucenctRenderType() const;
+		void SetTranslucenctRenderType(bool v);
 		int GetTranslucencySortPriority() const;
 		void SetTranslucencySortPriority(int v);
 
@@ -74,9 +76,9 @@ namespace longmarch
 		std::string m_shaderName{ "" }; // Name of a custom shader used to rendering
 
 		Entity m_this; // Bookkeeper of which entity this component belong to
-		
+
+		Renderer3D::RENDER_TYPE m_renderType{ Renderer3D::RENDER_TYPE::OPAQUE2 };
 		int m_translucencySortPriority{ 0 };
-		bool m_translucent{ false };
 
 		bool m_shoudlDraw{ true };
 		bool m_visible{ true };

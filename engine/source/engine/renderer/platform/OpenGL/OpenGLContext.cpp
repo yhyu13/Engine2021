@@ -7,9 +7,10 @@
 
 namespace longmarch {
 	OpenGLContext::OpenGLContext(GLFWwindow* windowHandle)
-		: m_WindowHandle(windowHandle)
+		: 
+		m_WindowHandle(windowHandle)
 	{
-		ASSERT(windowHandle != nullptr, "Window handle is null");
+		ASSERT(windowHandle != nullptr, "Window handle is NULL!");
 	}
 
 	void OpenGLContext::Init()

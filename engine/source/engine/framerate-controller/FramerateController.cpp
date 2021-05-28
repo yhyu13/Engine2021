@@ -33,7 +33,7 @@ namespace longmarch
 
 	void FramerateController::FrameEnd()
 	{
-		m_tickEnd = m_timer.Mark() * 1000.0; // converting seconds to milliseconds
+		m_tickEnd = m_timer.Mark<double, std::milli>();
 
 		// Doing all three stages of waiting would safe CPU usage from 30% to less than 10% for a 8 cores PC
 		// 1. sleep
@@ -46,7 +46,7 @@ namespace longmarch
 				{
 					// sleep until has roughly + 2 millisecond accuracy
 					std::this_thread::sleep_for(std::chrono::milliseconds{ k - 1 });
-					m_tickEnd = m_timer.Mark() * 1000.0;
+					m_tickEnd = m_timer.Mark<double, std::milli>();
 				}
 			}
 		}
@@ -56,12 +56,12 @@ namespace longmarch
 		{
 			// yield has roughly +/- 30 microsecond accuracy, it could work as a more accurate sleep function at fine grain.
 			std::this_thread::yield();
-			m_tickEnd = m_timer.Mark() * 1000.0; // converting seconds to milliseconds
+			m_tickEnd = m_timer.Mark<double, std::milli>();
 		}
 
 		// 3. busy wait
 		do {
-			m_tickEnd = m_timer.Mark() * 1000.0; // converting seconds to milliseconds
+			m_tickEnd = m_timer.Mark<double, std::milli>();
 		} while (m_tickEnd < m_ticksPerFrame * .9999);
 
 		m_frameTime = m_tickEnd * 1e-3; // converting milliseconds to seconds

@@ -86,6 +86,14 @@ namespace longmarch
 			DEFERRED,
 			FORWARD,
 		};
+
+		enum class RENDER_TYPE : int32_t
+		{
+			OPAQUE2 = 0,
+			TRANSLUCENT,
+			PARTICLE,
+			CUSTOM
+		};
 		/**************************************************************
 		*	Render object buffer data stored on CPU side
 		*
@@ -360,6 +368,7 @@ namespace longmarch
 			LongMarch_Vector<LightBuffer_CPU> LIGHTS_BUFFERED;
 			LongMarch_Vector<RenderObj_CPU> RENDERABLE_OBJ_OPAQUE;
 			LongMarch_Vector<RenderObj_CPU> RENDERABLE_OBJ_TRANSPARENT;
+			LongMarch_Vector<RenderObj_CPU> RENDERABLE_OBJ_CUSTOM;
 		private:
 			// Lighting data
 			LongMarch_Vector<DirectionalLightBuffer_GPU> DIRECTIONAL_LIGHT_PROCESSED;

@@ -44,27 +44,15 @@ namespace longmarch
 	protected:
 		virtual void UpdateShader() { throw NotImplementedException(); };
 		virtual void Render() { throw NotImplementedException(); };
-		virtual void SubmitBatch() { throw NotImplementedException(); };
-		virtual void ClearBatch() { throw NotImplementedException(); };
-		virtual void Draw(const Renderer3D::RenderData_CPU& data) { throw NotImplementedException(); };
-		virtual void DrawParticle(const Renderer3D::ParticleInstanceDrawData& data) { throw NotImplementedException(); };
 
 		virtual void SetVFCullingParam(bool enable, const ViewFrustum& VFinViewSpace, const Mat4& WorldSpaceToViewSpace);
 		virtual void SetDistanceCullingParam(bool enable, const Vec3f& center, float Near, float Far);
 		virtual bool ViewFustrumCullingTest(const std::shared_ptr<Shape>& BoudingVolume);
 		virtual bool DistanceCullingTest(const std::shared_ptr<Shape>& BoudingVolume);
 
-		virtual void RenderWithCullingTest();
-		virtual void RenderWithModeOpaque(Renderer3D::RenderObj_CPU& renderObj);
-		virtual void RenderWithModeTransparent(Renderer3D::RenderObj_CPU& renderObj);
-
 	protected:
 		VFCParam m_vfcParam;
 		DistanceCParam m_distanceCParam;
-		std::function<void(const Renderer3D::RenderData_CPU&)> m_drawBind;
-		std::function<void(const Renderer3D::ParticleInstanceDrawData&)> m_drawBind_Particle;
-		std::function<void()> m_submitBatchBind;
-		std::function<void()> m_clearBatchBind;
 		GameWorld* m_parentWorld{ nullptr };
 	};
 }

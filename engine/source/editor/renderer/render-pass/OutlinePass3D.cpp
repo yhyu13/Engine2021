@@ -9,7 +9,10 @@
 
 void longmarch::OutlinePass::Init()
 {
-	OutlineFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
+	m_outlineFrameBuffer = FrameBuffer::Create(1, 1, FrameBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
+
+	auto rm = ResourceManager<Scene3DNode>::GetInstance();
+	m_particlePickingMesh = rm->TryGet("unit_sphere")->Get()->Copy();
 }
 
 void longmarch::OutlinePass::BeginRenderPass()
@@ -19,9 +22,9 @@ void longmarch::OutlinePass::BeginRenderPass()
 	case Engine::ENGINE_MODE::EDITING:
 	{
 		// TODO : render stencil based outline rendering
-		if (OutlineFrameBuffer->GetBufferSize() != Renderer3D::s_Data.window_size)
+		if (m_outlineFrameBuffer->GetBufferSize() != Renderer3D::s_Data.window_size)
 		{
-			OutlineFrameBuffer = FrameBuffer::Create(Renderer3D::s_Data.window_size.x, Renderer3D::s_Data.window_size.y, FrameBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
+			m_outlineFrameBuffer = FrameBuffer::Create(Renderer3D::s_Data.window_size.x, Renderer3D::s_Data.window_size.y, FrameBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
 		}
 
 		auto cam_type = (EntityType)EngineEntityType::EDITOR_CAMERA;
@@ -46,10 +49,10 @@ void longmarch::OutlinePass::BeginRenderPass()
 #endif
 		RenderCommand::CullFace(true, false);
 
-		Vec2u traget_resoluation = OutlineFrameBuffer->GetBufferSize();
+		Vec2u traget_resoluation = m_outlineFrameBuffer->GetBufferSize();
 		RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
 		RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0));
-		OutlineFrameBuffer->Bind();
+		m_outlineFrameBuffer->Bind();
 		RenderCommand::Clear();
 
 		// 1. Draw objects to stencil
@@ -72,29 +75,12 @@ void longmarch::OutlinePass::BeginRenderPass()
 
 		m_parentWorld->ForEach(
 			es,
-			[&shader_name, &camera](EntityDecorator e)
+			[this, &shader_name, &camera](EntityDecorator e)
 		{
-			auto particle = e.GetComponent<Particle3DCom>();
-			bool isParticle = particle.Valid();
-
 			auto scene = e.GetComponent<Scene3DCom>();
 			scene->SetShaderName(shader_name);
 			scene->SetShouldDraw(true, true);
-
-			if (!scene->IsHideInGame() && scene->IsCastShadow())
-			{
-				if (isParticle)
-				{
-					// TODO : outline particle, need to write a specialized shader
-					/*particle->SetRendering(scene->GetShouldDraw());
-					particle->PrepareDrawDataWithViewMatrix(camera->GetViewMatrix());
-					scene->Draw(particle.GetPtr());*/
-				}
-				else
-				{
-					scene->Draw();
-				}
-			}
+			scene->Draw();
 		}
 		);
 
@@ -102,9 +88,9 @@ void longmarch::OutlinePass::BeginRenderPass()
 		auto fbo = Renderer3D::s_Data.gpuBuffer.CurrentFinalFrameBuffer;
 #ifdef USE_STENCIL
 		RenderCommand::TransferStencilBit(
-			OutlineFrameBuffer->GetRendererID(),
-			OutlineFrameBuffer->GetBufferSize().x,
-			OutlineFrameBuffer->GetBufferSize().y,
+			m_outlineFrameBuffer->GetRendererID(),
+			m_outlineFrameBuffer->GetBufferSize().x,
+			m_outlineFrameBuffer->GetBufferSize().y,
 
 			fbo->GetRendererID(),
 			fbo->GetBufferSize().x,
@@ -113,9 +99,9 @@ void longmarch::OutlinePass::BeginRenderPass()
 #endif
 #ifdef USE_POLYOFFSET
 		RenderCommand::TransferDepthBit(
-			OutlineFrameBuffer->GetFrameBufferID(),
-			OutlineFrameBuffer->GetBufferSize().x,
-			OutlineFrameBuffer->GetBufferSize().y,
+			m_outlineFrameBuffer->GetFrameBufferID(),
+			m_outlineFrameBuffer->GetBufferSize().x,
+			m_outlineFrameBuffer->GetBufferSize().y,
 
 			fbo->GetFrameBufferID(),
 			fbo->GetBufferSize().x,
@@ -152,36 +138,20 @@ void longmarch::OutlinePass::BeginRenderPass()
 			es,
 			[&shader_name, &camera](EntityDecorator e)
 		{
+#ifdef USE_STENCIL
 			// Up scale
 			auto trans = e.GetComponent<Transform3DCom>();
 			auto orig_scale = trans->GetLocalScale();
-#ifdef USE_STENCIL
 			trans->SetLocalScale(orig_scale * 1.05f);
 #endif
-			auto particle = e.GetComponent<Particle3DCom>();
-			bool isParticle = particle.Valid();
-
 			auto scene = e.GetComponent<Scene3DCom>();
 			scene->SetShaderName(shader_name);
 			scene->SetShouldDraw(true, true);
-
-			if (!scene->IsHideInGame() && scene->IsCastShadow())
-			{
-				if (isParticle)
-				{
-					// TODO : outline particle, need to write a specialized shader
-					/*particle->SetRendering(scene->GetShouldDraw());
-					particle->PrepareDrawDataWithViewMatrix(camera->GetViewMatrix());
-					scene->Draw(particle.GetPtr());*/
-				}
-				else
-				{
-					scene->Draw();
-				}
-			}
-
+			scene->Draw();
+#ifdef USE_STENCIL
 			// Reset to original scale
 			trans->SetLocalScale(orig_scale);
+#endif
 		}
 		);
 

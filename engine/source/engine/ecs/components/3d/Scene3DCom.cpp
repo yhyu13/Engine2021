@@ -108,16 +108,28 @@ void longmarch::Scene3DCom::SetCastReflection(bool b)
 	m_castReflection = b;
 }
 
-bool longmarch::Scene3DCom::IsTranslucenctRendering() const
+bool longmarch::Scene3DCom::IsParticleRenderType() const
 {
 	LOCK_GUARD2();
-	return m_translucent;
+	return m_renderType == Renderer3D::RENDER_TYPE::PARTICLE;
 }
 
-void longmarch::Scene3DCom::SetTranslucenctRendering(bool v)
+void longmarch::Scene3DCom::SetParticleRenderType(bool v)
 {
 	LOCK_GUARD2();
-	m_translucent = v;
+	m_renderType = Renderer3D::RENDER_TYPE::PARTICLE;
+}
+
+bool longmarch::Scene3DCom::IsTranslucenctRenderType() const
+{
+	LOCK_GUARD2();
+	return m_renderType == Renderer3D::RENDER_TYPE::TRANSLUCENT;
+}
+
+void longmarch::Scene3DCom::SetTranslucenctRenderType(bool v)
+{
+	LOCK_GUARD2();
+	m_renderType = Renderer3D::RENDER_TYPE::TRANSLUCENT;
 }
 
 int longmarch::Scene3DCom::GetTranslucencySortPriority() const
@@ -206,9 +218,9 @@ void longmarch::Scene3DCom::JsonSerialize(Json::Value& value)
 		{
 			val["castReflection"] = m_castReflection;
 		}
-		if (m_translucent != _default.m_translucent)
+		if (m_renderType != _default.m_renderType)
 		{
-			val["translucent"] = m_translucent;
+			val["render-type"] = LongMarch_ToUnderlying(m_renderType);
 		}
 		if (m_translucencySortPriority != _default.m_translucencySortPriority)
 		{
@@ -313,9 +325,9 @@ void longmarch::Scene3DCom::JsonDeserialize(const Json::Value& value)
 		{
 			m_castReflection = val.asBool();
 		}
-		if (auto& val = value["translucent"]; !val.isNull())
+		if (auto& val = value["render-type"]; !val.isNull())
 		{
-			m_translucent = val.asBool();
+			m_renderType = Renderer3D::RENDER_TYPE(val.asInt());
 		}
 		if (auto& val = value["translucency_order"]; !val.isNull())
 		{
@@ -484,12 +496,22 @@ void longmarch::Scene3DCom::ImGuiRender()
 			ImGui::Dummy(ImVec2(0, yoffset_item));
 			{
 				// Use translucency rendering or not
-				bool val = m_translucent;
+				bool val = IsParticleRenderType();
+				if (ImGui::Checkbox("Particle Rendering", &val))
+				{
+					SetParticleRenderType(val);
+				}
+				ImGuiUtil::InlineHelpMarker("Use particle rendering or not.");
+			}
+			ImGui::Dummy(ImVec2(0, yoffset_item));
+			{
+				// Use translucency rendering or not
+				bool val = IsTranslucenctRenderType();
 				if (ImGui::Checkbox("Translucenct Rendering", &val))
 				{
-					m_translucent = val;
+					SetTranslucenctRenderType(val);
 				}
-				ImGuiUtil::InlineHelpMarker("Use translucency rendering or not");
+				ImGuiUtil::InlineHelpMarker("Use translucency rendering or not.");
 			}
 			{
 				// Translucency sort priority, positive draw at front, negative draw at back 
@@ -498,7 +520,7 @@ void longmarch::Scene3DCom::ImGuiRender()
 				{
 					m_translucencySortPriority = val;
 				}
-				ImGuiUtil::InlineHelpMarker("Translucency sort priority, positive draw at front, negative draw at back");
+				ImGuiUtil::InlineHelpMarker("Translucency sort priority, positive draw at front, negative draw at back. This can be used to sort among particles and transparent objects.");
 			}
 			ImGui::Separator();
 			ImGui::TreePop();

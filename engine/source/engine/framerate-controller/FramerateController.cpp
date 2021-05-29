@@ -44,7 +44,6 @@ namespace longmarch
 			{
 				while (m_ticksPerFrame - m_tickEnd > static_cast<double>(k))
 				{
-					// sleep until has roughly + 2 millisecond accuracy
 					std::this_thread::sleep_for(std::chrono::milliseconds{ k - 1 });
 					m_tickEnd = m_timer.Mark<double, std::milli>();
 				}

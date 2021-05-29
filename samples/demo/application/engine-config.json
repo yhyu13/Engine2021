@@ -50,10 +50,6 @@
 		"Multi-draw" : true,
 		"Deferred-shading": true,
 
-		"Clustered-shading": false,
-		"Debug-cluster-light" : false,
-
-		
 		"TAA":false, /* only take effects under deffered shading */
 		"FXAA":false,
 		// Shadow

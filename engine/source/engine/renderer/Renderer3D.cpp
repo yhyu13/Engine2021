@@ -13,12 +13,11 @@
 
 void longmarch::Renderer3D::Init()
 {
-	static bool _init = false;
-	if (_init)
+	if (s_init)
 	{
 		return;
 	}
-	_init = true; 
+	s_init = true;
 	RenderCommand::Init();
 
 	const auto& engineConfiguration = FileSystem::GetCachedJsonCPP("$root:engine-config.json");
@@ -85,23 +84,17 @@ void longmarch::Renderer3D::Init()
 		s_Data.enable_taa = graphicsConfiguration["TAA"].asBool();
 		
 		s_Data.enable_deferredShading = graphicsConfiguration["Deferred-shading"].asBool();
+		if (s_Data.enable_deferredShading)
 		{
-			auto enable_clustered = graphicsConfiguration["Clustered-shading"].asBool();
-			if (enable_clustered) {
-				s_Data.RENDER_PIPE = RENDER_PIPE::CLUSTER;
-				s_Data.enable_deferredShading = false;
-			}
-			else if (s_Data.enable_deferredShading) {
-				s_Data.RENDER_PIPE = RENDER_PIPE::DEFERRED;
-			}
-			else {
-				s_Data.RENDER_PIPE = RENDER_PIPE::FORWARD;
-			}
+			s_Data.RENDER_PIPE = RENDER_PIPE::DEFERRED;
+		}
+		else
+		{
+			s_Data.RENDER_PIPE = RENDER_PIPE::FORWARD;
 		}
 
 		s_Data.resolution_ratio = graphicsConfiguration["Resolution-ratio"].asFloat();
 		s_Data.enable_shadow = graphicsConfiguration["Shadow"].asBool();
-		s_Data.enable_debug_cluster_light = graphicsConfiguration["Debug-cluster-light"].asBool();;
 		s_Data.gBuffer_display_mode = 0;
 		s_Data.toneMapping_mode = 0; // Choose the first tonemap method
 		s_Data.value_gamma = 2.2f;
@@ -167,17 +160,9 @@ void longmarch::Renderer3D::Init()
 		}
 
 		s_Data.enable_reverse_z = true;
-		s_Data.enable_wireframe = false;
-		{
-			RenderCommand::Reverse_Z(s_Data.enable_reverse_z);
-		}
+		RenderCommand::Reverse_Z(s_Data.enable_reverse_z);
 
-		{
-			s_Data.ClusterData.gridSizeX = 16;
-			s_Data.ClusterData.gridSizeY = 9;
-			s_Data.ClusterData.gridSizeZ = 24;
-			s_Data.ClusterData.numClusters = s_Data.ClusterData.gridSizeX * s_Data.ClusterData.gridSizeY * s_Data.ClusterData.gridSizeZ;
-		}
+		s_Data.enable_wireframe = false;
 
 		if (s_Data.MotionBlur.enable_motionblur && !s_Data.enable_deferredShading)
 		{
@@ -196,10 +181,6 @@ void longmarch::Renderer3D::Init()
 		*	Init Shader
 		*
 		**************************************************************/
-		s_Data.ShaderMap["BuildAABBGridCompShader"] = Shader::Create("$shader:cluster_grid.comp");
-		s_Data.ShaderMap["CullLightsCompShader"] = Shader::Create("$shader:cluster_cull_light.comp");
-		s_Data.ShaderMap["ClusterDebugShader"] = Shader::Create("$shader:cluster_debug_vis.vert", "$shader:cluster_debug_vis.frag");
-
 		s_Data.ShaderMap["TransparentForwardShader"] = Shader::Create("$shader:forward_shader.vert", "$shader:forward_shader.frag");
 		s_Data.ShaderMap["DeferredShader"] = Shader::Create("$shader:deferred_shader.vert", "$shader:deferred_shader.frag");
 		s_Data.ShaderMap["DynamicSSGIShader"] = Shader::Create("$shader:dynamic_ssgi_shader.vert", "$shader:dynamic_ssgi_shader.frag");
@@ -253,7 +234,6 @@ void longmarch::Renderer3D::Init()
 		switch (s_Data.RENDER_MODE)
 		{
 		case RENDER_MODE::CANONICAL:
-			s_Data.ShaderMap["ClusterShader"] = Shader::Create("$shader:cluster_shader.vert", "$shader:cluster_shader.frag");
 			s_Data.ShaderMap["ForwardShader"] = Shader::Create("$shader:forward_shader.vert", "$shader:forward_shader.frag");
 			s_Data.ShaderMap["GBufferShader"] = Shader::Create("$shader:gBuffer_shader.vert", "$shader:gBuffer_shader.frag");
 			s_Data.ShaderMap["ShadowBuffer"] = Shader::Create("$shader:shadow/ShadowMap_shader.vert", "$shader:shadow/ShadowMap_shader.frag");
@@ -261,7 +241,6 @@ void longmarch::Renderer3D::Init()
 			//s_Data.ShaderMap["MSMShadowBuffer_Cube"] = Shader::Create("$shader:shadow/momentShadowMap_shader_cube.vert", "$shader:shadow/momentShadowMap_shader_cube.frag", "$shader:cubemap_geomtry_shader.geom"); // Point light shadows use 6 array texture instead
 			break;
 		case RENDER_MODE::MULTIDRAW:
-			s_Data.ShaderMap["ClusterShader"] = Shader::Create("$shader:cluster_shader_MultiDraw.vert", "$shader:cluster_shader_MultiDraw.frag");
 			s_Data.ShaderMap["ForwardShader"] = Shader::Create("$shader:forward_shader_MultiDraw.vert", "$shader:forward_shader_MultiDraw.frag");
 			s_Data.ShaderMap["GBufferShader"] = Shader::Create("$shader:gBuffer_shader_MultiDraw.vert", "$shader:gBuffer_shader_MultiDraw.frag");
 			s_Data.ShaderMap["ShadowBuffer"] = Shader::Create("$shader:shadow/ShadowMap_shader_MultiDraw.vert", "$shader:shadow/ShadowMap_shader.frag");
@@ -273,9 +252,6 @@ void longmarch::Renderer3D::Init()
 		// Assign default shader
 		switch (s_Data.RENDER_PIPE)
 		{
-		case RENDER_PIPE::CLUSTER:
-			s_Data.ShaderMap["OpaqueRenderShader"] = s_Data.ShaderMap["ClusterShader"];
-			break;
 		case RENDER_PIPE::DEFERRED:
 			s_Data.ShaderMap["OpaqueRenderShader"] = s_Data.ShaderMap["GBufferShader"];
 			break;
@@ -323,11 +299,9 @@ void longmarch::Renderer3D::Init()
 		}
 
 		LongMarch_Vector<std::string> forwardShader = { "ForwardShader", "TransparentForwardShader" };
-		LongMarch_Vector<std::string> clusteredShader = { "BuildAABBGridCompShader", "CullLightsCompShader","ClusterShader", "ClusterDebugShader" };
 		LongMarch_Vector<std::string> deferredShader = { "GBufferShader", "DeferredShader" };
 
 		s_Data.ListRenderShadersToPopulateShadowData.insert(s_Data.ListRenderShadersToPopulateShadowData.end(), forwardShader.begin(), forwardShader.end());
-		s_Data.ListRenderShadersToPopulateShadowData.insert(s_Data.ListRenderShadersToPopulateShadowData.end(), clusteredShader.begin(), clusteredShader.end());
 		s_Data.ListRenderShadersToPopulateShadowData.insert(s_Data.ListRenderShadersToPopulateShadowData.end(), deferredShader.begin(), deferredShader.end());
 
 		LongMarch_Vector<std::string> MiscShader = {"ToneMapping", "ParticleShader", "BBoxShader", "SkyboxShader", "TAAShader", "DynamicSSAOShader", "DynamicSSGIShader", "BilateralBlur", "DynamicSSRShader", "DOF_Blend"};
@@ -364,12 +338,6 @@ void longmarch::Renderer3D::Init()
 			s_Data.gpuBuffer.ShadowPVMatrixBuffer = ShaderStorageBuffer::Create(nullptr, 0);
 			s_Data.gpuBuffer.BoneTransformMatrixBuffer = ShaderStorageBuffer::Create(nullptr, 0);
 
-			s_Data.gpuBuffer.AABBvolumeGridBuffer = ShaderStorageBuffer::Create(nullptr, s_Data.ClusterData.numClusters * sizeof(s_Data.ClusterData.frustrum));
-			s_Data.gpuBuffer.ScreenToViewBuffer = ShaderStorageBuffer::Create(nullptr, sizeof(s_Data.ClusterData.screenToView));
-			s_Data.gpuBuffer.ClusterColorBuffer = ShaderStorageBuffer::Create(nullptr, s_Data.ClusterData.gridSizeX * s_Data.ClusterData.gridSizeY * s_Data.ClusterData.gridSizeZ * sizeof(Vec4f));
-			s_Data.gpuBuffer.LightIndexListBuffer = ShaderStorageBuffer::Create(nullptr, (s_Data.ClusterData.numClusters * s_Data.ClusterData.maxLightsPerCluster) * sizeof(unsigned int));
-			s_Data.gpuBuffer.LightGridBuffer = ShaderStorageBuffer::Create(nullptr, s_Data.ClusterData.numClusters * 2 * sizeof(unsigned int));
-			s_Data.gpuBuffer.LightIndexGlobalCountBuffer = ShaderStorageBuffer::Create(nullptr, sizeof(unsigned int));
 			s_Data.gpuBuffer.CurrentModelBuffer = UniformBuffer::Create(nullptr, 0);
 			s_Data.gpuBuffer.CurrentMaterialBuffer = UniformBuffer::Create(nullptr, 0);
 
@@ -665,7 +633,6 @@ void longmarch::Renderer3D::Init()
 			queue->Subscribe(EngineGraphicsDebugEventType::SET_ENV_MAPPING, &Renderer3D::_ON_SET_ENV_MAPPING);
 			queue->Subscribe(EngineGraphicsDebugEventType::TOGGLE_SHADOW, &Renderer3D::_ON_TOGGLE_SHADOW);
 			queue->Subscribe(EngineGraphicsDebugEventType::SWITCH_G_BUFFER_DISPLAY, &Renderer3D::_ON_SWITCH_GBUFFER_MODE);
-			queue->Subscribe(EngineGraphicsDebugEventType::TOGGLE_DEBUG_CLUSTER, &Renderer3D::_ON_TOGGLE_DEBUG_CLUSTER);
 		}
 		{
 			auto queue = EventQueue<EngineGraphicsEventType>::GetInstance();
@@ -685,10 +652,719 @@ void longmarch::Renderer3D::Init()
 	}
 }
 
-void longmarch::Renderer3D::_ON_TOGGLE_DEBUG_CLUSTER(EventQueue<EngineGraphicsDebugEventType>::EventPtr e)
+void longmarch::Renderer3D::Shutdown() 
+{ 
+	s_init = false; 
+}
+
+void longmarch::Renderer3D::EditorRenderGraphicsSettings()
 {
-	auto event = std::static_pointer_cast<ToggleSlicesEvent>(e);
-	s_Data.enable_debug_cluster_light = event->m_enable;
+	if (ImGui::TreeNode("Graphics Settings"))
+	{
+		auto graphicDebugEventQueue = EventQueue<EngineGraphicsDebugEventType>::GetInstance();
+		auto graphicEventQueue = EventQueue<EngineGraphicsEventType>::GetInstance();
+
+		static auto engineConfiguration = FileSystem::GetNewJsonCPP("$root:engine-config.json");
+		static auto windowConfig = engineConfiguration["window"];
+		static auto graphicsConfig = engineConfiguration["graphics"];
+		static auto MotionBlurConfig = graphicsConfig["Motion-blur"];
+		static auto EnvMapConfig = graphicsConfig["Env-mapping"];
+		static auto SMAAConfig = graphicsConfig["SMAA"];
+		static auto SSGIConfig = graphicsConfig["SSGI"];
+		static auto SSAOConfig = graphicsConfig["SSAO"];
+		static auto SSRConfig = graphicsConfig["SSR"];
+		static auto BloomConfig = graphicsConfig["Bloom"];
+		static auto DOFConfig = graphicsConfig["DOF"];
+
+		// 1. Window mode
+		static const char* windowModes[]{ "Fullscreen", "Borderless Windowed", "Windowed" };
+		static int selected_windowModes = windowConfig["Full-screen"].asInt();
+		// 2. Window resolution
+		static const char* windowReso[]{ "1920x1080", "1600x900", "1366x768","1280x720", // 16:9
+										"1920x900", "1920x720", "1600x720", // Wide screen
+										"1600x1050", "1440x900", // 16:10
+										"1280x960", "900x600" // 4:3
+		};
+		static int selected_windowReso = 0;
+		// V-sync
+		static bool checkVSync = windowConfig["V-sync"].asBool();
+		// GPU-sync
+		static bool checkGPUSync = windowConfig["GPU-sync"].asBool();
+		// G buffer mode
+		static const char* gbufferModes[]{ "Default", "Depth", "Normal","Albedo","Emission","Specular","Roughness","Metallic" ,"Ambient occulusion", "SS Velocity" };
+		static int selected_gbufferModes = 0;
+
+		// Toggle shadow
+		static bool checkShadow = graphicsConfig["Shadow"].asBool();
+		// Deferred shading
+		static bool checkDeferredShading = graphicsConfig["Deferred-shading"].asBool();
+
+		// FXAA
+		static bool checkFXAA = graphicsConfig["FXAA"].asBool();
+		// TAA
+		static bool checkTAA = graphicsConfig["TAA"].asBool();
+		// Tone mapping
+		static const char* toneMapModes[]{ "AcesFilm", "Luminance", "Uncharted2", "Filmic","Reinhard" };
+		static int selected_toneMap = 0;
+		// Gamma
+		static float valueGamma = 2.2f;
+
+		// Motion Blur
+		static bool checkMotionBlur = MotionBlurConfig["Enable"].asBool();
+		static int valueMotionblurShutterSpeed = MotionBlurConfig["Motion-blur-shutter-speed"].asInt();
+
+		// Env mapping
+		static std::string valueCurrentEnvMapName = EnvMapConfig["Current-Sky-box"].asString();
+		static LongMarch_Vector<std::string> valueAllEnvMapName;
+		valueAllEnvMapName.clear();
+		const auto& skyboxes_name = EnvMapConfig["All-Sky-box"];
+		for (auto i(0u); i < skyboxes_name.size(); ++i)
+		{
+			const auto& name = skyboxes_name[i].asString();
+			valueAllEnvMapName.push_back(name);
+		}
+		static bool checkEvnMapping = EnvMapConfig["Enable"].asBool();
+
+		// SMAA
+		static bool checkSMAA = SMAAConfig["Enable"].asBool();
+		static int valueSMAAMode = SMAAConfig["Mode"].asInt();
+
+		// SSGI
+		static bool checkSSGI = SSGIConfig["Enable"].asBool();
+		static int valueSSGISample = SSGIConfig["Num-samples"].asInt();
+		static int valueSSGISampleResDownScale = SSGIConfig["Res-down-scale"].asInt();
+		static int valueSSGIBlurKernel = SSGIConfig["Gaussian-kernel"].asInt();
+		static float valueSSGISampleRadius = SSGIConfig["Radius"].asFloat();
+		static float valueSSGIStrength = SSGIConfig["Strength"].asFloat();
+
+		// SSAO
+		static bool checkSSAO = SSAOConfig["Enable"].asBool();
+		static int valueSSAOSample = SSAOConfig["Num-samples"].asInt();
+		static int valueSSAOSampleResDownScale = SSAOConfig["Res-down-scale"].asInt();
+		static int valueSSAOBlurKernel = SSAOConfig["Gaussian-kernel"].asInt();
+		static float valueSSAOSampleRadius = SSAOConfig["Radius"].asFloat();
+		static float valueSSAOScale = SSAOConfig["Scale"].asFloat();
+		static float valueSSAOPower = SSAOConfig["Power"].asFloat();
+
+		// SSR
+		static bool checkSSR = SSRConfig["Enable"].asBool();
+		static int valueSSRBlurKernel = SSRConfig["Gaussian-kernel"].asInt();
+		static int valueSSRSampleResDownScale = SSRConfig["Res-down-scale"].asInt();
+		static bool checkSSRDebug = false;
+
+		// Bloom
+		static bool checkBloom = BloomConfig["Enable"].asBool();
+		static float valueBloomThreshold = BloomConfig["Threshold"].asFloat();
+		static float valueBloomStrength = BloomConfig["Strength"].asFloat();
+		static int valueBloomBlurKernel = BloomConfig["Gaussian-kernel"].asInt();
+		static int valueBloomSampleResDownScale = BloomConfig["Res-down-scale"].asFloat();
+
+		// DOF
+		static bool checkDOF = DOFConfig["Enable"].asBool();
+		static float valueDOFThreshold = DOFConfig["Threshold"].asFloat();
+		static float valueDOFStrength = DOFConfig["Strength"].asFloat();
+		static int valueDOFBlurKernel = DOFConfig["Gaussian-kernel"].asInt();
+		static int valueDOFSampleResDownScale = DOFConfig["Res-down-scale"].asFloat();
+		static float valueDOFRefocusRate = DOFConfig["Refocus-rate"].asFloat();
+		static bool checkDOFDebug = false;
+
+		constexpr int yoffset_item = 5;
+
+		ImGui::Dummy(ImVec2(0, yoffset_item));
+		if (ImGui::Button("Reset graphics settings to default values"))
+		{
+			checkVSync = windowConfig["V-sync"].asBool();
+			checkGPUSync = windowConfig["GPU-sync"].asBool();
+			selected_gbufferModes = 0;;
+			checkShadow = graphicsConfig["Shadow"].asBool();
+			checkDeferredShading = graphicsConfig["Deferred-shading"].asBool();
+			checkFXAA = graphicsConfig["FXAA"].asBool();
+			checkTAA = graphicsConfig["TAA"].asBool();
+			{
+				selected_toneMap = 0;
+				valueGamma = 2.2f;
+			}
+			{
+				// Motion Blur
+				checkMotionBlur = MotionBlurConfig["Enable"].asBool();
+				valueMotionblurShutterSpeed = MotionBlurConfig["Motion-blur-shutter-speed"].asInt();
+			}
+			{
+				// Env mapping
+				valueCurrentEnvMapName = EnvMapConfig["Current-Sky-box"].asString();
+				valueAllEnvMapName.clear();
+				const auto& skyboxes_name = EnvMapConfig["All-Sky-box"];
+				for (auto i(0u); i < skyboxes_name.size(); ++i)
+				{
+					const auto& name = skyboxes_name[i].asString();
+					valueAllEnvMapName.push_back(name);
+				}
+				checkEvnMapping = EnvMapConfig["Enable"].asBool();
+			}
+			{
+				// SMAA
+				checkSMAA = SMAAConfig["Enable"].asBool();
+				valueSMAAMode = SMAAConfig["Mode"].asInt();
+			}
+			{
+				// SSGI
+				checkSSGI = SSGIConfig["Enable"].asBool();
+				valueSSGISample = SSGIConfig["Num-samples"].asInt();
+				valueSSGISampleResDownScale = SSGIConfig["Res-down-scale"].asInt();
+				valueSSGIBlurKernel = SSGIConfig["Gaussian-kernel"].asInt();
+				valueSSGISampleRadius = SSGIConfig["Radius"].asFloat();
+				valueSSGIStrength = SSGIConfig["Strength"].asFloat();
+			}
+			{
+				// SSAO
+				checkSSAO = SSAOConfig["Enable"].asBool();
+				valueSSAOSample = SSAOConfig["Num-samples"].asInt();
+				valueSSAOSampleResDownScale = SSAOConfig["Res-down-scale"].asInt();
+				valueSSAOBlurKernel = SSAOConfig["Gaussian-kernel"].asInt();
+				valueSSAOSampleRadius = SSAOConfig["Radius"].asFloat();
+				valueSSAOScale = SSAOConfig["Scale"].asFloat();
+				valueSSAOPower = SSAOConfig["Power"].asFloat();
+			}
+			{
+				// SSR
+				checkSSR = SSRConfig["Enable"].asBool();
+				valueSSRBlurKernel = SSRConfig["Gaussian-kernel"].asFloat();
+				valueSSRSampleResDownScale = SSRConfig["Res-down-scale"].asFloat();
+				checkSSRDebug = false;
+			}
+			{
+				// Bloom
+				checkBloom = BloomConfig["Enable"].asBool();
+				valueBloomThreshold = BloomConfig["Threshold"].asFloat();
+				valueBloomStrength = BloomConfig["Strength"].asFloat();
+				valueBloomBlurKernel = BloomConfig["Gaussian-kernel"].asInt();
+				valueBloomSampleResDownScale = BloomConfig["Res-down-scale"].asFloat();
+			}
+			{
+				// DOF
+				checkDOF = DOFConfig["Enable"].asBool();
+				valueDOFThreshold = DOFConfig["Threshold"].asFloat();
+				valueDOFStrength = DOFConfig["Strength"].asFloat();
+				valueDOFBlurKernel = DOFConfig["Gaussian-kernel"].asInt();
+				valueDOFSampleResDownScale = DOFConfig["Res-down-scale"].asFloat();
+				valueDOFRefocusRate = DOFConfig["Refocus-rate"].asFloat();
+				checkDOFDebug = false;
+			}
+			{
+				auto e = MemoryManager::Make_shared<ToggleVSyncEvent>(checkVSync);
+				graphicEventQueue->Publish(e);
+			}
+			{
+				auto e = MemoryManager::Make_shared<ToggleGPUSyncEvent>(checkGPUSync);
+				graphicEventQueue->Publish(e);
+			}
+			{
+				auto e = MemoryManager::Make_shared<SwitchGBufferEvent>(selected_gbufferModes);
+				graphicDebugEventQueue->Publish(e);
+			}
+			{
+				auto e = MemoryManager::Make_shared<ToggleShadowEvent>(checkShadow);
+				graphicDebugEventQueue->Publish(e);
+			}
+
+			{
+				auto e = MemoryManager::Make_shared<SetEnvironmentMappingEvent>(checkEvnMapping, valueCurrentEnvMapName);
+				graphicDebugEventQueue->Publish(e);
+			}
+			{
+				auto e = MemoryManager::Make_shared<ToggleMotionBlurEvent>(checkMotionBlur, valueMotionblurShutterSpeed);
+				graphicEventQueue->Publish(e);
+			}
+			{
+				auto e = MemoryManager::Make_shared<ToggleTAAEvent>(checkTAA);
+				graphicEventQueue->Publish(e);
+			}
+			{
+				auto e = MemoryManager::Make_shared<ToggleSMAAEvent>(checkSMAA, valueSMAAMode);
+				graphicEventQueue->Publish(e);
+			}
+			{
+				auto e = MemoryManager::Make_shared<ToggleFXAAEvent>(checkFXAA);
+				graphicEventQueue->Publish(e);
+			}
+			{
+				auto e = MemoryManager::Make_shared<SwitchToneMappingEvent>(selected_toneMap);
+				graphicEventQueue->Publish(e);
+			}
+			{
+				auto e = MemoryManager::Make_shared<SetGammaValueEvent>(valueGamma);
+				graphicEventQueue->Publish(e);
+			}
+			{
+				auto e = MemoryManager::Make_shared<SetSSGIValueEvent>(checkSSGI, valueSSGISample, valueSSGISampleResDownScale, valueSSGIBlurKernel, valueSSGISampleRadius, valueSSGIStrength);
+				graphicEventQueue->Publish(e);
+			}
+			{
+				auto e = MemoryManager::Make_shared<SetSSAOValueEvent>(checkSSAO, valueSSAOSample, valueSSAOSampleResDownScale, valueSSAOBlurKernel, valueSSAOSampleRadius, valueSSAOScale, valueSSAOPower);
+				graphicEventQueue->Publish(e);
+			}
+			{
+				auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale, checkSSRDebug);
+				graphicEventQueue->Publish(e);
+			}
+			{
+				auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength, valueBloomBlurKernel, valueBloomSampleResDownScale);
+				graphicEventQueue->Publish(e);
+			}
+			{
+				auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+				graphicEventQueue->Publish(e);
+			}
+		}
+
+		if (ImGui::Button("Save graphics settings to config"))
+		{
+			constexpr auto config_path = "$root:engine-config.json";
+			auto engineConfiguration = FileSystem::GetNewJsonCPP(config_path);
+
+			Json::StreamWriterBuilder builder;
+			builder["commentStyle"] = "None";
+			builder["indentation"] = "    ";
+			builder["precision"] = 4;
+			builder["precisionType"] = "decimal";
+			builder["dropNullPlaceholders"] = false;
+			std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+
+			{
+				auto& graphicsConfig = engineConfiguration["graphics"];
+				{
+					auto& MotionBlurConfig = graphicsConfig["Motion-blur"];
+					MotionBlurConfig["Enable"] = checkMotionBlur;
+					MotionBlurConfig["Motion-blur-shutter-speed"] = valueMotionblurShutterSpeed;
+				}
+				{
+					auto& EnvMapConfig = graphicsConfig["Env-mapping"];
+					EnvMapConfig["Current-Sky-box"] = valueCurrentEnvMapName;
+					EnvMapConfig["Enable"] = checkEvnMapping;
+				}
+				{
+					auto& SMAAConfig = graphicsConfig["SMAA"];
+					SMAAConfig["Enable"] = checkSMAA;
+					SMAAConfig["Mode"] = valueSMAAMode;
+				}
+				{
+					auto& SSGIConfig = graphicsConfig["SSGI"];
+					SSGIConfig["Enable"] = checkSSGI;
+					SSGIConfig["Num-samples"] = valueSSGISample;
+					SSGIConfig["Res-down-scale"] = valueSSGISampleResDownScale;
+					SSGIConfig["Gaussian-kernel"] = valueSSGIBlurKernel;
+					SSGIConfig["Radius"] = valueSSGISampleRadius;
+					SSGIConfig["Strength"] = valueSSGIStrength;
+				}
+				{
+					auto& SSAOConfig = graphicsConfig["SSAO"];
+					SSAOConfig["Enable"] = checkSSAO;
+					SSAOConfig["Num-samples"] = valueSSAOSample;
+					SSAOConfig["Res-down-scale"] = valueSSAOSampleResDownScale;
+					SSAOConfig["Gaussian-kernel"] = valueSSAOBlurKernel;
+					SSAOConfig["Radius"] = valueSSAOSampleRadius;
+					SSAOConfig["Scale"] = valueSSAOScale;
+					SSAOConfig["Power"] = valueSSAOPower;
+				}
+				{
+					auto& SSRConfig = graphicsConfig["SSR"];
+					SSRConfig["Enable"] = checkSSR;
+					SSRConfig["Gaussian-kernel"] = valueSSRBlurKernel;
+					SSRConfig["Res-down-scale"] = valueSSRSampleResDownScale;
+				}
+				{
+					auto& BloomConfig = graphicsConfig["Bloom"];
+					BloomConfig["Enable"] = checkBloom;
+					BloomConfig["Threshold"] = valueBloomThreshold;
+					BloomConfig["Strength"] = valueBloomStrength;
+					BloomConfig["Gaussian-kernel"] = valueBloomBlurKernel;
+					BloomConfig["Res-down-scale"] = valueBloomSampleResDownScale;
+				}
+				{
+					auto& DOFConfig = graphicsConfig["DOF"];
+					DOFConfig["Enable"] = checkDOF;
+					DOFConfig["Threshold"] = valueDOFThreshold;
+					DOFConfig["Strength"] = valueDOFStrength;
+					DOFConfig["Gaussian-kernel"] = valueDOFBlurKernel;
+					DOFConfig["Res-down-scale"] = valueDOFSampleResDownScale;
+					DOFConfig["Refocus-rate"] = valueDOFRefocusRate;
+				}
+			}
+
+			auto& output = FileSystem::OpenOfstream(config_path, FileSystem::FileType::OPEN_BINARY);
+			writer->write(engineConfiguration, &output);
+			FileSystem::CloseOfstream(config_path);
+			FileSystem::RemoveCachedJsonCPP(config_path); //< Remove cached json file so that we can load the one that has just written to
+		}
+		ImGui::Dummy(ImVec2(0, yoffset_item));
+
+		if (ImGui::BeginTabBar("Graphics Settings"))
+		{
+			if (ImGui::BeginTabItem("General"))
+			{
+				constexpr int yoffset_item = 5;
+				// 1. Window mode
+				{
+					if (ImGui::Combo("Display", &selected_windowModes, windowModes, IM_ARRAYSIZE(windowModes)))
+					{
+						// TODO : Event
+					}
+				}
+				ImGui::Dummy(ImVec2(0, yoffset_item));
+				// 2. Window resolution
+				{
+					if (ImGui::Combo("Resolution", &selected_windowReso, windowReso, IM_ARRAYSIZE(windowReso)))
+					{
+						// TODO : Event
+					}
+				}
+				ImGui::Dummy(ImVec2(0, yoffset_item));
+				// V-sync
+				{
+					if (ImGui::Checkbox("V-Sync", &checkVSync))
+					{
+						auto e = MemoryManager::Make_shared<ToggleVSyncEvent>(checkVSync);
+						graphicEventQueue->Publish(e);
+					}
+				}
+				// GPU-sync
+				{
+					if (ImGui::Checkbox("GPU Sync", &checkGPUSync))
+					{
+						auto e = MemoryManager::Make_shared<ToggleGPUSyncEvent>(checkGPUSync);
+						graphicEventQueue->Publish(e);
+					}
+				}
+				// High precision Frame control
+				{
+					static bool checkHighPFPSMode = false;
+					if (ImGui::Checkbox("High precision Frame control", &checkHighPFPSMode))
+					{
+						FramerateController::GetInstance()->SetHighPrecisionMode(checkHighPFPSMode);
+					}
+				}
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Lighting/Shadow"))
+			{
+				constexpr int yoffset_item = 5;
+				// G buffer mode
+				{
+					if (ImGui::Combo("G-buffer", &selected_gbufferModes, gbufferModes, IM_ARRAYSIZE(gbufferModes)))
+					{
+						auto e = MemoryManager::Make_shared<SwitchGBufferEvent>(selected_gbufferModes);
+						graphicDebugEventQueue->Publish(e);
+					}
+				}
+				ImGui::Dummy(ImVec2(0, yoffset_item));
+				// Set IBL
+				if (ImGui::TreeNode("Environment Mapping"))
+				{
+					if (ImGui::Checkbox("Enable", &checkEvnMapping))
+					{
+						auto e = MemoryManager::Make_shared<SetEnvironmentMappingEvent>(checkEvnMapping, valueCurrentEnvMapName);
+						graphicDebugEventQueue->Publish(e);
+					}
+					int selected_skybox = LongMarch_findFristIndex(valueAllEnvMapName, valueCurrentEnvMapName) + 1;
+					auto valueAllEnvMapName_char = LongMarch_StrVec2ConstChar(valueAllEnvMapName);
+					valueAllEnvMapName_char.insert(valueAllEnvMapName_char.begin(), "");
+					if (ImGui::Combo("Skyboxes", &selected_skybox, &valueAllEnvMapName_char[0], valueAllEnvMapName_char.size()))
+					{
+						valueCurrentEnvMapName = valueAllEnvMapName[selected_skybox];
+						auto e = MemoryManager::Make_shared<SetEnvironmentMappingEvent>(checkEvnMapping, valueCurrentEnvMapName);
+						graphicDebugEventQueue->Publish(e);
+					}
+					ImGui::Separator();
+					ImGui::TreePop();
+				}
+				ImGui::Dummy(ImVec2(0, yoffset_item));
+				// Toggle shadow
+				{
+					if (ImGui::Checkbox("Shadow", &checkShadow))
+					{
+						auto e = MemoryManager::Make_shared<ToggleShadowEvent>(checkShadow);
+						graphicDebugEventQueue->Publish(e);
+					}
+				}
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Post processing"))
+			{
+				constexpr int yoffset_item = 5;
+				// Motion blur
+				if (ImGui::TreeNode("Motion Blur"))
+				{
+					if (ImGui::Checkbox("Enable", &checkMotionBlur))
+					{
+						auto e = MemoryManager::Make_shared<ToggleMotionBlurEvent>(checkMotionBlur, valueMotionblurShutterSpeed);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Moltion Blur Shutter Speed", &valueMotionblurShutterSpeed, 15, 90))
+					{
+						auto e = MemoryManager::Make_shared<ToggleMotionBlurEvent>(checkMotionBlur, valueMotionblurShutterSpeed);
+						graphicEventQueue->Publish(e);
+					}
+					ImGui::Separator();
+					ImGui::TreePop();
+				}
+				ImGui::Dummy(ImVec2(0, yoffset_item));
+				// SSGI
+				if (ImGui::TreeNode("SSGI"))
+				{
+					{
+						float Ia = Renderer3D::s_Data.ambient;
+						if (ImGui::DragFloat("Ia", &Ia, 0.01, 0, 1, "%.2f"))
+						{
+							Renderer3D::s_Data.ambient = Ia;
+						}
+					}
+					if (ImGui::Checkbox("Enable", &checkSSGI))
+					{
+						auto e = MemoryManager::Make_shared<SetSSGIValueEvent>(checkSSGI, valueSSGISample, valueSSGISampleResDownScale, valueSSGIBlurKernel, valueSSGISampleRadius, valueSSGIStrength);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Resolution Down Scale", &valueSSGISampleResDownScale, 1, 4, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetSSGIValueEvent>(checkSSGI, valueSSGISample, valueSSGISampleResDownScale, valueSSGIBlurKernel, valueSSGISampleRadius, valueSSGIStrength);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Samples", &valueSSGISample, 5, 80, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetSSGIValueEvent>(checkSSGI, valueSSGISample, valueSSGISampleResDownScale, valueSSGIBlurKernel, valueSSGISampleRadius, valueSSGIStrength);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Gauss Kernel", &valueSSGIBlurKernel, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetSSGIValueEvent>(checkSSGI, valueSSGISample, valueSSGISampleResDownScale, valueSSGIBlurKernel, valueSSGISampleRadius, valueSSGIStrength);
+						graphicEventQueue->Publish(e);
+					}
+					ImGuiUtil::InlineHelpMarker("Kernel size is scaled with buffer size against 1080p (e.g. 540p buffer size will have half the size of the kernel)");
+					if (ImGui::SliderFloat("Sample Radius", &valueSSGISampleRadius, 0.01f, 20.0f, "%.2f"))
+					{
+						auto e = MemoryManager::Make_shared<SetSSGIValueEvent>(checkSSGI, valueSSGISample, valueSSGISampleResDownScale, valueSSGIBlurKernel, valueSSGISampleRadius, valueSSGIStrength);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderFloat("Strength", &valueSSGIStrength, 0.1f, 10.0f, "%.1f"))
+					{
+						auto e = MemoryManager::Make_shared<SetSSGIValueEvent>(checkSSGI, valueSSGISample, valueSSGISampleResDownScale, valueSSGIBlurKernel, valueSSGISampleRadius, valueSSGIStrength);
+						graphicEventQueue->Publish(e);
+					}
+					ImGui::Separator();
+					ImGui::TreePop();
+				}
+				ImGui::Dummy(ImVec2(0, yoffset_item));
+				// SSAO
+				if (ImGui::TreeNode("SSAO"))
+				{
+					if (ImGui::Checkbox("Enable", &checkSSAO))
+					{
+						auto e = MemoryManager::Make_shared<SetSSAOValueEvent>(checkSSAO, valueSSAOSample, valueSSAOSampleResDownScale, valueSSAOBlurKernel, valueSSAOSampleRadius, valueSSAOScale, valueSSAOPower);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Resolution Down Scale", &valueSSAOSampleResDownScale, 1, 4, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetSSAOValueEvent>(checkSSAO, valueSSAOSample, valueSSAOSampleResDownScale, valueSSAOBlurKernel, valueSSAOSampleRadius, valueSSAOScale, valueSSAOPower);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Samples", &valueSSAOSample, 5, 80, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetSSAOValueEvent>(checkSSAO, valueSSAOSample, valueSSAOSampleResDownScale, valueSSAOBlurKernel, valueSSAOSampleRadius, valueSSAOScale, valueSSAOPower);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Gauss Kernel", &valueSSAOBlurKernel, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetSSAOValueEvent>(checkSSAO, valueSSAOSample, valueSSAOSampleResDownScale, valueSSAOBlurKernel, valueSSAOSampleRadius, valueSSAOScale, valueSSAOPower);
+						graphicEventQueue->Publish(e);
+					}
+					ImGuiUtil::InlineHelpMarker("Kernel size is scaled with buffer size against 1080p (e.g. 540p buffer size will have half the size of the kernel)");
+					if (ImGui::SliderFloat("Sample Radius", &valueSSAOSampleRadius, 0.01f, 20.0f, "%.2f"))
+					{
+						auto e = MemoryManager::Make_shared<SetSSAOValueEvent>(checkSSAO, valueSSAOSample, valueSSAOSampleResDownScale, valueSSAOBlurKernel, valueSSAOSampleRadius, valueSSAOScale, valueSSAOPower);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderFloat("Scale", &valueSSAOScale, 0.1f, 10.0f, "%.1f"))
+					{
+						auto e = MemoryManager::Make_shared<SetSSAOValueEvent>(checkSSAO, valueSSAOSample, valueSSAOSampleResDownScale, valueSSAOBlurKernel, valueSSAOSampleRadius, valueSSAOScale, valueSSAOPower);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderFloat("Power", &valueSSAOPower, 0.1f, 10.0f, "%.1f"))
+					{
+						auto e = MemoryManager::Make_shared<SetSSAOValueEvent>(checkSSAO, valueSSAOSample, valueSSAOSampleResDownScale, valueSSAOBlurKernel, valueSSAOSampleRadius, valueSSAOScale, valueSSAOPower);
+						graphicEventQueue->Publish(e);
+					}
+					ImGui::Separator();
+					ImGui::TreePop();
+				}
+				ImGui::Dummy(ImVec2(0, yoffset_item));
+				// SSR
+				if (ImGui::TreeNode("SSR"))
+				{
+					if (ImGui::Checkbox("Enable", &checkSSR))
+					{
+						auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale, checkSSRDebug);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Resolution Down Scale", &valueSSRSampleResDownScale, 1, 4, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale, checkSSRDebug);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Gauss Kernel", &valueSSRBlurKernel, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale, checkSSRDebug);
+						graphicEventQueue->Publish(e);
+					}
+					ImGuiUtil::InlineHelpMarker("Kernel size is scaled with buffer size against 1080p (e.g. 540p buffer size will have half the size of the kernel)");
+					if (ImGui::Checkbox("Debug", &checkSSRDebug))
+					{
+						auto e = MemoryManager::Make_shared<SetSSRValueEvent>(checkSSR, valueSSRBlurKernel, valueSSRSampleResDownScale, checkSSRDebug);
+						graphicEventQueue->Publish(e);
+					}
+					ImGui::Separator();
+					ImGui::TreePop();
+				}
+				ImGui::Dummy(ImVec2(0, yoffset_item));
+				// Bloom
+				if (ImGui::TreeNode("Bloom"))
+				{
+					if (ImGui::Checkbox("Enable", &checkBloom))
+					{
+						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength, valueBloomBlurKernel, valueBloomSampleResDownScale);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Resolution Down Scale", &valueBloomSampleResDownScale, 1, 4, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength, valueBloomBlurKernel, valueBloomSampleResDownScale);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Gauss Kernel", &valueBloomBlurKernel, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength, valueBloomBlurKernel, valueBloomSampleResDownScale);
+						graphicEventQueue->Publish(e);
+					}
+					ImGuiUtil::InlineHelpMarker("Kernel size is scaled with buffer size against 1080p (e.g. 540p buffer size will have half the size of the kernel)");
+					if (ImGui::DragFloat("Threshold", &valueBloomThreshold, 0.05, -60, 1, "%.2f"))
+					{
+						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength, valueBloomBlurKernel, valueBloomSampleResDownScale);
+						graphicEventQueue->Publish(e);
+					} ImGuiUtil::InlineHelpMarker("Negative value serves as the power of a exponent s-curve in [-40,0], the greater this value, the greater the bloom coverage. Positive value serves as the cutoff value of a step function in [0,1], the the lower this value, the greater the bloom coverage ");
+					if (ImGui::DragFloat("Strength", &valueBloomStrength, 0.01, 0, 1, "%.2f"))
+					{
+						auto e = MemoryManager::Make_shared<SetBloomEvent>(checkBloom, valueBloomThreshold, valueBloomStrength, valueBloomBlurKernel, valueBloomSampleResDownScale);
+						graphicEventQueue->Publish(e);
+					}
+					ImGui::Separator();
+					ImGui::TreePop();
+				}
+				ImGui::Dummy(ImVec2(0, yoffset_item));
+				// DOF
+				if (ImGui::TreeNode("Depth of Field"))
+				{
+					if (ImGui::Checkbox("Enable", &checkDOF))
+					{
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Resolution Down Scale", &valueDOFSampleResDownScale, 1, 4, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderInt("Gauss Kernel", &valueDOFBlurKernel, LongMarch_GUASSIAN_KERNEL_MIN, LongMarch_GUASSIAN_KERNEL_MAX, "%d"))
+					{
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+						graphicEventQueue->Publish(e);
+					}
+					ImGuiUtil::InlineHelpMarker("Kernel size is scaled with buffer size against 1080p (e.g. 540p buffer size will have half the size of the kernel)");
+					if (ImGui::DragFloat("Threshold", &valueDOFThreshold, 0.1, 0.01, 100, "%.2f"))
+					{
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::DragFloat("Blend Strength", &valueDOFStrength, 0.01, 0.01, 1, "%.2f"))
+					{
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::DragFloat("Refocus Speed", &valueDOFRefocusRate, 0.1, 1, 60, "%.1f"))
+					{
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::Checkbox("Debug", &checkDOFDebug))
+					{
+						auto e = MemoryManager::Make_shared<SetDOFvent>(checkDOF, valueDOFThreshold, valueDOFStrength, valueDOFBlurKernel, valueDOFSampleResDownScale, valueDOFRefocusRate, checkDOFDebug);
+						graphicEventQueue->Publish(e);
+					}
+					ImGui::Separator();
+					ImGui::TreePop();
+				}
+				ImGui::Dummy(ImVec2(0, yoffset_item));
+				// TAA
+				if (ImGui::TreeNode("TAA"))
+				{
+					if (ImGui::Checkbox("Enable", &checkTAA))
+					{
+						auto e = MemoryManager::Make_shared<ToggleTAAEvent>(checkTAA);
+						graphicEventQueue->Publish(e);
+					}
+					ImGui::Separator();
+					ImGui::TreePop();
+				}
+				ImGui::Dummy(ImVec2(0, yoffset_item));
+				// SMAA
+				if (ImGui::TreeNode("SMAA"))
+				{
+					if (ImGui::Checkbox("Enable", &checkSMAA))
+					{
+						auto e = MemoryManager::Make_shared<ToggleSMAAEvent>(checkSMAA, valueSMAAMode);
+						graphicEventQueue->Publish(e);
+					}
+					static const char* smaa_modes[] = { "SMAA 1X", "SMAA T2X" };
+					if (ImGui::Combo("Method", &valueSMAAMode, smaa_modes, IM_ARRAYSIZE(smaa_modes)))
+					{
+						auto e = MemoryManager::Make_shared<ToggleSMAAEvent>(checkSMAA, valueSMAAMode);
+						graphicEventQueue->Publish(e);
+					}
+					ImGui::Separator();
+					ImGui::TreePop();
+				}
+				ImGui::Dummy(ImVec2(0, yoffset_item));
+				// FXAA
+				if (ImGui::TreeNode("FXAA"))
+				{
+					if (ImGui::Checkbox("Enable", &checkFXAA))
+					{
+						auto e = MemoryManager::Make_shared<ToggleFXAAEvent>(checkFXAA);
+						graphicEventQueue->Publish(e);
+					}
+					ImGui::Separator();
+					ImGui::TreePop();
+				}
+				ImGui::Dummy(ImVec2(0, yoffset_item));
+				// Tone mapping
+				if (ImGui::TreeNode("Tone Mapping"))
+				{
+					if (ImGui::Combo("Method", &selected_toneMap, toneMapModes, IM_ARRAYSIZE(toneMapModes)))
+					{
+						auto e = MemoryManager::Make_shared<SwitchToneMappingEvent>(selected_toneMap);
+						graphicEventQueue->Publish(e);
+					}
+					if (ImGui::SliderFloat("Gamma", &valueGamma, 0.1f, 5.0f, "%.1f"))
+					{
+						auto e = MemoryManager::Make_shared<SetGammaValueEvent>(valueGamma);
+						graphicEventQueue->Publish(e);
+					}
+					ImGui::Separator();
+					ImGui::TreePop();
+				}
+				ImGui::EndTabItem();
+			}
+			ImGui::EndTabBar();
+		}
+		ImGui::Separator();
+		ImGui::TreePop();
+	}
 }
 
 void longmarch::Renderer3D::_ON_SET_ENV_MAPPING(EventQueue<EngineGraphicsDebugEventType>::EventPtr e)
@@ -1575,96 +2251,6 @@ void longmarch::Renderer3D::BeginShadowing(
 							EndGaussianBlur();
 						}
 					}
-
-
-					// Cubic texture point light shadow map
-					//PointLightPVMatrix_GPU matrices;
-					//for (int i = 0; i < 6; ++i)
-					//{
-					//	const auto& light_view_mat = Geommath::LookAt(light_pos, light_pos + s_Data.cube_directions[i].xyz, s_Data.cube_ups[i]);
-					//	const auto& light_projection_mat = (s_Data.enable_reverse_z) ?
-					//		Geommath::ReverseZProjectionMatrixZeroOne(90 * DEG2RAD, 1, Near, Far) :
-					//		Geommath::ProjectionMatrixZeroOne(90 * DEG2RAD, 1, Near, Far);
-					//	matrices.PVMatrices[i] = std::move(light_projection_mat * light_view_mat);
-					//}
-
-					//static std::shared_ptr<UniformBuffer> pvMatrixBuffer = UniformBuffer::Create(nullptr, 0);
-					//pvMatrixBuffer->UpdateBufferData(matrices.GetPtr(), sizeof(PointLightPVMatrix_GPU));
-
-					//// Update shadow matrix
-					//{
-					//	ShadowData_GPU data;
-					//	data.ShadowAlgorithmMode_DepthBiasHigher_DepthBiasMulti_NrmBiasMulti.x = lightCom->shadow.shadowAlgorithmMode;
-					//	data.ShadowAlgorithmMode_DepthBiasHigher_DepthBiasMulti_NrmBiasMulti.y = lightCom->shadow.depthBiasHigherBound;
-					//	data.ShadowAlgorithmMode_DepthBiasHigher_DepthBiasMulti_NrmBiasMulti.z = lightCom->shadow.depthBiasMultiplier;
-					//	data.ShadowAlgorithmMode_DepthBiasHigher_DepthBiasMulti_NrmBiasMulti.w = lightCom->shadow.nrmBiasMultiplier;
-					//	s_Data.cpuBuffer.SHADOW_DATA_PROCESSED.emplace_back(std::move(data));
-					//	currentPointLight.Kd_shadowMatrixIndex.w = s_Data.cpuBuffer.SHADOW_DATA_PROCESSED.size() - 1;
-					//}
-					//// Render shadow map
-					//RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-					//// Bind shader
-					//s_Data.CurrentShader = msm_cube_shader;
-					//s_Data.CurrentShader->Bind();
-					//s_Data.CurrentShader->SetFloat3("u_LightPos", light_pos);
-					//s_Data.CurrentShader->SetFloat("u_LightRadius", radius);
-					//pvMatrixBuffer->Bind(0);
-					//// Bind shadow buffer
-					//shadowBuffer->Bind();
-					//// Clear buffer
-					//(s_Data.enable_reverse_z) ?
-					//	RenderCommand::SetClearColor(Vec4f(0, 0, 0, 0))
-					//	: RenderCommand::SetClearColor(Vec4f(1, 1, 1, 0));
-					//RenderCommand::Clear();
-					//sceneCom->SetShouldDraw(false, true);
-					//// Render the scene
-					//{
-					//	ENG_TIME("Shadow phase: POINT LOOPING");
-					//	f_setRenderShaderName("MSMShadowBuffer_Cube");
-					//	f_setVFCullingParam(false, ViewFrustum(), Mat4(0));
-					//	f_setDistanceCullingParam(true, light_pos, Near, Far);
-					//	f_render();
-					//}
-					//{
-					//	ENG_TIME("Shadow phase: POINT BATCH RENDER");
-					//	CommitBatchRendering();
-					//}
-					//if (lightCom->shadow.bEnableGaussianBlur)
-					//{
-					//	const auto& shadowBuffer2 = lightCom->shadow.shadowBuffer2;
-					//	Vec2u traget_resoluation2 = shadowBuffer2->GetBufferSize();
-					//	auto kernel_size = lightCom->shadow.gaussianKernal;
-					//	auto [length, offsets, weights] = s_Data.gpuBuffer.GuassinKernelHalfBilinear[kernel_size];
-					//	BeginGaussianBlur();
-					//	{
-					//		s_Data.CurrentShader = guassian_cube_shader;
-					//		s_Data.CurrentShader->Bind();
-					//		s_Data.CurrentShader->SetFloat3("u_LightPos", light_pos);
-					//		s_Data.CurrentShader->SetInt("u_length", length);
-					//		pvMatrixBuffer->Bind(0);
-					//		weights->Bind(1);
-					//		offsets->Bind(2);
-					//		{
-					//			RenderCommand::SetViewport(0, 0, traget_resoluation2.x, traget_resoluation2.y);
-					//			// Bind shadow buffer
-					//			shadowBuffer2->Bind();
-					//			RenderCommand::Clear();
-					//			s_Data.CurrentShader->SetInt("u_Horizontal", 1);
-					//			shadowBuffer->BindTexture(s_Data.fragTexture_0_slot);
-					//			_RenderFullScreenCube();
-					//		}
-					//		{
-					//			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-					//			// Bind shadow buffer
-					//			shadowBuffer->Bind();
-					//			RenderCommand::Clear();
-					//			s_Data.CurrentShader->SetInt("u_Horizontal", 0);
-					//			shadowBuffer2->BindTexture(s_Data.fragTexture_0_slot);
-					//			_RenderFullScreenCube();
-					//		}
-					//	}
-					//	EndGaussianBlur();
-					//}
 				}
 				s_Data.cpuBuffer.POINT_LIGHT_PROCESSED.emplace_back(std::move(currentPointLight));
 				s_Data.gpuBuffer.PointLightShadowBuffer.emplace_back(lightCom->shadow.shadowBuffer);
@@ -1839,110 +2425,6 @@ void longmarch::Renderer3D::BeginShadowing(
 		s_Data.NUM_SPOT_LIGHT = s_Data.cpuBuffer.SPOT_LIGHT_PROCESSED.size();
 		s_Data.NUM_SHADOW = s_Data.cpuBuffer.SHADOW_DATA_PROCESSED.size();
 	}
-	/* [REFERENCE] Compute shader blurring reference
-	Vec2u traget_resoluation3 = Vec2u(s_Data.resolution_shadowMap);
-	std::shared_ptr<ComputeBuffer> shadowBuffer3 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered[j];
-	if (!shadowBuffer3 || shadowBuffer3->GetBufferSize() != traget_resoluation3)
-	{
-		shadowBuffer3 = ComputeBuffer::Create(
-			traget_resoluation3.x,
-			traget_resoluation3.y,
-			ComputeBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
-		s_Data.gpuBuffer.ShadowComputeBufferList_Buffered[j] = shadowBuffer3;
-	}
-	Vec2u traget_resoluation4 = Vec2u(s_Data.resolution_shadowMap);
-	std::shared_ptr<ComputeBuffer> shadowBuffer4 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered_2nd[j];
-	if (!shadowBuffer4 || shadowBuffer4->GetBufferSize() != traget_resoluation4)
-	{
-		shadowBuffer4 = ComputeBuffer::Create(
-			traget_resoluation4.x,
-			traget_resoluation4.y,
-			ComputeBuffer::BUFFER_FORMAT::FLOAT_RGBA16);
-		s_Data.gpuBuffer.ShadowComputeBufferList_Buffered_2nd[j] = shadowBuffer4;
-	}
-
-	static unsigned int group_size = 512;
-	static unsigned int num_sample = 11;
-	static auto weights = DistributionMath::Gaussian1D(num_sample, 0, num_sample/4);
-	static auto weightsBuffer = UniformBuffer::Create(&weights[0], sizeof(float)* weights.X());
-	s_Data.CurrentShader = s_Data.ShaderMap["GaussianBlur_Comp_H"];
-	s_Data.CurrentShader->Bind();
-	weightsBuffer->Bind(2);
-	for (int i = 0; i < s_Data.NUM_LIGHT; ++i)
-	{
-		const auto& currentLight = s_Data.LIST_LIGHTS_PROCESSED[i];
-		if (currentLight.castShadow)
-		{
-			const auto& shadowBuffer = s_Data.gpuBuffer.ShadowBufferList[i];
-			const auto& shadowBuffer3 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered[i];
-			const auto& shadowBuffer4 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered_2nd[i];
-			const auto& traget_resoluation = shadowBuffer->GetBufferSize();
-			const auto& traget_resoluation3 = shadowBuffer3->GetBufferSize();
-			const auto& traget_resoluation4 = shadowBuffer4->GetBufferSize();
-
-			RenderCommand::TransferColorBit(shadowBuffer->GetFrameBufferID(),
-				traget_resoluation.x,
-				traget_resoluation.y,
-				shadowBuffer3->GetFrameBufferID(),
-				traget_resoluation3.x,
-				traget_resoluation3.y
-			);
-			{
-				// Bind shadow buffer
-				shadowBuffer4->Bind();
-				shadowBuffer3->BindTexture(0, ComputeBuffer::TEXTURE_BIND_MODE::READ_ONLY);
-				shadowBuffer4->BindTexture(1, ComputeBuffer::TEXTURE_BIND_MODE::WRITE_ONLY);
-				glDispatchCompute(traget_resoluation3.x / group_size, traget_resoluation3.y, 1);
-				//glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-			}
-		}
-	}
-	s_Data.CurrentShader = s_Data.ShaderMap["GaussianBlur_Comp_V"];
-	s_Data.CurrentShader->Bind();
-	weightsBuffer->Bind(2);
-	for (int i = 0; i < s_Data.NUM_LIGHT; ++i)
-	{
-		const auto& currentLight = s_Data.LIST_LIGHTS_PROCESSED[i];
-		if (currentLight.castShadow)
-		{
-			const auto& shadowBuffer = s_Data.gpuBuffer.ShadowBufferList[i];
-			const auto& shadowBuffer3 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered[i];
-			const auto& shadowBuffer4 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered_2nd[i];
-			const auto& traget_resoluation = shadowBuffer->GetBufferSize();
-			const auto& traget_resoluation3 = shadowBuffer3->GetBufferSize();
-			const auto& traget_resoluation4 = shadowBuffer4->GetBufferSize();
-			{
-				// Bind shadow buffer
-				shadowBuffer3->Bind();
-				shadowBuffer4->BindTexture(0, ComputeBuffer::TEXTURE_BIND_MODE::READ_ONLY);
-				shadowBuffer3->BindTexture(1, ComputeBuffer::TEXTURE_BIND_MODE::WRITE_ONLY);
-	
-				glDispatchCompute(traget_resoluation4.x, traget_resoluation4.y / group_size, 1);
-				//glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-			}
-		}
-	}
-	for (int i = 0; i < s_Data.NUM_LIGHT; ++i)
-	{
-		const auto& currentLight = s_Data.LIST_LIGHTS_PROCESSED[i];
-		if (currentLight.castShadow)
-		{
-			const auto& shadowBuffer = s_Data.gpuBuffer.ShadowBufferList[i];
-			const auto& shadowBuffer3 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered[i];
-			const auto& shadowBuffer4 = s_Data.gpuBuffer.ShadowComputeBufferList_Buffered_2nd[i];
-			const auto& traget_resoluation = shadowBuffer->GetBufferSize();
-			const auto& traget_resoluation3 = shadowBuffer3->GetBufferSize();
-			const auto& traget_resoluation4 = shadowBuffer4->GetBufferSize();
-			RenderCommand::TransferColorBit(shadowBuffer3->GetFrameBufferID(),
-				traget_resoluation3.x,
-				traget_resoluation3.y,
-				shadowBuffer->GetFrameBufferID(),
-				traget_resoluation.x,
-				traget_resoluation.y
-			);
-		}
-	}
-	*/
 }
 
 /**************************************************************
@@ -1978,10 +2460,6 @@ void longmarch::Renderer3D::BeginOpaqueScene(
 		{
 			switch (s_Data.RENDER_PIPE)
 			{
-			case RENDER_PIPE::CLUSTER:
-				Renderer3D::_BeginClusterBuildGrid(camera);
-				Renderer3D::_BeginForwardGeomtryPass(camera, s_Data.gpuBuffer.CurrentFrameBuffer);
-				break;
 			case RENDER_PIPE::DEFERRED:
 				Renderer3D::_BeginDeferredGeomtryPass(camera, s_Data.gpuBuffer.CurrentGBuffer);
 				break;
@@ -2009,59 +2487,6 @@ void longmarch::Renderer3D::BeginOpaqueScene(
 			CommitBatchRendering();
 		}
 	}
-}
-
-void longmarch::Renderer3D::_BeginClusterBuildGrid(const PerspectiveCamera* camera)
-{
-	GPU_TIME(ClusterBuildGrid_Pass);
-	s_Data.CurrentShader = s_Data.ShaderMap["BuildAABBGridCompShader"];
-	s_Data.CurrentShader->Bind();
-	RenderCommand::DispatchCompute(s_Data.ClusterData.gridSizeX, s_Data.ClusterData.gridSizeY, s_Data.ClusterData.gridSizeZ);
-	RenderCommand::PlaceMemoryBarrier(RendererAPI::MemoryBarrierBitEnum::SHADER_STORAGE_BUFFER_BARRIER);
-}
-
-void longmarch::Renderer3D::_BeginLightCullingPass(const PerspectiveCamera* camera)
-{
-	GPU_TIME(ClusterLightCulling_Pass);
-	s_Data.CurrentShader = s_Data.ShaderMap["CullLightsCompShader"];
-	s_Data.CurrentShader->Bind();
-	RenderCommand::DispatchCompute(1, 1, 4);
-	RenderCommand::PlaceMemoryBarrier(RendererAPI::MemoryBarrierBitEnum::SHADER_STORAGE_BUFFER_BARRIER);
-}
-
-void longmarch::Renderer3D::_BeginDebugCluster(const std::shared_ptr<FrameBuffer>& framebuffer_out)
-{
-	{
-		// bind framebuffer to store frag color
-		if (framebuffer_out)
-		{
-			framebuffer_out->Bind();
-			Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
-			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-		}
-		else
-		{
-			RenderCommand::BindDefaultFrameBuffer();
-			Vec2u traget_resoluation = s_Data.window_size;
-			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-		}
-	}
-	{
-		// Opaque phase
-		RenderCommand::PolyModeFill();		// Draw full model
-		RenderCommand::Blend(true);			// Enable blending
-		RenderCommand::BlendFunc(RendererAPI::BlendFuncEnum::ADDITION);
-		RenderCommand::DepthTest(false, false);	// Disable depth test
-		RenderCommand::CullFace(false, false);
-		{
-			s_Data.CurrentShader = s_Data.ShaderMap["ClusterDebugShader"];
-			s_Data.CurrentShader->Bind();
-
-			// Render quad
-			Renderer3D::_RenderFullScreenQuad();
-		}
-	}
-	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
 void longmarch::Renderer3D::_BeginForwardGeomtryPass(const PerspectiveCamera* camera, const std::shared_ptr<FrameBuffer>& framebuffer_out)
@@ -2175,41 +2600,6 @@ void longmarch::Renderer3D::_PopulateShadingPassUniformsVariables(const Perspect
 
 			shaderProg->SetFloat("u_zNear", camera->cameraSettings.nearZ);
 			shaderProg->SetFloat("u_zFar", camera->cameraSettings.farZ);
-		}
-	}
-	if (s_Data.RENDER_PIPE == RENDER_PIPE::CLUSTER)
-	{
-		s_Data.gpuBuffer.AABBvolumeGridBuffer->Bind(14);
-		
-		auto width = s_Data.resolution.x;
-		auto height = s_Data.resolution.y;
-		auto gridX = s_Data.ClusterData.gridSizeX;
-		auto gridY = s_Data.ClusterData.gridSizeY;
-		auto gridZ = s_Data.ClusterData.gridSizeZ;
-		auto sizeX = (unsigned int)std::ceilf(width / gridX);
-		auto inverseProjectionMat = Geommath::SmartInverse(Geommath::ProjectionMatrixZeroOne(camera->cameraSettings.fovy_rad, camera->cameraSettings.aspectRatioWbyH, camera->cameraSettings.nearZ, camera->cameraSettings.farZ));
-		s_Data.ClusterData.screenToView.inverseProjectionMat = inverseProjectionMat;
-		s_Data.ClusterData.screenToView.tileSizes[0] = gridX;
-		s_Data.ClusterData.screenToView.tileSizes[1] = gridY;
-		s_Data.ClusterData.screenToView.tileSizes[2] = gridZ;
-		s_Data.ClusterData.screenToView.tileSizes[3] = sizeX;
-		s_Data.ClusterData.screenToView.screenWidth = width;
-		s_Data.ClusterData.screenToView.screenHeight = height;
-
-		s_Data.gpuBuffer.ScreenToViewBuffer->UpdateBufferData(&s_Data.ClusterData.screenToView, sizeof(s_Data.ClusterData.screenToView));
-		s_Data.gpuBuffer.ScreenToViewBuffer->Bind(15);
-		s_Data.gpuBuffer.LightIndexListBuffer->Bind(16);
-		s_Data.gpuBuffer.LightGridBuffer->Bind(17);
-		s_Data.gpuBuffer.LightIndexGlobalCountBuffer->Bind(18);
-
-		{
-			auto size = gridX * gridY * gridZ;
-			s_Data.ClusterData.clusterColors.resize(size);
-			for (int i = 0; i < size; ++i) {
-				s_Data.ClusterData.clusterColors[i] = Vec4f(_HSVtoRGB(glm::linearRand(0.0f, 360.0f), glm::linearRand(0.0f, 1.0f), 1.0f), 1.0f);
-			}
-			s_Data.gpuBuffer.ClusterColorBuffer->UpdateBufferData(&s_Data.ClusterData.clusterColors, sizeof(Vec4f) * s_Data.ClusterData.clusterColors.size());
-			s_Data.gpuBuffer.ClusterColorBuffer->Bind(19);
 		}
 	}
 }
@@ -2395,10 +2785,6 @@ void longmarch::Renderer3D::BeginOpaqueLighting(
 {
 	switch (s_Data.RENDER_PIPE)
 	{
-	case RENDER_PIPE::CLUSTER:
-		Renderer3D::_BeginLightCullingPass(camera);
-		Renderer3D::_BeginClusterLightingPass(s_Data.gpuBuffer.CurrentFrameBuffer);
-		break;
 	case RENDER_PIPE::DEFERRED:
 		// Perform SSAO/SSDO after rendering all opaques, ignore transparents and particles.
 		Renderer3D::_BeginDynamicSSAOPass();
@@ -2892,25 +3278,6 @@ void longmarch::Renderer3D::_BeginForwardLightingPass(const std::shared_ptr<Fram
 	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
 }
 
-void longmarch::Renderer3D::_BeginClusterLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out)
-{
-	{
-		if (framebuffer_out)
-		{
-			framebuffer_out->Bind();
-			Vec2u traget_resoluation = framebuffer_out->GetBufferSize();
-			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-		}
-		else
-		{
-			RenderCommand::BindDefaultFrameBuffer();
-			Vec2u traget_resoluation = s_Data.window_size;
-			RenderCommand::SetViewport(0, 0, traget_resoluation.x, traget_resoluation.y);
-		}
-	}
-	s_Data.gpuBuffer.CurrentFrameBuffer = framebuffer_out;
-}
-
 void longmarch::Renderer3D::_BindSkyBoxTexture()
 {
 	// Bind Skybox
@@ -3118,11 +3485,6 @@ void longmarch::Renderer3D::BeginPostProcessing()
 	}
 	
 	Renderer3D::_BeginToneMappingPass(s_Data.gpuBuffer.CurrentFrameBuffer, s_Data.gpuBuffer.CurrentFinalFrameBuffer);
-
-	if (s_Data.enable_debug_cluster_light && s_Data.RENDER_PIPE == Renderer3D::RENDER_PIPE::CLUSTER)
-	{
-		Renderer3D::_BeginDebugCluster(s_Data.gpuBuffer.CurrentFrameBuffer);
-	}
 }
 
 void longmarch::Renderer3D::_BeginSSGIPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out)
@@ -3980,9 +4342,69 @@ void longmarch::Renderer3D::Draw(const RenderData_CPU& data)
 }
 
 /**************************************************************
-*	Render3D lowleve API : Draw
-*   This Draw function is for mesh drawing with/without
+*   Render3D lowleve API : Draw
+*   This Draw function is for component to drive scene drawing
 *   the multidraw pipeline
+**************************************************************/
+void longmarch::Renderer3D::Draw(Entity entity, const std::shared_ptr<Scene3DNode>& sceneNode, const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName)
+{
+	const auto& _sceneData = *sceneNode;
+	const auto& boneTransform = _sceneData.GetInverseFinalBoneTransform();
+	switch (s_Data.RENDER_MODE)
+	{
+	case RENDER_MODE::MULTIDRAW:
+	{
+		auto& _multiDrawBuffer = s_Data.multiDrawBuffer;
+		const auto offset = _multiDrawBuffer.MultiDraw_BoneTransformMatrix.size();
+		for (const auto& [level, data] : _sceneData)
+		{
+			const auto& mesh = data->meshData;
+			const auto& mat = data->material;
+			Renderer3D::Draw(entity, mesh, mat, transform, PrevTransform, shaderName);
+
+			// Bone offset need to placed after Draw() since there is a chance for multidraw to commit early within Draw()
+			_multiDrawBuffer.MultiDraw_BoneBaseOffset.emplace_back(offset); 
+		}
+
+		// Bone offset need to placed after Draw() since there is a chance for multidraw to commit early within Draw() 
+		std::copy(boneTransform.begin(), boneTransform.end(), std::back_inserter(_multiDrawBuffer.MultiDraw_BoneTransformMatrix)); 
+	}
+	break;
+	case RENDER_MODE::CANONICAL:
+	{
+		for (const auto& [level, data] : _sceneData)
+		{
+			const auto& mesh = data->meshData;
+			const auto& mat = data->material;
+			{
+				// upload bone ssbo
+				auto& gpubuffer = s_Data.gpuBuffer;
+				if (!boneTransform.empty())
+				{
+					auto ptr = &(boneTransform[0][0][0]);
+					auto size = boneTransform.size() * sizeof(Mat4);
+					gpubuffer.BoneTransformMatrixBuffer->UpdateBufferData(ptr, size);
+					gpubuffer.BoneTransformMatrixBuffer->Bind(5); // TODO use serialized binding location
+				}
+				else
+				{
+					auto ptr = &(GPUBuffer::s_default_bone_transform[0][0][0]);
+					auto size = GPUBuffer::s_default_bone_transform.size() * sizeof(Mat4);
+					gpubuffer.BoneTransformMatrixBuffer->UpdateBufferData(ptr, size);
+					gpubuffer.BoneTransformMatrixBuffer->Bind(5); // TODO use serialized binding location
+				}
+			}
+			Renderer3D::Draw(entity, mesh, mat, transform, PrevTransform, shaderName);
+		}
+	}
+	break;
+	};
+}
+
+/**************************************************************
+*	Render3D lowleve API : Draw
+*   This Draw function is for mesh drawing with materials 
+*	and default shaders
 **************************************************************/
 void longmarch::Renderer3D::Draw(Entity entity, const std::shared_ptr<MeshData>& Mesh, const std::shared_ptr<Material>& Mat, const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName)
 {
@@ -4040,7 +4462,7 @@ void longmarch::Renderer3D::Draw(Entity entity, const std::shared_ptr<MeshData>&
 			}
 			uint32_t texture_offset = textureIds.size();
 			ASSERT(texture_offset != 0, "MultiDraw_TextureId should have at least size of 1 (sudo empty texture) on rendering!");
-			auto& uniqueTextureLut = _multiDrawBuffer.MultiDraw_UniqueTextureLUT;
+			auto& uniqueTextureLut = _multiDrawBuffer.MultiDraw_UniqueTextureLUT; // Multidraw allows to draw multiple materials with the same shader in the same time, and we only need unique materials to be emplaced.
 			LongMarch_Vector<std::pair<uint32_t, Material::MAT_TEXTURE_TYPE>> textures_to_bind;
 			if (Mat->textures.has_albedo())
 			{
@@ -4138,57 +4560,6 @@ void longmarch::Renderer3D::Draw(Entity entity, const std::shared_ptr<MeshData>&
 	}
 	break;
 	}
-}
-
-void longmarch::Renderer3D::Draw(Entity entity, const std::shared_ptr<Scene3DNode>& sceneNode, const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName)
-{
-	const auto& _sceneData = *sceneNode;
-	const auto& boneTransform = _sceneData.GetInverseFinalBoneTransform();
-	switch (s_Data.RENDER_MODE)
-	{
-	case RENDER_MODE::MULTIDRAW:
-	{
-		auto& _multiDrawBuffer = s_Data.multiDrawBuffer;
-		const auto offset = _multiDrawBuffer.MultiDraw_BoneTransformMatrix.size();
-		for (const auto& [level, data] : _sceneData)
-		{
-			const auto& mesh = data->meshData;
-			const auto& mat = data->material;
-			Renderer3D::Draw(entity, mesh, mat, transform, PrevTransform, shaderName);
-			_multiDrawBuffer.MultiDraw_BoneBaseOffset.emplace_back(offset);
-		}
-		std::copy(boneTransform.begin(), boneTransform.end(), std::back_inserter(_multiDrawBuffer.MultiDraw_BoneTransformMatrix));
-	}
-	break;
-	case RENDER_MODE::CANONICAL:
-	{
-		for (const auto& [level, data] : _sceneData)
-		{
-			auto& mesh = data->meshData;
-			auto& mat = data->material;
-			{
-				// upload bone ssbo
-				auto& gpubuffer = s_Data.gpuBuffer;
-				if (!boneTransform.empty())
-				{
-					auto ptr = &(boneTransform[0][0][0]);
-					auto size = boneTransform.size() * sizeof(Mat4);
-					gpubuffer.BoneTransformMatrixBuffer->UpdateBufferData(ptr, size);
-					gpubuffer.BoneTransformMatrixBuffer->Bind(5); // TODO use serialized binding location
-				}
-				else
-				{
-					auto ptr = &(GPUBuffer::s_default_bone_transform[0][0][0]);
-					auto size = GPUBuffer::s_default_bone_transform.size() * sizeof(Mat4);
-					gpubuffer.BoneTransformMatrixBuffer->UpdateBufferData(ptr, size);
-					gpubuffer.BoneTransformMatrixBuffer->Bind(5); // TODO use serialized binding location
-				}
-			}
-			Renderer3D::Draw(entity, mesh, mat, transform, PrevTransform, shaderName);
-		}
-	}
-	break;
-	};
 }
 
 /**************************************************************
@@ -5047,43 +5418,4 @@ void longmarch::Renderer3D::ToggleReverseZ(bool enable)
 RendererAPI::API longmarch::Renderer3D::GetAPI() 
 { 
 	return RendererAPI::GetAPI(); 
-}
-
-// Convert HSV to RGB:
-// Source: https://en.wikipedia.org/wiki/HSL_and_HSV#From_HSV
-// @param H Hue in the range [0, 360)
-// @param S Saturation in the range [0, 1]
-// @param V Value in the range [0, 1]
-Vec3f longmarch::Renderer3D::_HSVtoRGB(float H, float S, float V)
-{
-	float C = V * S;
-	float m = V - C;
-	float H2 = H / 60.0f;
-	float X = C * (1.0f - fabsf(fmodf(H2, 2.0f) - 1.0f));
-
-	Vec3f RGB;
-
-	switch (static_cast<int>(H2))
-	{
-	case 0:
-		RGB = { C, X, 0 };
-		break;
-	case 1:
-		RGB = { X, C, 0 };
-		break;
-	case 2:
-		RGB = { 0, C, X };
-		break;
-	case 3:
-		RGB = { 0, X, C };
-		break;
-	case 4:
-		RGB = { X, 0, C };
-		break;
-	case 5:
-		RGB = { C, 0, X };
-		break;
-	}
-
-	return RGB + m;
 }

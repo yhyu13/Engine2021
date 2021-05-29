@@ -82,7 +82,6 @@ namespace longmarch
 
 		enum class RENDER_PIPE : int32_t
 		{
-			CLUSTER = 0,
 			DEFERRED,
 			FORWARD,
 		};
@@ -291,14 +290,6 @@ namespace longmarch
 			std::shared_ptr<ShaderStorageBuffer> ShadowPVMatrixBuffer; // shadow
 			std::shared_ptr<ShaderStorageBuffer> BoneTransformMatrixBuffer; // animation
 
-			// Cluster
-			std::shared_ptr<ShaderStorageBuffer> AABBvolumeGridBuffer;
-			std::shared_ptr<ShaderStorageBuffer> ScreenToViewBuffer;
-			std::shared_ptr<ShaderStorageBuffer> ClusterColorBuffer;
-			std::shared_ptr<ShaderStorageBuffer> LightIndexListBuffer;
-			std::shared_ptr<ShaderStorageBuffer> LightGridBuffer;
-			std::shared_ptr<ShaderStorageBuffer> LightIndexGlobalCountBuffer;
-
 			// Utility
 			std::shared_ptr<VertexArray> FullScreenQuadVAO;
 			std::shared_ptr<VertexArray> BBoxVAO;
@@ -438,8 +429,6 @@ namespace longmarch
 			bool enable_reverse_z;
 
 			bool enable_shadow;
-
-			bool enable_debug_cluster_light;
 
 			bool enable_fxaa;
 			bool enable_taa;
@@ -581,34 +570,11 @@ namespace longmarch
 					}
 				}
 			} SMAASettings;
-
-			struct ClusterStorage 
-			{
-				struct VolumeTileAABB 
-				{
-					Vec4f minPoint;
-					Vec4f maxPoint;
-				} frustrum;
-
-				struct ScreenToView 
-				{
-					Mat4 inverseProjectionMat;
-					unsigned int tileSizes[4];
-					unsigned int screenWidth;
-					unsigned int screenHeight;
-				}screenToView;
-
-				unsigned int gridSizeX;
-				unsigned int gridSizeY;
-				unsigned int gridSizeZ;
-				unsigned int numClusters;// = gridSizeX * gridSizeY * gridSizeZ;
-				unsigned int maxLightsPerCluster = 50;
-				LongMarch_Vector<Vec4f> clusterColors;
-			} ClusterData;
 		};
 
 		static void Init();
-		static void Shutdown() {};
+		static void Shutdown();
+		static void EditorRenderGraphicsSettings();
 
 		/**************************************************************
 		*	Render3D highlevel API
@@ -721,12 +687,8 @@ namespace longmarch
 			}
 			}
 		}
-	private:
-		static void _BeginClusterBuildGrid(const PerspectiveCamera* camera);
-		static void _BeginLightCullingPass(const PerspectiveCamera* camera);
-		static void _BeginDebugCluster(const std::shared_ptr<FrameBuffer>& framebuffer_out);
-		static Vec3f _HSVtoRGB(float H, float S, float V);
 
+	private:
 		static void _BeginForwardGeomtryPass(const PerspectiveCamera* camera, const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginDeferredGeomtryPass(const PerspectiveCamera* camera, const std::shared_ptr<GBuffer>& gBuffer_out);
 		static void _PopulateShadingPassUniformsVariables(const PerspectiveCamera* camera); 
@@ -746,7 +708,6 @@ namespace longmarch
 
 		static void _BeginDeferredLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _BeginForwardLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
-		static void _BeginClusterLightingPass(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 		static void _RenderBoundingBox(const std::shared_ptr<FrameBuffer>& framebuffer_out);
 
 		static void _BeginSSGIPass(const std::shared_ptr<FrameBuffer>& framebuffer_in, const std::shared_ptr<FrameBuffer>& framebuffer_out);
@@ -770,7 +731,6 @@ namespace longmarch
 		static void _RestBatchTextureList();
 
 	private:
-		static void _ON_TOGGLE_DEBUG_CLUSTER(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
 		static void _ON_TOGGLE_SHADOW(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
 		static void _ON_SWITCH_GBUFFER_MODE(EventQueue<EngineGraphicsDebugEventType>::EventPtr e);
 		static void _ON_TOGGLE_MOTION_BLUR(EventQueue<EngineGraphicsEventType>::EventPtr e);
@@ -789,5 +749,6 @@ namespace longmarch
 
 	public:
 		inline static Renderer3DStorage s_Data;
+		inline static bool s_init{ false };
 	};
 }

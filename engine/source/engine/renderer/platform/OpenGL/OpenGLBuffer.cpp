@@ -494,46 +494,18 @@ namespace longmarch
 		glGenFramebuffers(1, &m_RendererID);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);		
 
-		// Even though we can simply write depth component into 2D texture, but since we used reverse Z, we need to alter the z value in shader.
-		// So we use a depth render buffer, together with a color texture that stores the depth value.
-		glGenRenderbuffers(1, &m_DepthID);
-		glBindRenderbuffer(GL_RENDERBUFFER, m_DepthID);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_DepthID);
-
 		glGenTextures(1, &m_RenderTargetID);
 		glBindTexture(GL_TEXTURE_2D, m_RenderTargetID);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); 
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, SHADOW_COMPARE);
-		float color[] = { 0 };
-		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &color[0]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, NULL);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_RenderTargetID, 0);
-
-		GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-		glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
-
-		//glGenTextures(1, &m_RenderTargetID);
-		//glBindTexture(GL_TEXTURE_2D, m_RenderTargetID);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, SHADOW_COMPARE);
-		//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_ATTACHMENT, GL_FLOAT, NULL);
-		//// Disable writes to the color buffer
-		//glDrawBuffer(GL_NONE);
-		//// Disable reads from the color buffer
-		//glReadBuffer(GL_NONE);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_ATTACHMENT, GL_FLOAT, NULL);
+		glDrawBuffers(0, GL_NONE);
 
 		// Check for completeness/correctness
 		int status = (int)glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -549,7 +521,6 @@ namespace longmarch
 	{
 		glDeleteFramebuffers(1, &m_RendererID);
 		glDeleteTextures(1, &m_RenderTargetID);
-		glDeleteRenderbuffers(1, &m_DepthID);
 	}
 	/**************************************************************
 	*	Moment Shadow Buffer
@@ -742,15 +713,6 @@ namespace longmarch
 		glGenFramebuffers(1, &m_RendererID);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 
-		// We can't simply write depth component into array texture, so we use a depth render buffer (cleared and used for each layer)
-		// together with a color texture that stores the depth value.
-
-		//Create a renderbuffer object for depth attachment (we won't be sampling these)
-		glGenRenderbuffers(1, &m_DepthID);
-		glBindRenderbuffer(GL_RENDERBUFFER, m_DepthID);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_DepthID);
-
 		glGenTextures(1, &m_RenderTargetID);
 		glBindTexture(GL_TEXTURE_2D_ARRAY, m_RenderTargetID);
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, 0);
@@ -763,11 +725,13 @@ namespace longmarch
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, SHADOW_COMPARE);
 		float color2[] = { 0,0,0,0 };
 		glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, &color2[0]);
-		glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_R32F, width, height, depth, 0, GL_RED, GL_FLOAT, NULL);
-
-		GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-		glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
-
+		glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT, width, height, depth, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
+		for (int i = 0; i < depth; ++i)
+		{
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_RenderTargetID, 0, i);
+		}
+		glDrawBuffers(0, GL_NONE);
+		
 		// Check for completeness/correctness
 		int status = (int)glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (status != int(GL_FRAMEBUFFER_COMPLETE))
@@ -783,11 +747,10 @@ namespace longmarch
 	{
 		glDeleteFramebuffers(1, &m_RendererID);
 		glDeleteTextures(1, &m_RenderTargetID);
-		glDeleteRenderbuffers(1, &m_DepthID);
 	}
 	void OpenGLCompareShadowArrayBuffer::BindLayer(uint32_t slot) const
 	{
-		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_RenderTargetID, 0, slot);
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_RenderTargetID, 0, slot);
 		GLCHECKERROR;
 	}
 	/**************************************************************

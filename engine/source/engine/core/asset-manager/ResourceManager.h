@@ -25,7 +25,7 @@ namespace longmarch
 	public:
 		using ResourcePtr = std::shared_ptr<T>;
 		using ResourceFuture = std::shared_future<ResourcePtr>;
-		using ResourceCallback = std::function<void()>;
+		using ResourceCallback = std::function<void(ResourcePtr& ptr)>;
 		using ResourcePromise = std::promise<ResourcePtr>;
 		using ResourceLoadFromFile = std::function<ResourcePtr(const fs::path&)>;
 
@@ -75,7 +75,7 @@ namespace longmarch
 				callback = callback_;
 				if (ptr && callback)
 				{
-					callback();
+					callback(ptr);
 				}
 			}
 
@@ -98,7 +98,7 @@ namespace longmarch
 							{
 								if (callback)
 								{
-									callback();
+									callback(ptr);
 								}
 								return ptr;
 							}
@@ -134,7 +134,7 @@ namespace longmarch
 						{
 							if (callback)
 							{
-								callback();
+								callback(ptr);
 							}
 							return ptr;
 						}
@@ -155,7 +155,7 @@ namespace longmarch
 			//! pointer redirector, casting to pointer (call Get())
 			ResourcePtr operator->()
 			{
-				return Get();
+				return this->Get();
 			}
 
 			//! casting to bool

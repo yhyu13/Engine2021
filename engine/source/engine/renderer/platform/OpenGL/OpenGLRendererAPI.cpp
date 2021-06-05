@@ -80,6 +80,9 @@ namespace longmarch
 		case 4:
 			indexFormat = GL_UNSIGNED_INT;
 			break;
+		default:
+			ENGINE_EXCEPT(L"Unkown index buffer element size!");
+			break;
 		}
 		glDrawElements(GL_TRIANGLES, vertexArray->GetIndexBuffer()->GetCount(), indexFormat, nullptr);
 	}
@@ -98,6 +101,9 @@ namespace longmarch
 			break;
 		case 4:
 			indexFormat = GL_UNSIGNED_INT;
+			break;
+		default:
+			ENGINE_EXCEPT(L"Unkown index buffer element size!");
 			break;
 		}
 		glDrawElements(GL_LINES, vertexArray->GetIndexBuffer()->GetCount(), indexFormat, nullptr);
@@ -118,6 +124,9 @@ namespace longmarch
 		case 4:
 			indexFormat = GL_UNSIGNED_INT;
 			break;
+		default:
+			ENGINE_EXCEPT(L"Unkown index buffer element size!");
+			break;
 		}
 		glDrawElementsInstanced(GL_TRIANGLES, vertexArray->GetIndexBuffer()->GetCount(), indexFormat, nullptr, count);
 	}
@@ -137,6 +146,9 @@ namespace longmarch
 		case 4:
 			indexFormat = GL_UNSIGNED_INT;
 			break;
+		default:
+			ENGINE_EXCEPT(L"Unkown index buffer element size!");
+			break;
 		}
 		glDrawElementsInstanced(GL_LINES, vertexArray->GetIndexBuffer()->GetCount(), indexFormat, nullptr, count);
 	}
@@ -155,6 +167,9 @@ namespace longmarch
 			break;
 		case 4:
 			indexFormat = GL_UNSIGNED_INT;
+			break;
+		default:
+			ENGINE_EXCEPT(L"Unkown index buffer element size!");
 			break;
 		}
 		glMultiDrawElementsIndirect(GL_TRIANGLES, indexFormat, nullptr, commandBuffer->GetCount(), 0);

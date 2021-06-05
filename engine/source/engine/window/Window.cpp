@@ -11,12 +11,15 @@
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
-namespace longmarch {
-	std::shared_ptr<Window> Window::InitializeWindow(const Json::Value& windowConfiguration) {
+namespace longmarch 
+{
+	std::shared_ptr<Window> Window::InitializeWindow(const Json::Value& windowConfiguration) 
+	{
 		return std::make_shared<Window>(windowConfiguration);
 	}
 
-	void Window::Update(double dt) {
+	void Window::Update(double dt) 
+	{
 		glfwPollEvents();
 	}
 

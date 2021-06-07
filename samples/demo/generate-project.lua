@@ -50,19 +50,21 @@ IncludeDir["blaze"]     	= "%{EngineDir.vendors}/blaze/include"
 IncludeDir["sol2"]     		= "%{EngineDir.vendors}/sol2/include"
 IncludeDir["FastBVH"]     	= "%{EngineDir.vendors}/Fast-BVH/include"
 IncludeDir["miniz_cpp"]     = "%{EngineDir.vendors}/miniz-cpp"
+IncludeDir["vulkan"] 	    = "$(VK_SDK_PATH)/Include"
 
 LibDir = {}
 LibDir["assimp"] 			= "%{EngineDir.vendors}/assimp/lib/x64"
 LibDir["fmod_core"] 		= "%{EngineDir.vendors}/fmod/api/core/lib/x64"
 LibDir["fmod_bank"] 		= "%{EngineDir.vendors}/fmod/api/fsbank/lib/x64"
 LibDir["fmod_studio"] 		= "%{EngineDir.vendors}/fmod/api/studio/lib/x64"
+LibDir["vulkan"] 			= "$(VK_SDK_PATH)/Lib"
 
 LibName = {}
+LibName["assimp_debug"] 	= "/Release/assimp-vc142-mt.lib"
+LibName["assimp"] 			= "/Release/assimp-vc142-mt.lib"
 LibName["fmod_core"] 		= "fmod_vc.lib"
 LibName["fmod_bank"] 		= "fsbank_vc.lib"
 LibName["fmod_studio"] 		= "fmodstudio_vc.lib"
-LibName["assimp_debug"] 	= "/Release/assimp-vc142-mt.lib"
-LibName["assimp"] 			= "/Release/assimp-vc142-mt.lib"
 
 DllName = {}
 DllName["assimp_debug"] 	= "/Release/assimp-vc142-mt.dll"
@@ -125,6 +127,7 @@ project "engine"
 		"%{IncludeDir.FastBVH}",
 		"%{IncludeDir.miniz_cpp}",
 		"%{IncludeDir.Remotery}",
+		"%{IncludeDir.vulkan}",
 	}
 
 	libdirs
@@ -133,6 +136,7 @@ project "engine"
 		"%{LibDir.fmod_core}",
 		"%{LibDir.fmod_bank}",
 		"%{LibDir.fmod_studio}",
+		"%{LibDir.vulkan}",
 	}
 
 	links
@@ -146,6 +150,8 @@ project "engine"
 		"jsoncpp",
 		"tileson",
 		"Remotery",
+		"vulkan-1.lib",
+		"VkLayer_utils.lib",
 		"%{LibName.fmod_core}",
 		"%{LibName.fmod_bank}",
 		"%{LibName.fmod_studio}",
@@ -266,6 +272,7 @@ project "application"
 		"%{IncludeDir.FastBVH}",
 		"%{IncludeDir.miniz_cpp}",
 		"%{IncludeDir.Remotery}",
+		"%{IncludeDir.vulkan}",
 	}
 
 	links

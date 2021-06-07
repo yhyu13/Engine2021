@@ -88,14 +88,17 @@ void longmarch::_3DEditorLayer::OnImGuiRender()
 	{
 		if (auto height = Engine::GetWindow()->GetHeight(); height > 2000)
 		{
+			ImGuiUtil::ScaleAllSizesFromBase(2);
 			font = m_Data.m_font_4k;
 		}
 		else if (height > 1400)
 		{
+			ImGuiUtil::ScaleAllSizesFromBase(1.414);
 			font = m_Data.m_font_2k;
 		}
 		else
 		{
+			ImGuiUtil::ScaleAllSizesFromBase(1);
 			font = m_Data.m_font_1k;
 		}
 	}

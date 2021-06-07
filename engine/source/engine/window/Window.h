@@ -2,8 +2,10 @@
 
 #include "engine/core/EngineCore.h"
 #include "engine/input/InputManager.h"
+#include "engine/renderer/GraphicsContext.h"
 
 #include <json/json.h>
+
 
 struct GLFWwindow;
 
@@ -99,9 +101,10 @@ namespace longmarch
 		
 		void Init(const Json::Value& windowConfiguration);
 
-
 	private:
 		WindowProperties m_windowProperties;
 		GLFWwindow* m_window;
+		std::unique_ptr<GraphicsContext> m_context;
+		std::unique_ptr<GraphicsContext> m_context_vk;
 	};
 }

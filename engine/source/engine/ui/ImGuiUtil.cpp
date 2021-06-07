@@ -80,3 +80,13 @@ void longmarch::ImGuiUtil::TextureViewerWithZoom(const std::shared_ptr<void>& te
 		}
 	}
 }
+
+void longmarch::ImGuiUtil::ScaleAllSizesFromBase(float scale)
+{
+	static float _scale = 1.0f;
+	if (auto& style = ImGui::GetStyle(); _scale != scale)
+	{
+		style.ScaleAllSizes(scale / _scale);
+		_scale = scale;
+	}
+}

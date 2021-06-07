@@ -1,11 +1,11 @@
 #include "engine-precompiled-header.h"
 #include "OpenGLContext.h"
-#include "engine/core/EngineCore.h"
-#include <GLFW/glfw3.h>
+
 #include <glad/glad.h>
 #include <gl/GL.h>
 
-namespace longmarch {
+namespace longmarch 
+{
 	OpenGLContext::OpenGLContext(GLFWwindow* windowHandle)
 		: 
 		m_WindowHandle(windowHandle)
@@ -17,7 +17,7 @@ namespace longmarch {
 	{
 		glfwMakeContextCurrent(m_WindowHandle);
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-		ASSERT(status == 0, "Failed to initialize Glad");
+		ASSERT(status >= 0, "Failed to initialize Glad");
 
 		//Put info to Log
 		ENGINE_INFO(" OpenGL Info:");

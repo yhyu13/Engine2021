@@ -1,14 +1,12 @@
 #include "engine-precompiled-header.h"
 #include "engine/window/Window.h"
+#include "engine/renderer/platform/OpenGL/OpenGLContext.h"
+#include "engine/renderer/platform/Vulkan/VulkanContext.h"
 
 #if defined(WIN32) || defined(WINDOWS_APP)
-#include <windows.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define GLFW_EXPOSE_NATIVE_WGL
 #endif
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
 namespace longmarch 
@@ -25,7 +23,7 @@ namespace longmarch
 
 	void Window::Render()
 	{
-		glfwSwapBuffers(m_window);
+		m_context->SwapBuffers();
 		if (m_windowProperties.IsCPUGPUSync)
 			glFinish();
 	}
@@ -328,14 +326,13 @@ namespace longmarch
 		// Get window pos
 		glfwGetWindowPos(m_window, &m_windowProperties.m_xpos, &m_windowProperties.m_ypos);
 
-		success = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-		ASSERT(success >= 0, "Could not initialize Glad!");
+		// OpenGL context
+		m_context = std::unique_ptr<OpenGLContext>(new OpenGLContext{ m_window });
+		m_context->Init();
 
-		// Put info to Log
-		ENGINE_INFO(" OpenGL Info:");
-		ENGINE_INFO(" Vendor: {0}", glGetString(GL_VENDOR));
-		ENGINE_INFO(" Renderer: {0}", glGetString(GL_RENDERER));
-		ENGINE_INFO(" Version: {0}", glGetString(GL_VERSION));
+		// Vulkan context
+		m_context_vk = std::unique_ptr<VulkanContext>(new VulkanContext{ m_window });
+		m_context_vk->Init();
 
 		// Callbacks
 		glfwSetKeyCallback(m_window, [](GLFWwindow* window, int key, int scanCode, int action, int mods) 

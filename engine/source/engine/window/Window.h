@@ -61,15 +61,15 @@ namespace longmarch
 	public:
 		enum class CURSOR_MODE : int32_t
 		{
-			NORMAL = 0, // Disaply cursor and cursor has limited movement within the window
+			None = 0,
+			NORMAL, // Disaply cursor and cursor has limited movement within the window
 			HIDDEN, // Deos not disaply cursor and cursor has limited movement within the window
-			HIDDEN_AND_FREE, // Does not display cursor but cursor is still available with unlimited movement
-			NUM
+			HIDDEN_AND_FREE // Does not display cursor but cursor is still available with unlimited movement
 		};
 
 	public:
 		explicit Window(const Json::Value& engineConfiguration);
-		~Window();
+		virtual ~Window();
 
 		void Update(double dt);
 		void Render();
@@ -105,6 +105,5 @@ namespace longmarch
 		WindowProperties m_windowProperties;
 		GLFWwindow* m_window;
 		std::unique_ptr<GraphicsContext> m_context;
-		std::unique_ptr<GraphicsContext> m_context_vk;
 	};
 }

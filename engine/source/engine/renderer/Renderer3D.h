@@ -662,7 +662,6 @@ namespace longmarch
 		*	Render3D inline API
 		*
 		**************************************************************/
-		static RendererAPI::API GetAPI();
 		static void ToggleReverseZ(bool enable);
 
 		template<typename Func>

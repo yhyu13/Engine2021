@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "engine/window/Window.h"
+#include "engine/core/exception/EngineException.h"
 #include "engine/renderer/platform/OpenGL/OpenGLContext.h"
-#include "engine/renderer/platform/Vulkan/VulkanContext.h"
 
 #if defined(WIN32) || defined(WINDOWS_APP)
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -23,7 +23,6 @@ namespace longmarch
 
 	void Window::Render()
 	{
-		m_context_vk->SwapBuffers();
 		m_context->SwapBuffers();
 		if (m_windowProperties.IsCPUGPUSync)
 			glFinish();
@@ -69,7 +68,9 @@ namespace longmarch
 			m_windowProperties.m_height = m_windowProperties.m_resolutionY;
 			printf("No Full Screen : posX = %d, posY = %d width = %d, height = %d\n", x, y, w, h);
 		}
+		// Set v-sync on window mode change
 		SetVSync(m_windowProperties.IsVSync);
+
 		m_windowProperties.IsFullScreen = mode;
 		int width = m_windowProperties.m_width;
 		int height = m_windowProperties.m_height;
@@ -78,6 +79,7 @@ namespace longmarch
 		glfwGetFramebufferSize(m_window, &width, &height);
 		DEBUG_PRINT(Str("Framebuffer Size : %d x %d\n", width, height));
 
+		// Update input manager with new window size
 		m_windowProperties.m_input->SetMouseMaxPositions(m_windowProperties.m_resolutionX, m_windowProperties.m_resolutionY);
 	}
 
@@ -150,7 +152,10 @@ namespace longmarch
 			glfwGetMonitorWorkarea(glfwGetPrimaryMonitor(), &x, &y, nullptr, nullptr);
 			glfwSetWindowMonitor(m_window, nullptr, x, y, m_windowProperties.m_resolutionX, m_windowProperties.m_resolutionY, GLFW_DONT_CARE);
 		}
+		// Set v-sync on window mode change
 		SetVSync(m_windowProperties.IsVSync);
+
+		// Update input manager with new window size
 		m_windowProperties.m_input->SetMouseMaxPositions(m_windowProperties.m_resolutionX, m_windowProperties.m_resolutionY);
 	}
 
@@ -174,7 +179,7 @@ namespace longmarch
 
 	void Window::SetCursorMode(CURSOR_MODE mode)
 	{
-		static auto s_mode = CURSOR_MODE::NUM;
+		static auto s_mode = CURSOR_MODE::None;
 		if (s_mode != mode)
 		{
 			switch (mode)
@@ -202,13 +207,18 @@ namespace longmarch
 		{
 			return CURSOR_MODE::NORMAL;
 		}
-		if (mode == GLFW_CURSOR_HIDDEN)
+		else if (mode == GLFW_CURSOR_HIDDEN)
 		{
 			return CURSOR_MODE::HIDDEN;
 		}
-		if (mode == GLFW_CURSOR_DISABLED)
+		else if (mode == GLFW_CURSOR_DISABLED)
 		{
 			return CURSOR_MODE::HIDDEN_AND_FREE;
+		}
+		else
+		{
+			ENGINE_EXCEPT(L"Unknown glfw cursor mode!");
+			return CURSOR_MODE::None;
 		}
 	}
 
@@ -236,7 +246,6 @@ namespace longmarch
 	{
 		glfwSetWindowTitle(m_window, title.c_str());
 	}
-
 
 	Window::Window(const Json::Value& windowConfiguration) 
 	{
@@ -327,10 +336,6 @@ namespace longmarch
 		glfwSetWindowUserPointer(m_window, &m_windowProperties);
 		// Get window pos
 		glfwGetWindowPos(m_window, &m_windowProperties.m_xpos, &m_windowProperties.m_ypos);
-
-		// Vulkan context
-		m_context_vk = std::unique_ptr<VulkanContext>(new VulkanContext{ m_window });
-		m_context_vk->Init();
 
 		// OpenGL context
 		m_context = std::unique_ptr<OpenGLContext>(new OpenGLContext{ m_window });

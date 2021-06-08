@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../GraphicsContext.h"
+#include "engine/renderer/GraphicsContext.h"
 #include "OpenGLUtil.h"
 #include <GLFW/glfw3.h>
 

@@ -10,6 +10,11 @@ namespace longmarch
 	public:
 		NONINSTANTIABLE(RenderCommand);
 
+		inline static void SetAPI(RendererAPI* api)
+		{
+			s_RendererAPI = api;
+		}
+
 		inline static void Init()
 		{
 			s_RendererAPI->Init();
@@ -177,6 +182,6 @@ namespace longmarch
 		}
 
 	private:
-		static RendererAPI* s_RendererAPI;
+		inline static RendererAPI* s_RendererAPI{ nullptr };
 	};
 }

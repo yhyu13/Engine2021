@@ -14,7 +14,9 @@ namespace longmarch
 
 		enum class API : uint8_t
 		{
-			None = 0, OpenGL = 1
+			None = 0, 
+			OpenGL = 1,
+			Vulkan = 2
 		};
 
 		enum class PolyMode : uint8_t
@@ -98,9 +100,9 @@ namespace longmarch
 		virtual void Blend(bool enabled) = 0;
 		virtual void BlendFunc(longmarch::RendererAPI::BlendFuncEnum e) = 0;
 
-		inline static API GetAPI() { return s_API; }
+		inline static API WhichAPI() { return s_eAPI; }
 
-	private:
-		static API s_API;
+	protected:
+		inline static API s_eAPI { API::None };
 	};
 }

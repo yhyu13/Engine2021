@@ -21,16 +21,37 @@ namespace longmarch
 	private:
 		void CreateInstance();
 		void SetUpValidationLayer();
+		void CreateSurface();
 		void PickPhysicalDevice();
 		void CreateLogicalDevice();
 
 	private:
+		// Physical device
+		struct QueueFamilyIndices
+		{
+			std::optional<uint32_t> graphicsFamily;
+			std::optional<uint32_t> presentFamily;
+
+			bool IsComplete()
+			{
+				return graphicsFamily.has_value() && presentFamily.has_value();
+			}
+		};
+		QueueFamilyIndices FindQueueFamilies(const vk::PhysicalDevice& device);
+		bool IsDeviceSuitable(const vk::PhysicalDevice& device);
+
+	private:
 		GLFWwindow* m_WindowHandle;
 		vk::UniqueInstance m_instance;
-		VkDebugUtilsMessengerEXT m_debugCallback;
+		vk::SurfaceKHR m_surface;
+
 		vk::PhysicalDevice m_physicalDevice;
 		vk::UniqueDevice m_device;
+
 		vk::Queue m_graphicsQueue;
+		vk::Queue m_presentQueue;
+
+		VkDebugUtilsMessengerEXT m_debugCallback;
 	};
 }
 

@@ -5414,8 +5414,3 @@ void longmarch::Renderer3D::ToggleReverseZ(bool enable)
 	s_Data.enable_reverse_z = enable; 
 	RenderCommand::Reverse_Z(enable); 
 }
-
-RendererAPI::API longmarch::Renderer3D::GetAPI() 
-{ 
-	return RendererAPI::GetAPI(); 
-}

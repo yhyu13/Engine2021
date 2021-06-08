@@ -20,17 +20,6 @@ void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& create
 bool CheckRequiredValidationLayerSupport();
 std::vector<const char*> GetRequiredExtensions();
 
-// Physical device
-struct QueueFamilyIndices 
-{
-    std::optional<uint32_t> graphicsFamily;
-    bool isComplete() {
-        return graphicsFamily.has_value();
-    }
-};
-QueueFamilyIndices FindQueueFamilies(vk::PhysicalDevice device);
-bool IsDeviceSuitable(const vk::PhysicalDevice& device);
-
 longmarch::VulkanContext::VulkanContext(GLFWwindow* windowHandle)
     :
     m_WindowHandle(windowHandle)
@@ -40,6 +29,8 @@ longmarch::VulkanContext::VulkanContext(GLFWwindow* windowHandle)
 
 longmarch::VulkanContext::~VulkanContext()
 {
+    // Surface is created by glfw, therefore not using a Unique handle
+    m_instance->destroySurfaceKHR(m_surface);
     if constexpr (VkEnableValidationLayer) 
     {
         DestroyDebugUtilsMessengerEXT(*m_instance, m_debugCallback, nullptr);
@@ -50,6 +41,7 @@ void longmarch::VulkanContext::Init()
 {
     CreateInstance();
     SetUpValidationLayer();
+    CreateSurface();
     PickPhysicalDevice();
     CreateLogicalDevice();
 }
@@ -111,12 +103,15 @@ void longmarch::VulkanContext::SetUpValidationLayer()
             MyDebugReportCallback,
             nullptr
         );
-
-        if (CreateDebugUtilsMessengerEXT(*m_instance, reinterpret_cast<const VkDebugUtilsMessengerCreateInfoEXT*>(&createInfo), nullptr, &m_debugCallback) != VK_SUCCESS) 
-        {
-            ENGINE_EXCEPT(L"Vulkan failed to set up debug callback!");
-        }
+        VK_CHECK_ERROR(CreateDebugUtilsMessengerEXT(*m_instance, reinterpret_cast<const VkDebugUtilsMessengerCreateInfoEXT*>(&createInfo), nullptr, &m_debugCallback), "Vulkan failed to set up debug callback!");
     }
+}
+
+void longmarch::VulkanContext::CreateSurface()
+{
+    VkSurfaceKHR rawSurface;
+    VK_CHECK_ERROR(glfwCreateWindowSurface(*m_instance, m_WindowHandle, nullptr, &rawSurface), "Vulkan failed to create window surface!");
+    m_surface = rawSurface;
 }
 
 void longmarch::VulkanContext::PickPhysicalDevice()
@@ -175,6 +170,36 @@ void longmarch::VulkanContext::CreateLogicalDevice()
     );
 
     m_graphicsQueue = m_device->getQueue(indices.graphicsFamily.value(), 0);
+}
+
+longmarch::VulkanContext::QueueFamilyIndices longmarch::VulkanContext::FindQueueFamilies(const vk::PhysicalDevice& device)
+{
+    QueueFamilyIndices indices;
+    auto queueFamilies = device.getQueueFamilyProperties();
+
+    int i = 0;
+    for (const auto& queueFamily : queueFamilies)
+    {
+        if (queueFamily.queueCount > 0 && queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
+        {
+            indices.graphicsFamily = i;
+        }
+        if (queueFamily.queueCount > 0 && device.getSurfaceSupportKHR(i, m_surface)) {
+            indices.presentFamily = i;
+        }
+        if (indices.IsComplete())
+        {
+            break;
+        }
+        ++i;
+    }
+    return indices;
+}
+
+bool longmarch::VulkanContext::IsDeviceSuitable(const vk::PhysicalDevice& device)
+{
+    QueueFamilyIndices indices = FindQueueFamilies(device);
+    return indices.IsComplete();
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL MyDebugReportCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
@@ -286,31 +311,4 @@ std::vector<const char*> GetRequiredExtensions()
         ENGINE_INFO(" \t{0}", extension);
     }
     return extensions;
-}
-
-QueueFamilyIndices FindQueueFamilies(vk::PhysicalDevice device)
-{
-    QueueFamilyIndices indices;
-    auto queueFamilies = device.getQueueFamilyProperties();
-
-    int i = 0;
-    for (const auto& queueFamily : queueFamilies) 
-    {
-        if (queueFamily.queueCount > 0 && queueFamily.queueFlags & vk::QueueFlagBits::eGraphics) 
-        {
-            indices.graphicsFamily = i;
-        }
-        if (indices.isComplete()) 
-        {
-            break;
-        }
-        ++i;
-    }
-    return indices;
-}
-
-bool IsDeviceSuitable(const vk::PhysicalDevice& device)
-{
-    QueueFamilyIndices indices = FindQueueFamilies(device);
-    return indices.isComplete();
 }

@@ -23,6 +23,7 @@ namespace longmarch
 
 	void Window::Render()
 	{
+		m_context_vk->SwapBuffers();
 		m_context->SwapBuffers();
 		if (m_windowProperties.IsCPUGPUSync)
 			glFinish();
@@ -287,6 +288,7 @@ namespace longmarch
 		m_windowProperties.m_resolutionX = m_windowProperties.m_width;
 		m_windowProperties.m_resolutionY = m_windowProperties.m_height;
 
+		//glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, m_windowProperties.IsResizable);
 		glfwWindowHint(GLFW_VISIBLE, !hide);
 
@@ -326,13 +328,13 @@ namespace longmarch
 		// Get window pos
 		glfwGetWindowPos(m_window, &m_windowProperties.m_xpos, &m_windowProperties.m_ypos);
 
-		// OpenGL context
-		m_context = std::unique_ptr<OpenGLContext>(new OpenGLContext{ m_window });
-		m_context->Init();
-
 		// Vulkan context
 		m_context_vk = std::unique_ptr<VulkanContext>(new VulkanContext{ m_window });
 		m_context_vk->Init();
+
+		// OpenGL context
+		m_context = std::unique_ptr<OpenGLContext>(new OpenGLContext{ m_window });
+		m_context->Init();
 
 		// Callbacks
 		glfwSetKeyCallback(m_window, [](GLFWwindow* window, int key, int scanCode, int action, int mods) 

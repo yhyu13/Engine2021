@@ -1,6 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "EnginePerformanceMonitor.h"
 #include "../BaseEngineWidgetManager.h"
+
 #include <imgui/addons/implot/implot.h>
 
 longmarch::EnginePerformanceMonitor::EnginePerformanceMonitor()

@@ -3,11 +3,9 @@
 #include "../3DEngineWidgetManager.h"
 #include "engine/renderer/Renderer3D.h"
 #include "engine/events/engineEvents/EngineCustomEvent.h"
-
 #include "editor/ui/common/widgets/EngineEditorHUD.h"
 
-#include <imgui/addons/implot/implot_items.cpp>
-#include <imgui/addons/implot/implot_demo.cpp>
+#include <imgui/addons/implot/implot.h>
 
 void longmarch::_3DEngineMainMenu::Render()
 {

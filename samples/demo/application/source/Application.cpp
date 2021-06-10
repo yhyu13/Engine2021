@@ -13,18 +13,18 @@ namespace longmarch
 		NONCOPYABLE(Application);
 		Application()
 		{
-			// Create the main game layer (loading game scene, game component system and game UI)
-			auto gameLayer = MemoryManager::Make_shared<MainGameLayer>();
-			Engine::SwitchCurrentLayer(Layer::LAYER_TYPE::APP_LAYER);
-			Engine::PushLayer(gameLayer);
-			gameLayer->Init();
-#ifndef APP_ONLY
-			// Create the engine layer (engine UI, renderer pipeline)
-			auto engineLayer = MemoryManager::Make_shared<_3DEditorLayer>();
-			Engine::SwitchCurrentLayer(Layer::LAYER_TYPE::ENG_LAYER);
-			Engine::PushLayer(engineLayer);
-			engineLayer->Init();
-#endif
+//			// Create the main game layer (loading game scene, game component system and game UI)
+//			auto gameLayer = MemoryManager::Make_shared<MainGameLayer>();
+//			Engine::SwitchCurrentLayer(Layer::LAYER_TYPE::APP_LAYER);
+//			Engine::PushLayer(gameLayer);
+//			gameLayer->Init();
+//#ifndef APP_ONLY
+//			// Create the engine layer (engine UI, renderer pipeline)
+//			auto engineLayer = MemoryManager::Make_shared<_3DEditorLayer>();
+//			Engine::SwitchCurrentLayer(Layer::LAYER_TYPE::ENG_LAYER);
+//			Engine::PushLayer(engineLayer);
+//			engineLayer->Init();
+//#endif
 
 			// Make window visible in the end of construction
 			GetWindow()->SetVisible(true);

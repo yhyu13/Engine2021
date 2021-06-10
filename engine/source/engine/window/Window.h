@@ -13,7 +13,7 @@ namespace longmarch
 {
 	typedef std::function<void(int IsFocussed)> InterruptHandler;
 
-	struct ENGINE_API WindowProperties 
+	struct ENGINE_API WindowProperties
 	{
 		int m_xpos; // Upper left corner position in the whole screen
 		int m_ypos; // Upper left corner position in the whole screen
@@ -22,12 +22,13 @@ namespace longmarch
 		int m_resolutionX; // X Resolution, used in render target. Could be different from window width
 		int m_resolutionY; // Y Resolution, used in render target. Could be different from window height
 		std::string m_title;
-		InputManager* m_input = nullptr;
-		bool IsResizable = true;
-		int IsFullScreen = 1; /* 0-Full screen, 1- Borderless full screen 2- Windowed mode  */
-		bool IsVSync = true;
-		bool IsCPUGPUSync = true; 
-		InterruptHandler m_interruptHandler = nullptr;
+		InputManager* m_input{ nullptr };
+		int m_api{ 0 }; /* 0-opengl4, 1-vulkan */
+		bool IsResizable{ true };
+		int IsFullScreen{ 2 }; /* 0-Full screen, 1- Borderless full screen 2- Windowed mode  */
+		bool IsVSync{ true };
+		bool IsCPUGPUSync{ true };
+		InterruptHandler m_interruptHandler{ nullptr };
 
 		std::pair<unsigned int, unsigned int> m_Res1;
 		std::pair<unsigned int, unsigned int> m_Res2;
@@ -37,7 +38,7 @@ namespace longmarch
 		int m_monitorWidth;
 		int m_monitorHeight;
 
-		WindowProperties(int width = 1280, int height = 720, std::string title = "ENGINE GSWY")
+		WindowProperties(int width = 1280, int height = 720, std::string title = "LongMarch Engine")
 			:
 			m_xpos(0),
 			m_ypos(0),
@@ -90,6 +91,7 @@ namespace longmarch
 
 		inline GLFWwindow* GetNativeWindow() const { return m_window; }
 		inline WindowProperties& GetWindowProperties() { return m_windowProperties; }
+		inline const WindowProperties& GetWindowProperties() const { return m_windowProperties; } 
 		inline unsigned int GetWidth() const { return m_windowProperties.m_width; }
 		inline unsigned int GetHeight() const { return m_windowProperties.m_height; }
 		inline void SetInterruptHandler(const InterruptHandler& handler) { m_windowProperties.m_interruptHandler = handler; };

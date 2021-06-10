@@ -47,14 +47,17 @@ namespace longmarch
 		std::wstring file;
 		unsigned int line;
 
-		//! You should not use inline static for template class
+		//! You should not use inline static for template classes
 		static AtomicQueue<EngineException> m_queue;
 	};
 
 	class NotImplementedException : public std::logic_error
 	{
 	public:
-		NotImplementedException() : std::logic_error("Function not yet implemented!") { };
+		NotImplementedException() 
+			: 
+			std::logic_error("Function not yet implemented!") 
+		{}
 	};
 
 	std::wstring str2wstr(const std::string& str);

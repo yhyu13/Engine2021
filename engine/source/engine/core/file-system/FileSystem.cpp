@@ -23,7 +23,7 @@ fs::path longmarch::FileSystem::ResolveProtocol(const fs::path& _path)
 	{
 		if (!string_path.empty())
 		{
-			PRINT("Path protocol cannot be resolve : " + string_path);
+			DEBUG_PRINT("[FileSystem] Path protocol cannot be resolved : " + string_path);
 		}
 		return _path;
 	}

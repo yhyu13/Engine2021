@@ -9,10 +9,13 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
+#include <imgui/imgui_impl_vulkan.h>
 #include <imgui/addons/implot/implot.h>
 
 namespace longmarch 
 {
+	static int s_api{ 0 };
+
 	void ImGuiDriver::Init()
 	{
 		IMGUI_CHECKVERSION();
@@ -31,25 +34,50 @@ namespace longmarch
 			style.WindowRounding = 0.0f;
 		}
 
-		auto engine = Engine::GetInstance();
-		GLFWwindow* window = static_cast<GLFWwindow*>(engine->GetWindow()->GetNativeWindow());
-
-		// Setup Platform/Renderer bindings
-		ImGui_ImplGlfw_InitForOpenGL(window, true);
-		ImGui_ImplOpenGL3_Init("#version 450");
+		auto window = Engine::GetWindow();
+		GLFWwindow* wd = static_cast<GLFWwindow*>(window->GetNativeWindow());
+		s_api = window->GetWindowProperties().m_api;
+		
+		switch (s_api)
+		{
+		case 0:
+			// Setup Platform/Renderer bindings
+			ImGui_ImplGlfw_InitForOpenGL(wd, true);
+			ImGui_ImplOpenGL3_Init("#version 450");
+			break;
+		case 1:
+			throw NotImplementedException();
+			break;
+		}
 	}
 
 	void ImGuiDriver::ShutDown()
 	{
-		ImGui_ImplOpenGL3_Shutdown();
-		ImGui_ImplGlfw_Shutdown();
-		ImPlot::DestroyContext();
-		ImGui::DestroyContext();
+		switch (s_api)
+		{
+		case 0:
+			ImGui_ImplOpenGL3_Shutdown();
+			ImGui_ImplGlfw_Shutdown();
+			ImPlot::DestroyContext();
+			ImGui::DestroyContext();
+			break;
+		case 1:
+			throw NotImplementedException();
+			break;
+		}
 	}
 
 	void ImGuiDriver::BeginFrame()
 	{
-		ImGui_ImplOpenGL3_NewFrame();
+		switch (s_api)
+		{
+		case 0:
+			ImGui_ImplOpenGL3_NewFrame();
+			break;
+		case 1:
+			ImGui_ImplVulkan_NewFrame();
+			break;
+		}
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 	}
@@ -62,14 +90,25 @@ namespace longmarch
 
 		//Rendering
 		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		switch (s_api)
 		{
-			GLFWwindow* backup_current_context = glfwGetCurrentContext();
-			ImGui::UpdatePlatformWindows();
-			ImGui::RenderPlatformWindowsDefault();
-			glfwMakeContextCurrent(backup_current_context);
+		case 0:
+		{
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+			{
+				GLFWwindow* backup_current_context = glfwGetCurrentContext();
+				ImGui::UpdatePlatformWindows();
+				ImGui::RenderPlatformWindowsDefault();
+				glfwMakeContextCurrent(backup_current_context);
+			}
+		}
+			break;
+		case 1:
+			throw NotImplementedException();
+			break;
 		}
 	}
 }

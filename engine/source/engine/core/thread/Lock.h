@@ -8,7 +8,8 @@ namespace longmarch
 	extern std::atomic_flag stbi_hdr_write_lock;
 	extern std::atomic_flag stbi_png_write_lock;
 
-	struct atomic_flag_guard {
+	struct atomic_flag_guard 
+	{
 		NONCOPYABLE(atomic_flag_guard);
 		atomic_flag_guard() = delete;
 		explicit atomic_flag_guard(std::atomic_flag& flag) noexcept;
@@ -17,7 +18,8 @@ namespace longmarch
 		std::atomic_flag* m_lock;
 	};
 
-	struct atomic_bool_guard {
+	struct atomic_bool_guard 
+	{
 		NONCOPYABLE(atomic_bool_guard);
 		atomic_bool_guard() = delete;
 		explicit atomic_bool_guard(std::atomic_bool& flag) noexcept;

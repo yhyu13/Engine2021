@@ -2,6 +2,7 @@
 #include "engine/window/Window.h"
 #include "engine/core/exception/EngineException.h"
 #include "engine/renderer/platform/OpenGL/OpenGLContext.h"
+#include "engine/renderer/platform/Vulkan/VulkanContext.h"
 
 #if defined(WIN32) || defined(WINDOWS_APP)
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -25,7 +26,18 @@ namespace longmarch
 	{
 		m_context->SwapBuffers();
 		if (m_windowProperties.IsCPUGPUSync)
-			glFinish();
+		{
+			switch (m_windowProperties.m_api)
+			{
+			case 0:
+				// OpenGL context
+				glFinish();
+				break;
+			case 1:
+				// Vulkan context
+				break;
+			}
+		}
 	}
 
 	void Window::ToggleFullScreen(int mode)
@@ -276,6 +288,7 @@ namespace longmarch
 		m_windowProperties.IsFullScreen = windowConfiguration["Full-screen"].asInt();
 		m_windowProperties.IsVSync = windowConfiguration["V-sync"].asBool();
 		m_windowProperties.IsCPUGPUSync = windowConfiguration["GPU-sync"].asBool();
+		m_windowProperties.m_api = windowConfiguration["API"].asInt();
 
 		m_windowProperties.m_input = InputManager::GetInstance();
 		m_windowProperties.m_input->SetMouseMaxPositions(m_windowProperties.m_width, m_windowProperties.m_height);
@@ -297,7 +310,19 @@ namespace longmarch
 		m_windowProperties.m_resolutionX = m_windowProperties.m_width;
 		m_windowProperties.m_resolutionY = m_windowProperties.m_height;
 
-		//glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		switch (m_windowProperties.m_api)
+		{
+		case 0:
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+			break;
+		case 1:
+			// Vulkan requires no automatic api context creation
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+			break;
+		default:
+			ENGINE_EXCEPT(L"Unknown graphics API context!");
+			break;
+		}
 		glfwWindowHint(GLFW_RESIZABLE, m_windowProperties.IsResizable);
 		glfwWindowHint(GLFW_VISIBLE, !hide);
 
@@ -337,9 +362,19 @@ namespace longmarch
 		// Get window pos
 		glfwGetWindowPos(m_window, &m_windowProperties.m_xpos, &m_windowProperties.m_ypos);
 
-		// OpenGL context
-		m_context = std::unique_ptr<OpenGLContext>(new OpenGLContext{ m_window });
-		m_context->Init();
+		switch (m_windowProperties.m_api)
+		{
+		case 0:
+			// OpenGL context
+			m_context = std::unique_ptr<OpenGLContext>(new OpenGLContext{ m_window });
+			m_context->Init();
+			break;
+		case 1:
+			// OpenGL context
+			m_context = std::unique_ptr<VulkanContext>(new VulkanContext{ m_window });
+			m_context->Init();
+			break;
+		}
 
 		// Callbacks
 		glfwSetKeyCallback(m_window, [](GLFWwindow* window, int key, int scanCode, int action, int mods) 
@@ -405,8 +440,7 @@ namespace longmarch
 			WindowProperties& properties = *(WindowProperties*)glfwGetWindowUserPointer(window);
 			properties.m_xpos = upperleft_xpos;
 			properties.m_ypos = upperleft_ypos;
-		}
-		);
+		});
 
 		glfwSetWindowFocusCallback(m_window, [](GLFWwindow* window, int focussed)
 		{

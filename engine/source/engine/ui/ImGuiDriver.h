@@ -4,11 +4,12 @@
 
 namespace longmarch
 {
-	struct ENGINE_API ImGuiDriver
+	class ENGINE_API ImGuiDriver
 	{
+	public:
 		static void Init();
 		static void ShutDown();
 		static void BeginFrame();
-		static void EndFrame();
+		static void EndFrame();		
 	};
 }

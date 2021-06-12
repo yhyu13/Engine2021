@@ -110,7 +110,7 @@ namespace longmarch
 		static double GetFrameTime() { return FramerateController::GetInstance()->GetFrameTime(); }
 
 		static void ShowMessageBox(const std::wstring& title, const std::wstring& message);
-		static void OnInterruption(const int& isFocussed);
+		static void OnInterruption(int isFocussed);
 
 		inline void SwitchCurrentLayer(Layer::LAYER_TYPE layer) { m_LayerStack.SwitchCurrentLayer(layer); }
 		inline void PushLayer(const std::shared_ptr<Layer>& layer) { m_LayerStack.PushLayer(layer); }

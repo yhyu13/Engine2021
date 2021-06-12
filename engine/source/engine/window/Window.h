@@ -6,7 +6,6 @@
 
 #include <json/json.h>
 
-
 struct GLFWwindow;
 
 namespace longmarch 
@@ -15,6 +14,7 @@ namespace longmarch
 
 	struct ENGINE_API WindowProperties
 	{
+		std::shared_ptr<GraphicsContext> m_context;
 		int m_xpos; // Upper left corner position in the whole screen
 		int m_ypos; // Upper left corner position in the whole screen
 		int m_width; // Width of the window, could be different from resolution
@@ -106,6 +106,5 @@ namespace longmarch
 	private:
 		WindowProperties m_windowProperties;
 		GLFWwindow* m_window;
-		std::unique_ptr<GraphicsContext> m_context;
 	};
 }

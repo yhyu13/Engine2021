@@ -213,7 +213,7 @@ namespace longmarch
 		s_instance->GetWindow()->ShowMessageBox(title, message);
 	}
 
-	void longmarch::Engine::OnInterruption(const int& isFocussed)
+	void longmarch::Engine::OnInterruption(int isFocussed)
 	{
 		s_instance->m_isWindowFocused = static_cast<bool>(isFocussed);
 

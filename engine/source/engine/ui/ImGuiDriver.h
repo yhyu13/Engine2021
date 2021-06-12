@@ -13,3 +13,9 @@ namespace longmarch
 		static void EndFrame();		
 	};
 }
+
+namespace ImGui
+{
+	//! Should call this method right after calling io.Fonts->AddFontFromFileTTF(..);
+	void ENGINE_API UploadFontTexture();
+}

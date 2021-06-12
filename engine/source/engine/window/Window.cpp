@@ -24,7 +24,7 @@ namespace longmarch
 
 	void Window::Render()
 	{
-		m_context->SwapBuffers();
+		m_windowProperties.m_context->SwapBuffers();
 		if (m_windowProperties.IsCPUGPUSync)
 		{
 			switch (m_windowProperties.m_api)
@@ -366,13 +366,13 @@ namespace longmarch
 		{
 		case 0:
 			// OpenGL context
-			m_context = std::unique_ptr<OpenGLContext>(new OpenGLContext{ m_window });
-			m_context->Init();
+			m_windowProperties.m_context = std::shared_ptr<OpenGLContext>(new OpenGLContext{ m_window });
+			m_windowProperties.m_context->Init();
 			break;
 		case 1:
 			// OpenGL context
-			m_context = std::unique_ptr<VulkanContext>(new VulkanContext{ m_window });
-			m_context->Init();
+			m_windowProperties.m_context = std::shared_ptr<VulkanContext>(new VulkanContext{ m_window });
+			m_windowProperties.m_context->Init();
 			break;
 		}
 
@@ -433,6 +433,7 @@ namespace longmarch
 			properties.m_width = width;
 			properties.m_height = height;
 			properties.m_input->SetMouseMaxPositions(width, height);
+			properties.m_context->RebuildSwapChain(width, height);
 		});
 
 		glfwSetWindowPosCallback(m_window, [](GLFWwindow* window, int upperleft_xpos, int upperleft_ypos)

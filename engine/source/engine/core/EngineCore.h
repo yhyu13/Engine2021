@@ -64,15 +64,15 @@ std::string Str(const T& t)
 template<typename... Args>
 std::string Str(const char* fmt, const Args &... args)
 {
-	char str[256];
-	std::snprintf(str, 256, fmt, args...);
+	char str[1024];
+	_snprintf_s(str, 1024, fmt, args...);
 	return std::string(str);
 }
 
 template<typename... Args>
 std::wstring wStr(const wchar_t* fmt, const Args &... args)
 {
-	wchar_t str[256];
-	std::snprintf(str, 256, fmt, args...);
+	wchar_t str[1024];
+	_snwprintf_s(str, 1024, fmt, args...);
 	return std::wstring(str);
 }

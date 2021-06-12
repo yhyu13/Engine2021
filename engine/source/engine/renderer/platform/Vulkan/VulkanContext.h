@@ -10,7 +10,7 @@
 
 namespace longmarch 
 {
-	struct LongMarch_Vulkan_Frame
+	struct Vulkan_Frame
 	{
 		VkCommandPool       CommandPool;
 		VkCommandBuffer     CommandBuffer;
@@ -20,16 +20,16 @@ namespace longmarch
 		VkFramebuffer       Framebuffer;
 	};
 
-	struct LongMarch_Vulkan_FrameSemaphores
+	struct Vulkan_FrameSemaphores
 	{
 		VkSemaphore         ImageAcquiredSemaphore;
 		VkSemaphore         RenderCompleteSemaphore;
 	};
 
-	struct LongMarch_Vulkan_Window
+	struct Vulkan_Window
 	{
-		std::vector<LongMarch_Vulkan_Frame>		      Frames;
-		std::vector<LongMarch_Vulkan_FrameSemaphores> FrameSemaphores;
+		std::vector<Vulkan_Frame>		      Frames;
+		std::vector<Vulkan_FrameSemaphores>   FrameSemaphores;
 
 		VkExtent2D		    Extent;
 		VkSwapchainKHR      Swapchain;
@@ -44,11 +44,28 @@ namespace longmarch
 		uint32_t			ImageCount;             // Number of simultaneous in-flight frames (returned by vkGetSwapchainImagesKHR, usually derived from min_image_count)
 		uint32_t			SemaphoreIndex;         // Current set of swapchain wait semaphores we're using (needs to be distinct from per frame data)
 
-		LongMarch_Vulkan_Window()
+		Vulkan_Window()
 		{
 			memset(this, 0, sizeof(*this));
 			PresentMode = VK_PRESENT_MODE_MAX_ENUM_KHR;
 			ClearEnable = true;
+		}
+
+		inline Vulkan_Frame* CurrentFrame()
+		{
+			return &Frames[this->FrameIndex];
+		}
+		inline Vulkan_FrameSemaphores* CurrentFrameSenaphore()
+		{
+			return &FrameSemaphores[this->SemaphoreIndex];
+		}
+		inline void IncrementFrameIndex()
+		{
+			this->FrameIndex = (this->FrameIndex + 1) % this->ImageCount;
+		}
+		inline void IncrementSemaphoreIndex()
+		{
+			this->SemaphoreIndex = (this->SemaphoreIndex + 1) % this->ImageCount;
 		}
 	};
 
@@ -88,8 +105,13 @@ namespace longmarch
 
 		virtual void Init() override;
 		virtual void SwapBuffers() override;
-		virtual void ResizeSwapChain(int width, int height) override; 
+		virtual void RebuildSwapChain(int width = -1, int height = -1) override; 
 		virtual void* GetNativeWindow() override { return m_WindowHandle; };
+
+		Vulkan_Window* GetVulkan_Window() { return &m_Vkwd; };
+
+		VkCommandBuffer BeginSingleTimeGraphicsCommands();
+		void EndSingleTimeGraphicsCommands(VkCommandBuffer commandBuffer);
 
 	private:
 		void CreateInstance();
@@ -106,35 +128,46 @@ namespace longmarch
 		bool IsDeviceSuitable(const VkPhysicalDevice& device);
 
 		// Swap chain
+		SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice& device);
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
-		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
-		SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice& device);
+		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities); 
+		uint32_t GetMinImageCountFromPresentMode(VkPresentModeKHR present_mode);
+		uint32_t ChooseImageCount(const VkSurfaceCapabilitiesKHR& capabilities, uint32_t minImageCount = 2);
 
-	private:
-		int							 m_ContextID;
-		GLFWwindow*					 m_WindowHandle{ nullptr };
+	public:
 
 		VkAllocationCallbacks*		 m_Allocator{ nullptr };
-		VkDebugUtilsMessengerEXT	 m_DebugUtilsMessenger{ VK_NULL_HANDLE };
-		VkDebugReportCallbackEXT	 m_DebugCallback{ VK_NULL_HANDLE };
-									 
+
 		VkPhysicalDevice			 m_PhysicalDevice{ VK_NULL_HANDLE };
-		VkDevice					 m_DeviceCompute{ VK_NULL_HANDLE };
-		VkDevice					 m_DeviceGraphics{ VK_NULL_HANDLE };
-		VkPhysicalDeviceProperties   m_DeviceProperties;
-		VkPhysicalDeviceFeatures	 m_DeviceFeatures;
-									 
+
 		ComputeQueueFamilyIndices	 m_ComputeQueueIndices;
-		GraphicQueueFamilyIndices	 m_GraphicQueueIndices;
+		VkDevice					 m_ComputeDevice{ VK_NULL_HANDLE };
+		VkDescriptorPool			 m_ComputeDescriptorPool{ VK_NULL_HANDLE };
 		VkQueue						 m_ComputeQueue{ VK_NULL_HANDLE };
+		
+		GraphicQueueFamilyIndices	 m_GraphicQueueIndices;
+		VkDevice					 m_GraphicsDevice{ VK_NULL_HANDLE };
+		VkDescriptorPool			 m_GraphicsDescriptorPool{ VK_NULL_HANDLE };
 		VkQueue						 m_GraphicsQueue{ VK_NULL_HANDLE };
 		VkQueue						 m_PresentQueue{ VK_NULL_HANDLE };
 
-		LongMarch_Vulkan_Window		 m_Vkwd;
+	private:
+		Vulkan_Window				 m_Vkwd;
+		GLFWwindow*					 m_WindowHandle{ nullptr }; 
+
+		VkPhysicalDeviceProperties   m_DeviceProperties;
+		VkPhysicalDeviceFeatures	 m_DeviceFeatures;
+
+		VkDebugUtilsMessengerEXT	 m_DebugUtilsMessenger{ VK_NULL_HANDLE };
+		VkDebugReportCallbackEXT	 m_DebugCallback{ VK_NULL_HANDLE };
+		int							 m_ContextID{ 0 };
+		bool						 m_SwapChainRebuild{ false };
+
+	public:
+		inline static VkInstance		 s_Instance{ VK_NULL_HANDLE };
 
 	private:
-		inline static VkInstance		 s_Instance{ VK_NULL_HANDLE };
 		inline static std::atomic_int	 s_ContextID{ 0 };
 		inline static std::atomic_bool	 s_init{ false };
 	};

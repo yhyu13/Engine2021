@@ -14,7 +14,10 @@ namespace longmarch
 
 		virtual void Init() override;
 		virtual void SwapBuffers() override;
-		virtual void ResizeSwapChain(int width, int height) override {};
+		virtual void RebuildSwapChain(int width, int height) override 
+		{ 
+			// OpenGL does not need to maully rebuild swap chain
+		};
 		virtual void* GetNativeWindow() { return m_WindowHandle; };
 
 	private:

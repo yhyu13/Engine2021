@@ -87,6 +87,7 @@ namespace longmarch
 		NONCOPYABLE(Engine);
 		Engine();
 		virtual ~Engine();
+		virtual void Init();
 		void Run();
 
 		inline ConnectableUpdater& PreUpdate() { return m_preUpdate; }
@@ -95,38 +96,16 @@ namespace longmarch
 		inline ConnectableUpdater& Render() { return m_renderUpdate; }
 		inline ConnectableUpdater& PostRenderUpdate() { return m_postRenderUpdate; }
 
-		inline static std::shared_ptr<Window> GetWindow() { return s_instance->m_engineWindow; }
-		inline static Engine* GetInstance() { return s_instance; }
-		inline static double GetTotalTime() { return s_instance->m_timer.Mark(); }
-
-		inline static void SetPaused(bool b) { s_instance->m_isPaused = (b); }
-		inline static bool GetPaused() { return s_instance->m_isPaused; }
-
-		inline static void SetQuit(bool b) { s_instance->m_shouldQUit = (b); }
-		inline static bool GetQuit() { return s_instance->m_shouldQUit; }
-
-		static void SetMaxFrameRate(unsigned int newMax) { FramerateController::GetInstance()->SetMaxFrameRate(newMax); }
-		//! Return frame time in seconds
-		static double GetFrameTime() { return FramerateController::GetInstance()->GetFrameTime(); }
-
-		static void ShowMessageBox(const std::wstring& title, const std::wstring& message);
-		static void OnInterruption(int isFocussed);
-
 		inline void SwitchCurrentLayer(Layer::LAYER_TYPE layer) { m_LayerStack.SwitchCurrentLayer(layer); }
 		inline void PushLayer(const std::shared_ptr<Layer>& layer) { m_LayerStack.PushLayer(layer); }
 		inline void PushOverlay(const std::shared_ptr<Layer>& layer) { m_LayerStack.PushOverlay(layer); }
-		inline static void SetEngineMode(ENGINE_MODE mode) { s_instance->m_engineMode = mode; }
-		inline static ENGINE_MODE GetEngineMode() { return s_instance->m_engineMode; }
 
-	public:
+	private:
 		void _ON_ENG_WINDOW_QUIT(EventQueue<EngineEventType>::EventPtr e);
 		void _ON_CURSOR_SWITCH_MODE(EventQueue<EngineEventType>::EventPtr e);
 		void _ON_TOGGLE_GPUSYNC(EventQueue<EngineGraphicsEventType>::EventPtr e);
 		void _ON_TOGGLE_WINDOW_INTERRUTPTION_HANDLE(EventQueue<EngineSettingEventType>::EventPtr e);
 		void _ON_TOGGLE_VSYNC(EventQueue<EngineGraphicsEventType>::EventPtr e);
-
-	private:
-		inline static Engine* s_instance{ nullptr };
 
 	private:
 		ConnectableUpdater m_preUpdate;
@@ -143,6 +122,30 @@ namespace longmarch
 		bool m_isPaused{ false }; 
 		bool m_isWindowFocused{ true };
 		bool m_enable_pause_on_unfocused{ false };
+
+	public:
+		inline static std::shared_ptr<Window> GetWindow() { return s_instance->m_engineWindow; }
+		inline static Engine* GetInstance() { return s_instance; }
+		inline static double GetTotalTime() { return s_instance->m_timer.Mark(); }
+
+		inline static void SetPaused(bool b) { s_instance->m_isPaused = (b); }
+		inline static bool GetPaused() { return s_instance->m_isPaused; }
+
+		inline static void SetQuit(bool b) { s_instance->m_shouldQUit = (b); }
+		inline static bool GetQuit() { return s_instance->m_shouldQUit; }
+
+		inline static void SetEngineMode(ENGINE_MODE mode) { s_instance->m_engineMode = mode; }
+		inline static ENGINE_MODE GetEngineMode() { return s_instance->m_engineMode; }
+
+		static void SetMaxFrameRate(unsigned int newMax) { FramerateController::GetInstance()->SetMaxFrameRate(newMax); }
+		//! Return frame time in seconds
+		static double GetFrameTime() { return FramerateController::GetInstance()->GetFrameTime(); }
+
+		static void ShowMessageBox(const std::wstring& title, const std::wstring& message);
+		static void OnInterruption(int isFocussed);				
+
+	private:
+		inline static Engine* s_instance{ nullptr };
 	};
 
 	//! Must implement this function in your application.cpp

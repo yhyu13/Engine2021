@@ -11,8 +11,13 @@ namespace longmarch
 	{
 	public:
 		NONCOPYABLE(Application);
-		Application()
+		Application() = default;
+
+		virtual void Init() override
 		{
+			// Call engine init first
+			Engine::Init();
+
 //			// Create the main game layer (loading game scene, game component system and game UI)
 //			auto gameLayer = MemoryManager::Make_shared<MainGameLayer>();
 //			Engine::SwitchCurrentLayer(Layer::LAYER_TYPE::APP_LAYER);
@@ -25,7 +30,6 @@ namespace longmarch
 //			Engine::PushLayer(engineLayer);
 //			engineLayer->Init();
 //#endif
-
 			// Make window visible in the end of construction
 			GetWindow()->SetVisible(true);
 
@@ -46,7 +50,8 @@ namespace longmarch
 		}
 	};
 
-	Engine* CreateEngineApplication() {
+	Engine* CreateEngineApplication() 
+	{
 		return new Application();
 	}
 }

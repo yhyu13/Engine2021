@@ -13,10 +13,10 @@ extern longmarch::Engine* longmarch::CreateEngineApplication();
 
 int main(int argc, char** argv)
 {
-	Engine* engine{ nullptr };
+	Engine* engine = longmarch::CreateEngineApplication();
 	try
 	{
-		engine = longmarch::CreateEngineApplication();
+		engine->Init();
 		engine->Run();
 	}
 	catch (const EngineException& e)
@@ -27,6 +27,7 @@ int main(int argc, char** argv)
 		ERROR_PRINT(wstr2str(eMsg));
 		longmarch::Engine::ShowMessageBox(e.GetExceptionType(), eMsg);
 		longmarch::Engine::SetQuit(true);
+		ASSERT(false, "");
 	}
 	catch (const std::exception& e)
 	{
@@ -36,7 +37,8 @@ int main(int argc, char** argv)
 		ERROR_PRINT("Unhandled STL Exception");
 		ERROR_PRINT(wstr2str(eMsg));
 		longmarch::Engine::ShowMessageBox(str2wstr("Unhandled STL Exception"), eMsg);
-		longmarch::Engine::SetQuit(true);
+		longmarch::Engine::SetQuit(true); 
+		ASSERT(false, "");
 	}
 	catch (...)
 	{
@@ -44,6 +46,7 @@ int main(int argc, char** argv)
 		ERROR_PRINT("...");
 		longmarch::Engine::ShowMessageBox(str2wstr("Unhandled STL Exception"), str2wstr("..."));
 		longmarch::Engine::SetQuit(true);
+		ASSERT(false, "");
 	}
 	delete engine;
 	return 0;

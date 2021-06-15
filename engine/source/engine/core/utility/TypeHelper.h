@@ -100,6 +100,10 @@ namespace longmarch
 #define __LongMarch_TRVIAL_TEMPLATE__ template<typename ...__TRIVIAL__>
 #endif
 
+#ifndef LongMarch_ArraySize
+#define LongMarch_ArraySize(x) (sizeof(x) / sizeof(*x))
+#endif
+
 	template <typename T>
 	struct Identity
 	{

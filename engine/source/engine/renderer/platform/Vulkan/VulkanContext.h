@@ -133,7 +133,7 @@ namespace longmarch
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities); 
 		uint32_t GetMinImageCountFromPresentMode(VkPresentModeKHR present_mode);
-		uint32_t ChooseImageCount(const VkSurfaceCapabilitiesKHR& capabilities, uint32_t minImageCount = 2);
+		uint32_t ChooseImageCount(const VkSurfaceCapabilitiesKHR& capabilities, uint32_t minImageCount);
 
 	public:
 

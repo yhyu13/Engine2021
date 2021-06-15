@@ -17,9 +17,17 @@ const std::vector<const char*> VkRequestedLayerNames =
 {
     "VK_LAYER_KHRONOS_validation"
 };
+// Instance extensions are returned by glfw, see GetRequiredExtensions() function below
+//const std::vector<const char*> VkInstanceExtensions =
+//{
+//    VK_KHR_SURFACE_EXTENSION_NAME
+//};
 const std::vector<const char*> VkDeviceExtensions = 
 {
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME, // Vulkan window application required extension
+    VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME, // Vulkan ray tracing required extension
+    VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME, // Vulkan ray tracing required extension
+    VK_NV_RAY_TRACING_EXTENSION_NAME // Nvidia RTX required extension, only available on Nvidia cards
 };
 
 // Validation layer
@@ -32,8 +40,11 @@ VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCa
 void DestroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* pAllocator);
 
 bool CheckRequiredValidationLayerSupport();
+
+// Extensions
 std::vector<const char*> GetRequiredExtensions();
 
+// Helper functions
 void DestroyVulakn_Frame(VkDevice device, Vulkan_Frame* fd, const VkAllocationCallbacks* allocator);
 void DestroyVulkan_FrameSemaphores(VkDevice device, Vulkan_FrameSemaphores* fsd, const VkAllocationCallbacks* allocator);
 void DestroyVulkan_Window(VkInstance instance, VkDevice device, Vulkan_Window* wd, const VkAllocationCallbacks* allocator);
@@ -54,25 +65,37 @@ longmarch::VulkanContext::VulkanContext(GLFWwindow* windowHandle)
 
 longmarch::VulkanContext::~VulkanContext()
 {
-    auto wd = &m_Vkwd;
-    DestroyVulkan_Window(s_Instance, m_GraphicsDevice, wd, m_Allocator);
-    vkDestroyDevice(m_GraphicsDevice, m_Allocator); 
-    vkDeviceWaitIdle(m_ComputeDevice);
-    vkDestroyDevice(m_ComputeDevice, m_Allocator);
-    vkDestroySurfaceKHR(s_Instance, wd->Surface, m_Allocator);
-
-    if constexpr (VkEnableValidationLayer) 
+    if (s_Instance)
     {
-        DestroyDebugUtilsMessengerEXT(s_Instance, m_DebugUtilsMessenger, m_Allocator);
-        DestroyDebugReportCallbackEXT(s_Instance, m_DebugCallback, m_Allocator);
+        auto wd = &m_Vkwd;
+        if (m_GraphicsDevice)
+        {
+            DestroyVulkan_Window(s_Instance, m_GraphicsDevice, wd, m_Allocator);
+            vkDestroyDevice(m_GraphicsDevice, m_Allocator);
+        }
+        if (m_ComputeDevice)
+        {
+            vkDeviceWaitIdle(m_ComputeDevice);
+            vkDestroyDevice(m_ComputeDevice, m_Allocator);
+        }
+        vkDestroySurfaceKHR(s_Instance, wd->Surface, m_Allocator);
+
+        if constexpr (VkEnableValidationLayer)
+        {
+            DestroyDebugUtilsMessengerEXT(s_Instance, m_DebugUtilsMessenger, m_Allocator);
+            DestroyDebugReportCallbackEXT(s_Instance, m_DebugCallback, m_Allocator);
+        }
     }
 
     if (--s_ContextID == 0)
     {
         LOCK_GUARD_S();
         s_init = false;
-        vkDestroyInstance(s_Instance, m_Allocator);
-        s_Instance = VK_NULL_HANDLE;
+        if (s_Instance)
+        {
+            vkDestroyInstance(s_Instance, m_Allocator);
+            s_Instance = VK_NULL_HANDLE;
+        }
     }
 }
 
@@ -127,6 +150,8 @@ void longmarch::VulkanContext::RebuildSwapChain(int width, int height)
 VkCommandBuffer longmarch::VulkanContext::BeginSingleTimeGraphicsCommands()
 {
     auto wd = &m_Vkwd;
+
+    // Allocate command buffer
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -136,6 +161,7 @@ VkCommandBuffer longmarch::VulkanContext::BeginSingleTimeGraphicsCommands()
     VkCommandBuffer commandBuffer;
     vkAllocateCommandBuffers(m_GraphicsDevice, &allocInfo, &commandBuffer);
 
+    // Begin command buffer recording
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -148,8 +174,11 @@ VkCommandBuffer longmarch::VulkanContext::BeginSingleTimeGraphicsCommands()
 void longmarch::VulkanContext::EndSingleTimeGraphicsCommands(VkCommandBuffer commandBuffer)
 {
     auto wd = &m_Vkwd;
+
+    // End command buffer recording
     vkEndCommandBuffer(commandBuffer);
 
+    // Submit command buffer
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.commandBufferCount = 1;
@@ -158,6 +187,7 @@ void longmarch::VulkanContext::EndSingleTimeGraphicsCommands(VkCommandBuffer com
     vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
     vkQueueWaitIdle(m_GraphicsQueue);
 
+    // Free allocated command buffer
     vkFreeCommandBuffers(m_GraphicsDevice, wd->CurrentFrame()->CommandPool, 1, &commandBuffer);
 }
 
@@ -223,6 +253,7 @@ void longmarch::VulkanContext::SetupDebugCallback()
     if constexpr (VkEnableValidationLayer)
     {
         {
+            // Enbale vulkan logging system (with different level of log - debug, info, warning, error, critical)
             VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
             createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
             createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -232,6 +263,7 @@ void longmarch::VulkanContext::SetupDebugCallback()
             VK_CHECK_ERROR(CreateDebugUtilsMessengerEXT(s_Instance, &createInfo, m_Allocator, &m_DebugUtilsMessenger), Str("[%d][Vulkan] failed to set up debug util messenger!", m_ContextID));
         }
         {
+            // Enable vulkan debug report system (usually would just repeat what the logging system says in a debugging report format)
             VkDebugReportCallbackCreateInfoEXT createInfo = {};
             createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
             createInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
@@ -245,11 +277,13 @@ void longmarch::VulkanContext::SetupDebugCallback()
 void longmarch::VulkanContext::CreateSurface()
 {
     auto wd = &m_Vkwd;
+    // Use glfw WIS function to create window surface
     VK_CHECK_ERROR(glfwCreateWindowSurface(s_Instance, m_WindowHandle, m_Allocator, &wd->Surface), Str("[%d][Vulkan] failed to create window surface!", m_ContextID));
 }
 
 void longmarch::VulkanContext::PickPhysicalDevice()
 {
+    // Get all available physical devices
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(s_Instance, &deviceCount, nullptr);
     if (deviceCount == 0) 
@@ -259,6 +293,7 @@ void longmarch::VulkanContext::PickPhysicalDevice()
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(s_Instance, &deviceCount, devices.data());
 
+    // Select the first suitable device
     for (const auto& device : devices) 
     {
         if (IsDeviceSuitable(device)) 
@@ -267,7 +302,6 @@ void longmarch::VulkanContext::PickPhysicalDevice()
             break;
         }
     }
-
     if (m_PhysicalDevice == VK_NULL_HANDLE)
     {
         ENGINE_EXCEPT(wStr(L"[%d][Vulkan] failed to find a suitable GPU!", m_ContextID));
@@ -289,12 +323,12 @@ void longmarch::VulkanContext::CreateLogicalDevice()
         // Device info
         VkDeviceCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        createInfo.queueCreateInfoCount = sizeof(queueInfo) / sizeof(queueInfo[0]);
+        createInfo.queueCreateInfoCount = static_cast<uint32_t>(sizeof(queueInfo) / sizeof(queueInfo[0]));
         createInfo.pQueueCreateInfos = queueInfo;
         createInfo.enabledExtensionCount = 0;
 
         // Device feature
-        auto deviceFeatures = VkPhysicalDeviceFeatures(); // TODO: assaign feature on need
+        auto deviceFeatures = VkPhysicalDeviceFeatures(); // TODO: assign feature on need
         createInfo.pEnabledFeatures = &deviceFeatures;
         
         // Device layer
@@ -307,11 +341,8 @@ void longmarch::VulkanContext::CreateLogicalDevice()
         VK_CHECK_ERROR(vkCreateDevice(m_PhysicalDevice, &createInfo, m_Allocator, &m_ComputeDevice), Str("[%d][Vulkan] failed to create compute logical device!", m_ContextID));
         vkGetDeviceQueue(m_ComputeDevice, m_ComputeQueueIndices.computeFamily.value(), 0, &m_ComputeQueue);
 
-        VkDescriptorPoolSize pool_sizes[] =
+        VkDescriptorPoolSize poolSizes[] =
         {
-            { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
-            { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
-            { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
             { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
             { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
             { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
@@ -321,13 +352,13 @@ void longmarch::VulkanContext::CreateLogicalDevice()
             { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
             { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
         };
-        VkDescriptorPoolCreateInfo pool_info = {};
-        pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-        pool_info.maxSets = 1000 * (sizeof(pool_sizes) / sizeof(pool_sizes[0]));
-        pool_info.poolSizeCount = static_cast<uint32_t>((sizeof(pool_sizes) / sizeof(pool_sizes[0])));
-        pool_info.pPoolSizes = pool_sizes;
-        VK_CHECK_ERROR(vkCreateDescriptorPool(m_ComputeDevice, &pool_info, m_Allocator, &m_ComputeDescriptorPool), Str("[%d][Vulkan] failed to create graphics descriptor pool!", m_ContextID));
+        VkDescriptorPoolCreateInfo poolInfo = {};
+        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+        poolInfo.maxSets = static_cast<uint32_t>(1000 * (sizeof(poolSizes) / sizeof(poolSizes[0])));
+        poolInfo.poolSizeCount = static_cast<uint32_t>((sizeof(poolSizes) / sizeof(poolSizes[0])));
+        poolInfo.pPoolSizes = poolSizes;
+        VK_CHECK_ERROR(vkCreateDescriptorPool(m_ComputeDevice, &poolInfo, m_Allocator, &m_ComputeDescriptorPool), Str("[%d][Vulkan] failed to create graphics descriptor pool!", m_ContextID));
     }
     // Graphics device
     {
@@ -342,7 +373,7 @@ void longmarch::VulkanContext::CreateLogicalDevice()
         // Device info
         VkDeviceCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        createInfo.queueCreateInfoCount = sizeof(queueInfo) / sizeof(queueInfo[0]);
+        createInfo.queueCreateInfoCount = static_cast<uint32_t>(sizeof(queueInfo) / sizeof(queueInfo[0]));
         createInfo.pQueueCreateInfos = queueInfo;
         
         // Device extension
@@ -350,7 +381,7 @@ void longmarch::VulkanContext::CreateLogicalDevice()
         createInfo.ppEnabledExtensionNames = VkDeviceExtensions.data();
 
         // Device feature
-        auto deviceFeatures = VkPhysicalDeviceFeatures(); // TODO: assaign feature on need
+        auto deviceFeatures = VkPhysicalDeviceFeatures(); // TODO: assign feature on need
         createInfo.pEnabledFeatures = &deviceFeatures;
 
         // Device layer
@@ -364,7 +395,7 @@ void longmarch::VulkanContext::CreateLogicalDevice()
         vkGetDeviceQueue(m_GraphicsDevice, m_GraphicQueueIndices.graphicsFamily.value(), 0, &m_GraphicsQueue);
         vkGetDeviceQueue(m_GraphicsDevice, m_GraphicQueueIndices.presentFamily.value(), 0, &m_PresentQueue);
 
-        VkDescriptorPoolSize pool_sizes[] =
+        VkDescriptorPoolSize poolSizes[] =
         {
             { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
             { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
@@ -376,15 +407,16 @@ void longmarch::VulkanContext::CreateLogicalDevice()
             { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
             { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
             { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
-            { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+            { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 },
+            { VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1000},
         };
-        VkDescriptorPoolCreateInfo pool_info = {};
-        pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-        pool_info.maxSets = 1000 * (sizeof(pool_sizes) / sizeof(pool_sizes[0]));
-        pool_info.poolSizeCount = static_cast<uint32_t>((sizeof(pool_sizes) / sizeof(pool_sizes[0])));
-        pool_info.pPoolSizes = pool_sizes;
-        VK_CHECK_ERROR(vkCreateDescriptorPool(m_GraphicsDevice, &pool_info, m_Allocator, &m_GraphicsDescriptorPool), Str("[%d][Vulkan] failed to create graphics descriptor pool!", m_ContextID));
+        VkDescriptorPoolCreateInfo poolInfo = {};
+        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+        poolInfo.maxSets = static_cast<uint32_t>(1000 * (sizeof(poolSizes) / sizeof(poolSizes[0])));
+        poolInfo.poolSizeCount = static_cast<uint32_t>((sizeof(poolSizes) / sizeof(poolSizes[0])));
+        poolInfo.pPoolSizes = poolSizes;
+        VK_CHECK_ERROR(vkCreateDescriptorPool(m_GraphicsDevice, &poolInfo, m_Allocator, &m_GraphicsDescriptorPool), Str("[%d][Vulkan] failed to create graphics descriptor pool!", m_ContextID));
     }
 }
 
@@ -402,6 +434,8 @@ void longmarch::VulkanContext::CreateSwapChain()
     auto wd = &m_Vkwd;
     VkSwapchainKHR oldSwapchain = wd->Swapchain;
     wd->Swapchain = VK_NULL_HANDLE;
+
+    // Wait until device is idle
     VK_CHECK_ERROR(vkDeviceWaitIdle(m_GraphicsDevice), Str("[%d][Vulkan] divce wait error!", m_ContextID));
 
     // Destroy old Framebuffer
@@ -422,7 +456,7 @@ void longmarch::VulkanContext::CreateSwapChain()
         vkDestroyPipeline(m_GraphicsDevice, wd->Pipeline, m_Allocator);
     }
 
-    // Swap chain info
+    // Create swap chain
     VkSwapchainCreateInfoKHR createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     createInfo.surface = wd->Surface;
@@ -448,11 +482,9 @@ void longmarch::VulkanContext::CreateSwapChain()
     createInfo.presentMode = presentMode;
     createInfo.clipped = VK_TRUE;
     createInfo.oldSwapchain = oldSwapchain;
-
-    // Create swap chain
     VK_CHECK_ERROR(vkCreateSwapchainKHR(m_GraphicsDevice, &createInfo, m_Allocator, &wd->Swapchain), Str("[%d][Vulkan] failed to create graphics swap chain!", m_ContextID));
 
-    // Fill swap chain struct
+    // Fill vulkan window struct
     wd->PresentMode = presentMode;
     wd->ImageCount = imageCount;
     wd->Extent = extent;
@@ -493,7 +525,7 @@ void longmarch::VulkanContext::CreateSwapChain()
         VK_CHECK_ERROR(vkCreateImageView(m_GraphicsDevice, &info, m_Allocator, &fd->BackbufferView), Str("[%d][Vulkan] failed to create image view!", m_ContextID));
     }
 
-    // Create render pass
+    // Create render pass (with a single color attachment only)
     VkAttachmentDescription colorAttachment = {};
     colorAttachment.format = wd->SurfaceFormat.format;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -524,10 +556,9 @@ void longmarch::VulkanContext::CreateSwapChain()
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
     renderPassInfo.pDependencies = &dependency;
-
     VK_CHECK_ERROR(vkCreateRenderPass(m_GraphicsDevice, &renderPassInfo, m_Allocator, &wd->RenderPass), Str("[%d][Vulkan] failed to create render pass!", m_ContextID));
 
-    // Create frame buffer
+    // Create frame buffer (with a single color attachment only)
     VkImageView attachment[1];
     VkFramebufferCreateInfo frameBufferInfo = {};
     frameBufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -547,43 +578,50 @@ void longmarch::VulkanContext::CreateSwapChain()
 
 bool longmarch::VulkanContext::IsDeviceSuitable(const VkPhysicalDevice& device)
 {
+    // Find queue index
     m_ComputeQueueIndices = FindComputeQueueFamilies(device);
     m_GraphicQueueIndices = FindGraphicQueueFamilies(device);
+    // Check exntension support
     bool extensionsSupported = CheckDeviceExtensionSupport(device);
+    // Check swap chain support
     bool swapChainAdequate = false;
     if (extensionsSupported) 
     {
         SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device);
         swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
     }
-
+    // Check device property and feature
     vkGetPhysicalDeviceProperties(device, &m_DeviceProperties);
     vkGetPhysicalDeviceFeatures(device, &m_DeviceFeatures);
 
-    return m_DeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
-                m_DeviceFeatures.geometryShader &&
-                m_DeviceFeatures.multiDrawIndirect &&
-                extensionsSupported &&
-                swapChainAdequate &&
-                m_ComputeQueueIndices.IsComplete() &&
-                m_GraphicQueueIndices.IsComplete();
+    bool propertySupported = m_DeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+    bool featureSupported = m_DeviceFeatures.geometryShader &&
+                            m_DeviceFeatures.multiDrawIndirect;
+
+    return    propertySupported &&
+              featureSupported &&
+              extensionsSupported &&
+              swapChainAdequate &&
+              m_ComputeQueueIndices.IsComplete() &&
+              m_GraphicQueueIndices.IsComplete();
 }
 
 longmarch::VulkanContext::ComputeQueueFamilyIndices longmarch::VulkanContext::FindComputeQueueFamilies(const VkPhysicalDevice& device)
 {
     ComputeQueueFamilyIndices indices;
 
+    // Get all queues
     uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
     std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
-    bool found = false;
     uint32_t i = 0;
     for (const auto& queueFamily : queueFamilies)
     {
         if (queueFamily.queueCount > 0)
         {
+            // Better find a compute only queue that does not perform any graphics
             if (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT &&
                 !(queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT))
             {
@@ -592,30 +630,24 @@ longmarch::VulkanContext::ComputeQueueFamilyIndices longmarch::VulkanContext::Fi
         }
         if (indices.IsComplete())
         {
-            found = true;
             break;
         }
         ++i;
-    }
-
-    if (!found)
-    {
-        ENGINE_EXCEPT(L"Couldn't find required queue family!");
     }
     return indices;
 }
 
 longmarch::VulkanContext::GraphicQueueFamilyIndices longmarch::VulkanContext::FindGraphicQueueFamilies(const VkPhysicalDevice& device)
 {
-    auto wd = &m_Vkwd;
     GraphicQueueFamilyIndices indices;
+    auto wd = &m_Vkwd;
 
+    // Get all queues
     uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
     std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
-    bool found = false;
     uint32_t i = 0;
     for (const auto& queueFamily : queueFamilies)
     {
@@ -625,6 +657,8 @@ longmarch::VulkanContext::GraphicQueueFamilyIndices longmarch::VulkanContext::Fi
             {
                 indices.graphicsFamily = i;
             }
+            // Check for WSI support.
+            // Notice that the graphics queue might be different than the present queue, we need to handle that case on creating the swap chain
             VkBool32 res; 
             vkGetPhysicalDeviceSurfaceSupportKHR(device, i, wd->Surface, &res);
             if (res == VK_TRUE)
@@ -634,32 +668,27 @@ longmarch::VulkanContext::GraphicQueueFamilyIndices longmarch::VulkanContext::Fi
         }
         if (indices.IsComplete())
         {
-            found = true;
             break;
         }
         ++i;
-    }
-
-    if (!found)
-    {
-        ENGINE_EXCEPT(L"Couldn't find required queue family!");
     }
     return indices;
 }
 
 bool longmarch::VulkanContext::CheckDeviceExtensionSupport(const VkPhysicalDevice& device)
 {
+    // Get all device extensions
     uint32_t extensionCount = 0;
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
     std::vector<VkExtensionProperties> availableExtensions(extensionCount);
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
+    // Check if all extensions are met
     std::set<std::string> requiredExtensions(VkDeviceExtensions.begin(), VkDeviceExtensions.end());
     for (const auto& extension : availableExtensions) 
     {
         requiredExtensions.erase(extension.extensionName);
     }
-
     return requiredExtensions.empty();
 }
 
@@ -668,15 +697,18 @@ longmarch::VulkanContext::SwapChainSupportDetails longmarch::VulkanContext::Quer
     auto wd = &m_Vkwd;
     SwapChainSupportDetails details;
     {
+        // Get swap chain capacity
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, wd->Surface, &details.capabilities);
     }
     {
+        // Get swap chain supported surface format
         uint32_t avail_count = 0;
         vkGetPhysicalDeviceSurfaceFormatsKHR(device, wd->Surface, &avail_count, NULL);
         details.formats.resize(avail_count);
         vkGetPhysicalDeviceSurfaceFormatsKHR(device, wd->Surface, &avail_count, details.formats.data());
     }
     {
+        // Get swap chain present mode
         uint32_t avail_count = 0;
         vkGetPhysicalDeviceSurfacePresentModesKHR(device, wd->Surface, &avail_count, NULL);
         details.presentModes.resize(avail_count);
@@ -688,6 +720,7 @@ longmarch::VulkanContext::SwapChainSupportDetails longmarch::VulkanContext::Quer
 
 VkSurfaceFormatKHR longmarch::VulkanContext::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) 
 {
+    // Prefer RGBA8 srgb format
     if (availableFormats.size() == 1 && availableFormats[0].format == VK_FORMAT_UNDEFINED)
     {
         return { VK_FORMAT_B8G8R8A8_UNORM, VK_COLORSPACE_SRGB_NONLINEAR_KHR };
@@ -704,25 +737,32 @@ VkSurfaceFormatKHR longmarch::VulkanContext::ChooseSwapSurfaceFormat(const std::
 
 VkPresentModeKHR longmarch::VulkanContext::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes) 
 {
-    VkPresentModeKHR bestMode = VK_PRESENT_MODE_FIFO_KHR;
-    for (const auto& availablePresentMode : availablePresentModes) 
+    auto begin = availablePresentModes.begin();
+    auto end = availablePresentModes.end();
+    if (std::find(begin, end, VK_PRESENT_MODE_MAILBOX_KHR) != end)
     {
-        if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
-        {
-            return availablePresentMode;
-        }
-        else if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR)
-        {
-            bestMode = availablePresentMode;
-        }
+        return VK_PRESENT_MODE_MAILBOX_KHR; // Enable triple buffering
     }
-    return bestMode;
+    else if (std::find(begin, end, VK_PRESENT_MODE_FIFO_KHR) != end)
+    {
+        return VK_PRESENT_MODE_FIFO_KHR; // Enable double buffering
+    }
+    else if (std::find(begin, end, VK_PRESENT_MODE_IMMEDIATE_KHR) != end)
+    {
+        return VK_PRESENT_MODE_IMMEDIATE_KHR; // Enable single buffering
+    }
+    else
+    {
+        ENGINE_EXCEPT(wStr(L"[%d][Vulkan] No desired present mode found!", m_ContextID));
+        return VK_PRESENT_MODE_MAX_ENUM_KHR;
+    }
 }
 
 VkExtent2D longmarch::VulkanContext::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) 
 {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) 
     {
+        DEBUG_PRINT(Str("[%d][Vulkan] Use cap.currentExtent width:%d, height:%d!", m_ContextID, capabilities.currentExtent.width, capabilities.currentExtent.height));
         return capabilities.currentExtent;
     }
     else 
@@ -738,17 +778,27 @@ VkExtent2D longmarch::VulkanContext::ChooseSwapExtent(const VkSurfaceCapabilitie
 uint32_t longmarch::VulkanContext::GetMinImageCountFromPresentMode(VkPresentModeKHR present_mode)
 {
     if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR)
-        return 3;
-    if (present_mode == VK_PRESENT_MODE_FIFO_KHR || present_mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR)
-        return 2;
-    if (present_mode == VK_PRESENT_MODE_IMMEDIATE_KHR)
-        return 1;
-    return 1;
+    {
+        return 3; // Enable triple buffering
+    }
+    else if (present_mode == VK_PRESENT_MODE_FIFO_KHR || present_mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR)
+    {
+        return 2; // Enable double buffering
+    }
+    else if (present_mode == VK_PRESENT_MODE_IMMEDIATE_KHR)
+    {
+        return 1;  // Enable single buffering
+    }
+    else
+    {
+        ENGINE_EXCEPT(wStr(L"[%d][Vulkan] Unhandled present mode!", m_ContextID));
+        return 0;
+    }
 }
 
 uint32_t longmarch::VulkanContext::ChooseImageCount(const VkSurfaceCapabilitiesKHR& capabilities, uint32_t minImageCount)
 {
-    // At least double buffer
+    // Choose a valid swap chain image count
     uint32_t imageCount = std::max(capabilities.minImageCount + 1u, minImageCount);
     if (capabilities.maxImageCount > 0 && imageCount > capabilities.maxImageCount)
     {
@@ -923,7 +973,7 @@ void DestroyVulkan_Window(VkInstance instance, VkDevice device, Vulkan_Window* w
 {
     vkDeviceWaitIdle(device);
 
-    for (uint32_t i = 0; i < wd->ImageCount; i++)
+    for (uint32_t i = 0; i < wd->ImageCount; ++i)
     {
         DestroyVulakn_Frame(device, &wd->Frames[i], allocator);
         DestroyVulkan_FrameSemaphores(device, &wd->FrameSemaphores[i], allocator);

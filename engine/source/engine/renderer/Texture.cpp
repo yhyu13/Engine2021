@@ -3,7 +3,8 @@
 #include "Renderer2D.h"
 #include "platform/OpenGL/OpenGLTexture.h"
 
-namespace longmarch {
+namespace longmarch 
+{
 	std::shared_ptr<Texture2D> Texture2D::Create(Texture::Setting data)
 	{
 		switch (RendererAPI::WhichAPI())

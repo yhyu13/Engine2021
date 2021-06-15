@@ -15,6 +15,7 @@
 
 namespace longmarch 
 {
+	bool s_init{ false };
 	// TODO: move imgui driver to be a member variable of the window
 	int s_api{ 0 };
 	void check_vk_result(VkResult err)
@@ -79,22 +80,27 @@ namespace longmarch
 		}
 			break;
 		}
+		s_init = true;
 	}
 
 	void ImGuiDriver::ShutDown()
 	{
-		switch (s_api)
+		if (s_init)
 		{
-		case 0:
-			ImGui_ImplOpenGL3_Shutdown();
-			break;
-		case 1:
-			ImGui_ImplVulkan_Shutdown();
-			break;
+			switch (s_api)
+			{
+			case 0:
+				ImGui_ImplOpenGL3_Shutdown();
+				break;
+			case 1:
+				ImGui_ImplVulkan_Shutdown();
+				break;
+			}
+			ImGui_ImplGlfw_Shutdown();
+			ImPlot::DestroyContext();
+			ImGui::DestroyContext();
+			s_init = false;
 		}
-		ImGui_ImplGlfw_Shutdown();
-		ImPlot::DestroyContext();
-		ImGui::DestroyContext();
 	}
 
 	void ImGuiDriver::BeginFrame()

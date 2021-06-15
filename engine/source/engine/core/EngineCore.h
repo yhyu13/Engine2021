@@ -36,10 +36,14 @@
 #endif // DEBUG
 
 #ifndef _SHIPPING
+#define CRITICAL_PRINT(...) { if (Logger::init) ENGINE_CRITICAL(__VA_ARGS__); }
+#define WARN_PRINT(...) { if (Logger::init) ENGINE_WARN(__VA_ARGS__); }
 #define ERROR_PRINT(...) { if (Logger::init) ENGINE_ERROR(__VA_ARGS__); }
 #define DEBUG_PRINT(...) { if (Logger::init) ENGINE_DEBUG(__VA_ARGS__); }
 #define PRINT(...) { if (Logger::init) ENGINE_INFO(__VA_ARGS__); }
 #else
+#define CRITICAL_PRINT(...)
+#define WARN_PRINT(...)
 #define ERROR_PRINT(...) 
 #define DEBUG_PRINT(...) 
 #define PRINT(...) 

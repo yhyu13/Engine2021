@@ -4,6 +4,7 @@
 	A lager set of essential component of the engine
 */
 #include "engine/core/EngineCore.h"
+#include "engine/core/file-system/FileSystem.h"
 #include "engine/core/profiling/InstrumentorCore.h"
 #include "engine/core/exception/EngineException.h"
 #include "engine/core/utility/TypeHelper.h"

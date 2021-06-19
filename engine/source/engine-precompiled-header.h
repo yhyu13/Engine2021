@@ -88,7 +88,5 @@
 // minizip wrapper
 #include <miniz-cpp.hpp>
 
-namespace longmarch
-{
-	namespace fs = std::filesystem;
-}
+// Engine core
+#include "engine/EngineEssential.h"

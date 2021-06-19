@@ -90,6 +90,14 @@ namespace longmarch
 				return computeFamily.has_value();
 			}
 		};
+		struct TransferQueueFamilyIndices
+		{
+			std::optional<uint32_t> transferFamily;
+			bool IsComplete()
+			{
+				return transferFamily.has_value();
+			}
+		};
 		// Swap chain
 		struct SwapChainSupportDetails
 		{
@@ -106,12 +114,12 @@ namespace longmarch
 		virtual void Init() override;
 		virtual void SwapBuffers() override;
 		virtual void RebuildSwapChain(int width = -1, int height = -1) override; 
-		virtual void* GetNativeWindow() override { return m_WindowHandle; };
+		inline virtual void* GetNativeWindow() override { return m_WindowHandle; };
 
-		Vulkan_Window* GetVulkan_Window() { return &m_Vkwd; };
+		inline Vulkan_Window* GetVulkan_Window() { return &m_Vkwd; };
 
-		VkCommandBuffer BeginSingleTimeGraphicsCommands();
-		void EndSingleTimeGraphicsCommands(VkCommandBuffer commandBuffer);
+		VkCommandBuffer BeginSingleTimeCommands();
+		void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
 	private:
 		void CreateInstance();
@@ -124,6 +132,7 @@ namespace longmarch
 		// Logic device
 		ComputeQueueFamilyIndices FindComputeQueueFamilies(const VkPhysicalDevice& device);
 		GraphicQueueFamilyIndices FindGraphicQueueFamilies(const VkPhysicalDevice& device);
+		TransferQueueFamilyIndices FindTransferQueueFamilies(const VkPhysicalDevice& device);
 		bool CheckDeviceExtensionSupport(const VkPhysicalDevice& device);
 		bool IsDeviceSuitable(const VkPhysicalDevice& device);
 
@@ -140,17 +149,14 @@ namespace longmarch
 		VkAllocationCallbacks*		 m_Allocator{ nullptr };
 
 		VkPhysicalDevice			 m_PhysicalDevice{ VK_NULL_HANDLE };
-
-		ComputeQueueFamilyIndices	 m_ComputeQueueIndices;
-		VkDevice					 m_ComputeDevice{ VK_NULL_HANDLE };
-		VkDescriptorPool			 m_ComputeDescriptorPool{ VK_NULL_HANDLE };
+		VkDevice					 m_Device{ VK_NULL_HANDLE };
+		VkDescriptorPool			 m_DescriptorPool{ VK_NULL_HANDLE };
 		VkQueue						 m_ComputeQueue{ VK_NULL_HANDLE };
-		
-		GraphicQueueFamilyIndices	 m_GraphicQueueIndices;
-		VkDevice					 m_GraphicsDevice{ VK_NULL_HANDLE };
-		VkDescriptorPool			 m_GraphicsDescriptorPool{ VK_NULL_HANDLE };
 		VkQueue						 m_GraphicsQueue{ VK_NULL_HANDLE };
 		VkQueue						 m_PresentQueue{ VK_NULL_HANDLE };
+		ComputeQueueFamilyIndices	 m_ComputeQueueIndices;
+		GraphicQueueFamilyIndices	 m_GraphicQueueIndices;
+		TransferQueueFamilyIndices	 m_TransferQueueIndices;
 
 	private:
 		Vulkan_Window				 m_Vkwd;
@@ -171,6 +177,6 @@ namespace longmarch
 		inline static std::atomic_int	 s_ContextID{ 0 };
 		inline static std::atomic_bool	 s_init{ false };
 	};
+
+#define GET_VK_CONTEXT() std::static_pointer_cast<VulkanContext>(Engine::GetGraphicsContext())
 }
-
-

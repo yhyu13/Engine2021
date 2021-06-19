@@ -3,8 +3,8 @@
 #include "engine/EngineEssential.h"
 #include "Layer.h"
 
-namespace longmarch {
-	
+namespace longmarch 
+{	
 	struct ENGINE_API LayerStack
 	{
 	public:

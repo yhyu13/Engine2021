@@ -10,7 +10,7 @@
 #ifdef _ENABLE_ASYNC_LOGGER // Project-wise macro defined in premake script
 #define USE_ASYNC_LOGGER 1
 #else
-#define _ENABLE_ASYNC_LOGGER 0 // Use async logger or not up to you
+#define USE_ASYNC_LOGGER 1 // Use async logger or not up to you
 #endif // ENABLE_ASYNC_LOGGER
 
 namespace longmarch 
@@ -36,6 +36,10 @@ namespace longmarch
 #endif
 				s_engineLogger->set_level(spdlog::level::trace);
 				spdlog::register_logger(s_engineLogger);
+
+				s_engineErrorLogger = std::make_shared<spdlog::logger>("ENGINE_ERR", sinks.begin(), sinks.end());
+				s_engineErrorLogger->set_level(spdlog::level::warn);
+				spdlog::register_logger(s_engineErrorLogger);
 			}
 
 			{
@@ -49,6 +53,10 @@ namespace longmarch
 #endif
 				s_applicationLogger->set_level(spdlog::level::trace);
 				spdlog::register_logger(s_applicationLogger);
+
+				s_applicationErrorLogger = std::make_shared<spdlog::logger>("APPLICATION_ERR", sinks.begin(), sinks.end());
+				s_applicationErrorLogger->set_level(spdlog::level::warn);
+				spdlog::register_logger(s_applicationErrorLogger);
 			}
 			init = true;
 		}
@@ -59,9 +67,13 @@ namespace longmarch
 		if (init)
 		{
 			spdlog::drop("ENGINE");
+			spdlog::drop("ENGINE_ERR");
 			spdlog::drop("APPLICATION");
+			spdlog::drop("APPLICATION_ERR");
 			s_engineLogger = nullptr;
+			s_engineErrorLogger = nullptr;
 			s_applicationLogger = nullptr;
+			s_applicationErrorLogger = nullptr;
 			init = false;
 		}
 	}

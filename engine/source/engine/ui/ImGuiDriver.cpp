@@ -1,7 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "ImGuiDriver.h"
 #include "engine/Engine.h"
-#include "engine/window/Window.h"
+#include "engine/renderer/platform/OpenGL/OpenGLContext.h"
 #include "engine/renderer/platform/Vulkan/VulkanContext.h"
 
 #include <GLFW/glfw3.h>
@@ -60,23 +60,24 @@ namespace longmarch
 			break;
 		case 1:
 		{
-			auto context = std::static_pointer_cast<VulkanContext>(window->GetWindowProperties().m_context);
+			auto context = GET_VK_CONTEXT();
 			auto wd = context->GetVulkan_Window();
 			// Setup Platform/Renderer backends
 			ImGui_ImplGlfw_InitForVulkan(nativeWindow, true);
 			ImGui_ImplVulkan_InitInfo init_info = {};
 			init_info.Instance = context->s_Instance;
 			init_info.PhysicalDevice = context->m_PhysicalDevice;
-			init_info.Device = context->m_GraphicsDevice;
+			init_info.Device = context->m_Device;
 			init_info.QueueFamily = context->m_GraphicQueueIndices.graphicsFamily.value();
 			init_info.Queue = context->m_GraphicsQueue;
 			init_info.PipelineCache = VK_NULL_HANDLE;
-			init_info.DescriptorPool = context->m_GraphicsDescriptorPool;
+			init_info.DescriptorPool = context->m_DescriptorPool;
 			init_info.Allocator = context->m_Allocator;
 			init_info.MinImageCount = 2;
 			init_info.ImageCount = wd->ImageCount;
 			init_info.CheckVkResultFn = check_vk_result;
 			ImGui_ImplVulkan_Init(&init_info, wd->RenderPass);
+			ImGui::UploadFontTexture();
 		}
 			break;
 		}
@@ -149,7 +150,7 @@ namespace longmarch
 				auto window = Engine::GetWindow();
 				auto context = std::static_pointer_cast<VulkanContext>(window->GetWindowProperties().m_context);
 				auto wd = context->GetVulkan_Window();
-				auto g_Device = context->m_GraphicsDevice;
+				auto g_Device = context->m_Device;
 				auto g_Queue = context->m_GraphicsQueue;
 				{
 					VkResult err;
@@ -248,11 +249,11 @@ namespace ImGui
 			auto context = std::static_pointer_cast<VulkanContext>(window->GetWindowProperties().m_context);
 			
 			// Create temporal command buffer
-			auto commandBuffer = context->BeginSingleTimeGraphicsCommands();
+			auto commandBuffer = context->BeginSingleTimeCommands();
 			// Upload font texture by filling the command buffer
 			ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
 			// Submit temporal command buffer
-			context->EndSingleTimeGraphicsCommands(commandBuffer);
+			context->EndSingleTimeCommands(commandBuffer);
 			// Unload font texture
 			ImGui_ImplVulkan_DestroyFontUploadObjects();
 		}

@@ -2,7 +2,7 @@
 	"engine":
 	{
 		"Pause-on-unfocused" : false,
-		"Startup-mode" : 0, /* 0-editing mode, 1-game mode */
+		"Startup-mode" : 1, /* 0-editing mode, 1-game mode */
 	},
 	"physics":
 	{

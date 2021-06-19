@@ -1,6 +1,6 @@
 #pragma once
 #include "engine/EngineEssential.h"
-#include "layer/LayerStack.h"
+#include "engine/layer/LayerStack.h"
 #include "engine/ui/ImGuiDriver.h"
 #include "engine/window/Window.h"
 #include "engine/framerate-controller/FramerateController.h"
@@ -124,6 +124,7 @@ namespace longmarch
 		bool m_enable_pause_on_unfocused{ false };
 
 	public:
+		inline static std::shared_ptr<GraphicsContext> GetGraphicsContext() { return s_instance->m_engineWindow->GetWindowProperties().m_context; }
 		inline static std::shared_ptr<Window> GetWindow() { return s_instance->m_engineWindow; }
 		inline static Engine* GetInstance() { return s_instance; }
 		inline static double GetTotalTime() { return s_instance->m_timer.Mark(); }

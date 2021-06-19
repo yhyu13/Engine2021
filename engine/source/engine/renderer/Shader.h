@@ -3,7 +3,8 @@
 #include "engine/math/Geommath.h"
 #include "engine/core/EngineCore.h"
 
-namespace longmarch {
+namespace longmarch 
+{
 	class ENGINE_API Shader
 	{
 	public:

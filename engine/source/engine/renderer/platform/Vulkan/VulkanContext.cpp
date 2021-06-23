@@ -1,5 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "VulkanContext.h"
+#include "VulkanRendererAPI.h"
+#include "engine/renderer/RenderCommand.h"
 
 // Validation layer
 constexpr bool VkEnableValidationLayer = 
@@ -101,6 +103,8 @@ void longmarch::VulkanContext::Init()
     PickPhysicalDevice();
     CreateLogicalDevice();
     CreateSwapChain();
+
+    RenderCommand::SetAPI(VulkanRendererAPI::GetInstance());
 }
  
 void longmarch::VulkanContext::SwapBuffers()
@@ -643,8 +647,8 @@ longmarch::VulkanContext::ComputeQueueFamilyIndices longmarch::VulkanContext::Fi
             {
                 break;
             }
-            ++i;
         }
+        ++i;
     }
     return indices;
 }
@@ -681,8 +685,8 @@ longmarch::VulkanContext::GraphicQueueFamilyIndices longmarch::VulkanContext::Fi
             {
                 break;
             }
-            ++i;
         }
+        ++i;
     }
     return indices;
 }

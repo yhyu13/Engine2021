@@ -166,8 +166,6 @@ namespace longmarch
 		{
 			rateController->FrameStart();
 			{
-				Instrumentor::GetEngineInstance()->AddInstrumentorResult({ "Up Time", (m_timer.Mark()), "s" });
-
 				// Pre update
 				PreUpdate().Update();
 
@@ -212,6 +210,12 @@ namespace longmarch
 		auto queue = EventQueue<EngineEventType>::GetInstance();
 		auto e = MemoryManager::Make_shared<EngineWindowQuitEvent>();
 		queue->Publish(e);
+	}
+
+	double Engine::GetTotalTime() 
+	{ 
+		static Timer timer;
+		return timer.Mark(); 
 	}
 
 	void longmarch::Engine::ShowMessageBox(const std::wstring& title, const std::wstring& message)

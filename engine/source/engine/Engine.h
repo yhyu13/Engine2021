@@ -108,14 +108,13 @@ namespace longmarch
 		void _ON_TOGGLE_VSYNC(EventQueue<EngineGraphicsEventType>::EventPtr e);
 
 	private:
+		std::shared_ptr<Window> m_engineWindow{ nullptr };
 		ConnectableUpdater m_preUpdate;
 		ConnectableUpdater2 m_update;
 		ConnectableUpdater2 m_lateUpdate;
 		ConnectableUpdater m_renderUpdate;
 		ConnectableUpdater m_postRenderUpdate;
 		LayerStack m_LayerStack;
-		Timer m_timer;
-		std::shared_ptr<Window> m_engineWindow{ nullptr };
 		ENGINE_MODE m_engineMode{ ENGINE_MODE::EDITING };
 		unsigned int m_maxFrameRate{ 60u };
 		bool m_shouldQUit{ false };
@@ -124,10 +123,9 @@ namespace longmarch
 		bool m_enable_pause_on_unfocused{ false };
 
 	public:
-		inline static std::shared_ptr<GraphicsContext> GetGraphicsContext() { return s_instance->m_engineWindow->GetWindowProperties().m_context; }
+		inline static GraphicsContext* GetGraphicsContext() { return s_instance->m_engineWindow->GetWindowProperties().m_context; }
 		inline static std::shared_ptr<Window> GetWindow() { return s_instance->m_engineWindow; }
 		inline static Engine* GetInstance() { return s_instance; }
-		inline static double GetTotalTime() { return s_instance->m_timer.Mark(); }
 
 		inline static void SetPaused(bool b) { s_instance->m_isPaused = (b); }
 		inline static bool GetPaused() { return s_instance->m_isPaused; }
@@ -138,10 +136,12 @@ namespace longmarch
 		inline static void SetEngineMode(ENGINE_MODE mode) { s_instance->m_engineMode = mode; }
 		inline static ENGINE_MODE GetEngineMode() { return s_instance->m_engineMode; }
 
-		static void SetMaxFrameRate(unsigned int newMax) { FramerateController::GetInstance()->SetMaxFrameRate(newMax); }
+		inline static void SetMaxFrameRate(unsigned int newMax) { FramerateController::GetInstance()->SetMaxFrameRate(newMax); }
 		//! Return frame time in seconds
-		static double GetFrameTime() { return FramerateController::GetInstance()->GetFrameTime(); }
+		inline static double GetFrameTime() { return FramerateController::GetInstance()->GetFrameTime(); }
 
+		//! Return total time in seconds after the engine is created.
+		static double GetTotalTime();
 		static void ShowMessageBox(const std::wstring& title, const std::wstring& message);
 		static void OnInterruption(int isFocussed);				
 

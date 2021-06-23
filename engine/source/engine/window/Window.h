@@ -14,7 +14,8 @@ namespace longmarch
 
 	struct ENGINE_API WindowProperties
 	{
-		std::shared_ptr<GraphicsContext> m_context;
+		GraphicsContext* m_context;
+		int m_api{ 0 }; /* 0-opengl4, 1-vulkan */
 		int m_xpos; // Upper left corner position in the whole screen
 		int m_ypos; // Upper left corner position in the whole screen
 		int m_width; // Width of the window, could be different from resolution
@@ -23,7 +24,6 @@ namespace longmarch
 		int m_resolutionY; // Y Resolution, used in render target. Could be different from window height
 		std::string m_title;
 		InputManager* m_input{ nullptr };
-		int m_api{ 0 }; /* 0-opengl4, 1-vulkan */
 		bool IsResizable{ true };
 		int IsFullScreen{ 2 }; /* 0-Full screen, 1- Borderless full screen 2- Windowed mode  */
 		bool IsVSync{ true };

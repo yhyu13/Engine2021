@@ -246,6 +246,18 @@ namespace longmarch
 
 	void Window::Shutdown() 
 	{
+		switch (m_windowProperties.m_api)
+		{
+		case 0:
+			OpenGLContext::Destory(m_window);
+			break;
+		case 1:
+			VulkanContext::Destory(m_window);
+			break;
+		default:
+			ENGINE_EXCEPT(L"Unknown graphics API context!");
+			break;
+		}
 		glfwDestroyWindow(m_window);
 	}
 
@@ -366,12 +378,12 @@ namespace longmarch
 		{
 		case 0:
 			// OpenGL context
-			m_windowProperties.m_context = std::shared_ptr<OpenGLContext>(new OpenGLContext{ m_window });
+			m_windowProperties.m_context = OpenGLContext::Create(m_window);
 			m_windowProperties.m_context->Init();
 			break;
 		case 1:
 			// OpenGL context
-			m_windowProperties.m_context = std::shared_ptr<VulkanContext>(new VulkanContext{ m_window });
+			m_windowProperties.m_context = VulkanContext::Create(m_window);
 			m_windowProperties.m_context->Init();
 			break;
 		}

@@ -148,7 +148,7 @@ namespace longmarch
 			if (!minimized)
 			{
 				auto window = Engine::GetWindow();
-				auto context = std::static_pointer_cast<VulkanContext>(window->GetWindowProperties().m_context);
+				auto context = GET_VK_CONTEXT();
 				auto wd = context->GetVulkan_Window();
 				auto g_Device = context->m_Device;
 				auto g_Queue = context->m_GraphicsQueue;
@@ -246,7 +246,7 @@ namespace ImGui
 			// For vulkan, we need to create a command buffer that upload all current fonts,
 			// every time we add new font to imgui
 			auto window = Engine::GetWindow();
-			auto context = std::static_pointer_cast<VulkanContext>(window->GetWindowProperties().m_context);
+			auto context = GET_VK_CONTEXT();
 			
 			// Create temporal command buffer
 			auto commandBuffer = context->BeginSingleTimeCommands();

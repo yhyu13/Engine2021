@@ -108,8 +108,6 @@ namespace longmarch
 
 	public:
 		NONCOPYABLE(VulkanContext);
-		VulkanContext(GLFWwindow* windowHandle);
-		virtual ~VulkanContext();
 
 		virtual void Init() override;
 		virtual void SwapBuffers() override;
@@ -122,6 +120,9 @@ namespace longmarch
 		void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
 	private:
+		explicit VulkanContext(GLFWwindow* windowHandle);
+		virtual ~VulkanContext();
+
 		void CreateInstance();
 		void SetupDebugCallback();
 		void CreateSurface();
@@ -171,6 +172,35 @@ namespace longmarch
 		bool						 m_SwapChainRebuild{ false };
 
 	public:
+		[[nodiscard]] static VulkanContext* Create(GLFWwindow* windowHandle)
+		{
+			if (LongMarch_contains(s_windowContextMap, windowHandle)) [[unlikely]]
+			{
+				ENGINE_EXCEPT(L"Unhandled duplicate Vulkan context!");
+				return nullptr;
+			}
+			else [[likely]]
+			{
+				auto ret = new VulkanContext(windowHandle);
+				s_windowContextMap[windowHandle] = ret;
+				return ret;
+			}
+		}
+		static void Destory(GLFWwindow* windowHandle)
+		{
+			if (auto it = s_windowContextMap.find(windowHandle); it != s_windowContextMap.end())
+			{
+				ASSERT(dynamic_cast<VulkanContext*>(it->second), "Failed to cast to VulkanContext!");
+				delete it->second;
+				s_windowContextMap.erase(it);
+			}
+			else
+			{
+				ENGINE_EXCEPT(L"Unhandled erase of empty Vulkan context!");
+			}
+		}
+
+	public:
 		inline static VkInstance		 s_Instance{ VK_NULL_HANDLE };
 
 	private:
@@ -178,5 +208,5 @@ namespace longmarch
 		inline static std::atomic_bool	 s_init{ false };
 	};
 
-#define GET_VK_CONTEXT() std::static_pointer_cast<VulkanContext>(Engine::GetGraphicsContext())
+#define GET_VK_CONTEXT() static_cast<VulkanContext*>(Engine::GetGraphicsContext())
 }

@@ -66,13 +66,13 @@ namespace longmarch
 			ImGui_ImplGlfw_InitForVulkan(nativeWindow, true);
 			ImGui_ImplVulkan_InitInfo init_info = {};
 			init_info.Instance = context->s_Instance;
-			init_info.PhysicalDevice = context->m_PhysicalDevice;
-			init_info.Device = context->m_Device;
-			init_info.QueueFamily = context->m_GraphicQueueIndices.graphicsFamily.value();
-			init_info.Queue = context->m_GraphicsQueue;
+			init_info.PhysicalDevice = context->s_PhysicalDevice;
+			init_info.Device = context->s_Device;
+			init_info.QueueFamily = context->s_GraphicQueueIndices.graphicsFamily.value();
+			init_info.Queue = context->s_GraphicsQueue;
 			init_info.PipelineCache = VK_NULL_HANDLE;
-			init_info.DescriptorPool = context->m_DescriptorPool;
-			init_info.Allocator = context->m_Allocator;
+			init_info.DescriptorPool = context->s_DescriptorPool;
+			init_info.Allocator = context->s_Allocator;
 			init_info.MinImageCount = 2;
 			init_info.ImageCount = wd->ImageCount;
 			init_info.CheckVkResultFn = check_vk_result;
@@ -150,8 +150,8 @@ namespace longmarch
 				auto window = Engine::GetWindow();
 				auto context = GET_VK_CONTEXT();
 				auto wd = context->GetVulkan_Window();
-				auto g_Device = context->m_Device;
-				auto g_Queue = context->m_GraphicsQueue;
+				auto g_Device = context->s_Device;
+				auto g_Queue = context->s_GraphicsQueue;
 				{
 					VkResult err;
 

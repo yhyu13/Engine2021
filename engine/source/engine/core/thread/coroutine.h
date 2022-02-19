@@ -18,7 +18,7 @@
 
 namespace longmarch
 {
-	namespace emilib
+	namespace coroutine
 	{
 		/**
 		* Coroutine-ish feature implemented using a thread.

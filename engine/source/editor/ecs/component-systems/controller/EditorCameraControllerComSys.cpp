@@ -2,7 +2,7 @@
 #include "EditorCameraControllerComSys.h"
 
 #include "engine/core/thread/BaseJob.h"
-#include "engine/core/thread/coroutine.h"
+#include "engine/core/thread/Coroutine.h"
 #include "engine/ecs/header/header.h"
 #include "engine/math/Quaternion.h"
 #include "engine/math/EncryptMath.h"
@@ -209,7 +209,7 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 		/*
 			Scheduler
 		*/
-		LongMarch_NOGET(ThreadPool::GetInstance()->enqueue_task(
+		LongMarch_DeamonThread(ThreadPool::GetInstance()->enqueue_task(
 			[]()
 		{
 			using namespace std;
@@ -223,6 +223,9 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 				cout << "elapsed " << ss.str() << "s\t: ";
 			};
 
+			atomic_bool value1 = false;
+			std::thread t1([&]{this_thread::sleep_for(2s); value1 = true;});
+
 			cout << "start" << endl;
 			Scheduler t(1ms);
 			auto e1 = t.set_timeout(3s, [&]() { duration(); cout << "timeout 3s" << endl; });
@@ -230,12 +233,17 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			auto e3 = t.set_timeout(4s, [&]() { duration(); cout << "timeout 4s" << endl; });
 			auto e4 = t.set_interval(2s, [&]() { duration(); cout << "interval 2s" << endl; });
 			auto e5 = t.set_timeout(5s, [&]() { duration(); cout << "timeout that never happens" << endl; });
+			auto e6 = t.set_interval_conditioanl(1s, [&]() { duration(); cout << "conditional interval 1s" << endl; return value1 == true; });
 			e5->signal(); // cancel this timeout
-			this_thread::sleep_for(5s);
+			this_thread::sleep_for(2s);
+			e2->signal(); // cancel this interval
+			cout << "cancel interval 1s" << endl;
+			this_thread::sleep_for(3s);
 			e4->signal(); // cancel this interval
-			cout << "cancel interval 2" << endl;
+			cout << "cancel interval 2s" << endl;
 			this_thread::sleep_for(5s);
 			cout << "end" << endl;
+			t1.join();
 		}
 		));
 
@@ -672,13 +680,13 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 		/*
 			Test emilib coroutine
 		*/
-		LongMarch_NOGET(ThreadPool::GetInstance()->enqueue_task(
+		LongMarch_DeamonThread(ThreadPool::GetInstance()->enqueue_task(
 			[]()
 		{
 			constexpr double dt = 1.0 / 60;
 			Timer t(dt);
 
-			emilib::CoroutineSet coroutine_set;
+			coroutine::CoroutineSet coroutine_set;
 
 			// Common state:
 			bool time_for_captain_to_show = false;
@@ -687,7 +695,7 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			constexpr double kSecondsBetweenLines = 1.0;
 
 			// A coroutine for writing a script in a timely fashion:
-			auto text_cr = coroutine_set.start("intro_text", [&](emilib::InnerControl& ic) {
+			auto text_cr = coroutine_set.start("intro_text", [&](coroutine::InnerControl& ic) {
 				DEBUG_PRINT("In A.D. 2101");
 				ic.wait_sec(kSecondsBetweenLines);
 				DEBUG_PRINT("War was beginning.");
@@ -705,7 +713,7 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			});
 
 			// Start up second (unnecessary) coroutine for demonstrative purposes:
-			coroutine_set.start("intro_graphics", [&](emilib::InnerControl& ic) {
+			coroutine_set.start("intro_graphics", [&](coroutine::InnerControl& ic) {
 				ic.wait_for([&]() { return time_for_captain_to_show; });
 				DEBUG_PRINT("[INSERT CAPTAIN DRAWING HERE]");
 				captain_has_been_painted = true;

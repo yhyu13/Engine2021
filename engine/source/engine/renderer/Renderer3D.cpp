@@ -4662,7 +4662,7 @@ void longmarch::Renderer3D::BuildAllTexture()
 							diffuse_irradiance_equirectangle_image->WriteToHDR(path);
 						};
 						// Running in a background thread.
-						LongMarch_NOGET(ThreadPool::GetInstance()->enqueue_task(cmd));
+						LongMarch_DeamonThread(ThreadPool::GetInstance()->enqueue_task(cmd));
 					}
 				}
 				if (!has_diffuse1)

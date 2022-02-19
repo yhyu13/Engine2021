@@ -12,7 +12,7 @@ namespace longmarch
 	//http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3451.pdf
 	// Creating a deamon thread job
 	template<typename T>
-	void LongMarch_NOGET(T&& in)
+	void LongMarch_DeamonThread(T&& in)
 	{
 		static std::mutex vmut;
 		static std::vector<T> vec;
@@ -34,7 +34,7 @@ namespace longmarch
 							T target = std::move(vec[size - 1]);
 							vec.pop_back();
 							vmut.unlock();
-							DEBUG_PRINT("LongMarch_NOGET getting!");
+							DEBUG_PRINT("LongMarch_DeamonThread getting!");
 							if (target.valid())
 							{
 								target.wait();

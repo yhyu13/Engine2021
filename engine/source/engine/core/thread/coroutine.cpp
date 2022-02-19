@@ -13,7 +13,7 @@
 
 namespace longmarch
 {
-	namespace emilib
+	namespace coroutine
 	{
 		// This is thrown when the outer thread stop() the coroutine.
 		struct AbortException {};

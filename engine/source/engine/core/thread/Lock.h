@@ -27,7 +27,7 @@ namespace longmarch
 	};
 
 	/*
-		Base atomic class for NON-INSTANTIABLE classes
+		Base atomic class for class static method
 	*/
 	struct BaseAtomicClassStatic
 	{

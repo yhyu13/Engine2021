@@ -40,7 +40,7 @@ namespace longmarch
 	private:
 		EventQueue()
 		{
-			m_eventsUpdateHandle = Scheduler::GetMilliSecInstance(33)->set_interval(std::chrono::milliseconds(33), [this]() { UpdateAsync(33e-3); });
+			m_eventsUpdateHandle = Scheduler::GetInstance(33)->set_interval(std::chrono::milliseconds(33), [this]() { UpdateAsync(33e-3); });
 		}
 		~EventQueue()
 		{
@@ -180,7 +180,7 @@ namespace longmarch
 		//! Instanct execution of an async event in a background thread
 		inline void PublishAsync(EventPtr e)
 		{
-			LongMarch_NOGET(std::async(std::launch::async, [this, e]()
+			LongMarch_DeamonThread(std::async(std::launch::async, [this, e]()
 			{
 				auto& _e = std::static_pointer_cast<BaseEvent>(e);
 				LockNC();
@@ -214,7 +214,7 @@ namespace longmarch
 			m_eventsAsync.emplace(std::move(delayedEvent));
 		}
 
-		//! Clear all delayed events and subsribers
+		//! Clear all delayed events and subscribers
 		inline void Clear()
 		{
 			LOCK_GUARD_NC();
@@ -342,7 +342,7 @@ namespace longmarch
 				*/
 				if ((delayedEvent->m_triggerTime -= frameTime) <= 0)
 				{
-					LongMarch_NOGET(std::async(std::launch::async, [this, delayedEvent]() { Publish(delayedEvent->m_event); }));
+					LongMarch_DeamonThread(std::async(std::launch::async, [this, delayedEvent]() { Publish(delayedEvent->m_event); }));
 				}
 				else
 				{

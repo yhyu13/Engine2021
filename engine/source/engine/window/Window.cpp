@@ -328,7 +328,7 @@ namespace longmarch
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
 			break;
 		case 1:
-			// Vulkan requires no automatic api context creation
+			// Vulkan requires no automatic api context creation for glfw
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 			break;
 		default:
@@ -382,7 +382,7 @@ namespace longmarch
 			m_windowProperties.m_context->Init();
 			break;
 		case 1:
-			// OpenGL context
+			// Vulkan context
 			m_windowProperties.m_context = VulkanContext::Create(m_window);
 			m_windowProperties.m_context->Init();
 			break;

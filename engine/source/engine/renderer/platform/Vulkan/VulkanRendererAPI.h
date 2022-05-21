@@ -38,9 +38,9 @@ namespace longmarch
 		virtual void PolyModeFill() override;
 		virtual void PolyModeLine() override;
 		virtual void PolyLineWidth(uint32_t width) override;
-		virtual void PolyOffset(bool enabled, float factor, float units);
+		virtual void PolyOffset(bool enabled, float factor, float units) override;
 
-		virtual void BindDefaultFrameBuffer() override;;
+		virtual void BindDefaultFrameBuffer() override;
 
 		virtual void TransferColorBit(uint32_t src, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_w, uint32_t dest_h) override;
 		virtual void TransferColorBit(uint32_t src, uint32_t src_tex, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_tex, uint32_t dest_w, uint32_t dest_h) override;

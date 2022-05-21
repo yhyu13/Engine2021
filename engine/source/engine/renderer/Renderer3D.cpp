@@ -4780,12 +4780,11 @@ bool longmarch::Renderer3D::_BeginRenderBatch()
 				{
 					Mat->BindAllTexture(texture_index_type);
 				}
-				static const auto& placeholder_Texture2D = Texture2D::Create(Texture::Setting());
-				placeholder_Texture2D->BindTexture(s_Data.fragTexture_empty_slot);
+				Material::s_placeholder_Texture2D->BindTexture(s_Data.fragTexture_empty_slot);
 				{
 					auto size = _multiDrawBuffer.MultiDraw_TextureId.size();
 					/**************************************************************
-					*	CRITICAL: need to fill in this whole list with some dummy slot (e.g. 2) that you have binded with an empty texture
+					*	CRITICAL: need to fill in all empty texture id with some dummy texture slot (e.g. 2) with an empty texture
 					*	If not, then unset samplers will be initialized as 0. Shaders will crash at run time if you bind 0 to another sampler type (e.g. samplerCube)!
 					**************************************************************/
 					if (size < s_Data.MAX_SCENE_BATCH) [[likely]]

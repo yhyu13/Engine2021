@@ -30,7 +30,7 @@
 							Class& operator=(const Class&) = delete; Class& operator=(const Class&&) = delete;
 
 #ifndef _SHIPPING
-#define ASSERT(x, ...) { if(!(x)) { if (Logger::init) ENGINE_CRITICAL("Assertion failed: {0}", __VA_ARGS__); __debugbreak(); } }
+#define ASSERT(x, ...) { if(!(x)) { if (Logger::init) ENGINE_CRITICAL("Assertion failed: {2} at {0} : {1}", __FILE__, __LINE__, __VA_ARGS__); __debugbreak(); } }
 #else
 #define ASSERT(x, ...)
 #endif // DEBUG

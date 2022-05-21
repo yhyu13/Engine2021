@@ -2,7 +2,7 @@
 	"engine":
 	{
 		"Pause-on-unfocused" : false,
-		"Startup-mode" : 1, /* 0-editing mode, 1-game mode */
+		"Startup-mode" : 0, /* 0-editing mode, 1-game mode */
 	},
 	"physics":
 	{
@@ -23,7 +23,7 @@
 		"Height": 1080,
 		"Title": "Long-March-Engine",
 		"Hide-On-Creation": true,
-		"API" : 1, /* 0-opengl4, 1-vulkan1.2 */
+		"API" : 0, /* 0-opengl4, 1-vulkan1.3 */
 
 		"Full-screen": 2, /* 0-Full screen, 1- Borderless full screen 2- Windowed mode  */
 		"V-sync" : true,

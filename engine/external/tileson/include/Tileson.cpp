@@ -13,7 +13,7 @@ tson::Map tson::Tileson::parse(const fs::path& path)
 {
 	if (fs::exists(path) && fs::is_regular_file(path))
 	{
-		std::ifstream i(path.u8string());
+		std::ifstream i(path);
 		nlohmann::json json;
 		try
 		{

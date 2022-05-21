@@ -192,13 +192,18 @@ namespace longmarch
 						info.clearValueCount = 1;
 						info.pClearValues = &wd->ClearValue;
 						vkCmdBeginRenderPass(fd->CommandBuffer, &info, VK_SUBPASS_CONTENTS_INLINE);
+
+						// Record dear imgui primitives into command buffer
+						ImGui_ImplVulkan_RenderDrawData(drawData, fd->CommandBuffer);
+
+						// Submit command buffer
+						vkCmdEndRenderPass(fd->CommandBuffer);
 					}
 
-					// Record dear imgui primitives into command buffer
-					ImGui_ImplVulkan_RenderDrawData(drawData, fd->CommandBuffer);
-
-					// Submit command buffer
-					vkCmdEndRenderPass(fd->CommandBuffer);
+					{
+						err = vkEndCommandBuffer(fd->CommandBuffer);
+						check_vk_result(err);
+					}
 					{
 						VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 						VkSubmitInfo info = {};
@@ -211,8 +216,6 @@ namespace longmarch
 						info.signalSemaphoreCount = 1;
 						info.pSignalSemaphores = &render_complete_semaphore;
 
-						err = vkEndCommandBuffer(fd->CommandBuffer);
-						check_vk_result(err);
 						err = vkQueueSubmit(g_Queue, 1, &info, fd->Fence);
 						check_vk_result(err);
 					}

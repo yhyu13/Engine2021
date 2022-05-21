@@ -3,7 +3,7 @@
 
 namespace longmarch
 {
-    template<class T>
+    template<class T, int Size = sizeof(T)>
     class LongMarch_EncryptValue
     {
     public:
@@ -50,25 +50,25 @@ namespace longmarch
                 throw std::runtime_error("bad encryption key");
                 return;
             }
-            if constexpr (sizeof(T) == 4)
+            if constexpr (Size == 4)
             {
                 *(reinterpret_cast<int*>(&m_Value)) ^= m_EncryptKey;
             }
-            else if constexpr (sizeof(T) == 2)
+            else if constexpr (Size == 2)
             {
                 *(reinterpret_cast<short*>(&m_Value)) ^= m_EncryptKey;
             }
-            else if constexpr (sizeof(T) == 8)
+            else if constexpr (Size == 8)
             {
                 *(reinterpret_cast<long long*>(&m_Value)) ^= m_EncryptKey;
             }
-            else if constexpr (sizeof(T) == 1)
+            else if constexpr (Size == 1)
             {
                 *(reinterpret_cast<char*>(&m_Value)) ^= m_EncryptKey;
             }
             else
             {
-                static_assert(false, "unhandled encrypt value type");
+                static_assert(Size == 1, "unhandled encrypt value type");
             }
         }
 
@@ -80,25 +80,25 @@ namespace longmarch
                 return T();
             }
             T ret = m_Value;
-            if constexpr (sizeof(T) == 4)
+            if constexpr (Size == 4)
             {
                 *(reinterpret_cast<int*>(&ret)) ^= m_EncryptKey;
             }
-            else if constexpr (sizeof(T) == 2)
+            else if constexpr (Size == 2)
             {
                 *(reinterpret_cast<short*>(&ret)) ^= m_EncryptKey;
             }
-            else if constexpr (sizeof(T) == 8)
+            else if constexpr (Size == 8)
             {
                 *(reinterpret_cast<long long*>(&ret)) ^= m_EncryptKey;
             }
-            else if constexpr (sizeof(T) == 1)
+            else if constexpr (Size == 1)
             {
                 *(reinterpret_cast<char*>(&ret)) ^= m_EncryptKey;
             }
             else
             {
-                static_assert(false, "unhandled encrypt value type");
+                static_assert(Size == 1, "unhandled encrypt value type");
             }
             return ret;
         }

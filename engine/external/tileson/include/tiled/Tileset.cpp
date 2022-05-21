@@ -21,7 +21,7 @@ bool tson::Tileset::new_parse(const nlohmann::json& json)
 
 	if (fs::exists(source_path) && fs::is_regular_file(source_path))
 	{
-		std::ifstream i(source_path.u8string());
+		std::ifstream i(source_path);
 		nlohmann::json json;
 		try
 		{

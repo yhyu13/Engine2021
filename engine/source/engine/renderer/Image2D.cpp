@@ -1,6 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "Image2D.h"
 #include <stb_image.h>
+#include <stb_image_write.h>
 
 longmarch::Image2D::Image2D()
 	:

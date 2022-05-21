@@ -122,6 +122,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+unsigned long SOIL_version() { return SOIL_COMPILED_VERSION; }
+
 /*	error reporting	*/
 const char *result_string_pointer = "SOIL initialized";
 
@@ -268,7 +270,7 @@ void * SOIL_GL_GetProcAddress(const char *proc)
 	if ( NULL == openglModule )
 		openglModule = LoadLibraryA("opengl32.dll");
 
-	func =  wglGetProcAddress( proc );
+	func =  (void*)wglGetProcAddress( proc );
 
 	if (!soilTestWinProcPointer((const PROC)func)) {
 		func = (void *)GetProcAddress(openglModule, proc);
@@ -2242,7 +2244,7 @@ unsigned int SOIL_direct_load_DDS_from_memory(
 		ogl_target_end = GL_TEXTURE_2D;
 		opengl_texture_type = GL_TEXTURE_2D;
 	}
-	if( ( header.sCaps.dwCaps1 & DDSCAPS_MIPMAP ) && ( header.dwMipMapCount > 1 ) )
+	if( ( header.sCaps.dwCaps1 & DDSCAPS_MIPMAP ) > 0 && ( header.dwMipMapCount > 1 ) )
 	{
 		mipmaps = header.dwMipMapCount - 1;
 		DDS_full_size = DDS_main_size;

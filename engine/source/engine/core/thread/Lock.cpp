@@ -24,12 +24,14 @@ longmarch::atomic_flag_guard::atomic_flag_guard(std::atomic_flag& flag) noexcept
 	{
 #ifdef DEBUG_TIMER
 		ASSERT(timer.Mark() < 1.0, "Dead lock?");
-#else
+#endif
 		while (m_lock->test(std::memory_order_relaxed))
 		{
+#ifdef DEBUG_TIMER
+			ASSERT(timer.Mark() < 1.0, "Dead lock?");
+#endif
 			std::this_thread::yield();
 		}
-#endif
 	}
 }
 
@@ -46,16 +48,19 @@ longmarch::atomic_bool_guard::atomic_bool_guard(std::atomic_bool& flag) noexcept
 	Timer timer;
 #endif
 	bool expected = false;
-	while (!m_lock->compare_exchange_strong(expected, true, std::memory_order_acq_rel)) {
-		expected = false;
+	while (!m_lock->compare_exchange_strong(expected, true, std::memory_order_acq_rel))
+		{
 #ifdef DEBUG_TIMER
 		ASSERT(timer.Mark() < 1.0, "Dead lock?");
-#else
+#endif
+		expected = false;
 		while (m_lock->load(std::memory_order_relaxed))
 		{
+		#ifdef DEBUG_TIMER
+        		ASSERT(timer.Mark() < 1.0, "Dead lock?");
+        #endif
 			std::this_thread::yield();
 		}
-#endif
 	}
 }
 
@@ -73,12 +78,14 @@ void longmarch::BaseAtomicClassStatic::LockS() noexcept
 	{
 #ifdef DEBUG_TIMER
 		ASSERT(timer.Mark() < 1.0, "Dead lock?");
-#else
+#endif
 		while (sc_flag.test(std::memory_order_relaxed))
 		{
+		#ifdef DEBUG_TIMER
+        		ASSERT(timer.Mark() < 1.0, "Dead lock?");
+        #endif
 			std::this_thread::yield();
 		}
-#endif
 	}
 }
 
@@ -96,12 +103,14 @@ void longmarch::BaseAtomicClassNI::LockNI() noexcept
 	{
 #ifdef DEBUG_TIMER
 		ASSERT(timer.Mark() < 1.0, "Dead lock?");
-#else
+#endif
 		while (ni_flag.test(std::memory_order_relaxed))
 		{
+#ifdef DEBUG_TIMER
+			ASSERT(timer.Mark() < 1.0, "Dead lock?");
+#endif
 			std::this_thread::yield();
 		}
-#endif
 	}
 }
 
@@ -119,12 +128,14 @@ void longmarch::BaseAtomicClassNC::LockNC() const noexcept
 	{
 #ifdef DEBUG_TIMER
 		ASSERT(timer.Mark() < 1.0, "Dead lock?");
-#else
+#endif
 		while (nc_flag.test(std::memory_order_relaxed))
 		{
+#ifdef DEBUG_TIMER
+			ASSERT(timer.Mark() < 1.0, "Dead lock?");
+#endif
 			std::this_thread::yield();
 		}
-#endif
 	}
 }
 
@@ -142,12 +153,14 @@ void longmarch::BaseAtomicClass2::Lock2() const noexcept
 	{
 #ifdef DEBUG_TIMER
 		ASSERT(timer.Mark() < 1.0, "Dead lock?");
-#else
+#endif
 		while (m_flag.test(std::memory_order_relaxed))
 		{
+		#ifdef DEBUG_TIMER
+        		ASSERT(timer.Mark() < 1.0, "Dead lock?");
+        #endif
 			std::this_thread::yield();
 		}
-#endif
 	}
 }
 

@@ -74,6 +74,9 @@
 #include <stb_image.h>
 #include <stb_image_write.h>
 
+// SOIL2
+#include <SOIL2.h>
+
 // Parrallel hash map and Block-Tree
 #include <phmap/phmap.h>
 #include <phmap/btree.h>

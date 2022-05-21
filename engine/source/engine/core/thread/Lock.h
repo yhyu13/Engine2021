@@ -5,6 +5,7 @@
 
 namespace longmarch
 {
+	// used in stbi image parallel read/write
 	extern std::atomic_flag stbi_hdr_write_lock;
 	extern std::atomic_flag stbi_png_write_lock;
 
@@ -81,6 +82,7 @@ namespace longmarch
 
 	/*
 		Base atomic class for COPYABLE classes
+		Note, that the state of the lock is not copied over on assignment or copy construction
 	*/
 	struct BaseAtomicClass2
 	{

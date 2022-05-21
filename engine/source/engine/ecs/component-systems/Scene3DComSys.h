@@ -32,6 +32,7 @@ namespace longmarch
 		void RecursivePrepareScene(double dt, const Entity& parent, Transform3DCom* parentTr, ChildrenCom* childChildrenCom, unsigned int level);
 		void RenderWithModeOpaque(Renderer3D::RenderObj_CPU& renderObj);
 		void RenderWithModeTransparent(Renderer3D::RenderObj_CPU& renderObj);
+		void RenderWithModeParticle(Renderer3D::RenderObj_CPU& renderObj);
 
 		bool ViewFustrumCullingTest(const std::shared_ptr<Shape>& BoudingVolume);
 		bool DistanceCullingTest(const std::shared_ptr<Shape>& BoudingVolume);

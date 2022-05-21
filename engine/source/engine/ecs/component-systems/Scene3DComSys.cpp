@@ -126,6 +126,28 @@ void longmarch::Scene3DComSys::PreRenderUpdate(double dt)
 	}
 }
 
+void longmarch::Scene3DComSys::Render()
+{
+	// Debug draw view frustum test bounding volume for each renderable objects
+	if (m_enableDebugDraw)
+	{
+		LongMarch_ForEach(
+			[](const Renderer3D::RenderObj_CPU& renderObj)
+		{
+			auto body = renderObj.entity.GetComponent<Body3DCom>();
+			if (body.Valid())
+			{
+				if (auto bv = body->GetBoundingVolume(); bv)
+				{
+					bv->RenderShape();
+				}
+			}
+		}
+		, { Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE, 
+			Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT});
+	}
+}
+
 void longmarch::Scene3DComSys::PrepareScene(double dt)
 {
 	Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE.clear();
@@ -148,13 +170,13 @@ void longmarch::Scene3DComSys::PrepareScene(double dt)
 			if (scene->IsVisible())
 			{
 				LOCK_GUARD_NC();
-				if (!scene->IsTranslucenctRendering())
-				{
-					Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE.emplace_back(EntityDecorator{ child, m_parentWorld });
-				}
-				else
+				if (scene->IsTranslucenctRenderType() || scene->IsParticleRenderType()) [[unlikely]]
 				{
 					Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT.emplace_back(EntityDecorator{ child, m_parentWorld });
+				}
+				else [[likely]]
+				{
+					Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE.emplace_back(EntityDecorator{ child, m_parentWorld });
 				}
 			}
 			if (auto childrenCom = GetComponent<ChildrenCom>(child).GetPtr(); !childrenCom->IsLeaf())
@@ -190,13 +212,13 @@ void longmarch::Scene3DComSys::RecursivePrepareScene(double dt, const Entity& pa
 		if (scene->IsVisible())
 		{
 			LOCK_GUARD_NC();
-			if (!scene->IsTranslucenctRendering())
-			{
-				Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE.emplace_back(EntityDecorator{ child, m_parentWorld });
-			}
-			else
+			if (scene->IsTranslucenctRenderType() || scene->IsParticleRenderType()) [[unlikely]]
 			{
 				Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT.emplace_back(EntityDecorator{ child, m_parentWorld });
+			}
+			else [[likely]]
+			{
+				Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE.emplace_back(EntityDecorator{ child, m_parentWorld });
 			}
 		}
 		if (auto childrenCom = GetComponent<ChildrenCom>(child).GetPtr(); !childrenCom->IsLeaf())
@@ -297,9 +319,9 @@ void longmarch::Scene3DComSys::RenderWithModeTransparent(Renderer3D::RenderObj_C
 	auto body = renderObj.entity.GetComponent<Body3DCom>();
 
 	scene->SetShaderName(m_RenderShaderName);
-	bool isParticle = particle.Valid();
-	bool hasBody = body.Valid();
+	bool isParticle = particle.Valid() && scene->IsParticleRenderType();
 
+	bool hasBody = body.Valid();
 	if (hasBody)
 	{
 		if (const auto& bv = body->GetBoundingVolume(); bv)
@@ -355,6 +377,10 @@ void longmarch::Scene3DComSys::RenderWithModeTransparent(Renderer3D::RenderObj_C
 	}
 }
 
+void longmarch::Scene3DComSys::RenderWithModeParticle(Renderer3D::RenderObj_CPU& renderObj)
+{
+}
+
 bool longmarch::Scene3DComSys::ViewFustrumCullingTest(const std::shared_ptr<Shape>& BoudingVolume)
 {
 	if (!m_vfcParam.enableVFCulling)
@@ -376,23 +402,5 @@ bool longmarch::Scene3DComSys::DistanceCullingTest(const std::shared_ptr<Shape>&
 	else
 	{
 		return BoudingVolume->DistanceTest(m_distanceCParam.center, m_distanceCParam.Near, m_distanceCParam.Far);
-	}
-}
-
-void longmarch::Scene3DComSys::Render()
-{
-	// Debug draw view frustum test bounding volume for each renderable objects
-	if (m_enableDebugDraw)
-	{
-		LongMarch_ForEach([](const Renderer3D::RenderObj_CPU& renderObj) {
-			auto body = renderObj.entity.GetComponent<Body3DCom>();
-			if (body.Valid())
-			{
-				if (auto bv = body->GetBoundingVolume(); bv)
-				{
-					bv->RenderShape();
-				}
-			}
-		}, { Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE, Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT });
 	}
 }

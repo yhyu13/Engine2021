@@ -7,7 +7,7 @@ namespace longmarch {
 
 	std::shared_ptr<VertexArray> VertexArray::Create()
 	{
-		switch (Renderer2D::GetAPI())
+		switch (RendererAPI::WhichAPI())
 		{
 			case RendererAPI::API::None: ASSERT(false, "RendererAPI::API::None is currently not supported!");
 			case RendererAPI::API::OpenGL: return MemoryManager::Make_shared<OpenGLVertexArray>();

@@ -30,16 +30,20 @@
 							Class& operator=(const Class&) = delete; Class& operator=(const Class&&) = delete;
 
 #ifndef _SHIPPING
-#define ASSERT(x, ...) { if(!(x)) { if (Logger::init) ENGINE_CRITICAL("Assertion failed: {0}", __VA_ARGS__); __debugbreak(); } }
+#define ASSERT(x, ...) { if(!(x)) { if (Logger::init) ENGINE_CRITICAL("Assertion failed: {2} at {0} : {1}", __FILE__, __LINE__, __VA_ARGS__); __debugbreak(); } }
 #else
 #define ASSERT(x, ...)
 #endif // DEBUG
 
 #ifndef _SHIPPING
+#define CRITICAL_PRINT(...) { if (Logger::init) ENGINE_CRITICAL(__VA_ARGS__); }
+#define WARN_PRINT(...) { if (Logger::init) ENGINE_WARN(__VA_ARGS__); }
 #define ERROR_PRINT(...) { if (Logger::init) ENGINE_ERROR(__VA_ARGS__); }
 #define DEBUG_PRINT(...) { if (Logger::init) ENGINE_DEBUG(__VA_ARGS__); }
 #define PRINT(...) { if (Logger::init) ENGINE_INFO(__VA_ARGS__); }
 #else
+#define CRITICAL_PRINT(...)
+#define WARN_PRINT(...)
 #define ERROR_PRINT(...) 
 #define DEBUG_PRINT(...) 
 #define PRINT(...) 
@@ -64,15 +68,15 @@ std::string Str(const T& t)
 template<typename... Args>
 std::string Str(const char* fmt, const Args &... args)
 {
-	char str[256];
-	std::snprintf(str, 256, fmt, args...);
+	char str[1024];
+	_snprintf_s(str, 1024, fmt, args...);
 	return std::string(str);
 }
 
 template<typename... Args>
 std::wstring wStr(const wchar_t* fmt, const Args &... args)
 {
-	wchar_t str[256];
-	std::snprintf(str, 256, fmt, args...);
+	wchar_t str[1024];
+	_snwprintf_s(str, 1024, fmt, args...);
 	return std::wstring(str);
 }

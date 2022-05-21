@@ -14,6 +14,8 @@ namespace longmarch {
 		//!Returns the frame-time in seconds
 		const double GetTargetFrameTime() const;
 		void SetMaxFrameRate(unsigned int newMax);
+		//! Enable high precision mode to obtain more stable framerate at the cost of higher CPU usage
+		void SetHighPrecisionMode(bool enable);
 	private:
 		FramerateController();
 	private:
@@ -24,5 +26,6 @@ namespace longmarch {
 
 		double m_ticksPerFrame;
 		double m_frameTime;
+		bool m_highPrecisionMode;
 	};
 }

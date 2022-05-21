@@ -1,8 +1,10 @@
 #pragma once
 
 #include "engine/core/EngineCore.h"
+#include "engine/core/file-system/FileSystem.h"
 
-namespace longmarch {
+namespace longmarch 
+{
 	class ENGINE_API Texture
 	{
 	public:

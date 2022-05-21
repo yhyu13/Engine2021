@@ -9,6 +9,17 @@ namespace longmarch
 	Engine::Engine()
 	{
 		s_instance = this;
+	}
+
+	Engine::~Engine()
+	{
+		ImGuiDriver::ShutDown();
+		Logger::ShutDown();
+		s_instance = nullptr;
+	}
+
+	void Engine::Init()
+	{
 		// Logger
 		{
 			Logger::Init();
@@ -29,7 +40,8 @@ namespace longmarch
 		}
 		// Window system
 		{
-			m_engineWindow = Window::InitializeWindow(engineConfiguration["window"]);
+			auto wd = Window::InitializeWindow(engineConfiguration["window"]);
+			m_engineWindow = wd;
 			m_engineWindow->SetInterruptHandler(Engine::OnInterruption);
 			m_maxFrameRate = engineConfiguration["graphics"]["Max-framerate"].asInt();
 			FramerateController::GetInstance()->SetMaxFrameRate(m_maxFrameRate);
@@ -118,12 +130,6 @@ namespace longmarch
 		}
 	}
 
-	Engine::~Engine()
-	{
-		ImGuiDriver::ShutDown();
-		Logger::ShutDown();
-	}
-
 	void Engine::_ON_ENG_WINDOW_QUIT(EventQueue<EngineEventType>::EventPtr e)
 	{
 		// Nothing
@@ -160,8 +166,6 @@ namespace longmarch
 		{
 			rateController->FrameStart();
 			{
-				Instrumentor::GetEngineInstance()->AddInstrumentorResult({ "Up Time", (m_timer.Mark()), "s" });
-
 				// Pre update
 				PreUpdate().Update();
 
@@ -208,12 +212,24 @@ namespace longmarch
 		queue->Publish(e);
 	}
 
-	void longmarch::Engine::ShowMessageBox(const std::wstring& title, const std::wstring& message)
-	{
-		s_instance->GetWindow()->ShowMessageBox(title, message);
+	double Engine::GetTotalTime() 
+	{ 
+		static Timer timer;
+		return timer.Mark(); 
 	}
 
-	void longmarch::Engine::OnInterruption(const int& isFocussed)
+	void longmarch::Engine::ShowMessageBox(const std::wstring& title, const std::wstring& message)
+	{
+		if (s_instance != nullptr)
+		{
+			if (auto wd = s_instance->GetWindow(); wd != nullptr)
+			{
+				wd->ShowMessageBox(title, message);
+			}
+		}
+	}
+
+	void longmarch::Engine::OnInterruption(int isFocussed)
 	{
 		s_instance->m_isWindowFocused = static_cast<bool>(isFocussed);
 

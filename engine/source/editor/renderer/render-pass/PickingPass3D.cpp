@@ -31,7 +31,6 @@ void longmarch::PickingPass::Init()
 	// Create multidraw bindings
 	{
 		m_drawBind = std::move(std::bind(&PickingPass::Draw, this, std::placeholders::_1));
-		m_drawBind_Particle = std::move(std::bind(&PickingPass::DrawParticle, this, std::placeholders::_1));
 		m_submitBatchBind = std::move(std::bind(&PickingPass::SubmitBatch, this));
 		m_clearBatchBind = std::move(std::bind(&PickingPass::ClearBatch, this));
 	}
@@ -39,10 +38,10 @@ void longmarch::PickingPass::Init()
 		switch (Renderer3D::s_Data.RENDER_MODE)
 		{
 		case Renderer3D::RENDER_MODE::CANONICAL:
-			Renderer3D::s_Data.ShaderMap["PickingSystemShader"] = Shader::Create("$shader:picking_entity_id_shader.vert", "$shader:picking_entity_id_shader.frag");
+			m_pickingShader = Shader::Create("$shader:picking_entity_id_shader.vert", "$shader:picking_entity_id_shader.frag");
 			break;
 		case Renderer3D::RENDER_MODE::MULTIDRAW:
-			Renderer3D::s_Data.ShaderMap["PickingSystemShader"] = Shader::Create("$shader:picking_entity_id_shader_MultiDraw.vert", "$shader:picking_entity_id_shader_MultiDraw.frag");
+			m_pickingShader = Shader::Create("$shader:picking_entity_id_shader_MultiDraw.vert", "$shader:picking_entity_id_shader_MultiDraw.frag");
 			break;
 		}
 	}
@@ -170,7 +169,30 @@ void longmarch::PickingPass::Render()
 	// Calling base functions
 	SetVFCullingParam(true, m_pickingCam.GetViewFrustumInViewSpace(), m_pickingCam.GetViewMatrix());
 	SetDistanceCullingParam(false, Vec3f(), 0, 0);
-	RenderWithCullingTest();
+
+	LongMarch_ForEach(
+		[this](const Renderer3D::RenderObj_CPU& renderObj) 
+		{
+			auto scene = renderObj.entity.GetComponent<Scene3DCom>();
+			auto body = renderObj.entity.GetComponent<Body3DCom>();
+			if (body.Valid())
+			{
+				if (const auto& bv = body->GetBoundingVolume(); bv)
+				{
+					if (DistanceCullingTest(bv))
+					{
+						scene->SetShouldDraw(false, false);
+					}
+					else if (ViewFustrumCullingTest(bv))
+					{
+						scene->SetShouldDraw(false, false);
+					}
+				}
+			}
+			scene->Draw(m_drawBind);
+		}
+	, { Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE, 
+		Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT });
 
 	// Bind multi draw func
 	Renderer3D::s_Data.multiDrawBuffer.multiDrawRenderPassCallback.submitCallback = &m_submitBatchBind;
@@ -180,20 +202,18 @@ void longmarch::PickingPass::Render()
 
 void longmarch::PickingPass::UpdateShader()
 {
+	const auto& shader = m_pickingShader;
+	shader->Bind();
+	Mat4 pv;
+	if (Renderer3D::s_Data.enable_reverse_z)
 	{
-		auto shader = Renderer3D::s_Data.ShaderMap["PickingSystemShader"];
-		shader->Bind();
-		Mat4 pv;
-		if (Renderer3D::s_Data.enable_reverse_z)
-		{
-			pv = m_pickingCam.GetReverseZViewProjectionMatrix();
-		}
-		else
-		{
-			pv = m_pickingCam.GetViewProjectionMatrix();
-		}
-		shader->SetMat4("u_PVMatrix", pv);
+		pv = m_pickingCam.GetReverseZViewProjectionMatrix();
 	}
+	else
+	{
+		pv = m_pickingCam.GetViewProjectionMatrix();
+	}
+	shader->SetMat4("u_PVMatrix", pv);
 }
 
 void longmarch::PickingPass::SubmitBatch()
@@ -220,13 +240,13 @@ void longmarch::PickingPass::ClearBatch()
 
 void longmarch::PickingPass::Draw(const Renderer3D::RenderData_CPU& data)
 {
-	auto shader = Renderer3D::s_Data.ShaderMap["PickingSystemShader"];
+	const auto& shader = m_pickingShader;
 	shader->Bind();
 	switch (Renderer3D::s_Data.RENDER_MODE)
 	{
 	case Renderer3D::RENDER_MODE::MULTIDRAW:
 	{
-		if (m_multiDraw_PickingTr.size() >= m_max_batch)
+		if (m_multiDraw_PickingTr.size() >= max_batch)
 		{
 			Renderer3D::CommitBatchRendering();
 		}
@@ -242,21 +262,5 @@ void longmarch::PickingPass::Draw(const Renderer3D::RenderData_CPU& data)
 		Renderer3D::Draw(data);
 	}
 	break;
-	}
-}
-
-void longmarch::PickingPass::DrawParticle(const Renderer3D::ParticleInstanceDrawData& data)
-{
-	auto shader = Renderer3D::s_Data.ShaderMap["PickingSystemShader"];
-	shader->Bind();
-
-	auto world = GameWorld::GetCurrent();
-	for (auto& [texture, instanceData] : data)
-	{
-		auto entity = instanceData.entity;
-		auto scene = world->GetComponent<Scene3DCom>(entity);
-		scene->SetSceneData(m_particlePickingMesh);
-		scene->Draw(m_drawBind);
-		scene->SetSceneData(nullptr);
 	}
 }

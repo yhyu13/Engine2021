@@ -2,6 +2,7 @@
 
 #include "engine/core/EngineCore.h"
 #include "engine/input/InputManager.h"
+#include "engine/renderer/GraphicsContext.h"
 
 #include <json/json.h>
 
@@ -11,8 +12,10 @@ namespace longmarch
 {
 	typedef std::function<void(int IsFocussed)> InterruptHandler;
 
-	struct ENGINE_API WindowProperties 
+	struct ENGINE_API WindowProperties
 	{
+		GraphicsContext* m_context;
+		int m_api{ 0 }; /* 0-opengl4, 1-vulkan */
 		int m_xpos; // Upper left corner position in the whole screen
 		int m_ypos; // Upper left corner position in the whole screen
 		int m_width; // Width of the window, could be different from resolution
@@ -20,12 +23,12 @@ namespace longmarch
 		int m_resolutionX; // X Resolution, used in render target. Could be different from window width
 		int m_resolutionY; // Y Resolution, used in render target. Could be different from window height
 		std::string m_title;
-		InputManager* m_input = nullptr;
-		bool IsResizable = true;
-		int IsFullScreen = 1; /* 0-Full screen, 1- Borderless full screen 2- Windowed mode  */
-		bool IsVSync = true;
-		bool IsCPUGPUSync = true; 
-		InterruptHandler m_interruptHandler = nullptr;
+		InputManager* m_input{ nullptr };
+		bool IsResizable{ true };
+		int IsFullScreen{ 2 }; /* 0-Full screen, 1- Borderless full screen 2- Windowed mode  */
+		bool IsVSync{ true };
+		bool IsCPUGPUSync{ true };
+		InterruptHandler m_interruptHandler{ nullptr };
 
 		std::pair<unsigned int, unsigned int> m_Res1;
 		std::pair<unsigned int, unsigned int> m_Res2;
@@ -35,7 +38,7 @@ namespace longmarch
 		int m_monitorWidth;
 		int m_monitorHeight;
 
-		WindowProperties(int width = 1280, int height = 720, std::string title = "ENGINE GSWY")
+		WindowProperties(int width = 1280, int height = 720, std::string title = "LongMarch Engine")
 			:
 			m_xpos(0),
 			m_ypos(0),
@@ -59,15 +62,15 @@ namespace longmarch
 	public:
 		enum class CURSOR_MODE : int32_t
 		{
-			NORMAL = 0, // Disaply cursor and cursor has limited movement within the window
+			None = 0,
+			NORMAL, // Disaply cursor and cursor has limited movement within the window
 			HIDDEN, // Deos not disaply cursor and cursor has limited movement within the window
-			HIDDEN_AND_FREE, // Does not display cursor but cursor is still available with unlimited movement
-			NUM
+			HIDDEN_AND_FREE // Does not display cursor but cursor is still available with unlimited movement
 		};
 
 	public:
 		explicit Window(const Json::Value& engineConfiguration);
-		~Window();
+		virtual ~Window();
 
 		void Update(double dt);
 		void Render();
@@ -88,6 +91,7 @@ namespace longmarch
 
 		inline GLFWwindow* GetNativeWindow() const { return m_window; }
 		inline WindowProperties& GetWindowProperties() { return m_windowProperties; }
+		inline const WindowProperties& GetWindowProperties() const { return m_windowProperties; } 
 		inline unsigned int GetWidth() const { return m_windowProperties.m_width; }
 		inline unsigned int GetHeight() const { return m_windowProperties.m_height; }
 		inline void SetInterruptHandler(const InterruptHandler& handler) { m_windowProperties.m_interruptHandler = handler; };
@@ -98,7 +102,6 @@ namespace longmarch
 		friend Engine;
 		
 		void Init(const Json::Value& windowConfiguration);
-
 
 	private:
 		WindowProperties m_windowProperties;

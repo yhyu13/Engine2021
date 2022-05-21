@@ -1,6 +1,7 @@
 #include "engine-precompiled-header.h"
 #include "EnginePerformanceMonitor.h"
 #include "../BaseEngineWidgetManager.h"
+
 #include <imgui/addons/implot/implot.h>
 
 longmarch::EnginePerformanceMonitor::EnginePerformanceMonitor()
@@ -58,20 +59,21 @@ void longmarch::EnginePerformanceMonitor::Render()
 	ImGui::NextColumn();		// next column starts here
 
 								// both graphs widgets occupy both rows (2nd column has only one row or rows are merged)
+	static float history = 10.0f;
+	static float y_axis_scale = 1.0f;
+	ImGui::SliderFloat("History", &history, 1, 30, "%.1f s");
+	ImGui::SliderFloat("Y Axis Scale", &y_axis_scale, 1, 4, "%.01f s");
 	{
 		static ScrollingBuffer buffer;
 		static float t = 0;
 		t += ImGui::GetIO().DeltaTime;
 		buffer.AddPoint(t, frameRate);
-		if (showFPS) // render FPS
+		// Render FPS histogram
+		if (showFPS)
 		{
-			static float history = 10.0f;
-			ImGui::SliderFloat("History", &history, 1, 30, "%.1f s");
-
-			static ImPlotAxisFlags rt_axis = ImPlotAxisFlags_NoTickLabels;
 			ImPlot::SetNextPlotLimitsX(t - history, t, ImGuiCond_Always);
-			ImPlot::SetNextPlotLimitsY(0, 120);
-			if (ImPlot::BeginPlot("##Scrolling", NULL, NULL, ImVec2(-1, 200), 0, ImPlotAxisFlags_NoTickLabels, ImPlotAxisFlags_LockMin)) {
+			ImPlot::SetNextPlotLimitsY(0, 90 * y_axis_scale, ImGuiCond_Always);
+			if (ImPlot::BeginPlot("##Scrolling", NULL, NULL, ImVec2(-1, 200 * y_axis_scale), 0, ImPlotAxisFlags_NoTickLabels, ImPlotAxisFlags_LockMin)) {
 				ImPlot::PlotLine("FPS", &buffer.Data[0].x, &buffer.Data[0].y, buffer.Data.size(), buffer.Offset, 2 * sizeof(float));
 				ImPlot::EndPlot();
 			}
@@ -82,15 +84,12 @@ void longmarch::EnginePerformanceMonitor::Render()
 		static float t = 0;
 		t += ImGui::GetIO().DeltaTime;
 		buffer.AddPoint(t, frameTime * 1e3);
-		if (showFrameTime) // render frame-time
+		// Render frame-time histogram
+		if (showFrameTime) 
 		{
-			static float history = 10.0f;
-			ImGui::SliderFloat("History", &history, 1, 30, "%.1f s");
-
-			static ImPlotAxisFlags rt_axis = ImPlotAxisFlags_NoTickLabels;
 			ImPlot::SetNextPlotLimitsX(t - history, t, ImGuiCond_Always);
-			ImPlot::SetNextPlotLimitsY(0, 60);
-			if (ImPlot::BeginPlot("##Scrolling", NULL, NULL, ImVec2(-1, 200), 0, ImPlotAxisFlags_NoTickLabels, ImPlotAxisFlags_LockMin)) {
+			ImPlot::SetNextPlotLimitsY(0, 60 * y_axis_scale, ImGuiCond_Always);
+			if (ImPlot::BeginPlot("##Scrolling", NULL, NULL, ImVec2(-1, 200 * y_axis_scale), 0, ImPlotAxisFlags_NoTickLabels, ImPlotAxisFlags_LockMin)) {
 				ImPlot::PlotLine("FRAME TIME", &buffer.Data[0].x, &buffer.Data[0].y, buffer.Data.size(), buffer.Offset, 2 * sizeof(float));
 				ImPlot::EndPlot();
 			}

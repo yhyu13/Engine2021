@@ -9,7 +9,7 @@ namespace longmarch {
 		auto vert = FileSystem::ResolveProtocol(vertexShaderPath);
 		auto frag = FileSystem::ResolveProtocol(fragmentShaderPath);
 		auto geom = FileSystem::ResolveProtocol(geomtryShaderPath);
-		switch (Renderer2D::GetAPI())
+		switch (RendererAPI::WhichAPI())
 		{
 		case RendererAPI::API::None: ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
 		case RendererAPI::API::OpenGL: return MemoryManager::Make_shared<OpenGLShader>(vert, frag, geom);
@@ -21,7 +21,7 @@ namespace longmarch {
 	std::shared_ptr<Shader> Shader::Create(const std::string& computeShaderPath)
 	{
 		auto comp = FileSystem::ResolveProtocol(computeShaderPath);
-		switch (Renderer2D::GetAPI())
+		switch (RendererAPI::WhichAPI())
 		{
 		case RendererAPI::API::None: ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
 		case RendererAPI::API::OpenGL: return MemoryManager::Make_shared<OpenGLShader>(comp);

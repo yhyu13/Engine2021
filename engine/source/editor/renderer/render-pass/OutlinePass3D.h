@@ -19,6 +19,7 @@ namespace longmarch
 		virtual void EndRenderPass() override;
 
 	private:
-		std::shared_ptr<FrameBuffer> OutlineFrameBuffer;
+		std::shared_ptr<FrameBuffer> m_outlineFrameBuffer{ nullptr };
+		std::shared_ptr<Scene3DNode> m_particlePickingMesh{ nullptr };
 	};
 }

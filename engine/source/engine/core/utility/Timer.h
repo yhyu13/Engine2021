@@ -14,7 +14,6 @@ namespace longmarch
 	public:
 		Timer()
 		{
-			ENGINE_EXCEPT_IF(std::chrono::steady_clock::is_steady == false, L"C++11 std::chrono::steady_clock::is_steady() returns FALSE.");
 			m_last = std::chrono::steady_clock::now();
 		}
 		//! Init timer with period in secs
@@ -22,7 +21,6 @@ namespace longmarch
 			:
 			m_period(period)
 		{
-			ENGINE_EXCEPT_IF(std::chrono::steady_clock::is_steady == false, L"C++11 std::chrono::steady_clock::is_steady() returns FALSE.");
 			m_last = std::chrono::steady_clock::now();
 		}
 		//! Reset timer to now
@@ -31,9 +29,10 @@ namespace longmarch
 			m_last = std::chrono::steady_clock::now();
 		}
 		//! Return time in seconds between now and the last reset
+		template< typename ret_type = double, typename ratio = std::ratio<1>>
 		inline double Mark() noexcept
 		{
-			return std::chrono::duration<double>(std::chrono::steady_clock::now() - m_last).count();
+			return std::chrono::duration<ret_type, ratio>(std::chrono::steady_clock::now() - m_last).count();
 		}
 		//! Set period. Use Check to check if period is met.
 		inline void SetPeriod(double period) noexcept

@@ -103,7 +103,7 @@ void longmarch::Material::SetTexture(const std::string& name, const fs::path& fi
 			setting.has_mipmap = true;
 			setting.linear_filter = true;
 			// Add texture in the main thread
-			ResourceManager<Texture2D>::GetInstance()->AddResource(id, "", Texture2D::Create(setting)); //! Individual component should not have a path related to it
+			ResourceManager<Texture2D>::GetInstance()->AddResource(id, "", Texture2D::Create(setting)); //! Generated resources should not have a path related to it
 			// Remove image 2d
 			ResourceManager<Image2D>::GetInstance()->Remove(id);
 		}, { true, false }, true);

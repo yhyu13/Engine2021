@@ -1,30 +1,43 @@
 #include "engine-precompiled-header.h"
 #include "engine/window/Window.h"
+#include "engine/core/exception/EngineException.h"
+#include "engine/renderer/platform/OpenGL/OpenGLContext.h"
+#include "engine/renderer/platform/Vulkan/VulkanContext.h"
 
 #if defined(WIN32) || defined(WINDOWS_APP)
-#include <windows.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define GLFW_EXPOSE_NATIVE_WGL
 #endif
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
-namespace longmarch {
-	std::shared_ptr<Window> Window::InitializeWindow(const Json::Value& windowConfiguration) {
+namespace longmarch 
+{
+	std::shared_ptr<Window> Window::InitializeWindow(const Json::Value& windowConfiguration) 
+	{
 		return std::make_shared<Window>(windowConfiguration);
 	}
 
-	void Window::Update(double dt) {
+	void Window::Update(double dt) 
+	{
 		glfwPollEvents();
 	}
 
 	void Window::Render()
 	{
-		glfwSwapBuffers(m_window);
+		m_windowProperties.m_context->SwapBuffers();
 		if (m_windowProperties.IsCPUGPUSync)
-			glFinish();
+		{
+			switch (m_windowProperties.m_api)
+			{
+			case 0:
+				// OpenGL context
+				glFinish();
+				break;
+			case 1:
+				// Vulkan context
+				break;
+			}
+		}
 	}
 
 	void Window::ToggleFullScreen(int mode)
@@ -67,7 +80,9 @@ namespace longmarch {
 			m_windowProperties.m_height = m_windowProperties.m_resolutionY;
 			printf("No Full Screen : posX = %d, posY = %d width = %d, height = %d\n", x, y, w, h);
 		}
+		// Set v-sync on window mode change
 		SetVSync(m_windowProperties.IsVSync);
+
 		m_windowProperties.IsFullScreen = mode;
 		int width = m_windowProperties.m_width;
 		int height = m_windowProperties.m_height;
@@ -76,6 +91,7 @@ namespace longmarch {
 		glfwGetFramebufferSize(m_window, &width, &height);
 		DEBUG_PRINT(Str("Framebuffer Size : %d x %d\n", width, height));
 
+		// Update input manager with new window size
 		m_windowProperties.m_input->SetMouseMaxPositions(m_windowProperties.m_resolutionX, m_windowProperties.m_resolutionY);
 	}
 
@@ -89,6 +105,8 @@ namespace longmarch {
 		{
 			glfwShowWindow(m_window);
 		}
+		// Vsync needs to be set again on hide/show window
+		SetVSync(m_windowProperties.IsVSync);
 	}
 
 	void Window::SetResolution(int n)
@@ -146,7 +164,10 @@ namespace longmarch {
 			glfwGetMonitorWorkarea(glfwGetPrimaryMonitor(), &x, &y, nullptr, nullptr);
 			glfwSetWindowMonitor(m_window, nullptr, x, y, m_windowProperties.m_resolutionX, m_windowProperties.m_resolutionY, GLFW_DONT_CARE);
 		}
+		// Set v-sync on window mode change
 		SetVSync(m_windowProperties.IsVSync);
+
+		// Update input manager with new window size
 		m_windowProperties.m_input->SetMouseMaxPositions(m_windowProperties.m_resolutionX, m_windowProperties.m_resolutionY);
 	}
 
@@ -170,7 +191,7 @@ namespace longmarch {
 
 	void Window::SetCursorMode(CURSOR_MODE mode)
 	{
-		static auto s_mode = CURSOR_MODE::NUM;
+		static auto s_mode = CURSOR_MODE::None;
 		if (s_mode != mode)
 		{
 			switch (mode)
@@ -198,13 +219,18 @@ namespace longmarch {
 		{
 			return CURSOR_MODE::NORMAL;
 		}
-		if (mode == GLFW_CURSOR_HIDDEN)
+		else if (mode == GLFW_CURSOR_HIDDEN)
 		{
 			return CURSOR_MODE::HIDDEN;
 		}
-		if (mode == GLFW_CURSOR_DISABLED)
+		else if (mode == GLFW_CURSOR_DISABLED)
 		{
 			return CURSOR_MODE::HIDDEN_AND_FREE;
+		}
+		else
+		{
+			ENGINE_EXCEPT(L"Unknown glfw cursor mode!");
+			return CURSOR_MODE::None;
 		}
 	}
 
@@ -220,6 +246,18 @@ namespace longmarch {
 
 	void Window::Shutdown() 
 	{
+		switch (m_windowProperties.m_api)
+		{
+		case 0:
+			OpenGLContext::Destory(m_window);
+			break;
+		case 1:
+			VulkanContext::Destory(m_window);
+			break;
+		default:
+			ENGINE_EXCEPT(L"Unknown graphics API context!");
+			break;
+		}
 		glfwDestroyWindow(m_window);
 	}
 
@@ -232,7 +270,6 @@ namespace longmarch {
 	{
 		glfwSetWindowTitle(m_window, title.c_str());
 	}
-
 
 	Window::Window(const Json::Value& windowConfiguration) 
 	{
@@ -263,6 +300,7 @@ namespace longmarch {
 		m_windowProperties.IsFullScreen = windowConfiguration["Full-screen"].asInt();
 		m_windowProperties.IsVSync = windowConfiguration["V-sync"].asBool();
 		m_windowProperties.IsCPUGPUSync = windowConfiguration["GPU-sync"].asBool();
+		m_windowProperties.m_api = windowConfiguration["API"].asInt();
 
 		m_windowProperties.m_input = InputManager::GetInstance();
 		m_windowProperties.m_input->SetMouseMaxPositions(m_windowProperties.m_width, m_windowProperties.m_height);
@@ -284,6 +322,19 @@ namespace longmarch {
 		m_windowProperties.m_resolutionX = m_windowProperties.m_width;
 		m_windowProperties.m_resolutionY = m_windowProperties.m_height;
 
+		switch (m_windowProperties.m_api)
+		{
+		case 0:
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+			break;
+		case 1:
+			// Vulkan requires no automatic api context creation for glfw
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+			break;
+		default:
+			ENGINE_EXCEPT(L"Unknown graphics API context!");
+			break;
+		}
 		glfwWindowHint(GLFW_RESIZABLE, m_windowProperties.IsResizable);
 		glfwWindowHint(GLFW_VISIBLE, !hide);
 
@@ -323,14 +374,19 @@ namespace longmarch {
 		// Get window pos
 		glfwGetWindowPos(m_window, &m_windowProperties.m_xpos, &m_windowProperties.m_ypos);
 
-		success = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-		ASSERT(success >= 0, "Could not initialize Glad!");
-
-		// Put info to Log
-		ENGINE_INFO(" OpenGL Info:");
-		ENGINE_INFO(" Vendor: {0}", glGetString(GL_VENDOR));
-		ENGINE_INFO(" Renderer: {0}", glGetString(GL_RENDERER));
-		ENGINE_INFO(" Version: {0}", glGetString(GL_VERSION));
+		switch (m_windowProperties.m_api)
+		{
+		case 0:
+			// OpenGL context
+			m_windowProperties.m_context = OpenGLContext::Create(m_window);
+			m_windowProperties.m_context->Init();
+			break;
+		case 1:
+			// Vulkan context
+			m_windowProperties.m_context = VulkanContext::Create(m_window);
+			m_windowProperties.m_context->Init();
+			break;
+		}
 
 		// Callbacks
 		glfwSetKeyCallback(m_window, [](GLFWwindow* window, int key, int scanCode, int action, int mods) 
@@ -389,6 +445,7 @@ namespace longmarch {
 			properties.m_width = width;
 			properties.m_height = height;
 			properties.m_input->SetMouseMaxPositions(width, height);
+			properties.m_context->RebuildSwapChain(width, height);
 		});
 
 		glfwSetWindowPosCallback(m_window, [](GLFWwindow* window, int upperleft_xpos, int upperleft_ypos)
@@ -396,8 +453,7 @@ namespace longmarch {
 			WindowProperties& properties = *(WindowProperties*)glfwGetWindowUserPointer(window);
 			properties.m_xpos = upperleft_xpos;
 			properties.m_ypos = upperleft_ypos;
-		}
-		);
+		});
 
 		glfwSetWindowFocusCallback(m_window, [](GLFWwindow* window, int focussed)
 		{

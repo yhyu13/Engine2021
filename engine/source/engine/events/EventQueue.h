@@ -8,6 +8,7 @@
 namespace longmarch
 {
 #define THROW_ON_DUPLICATED_EVENT_CALLBACk 1
+#define THROW_ON_UNREGISTERED_EVENT_CALLBACk 0
 	/**
 	 * @brief Base class event subscriber handle
 	 *
@@ -55,7 +56,7 @@ namespace longmarch
 			auto end() const { return handlersMap.end(); }
 			EventHandlersMap handlersMap;
 		};
-		using EventSubsriberLUT = LongMarch_UnorderedMap_Par<EventType, EventHandlers>;
+		using EventSubsriberLUT = LongMarch_UnorderedMap_Par_node<EventType, EventHandlers>;
 
 		//! Internal type that convert a regular event into a delayed event
 		struct DelayedEvent : Event<EventType> {
@@ -163,7 +164,17 @@ namespace longmarch
 			auto _e = std::static_pointer_cast<BaseEvent>(e);
 			LockNC();
 			auto it = m_subscribers.find(e->m_type);
-			ENGINE_EXCEPT_IF(it == m_subscribers.end(), L"Event with type " + str2wstr(Str(e->m_type)) + L" is not registered in the event queue of type: " + str2wstr(typeid(EventType).name()));
+			if (it == m_subscribers.end())
+			{
+				UnlockNC();
+#if THROW_ON_UNREGISTERED_EVENT_CALLBACk == 0			
+				ENGINE_WARN("Event with type " + (Str(e->m_type)) + " is not registered in the event queue of type: " + (typeid(EventType).name()));
+				return;
+#else
+				ENGINE_EXCEPT(L"Event with type " + str2wstr(Str(e->m_type)) + L" is not registered in the event queue of type: " + str2wstr(typeid(EventType).name()));
+				return;
+#endif
+			}
 			auto& subs = it->second;
 			UnlockNC();
 			subs.Lock2();
@@ -419,4 +430,5 @@ namespace longmarch
 		LongMarch_Set<std::shared_ptr<BaseEventSubHandle>> m_subHandles;
 	};
 #undef THROW_ON_DUPLICATED_EVENT_CALLBACk
+#undef THROW_ON_UNREGISTERED_EVENT_CALLBACk
 }

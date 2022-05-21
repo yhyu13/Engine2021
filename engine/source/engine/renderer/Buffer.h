@@ -339,13 +339,13 @@ namespace longmarch
 		{
 			EMPTY = 0,
 			BASIC,
-			BASIC_COMPARE,
+			BASIC_COMPARE, // Cannot be used on reverse-Z depth buffer
 
 			MOMENT4,
 			MOMENT4_CUBE,
 
 			ARRAY_BASIC,
-			ARRAY_COMPARE,
+			ARRAY_COMPARE, // Cannot be used on reverse-Z depth buffer
 			ARRAY_MOMENT4,
 			NUM
 		};

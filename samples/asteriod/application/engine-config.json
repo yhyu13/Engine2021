@@ -21,7 +21,7 @@
 	{
 		"Width": 1920,
 		"Height": 1080,
-		"Title": "4agames-prototype2",
+		"Title": "Asteriod",
 		"Hide-On-Creation": true,
 
 		"Full-screen": 2, /* 0-Full screen, 1- Borderless full screen 2- Windowed mode  */
@@ -50,10 +50,6 @@
 		"Multi-draw" : true,
 		"Deferred-shading": true,
 
-		"Clustered-shading": false,
-		"Debug-cluster-light" : false,
-
-		
 		"TAA":false, /* only take effects under deffered shading */
 		"FXAA":false,
 		// Shadow

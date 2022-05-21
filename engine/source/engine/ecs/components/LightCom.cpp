@@ -589,7 +589,7 @@ void longmarch::LightCom::ImGuiRender()
 			{
 				ImGui::PushItemWidth(width_item_1);
 				// CSM debug
-				static const char* csmDebug[]{ "None", "Levels", "Camera depth", "Light depth", "Shadow Intensity" };
+				static const char* csmDebug[]{ "None", "Levels", "Shadow Intensity" };
 				static int selected_csmDebug = 0;
 				if (ImGui::Combo("CSM Debug", &selected_csmDebug, csmDebug, IM_ARRAYSIZE(csmDebug)))
 				{

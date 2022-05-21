@@ -3,6 +3,7 @@
 #if defined(WIN32) || defined(WINDOWS_APP)
 #define NOMINMAX // NOMINMAX for WINDOWS
 #define _ENABLE_EXTENDED_ALIGNED_STORAGE // VS2017 15.8 fix on aligned allocation (for phmap to work)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 
@@ -56,6 +57,9 @@
 // OpenGL Binding
 #include <glad/glad.h>
 
+// Vulkan Binding
+#include <vulkan/vulkan.hpp>
+
 // Assimp scene file loader
 #include <assimp/Importer.hpp>
 #include <assimp/cimport.h>
@@ -84,7 +88,5 @@
 // minizip wrapper
 #include <miniz-cpp.hpp>
 
-namespace longmarch
-{
-	namespace fs = std::filesystem;
-}
+// Engine core
+#include "engine/EngineEssential.h"

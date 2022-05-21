@@ -20,11 +20,11 @@ namespace longmarch
 	template <typename T>
 	using LongMarch_UnorderedSet = phmap::flat_hash_set<T>;
 
-	// For small set of data <= 64, all data are stable upon insertion, and use this if move is expensive or not allowed
+	// For small set of data <= 64. All data are stable upon insertion, and use this if move is expensive or not allowed
 	template <typename T>
 	using LongMarch_UnorderedSet_node = phmap::node_hash_set<T>;
 
-	// For small set of data <= 64, might move all data on insertion
+	// For small set of data <= 64. Might move all data on insertion
 	template <typename T>
 	using LongMarch_UnorderedSet_flat = phmap::flat_hash_set<T>;
 
@@ -32,11 +32,11 @@ namespace longmarch
 	template <typename T>
 	using LongMarch_UnorderedSet_Par = phmap::parallel_flat_hash_set<T>;
 
-	// For large set of data > 64, all data are stable upon insertion, and use this if move is expensive or not allowed
+	// For large set of data > 64. All data are stable upon insertion, and use this if move is expensive or not allowed
 	template <typename T>
 	using LongMarch_UnorderedSet_Par_node = phmap::parallel_node_hash_set<T>;
 
-	// For large set of data > 64, might move all data on insertion
+	// For large set of data > 64. Might move all data on insertion
 	template <typename T>
 	using LongMarch_UnorderedSet_Par_flat = phmap::parallel_flat_hash_set<T>;
 
@@ -51,11 +51,11 @@ namespace longmarch
 	template <typename Key, typename T>
 	using LongMarch_UnorderedMap = phmap::flat_hash_map<Key, T, LongMarch_HashType<Key>>;
 
-	// For small set of data <= 64, all data are stable upon insertion, and use this if move is expensive or not allowed
+	// For small set of data <= 64. All data are stable upon insertion, and use this if move is expensive or not allowed
 	template <typename Key, typename T>
 	using LongMarch_UnorderedMap_node = phmap::node_hash_map<Key, T, LongMarch_HashType<Key>>;
 
-	// For small set of data <= 64, might move all data on insertion
+	// For small set of data <= 64. Might move all data on insertion
 	template <typename Key, typename T>
 	using LongMarch_UnorderedMap_flat = phmap::flat_hash_map<Key, T, LongMarch_HashType<Key>>;
 
@@ -63,11 +63,11 @@ namespace longmarch
 	template <typename Key, typename T>
 	using LongMarch_UnorderedMap_Par = phmap::parallel_flat_hash_map<Key, T, LongMarch_HashType<Key>>;
 
-	// For large set of data > 64, all inputs are stable upon insertion, and use this if move is expensive or not allowed
+	// For large set of data > 64. All inputs are stable upon insertion, and use this if move is expensive or not allowed
 	template <typename Key, typename T>
 	using LongMarch_UnorderedMap_Par_node = phmap::parallel_node_hash_map<Key, T, LongMarch_HashType<Key>>;
 
-	// For large set of data > 64, might move all data on insertion
+	// For large set of data > 64. Might move all data on insertion
 	template <typename Key, typename T>
 	using LongMarch_UnorderedMap_Par_flat = phmap::parallel_flat_hash_map<Key, T, LongMarch_HashType<Key>>;
 
@@ -98,6 +98,10 @@ namespace longmarch
 	 */
 #ifndef __LongMarch_TRVIAL_TEMPLATE__
 #define __LongMarch_TRVIAL_TEMPLATE__ template<typename ...__TRIVIAL__>
+#endif
+
+#ifndef LongMarch_ArraySize
+#define LongMarch_ArraySize(x) (sizeof(x) / sizeof(*x))
 #endif
 
 	template <typename T>

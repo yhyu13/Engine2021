@@ -30,5 +30,8 @@ namespace longmarch
 
 		//! Zoom in texture on hover (used in editor panel)
 		static void TextureViewerWithZoom(const std::shared_ptr<void>& texture); 
+
+		//! Scale imgui all sizes (used on changing window resolution such as from 1080p to 4k)
+		static void ScaleAllSizesFromBase(float scale = 1.0f);
 	};
 }

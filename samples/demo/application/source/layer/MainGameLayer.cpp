@@ -36,6 +36,7 @@ void longmarch::MainGameLayer::Init()
 		m_Data.m_font_1k = io.Fonts->AddFontFromFileTTF(path.c_str(), base_font_size);
 		m_Data.m_font_2k = io.Fonts->AddFontFromFileTTF(path.c_str(), 1.414f * base_font_size);
 		m_Data.m_font_4k = io.Fonts->AddFontFromFileTTF(path.c_str(), 2.0f * base_font_size);
+		ImGui::UploadFontTexture();
 	}
 	{
 		auto queue = EventQueue<EngineIOEventType>::GetInstance();

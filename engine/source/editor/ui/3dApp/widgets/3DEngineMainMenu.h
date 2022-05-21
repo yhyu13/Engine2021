@@ -1,8 +1,8 @@
 #pragma once
 #include "engine/ui/BaseWidget.h"
 
-namespace longmarch {
-
+namespace longmarch 
+{
 	/**
 	 * @brief Main menu for 3D application editor
 	 *
@@ -21,6 +21,7 @@ namespace longmarch {
 
 		void RenderEngineSettingMenu();
 		void RenderEngineGraphicSettingMenu();
+
 	private:
 		ImVec2 m_Size;
 	};

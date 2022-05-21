@@ -3,12 +3,16 @@
 #include "../../RendererAPI.h"
 #include "OpenGLUtil.h"
 
-namespace longmarch {
+namespace longmarch 
+{
 	class OpenGLRendererAPI : public RendererAPI
 	{
 	public:
 		NONCOPYABLE(OpenGLRendererAPI);
-		OpenGLRendererAPI() = default;
+		OpenGLRendererAPI()
+		{
+			s_eAPI = API::OpenGL;
+		}
 		static RendererAPI* GetInstance()
 		{
 			static OpenGLRendererAPI instance;

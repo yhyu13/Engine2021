@@ -92,7 +92,7 @@ namespace longmarch
 		DEBUG_PRINT(Str("Framebuffer Size : %d x %d\n", width, height));
 
 		// Update input manager with new window size
-		m_windowProperties.m_input->SetMouseMaxPositions(m_windowProperties.m_resolutionX, m_windowProperties.m_resolutionY);
+		m_windowProperties.m_input->SetCursorMaxPositions(m_windowProperties.m_resolutionX, m_windowProperties.m_resolutionY);
 	}
 
 	void Window::SetVisible(bool visible)
@@ -168,7 +168,7 @@ namespace longmarch
 		SetVSync(m_windowProperties.IsVSync);
 
 		// Update input manager with new window size
-		m_windowProperties.m_input->SetMouseMaxPositions(m_windowProperties.m_resolutionX, m_windowProperties.m_resolutionY);
+		m_windowProperties.m_input->SetCursorMaxPositions(m_windowProperties.m_resolutionX, m_windowProperties.m_resolutionY);
 	}
 
 	void Window::SetVSync(bool on)
@@ -303,7 +303,7 @@ namespace longmarch
 		m_windowProperties.m_api = windowConfiguration["API"].asInt();
 
 		m_windowProperties.m_input = InputManager::GetInstance();
-		m_windowProperties.m_input->SetMouseMaxPositions(m_windowProperties.m_width, m_windowProperties.m_height);
+		m_windowProperties.m_input->SetCursorMaxPositions(m_windowProperties.m_width, m_windowProperties.m_height);
 
 		m_windowProperties.m_Res1 = { windowConfiguration["Resolution1_X"].asInt(), windowConfiguration["Resolution1_Y"].asInt() };
 		m_windowProperties.m_Res2 = { windowConfiguration["Resolution2_X"].asInt(), windowConfiguration["Resolution2_Y"].asInt() };
@@ -352,13 +352,13 @@ namespace longmarch
 			m_windowProperties.m_resolutionY = m_windowProperties.m_height = mode->height;
 
 			m_window = glfwCreateWindow(mode->width, mode->height, m_windowProperties.m_title.c_str(), (m_windowProperties.IsFullScreen == 0) ? monitor : nullptr, nullptr);
-			m_windowProperties.m_input->SetMouseMaxPositions(mode->width, mode->height);
+			m_windowProperties.m_input->SetCursorMaxPositions(mode->width, mode->height);
 		}
 		else
 		{
 			glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
 			m_window = glfwCreateWindow(m_windowProperties.m_width, m_windowProperties.m_height, m_windowProperties.m_title.c_str(), nullptr, nullptr);
-			m_windowProperties.m_input->SetMouseMaxPositions(m_windowProperties.m_width, m_windowProperties.m_height);
+			m_windowProperties.m_input->SetCursorMaxPositions(m_windowProperties.m_width, m_windowProperties.m_height);
 		}
 
 		ASSERT(m_window != nullptr, "Failed to create window!");
@@ -444,7 +444,7 @@ namespace longmarch
 			WindowProperties& properties = *(WindowProperties*)glfwGetWindowUserPointer(window);
 			properties.m_width = width;
 			properties.m_height = height;
-			properties.m_input->SetMouseMaxPositions(width, height);
+			properties.m_input->SetCursorMaxPositions(width, height);
 			properties.m_context->RebuildSwapChain(width, height);
 		});
 

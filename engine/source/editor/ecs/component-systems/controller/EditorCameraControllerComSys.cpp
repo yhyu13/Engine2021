@@ -9,6 +9,9 @@
 #include "engine/ui/ImGuiUtil.h"
 #include "editor/events/EditorCustomEvent.h"
 
+// Hide mouse cursor and allow unbounded mouse free movement (which is used in UE4), this may not work under remote working environment as mouse input remapping happens.
+#define HIDE_CURSOR_ON_MOUSE_MOVEMENT 0
+
 void longmarch::EditorCameraControllerComSys::Init()
 {
 	{
@@ -106,7 +109,7 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 	if (input->IsKeyTriggered(KEY_F3))
 	{
 		/*
-			Test: Unity like ForEach function
+			Test: Unity DOTS like ForEach function
 		*/
 		ForEach(
 			[](const EntityDecorator& e)
@@ -848,12 +851,14 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			LongMarch_EncryptValue c(22l);
 			LongMarch_EncryptValue d(256ull);
 			LongMarch_EncryptValue e('a');
+			LongMarch_EncryptValue f((short)16);
 
 			DEBUG_PRINT(Str("Encryption : %d", a.getValue()));
 			DEBUG_PRINT(Str("Encryption : %f", b.getValue()));
 			DEBUG_PRINT(Str("Encryption : %ld", c.getValue()));
 			DEBUG_PRINT(Str("Encryption : %u", d.getValue()));
 			DEBUG_PRINT(Str("Encryption : %c", e.getValue()));
+			DEBUG_PRINT(Str("Encryption : %d", f.getValue()));
 		}
 	}
 
@@ -873,18 +878,18 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 	Vec3f global_v;
 	static Vec3f friction_global_v;
 	constexpr float v_speed = 7.f;
-	static float v_max = 50.f;
+	static float v_max = 30.f;
 	static float v_max1 = v_max;
 	static float v_max2 = 2.0f * v_max;
-	constexpr float rotation_speed = 300.f;
+	constexpr float rotation_speed = 180.f;
 	static float speed_up_multi = 1.0f;
 	bool bUINotHoldMouse = !ImGuiUtil::IsMouseCaptured(true);
 	bool bUINotHoldKeyBoard = !ImGuiUtil::IsKeyBoardCaptured(true);
 
 	// Apply friction (for editor camera to slow down on releasing control)
 	{
-		friction_local_v *= powf(0.001f, 2.0f * dt);
-		friction_global_v *= powf(0.001f, 2.0f * dt);
+		friction_local_v *= powf(0.001f, dt);
+		friction_global_v *= powf(0.001f, dt);
 	}
 	if ((input->IsKeyTriggered(KEY_LEFT_ALT) && bUINotHoldKeyBoard) || input->IsGamepadButtonTriggered(GAMEPAD_BUTTON_RIGHT_THUMB))
 	{
@@ -913,6 +918,7 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			v_max = (v_max == v_max1) ? v_max2 : (v_max == v_max2) ? v_max1 : v_max;
 		}
 
+#if HIDE_CURSOR_ON_MOUSE_MOVEMENT
 		if (input->IsMouseButtonReleased(MOUSE_BUTTON_MIDDLE) || input->IsMouseButtonReleased(MOUSE_BUTTON_RIGHT))
 		{
 			// Set cursor mode to normal before handling any mouse inputs
@@ -920,18 +926,20 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			auto e = MemoryManager::Make_shared<EngineCursorSwitchModeEvent>(LongMarch_ToUnderlying(Window::CURSOR_MODE::NORMAL));
 			queue->Publish(e, 0); // By publish in main thread in next frame
 		}
-
+#endif
 		switch (cam->type)
 		{
 		case longmarch::PerspectiveCameraType::LOOK_AT:
 			if (input->IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && bUINotHoldMouse)
 			{
+#if HIDE_CURSOR_ON_MOUSE_MOVEMENT
 				// Unlimit cursor movement and hide cursor
 				{
 					auto queue = EventQueue<EngineEventType>::GetInstance();
 					auto e = MemoryManager::Make_shared<EngineCursorSwitchModeEvent>(LongMarch_ToUnderlying(Window::CURSOR_MODE::HIDDEN_AND_FREE));
 					queue->Publish(e, 0); // By publish in main thread in next frame
 				}
+#endif
 
 				mouse_delta_pixel = input->GetCursorPositionDeltaXY();
 				constexpr float pixel_threshold = 1.0f;
@@ -959,23 +967,27 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			}
 			// If RMB is not pressed, do UE4 like mouse scroll:
 			// panning on local front/back
+			if (bUINotHoldMouse)
 			{
 				auto& offsets = input->GetMouseScrollOffsets();
 				float y_offset = offsets.y;
 				cam->SetZoom(cam->GetZoom() - y_offset * speed_up_multi);
 				break;
 			}
+			break;
 		case longmarch::PerspectiveCameraType::FIRST_PERSON:
 			// UE4 like movement with MMB pressed :
 			// panning on local right / left and global up / down
 			if (input->IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE) && bUINotHoldMouse)
 			{
+#if HIDE_CURSOR_ON_MOUSE_MOVEMENT
 				// Unlimit cursor movement and hide cursor
 				{
 					auto queue = EventQueue<EngineEventType>::GetInstance();
 					auto e = MemoryManager::Make_shared<EngineCursorSwitchModeEvent>(LongMarch_ToUnderlying(Window::CURSOR_MODE::HIDDEN_AND_FREE));
 					queue->Publish(e, 0); // By publish in main thread in next frame
 				}
+#endif
 
 				mouse_delta_pixel = input->GetCursorPositionDeltaXY();
 				constexpr float pixel_threshold = 1.0f;
@@ -1006,26 +1018,28 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 			// Rotate with global yaw and local pitch
 			if (input->IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && bUINotHoldMouse)
 			{
+#if HIDE_CURSOR_ON_MOUSE_MOVEMENT
 				// Unlimit cursor movement and hide cursor
 				{
 					auto queue = EventQueue<EngineEventType>::GetInstance();
 					auto e = MemoryManager::Make_shared<EngineCursorSwitchModeEvent>(LongMarch_ToUnderlying(Window::CURSOR_MODE::HIDDEN_AND_FREE));
 					queue->Publish(e, 0); // By publish in main thread in next frame
 				}
+#endif
 
-				if (input->IsKeyPressed(KEY_W))
+				if (input->IsKeyPressed(KEY_W) && bUINotHoldKeyBoard)
 				{
 					friction_local_v += speed_up_multi * v_speed * Geommath::WorldFront;
 				}
-				if (input->IsKeyPressed(KEY_S))
+				if (input->IsKeyPressed(KEY_S) && bUINotHoldKeyBoard)
 				{
 					friction_local_v += speed_up_multi * -v_speed * Geommath::WorldFront;
 				}
-				if (input->IsKeyPressed(KEY_D))
+				if (input->IsKeyPressed(KEY_D) && bUINotHoldKeyBoard)
 				{
 					friction_local_v += speed_up_multi * v_speed * Geommath::WorldRight;
 				}
-				if (input->IsKeyPressed(KEY_A))
+				if (input->IsKeyPressed(KEY_A) && bUINotHoldKeyBoard)
 				{
 					friction_local_v += speed_up_multi * -v_speed * Geommath::WorldRight;
 				}
@@ -1062,6 +1076,7 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 				local_v += (y_offset * speed_up_multi) * v_max * Geommath::WorldFront;
 				break;
 			}
+			break;
 		}
 	}
 	// Gamepad inputs
@@ -1094,22 +1109,27 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 				// Move by left axis, rotate by right axis
 				{
 					gamepad_left_aixs = input->GetGamepadLeftStickXY();
+					if (gamepad_left_aixs != Vec2f())
+					{
+						float x_multi = gamepad_left_aixs.x;
+						float y_multi = gamepad_left_aixs.y;
 
-					float x_multi = gamepad_left_aixs.x;
-					float y_multi = gamepad_left_aixs.y;
-
-					friction_local_v += x_multi * v_speed * Geommath::WorldRight;
-					friction_local_v += -y_multi * v_speed * Geommath::WorldFront;
+						friction_local_v += x_multi * v_speed * Geommath::WorldRight;
+						friction_local_v += -y_multi * v_speed * Geommath::WorldFront;
+					}
 				}
 				{
 					gamepad_right_aixs = input->GetGamepadRightStickXY();
+					if (gamepad_right_aixs != Vec2f())
+					{
+						float x_multi = gamepad_right_aixs.x * rotation_speed;
+						float y_multi = gamepad_right_aixs.y * rotation_speed;
 
-					float x_multi = gamepad_right_aixs.x * rotation_speed;
-					float y_multi = gamepad_right_aixs.y * rotation_speed;
-
-					rv_yaw += -x_multi * DEG2RAD * Geommath::WorldUp;
-					rv_pitch += -y_multi * DEG2RAD * Geommath::WorldRight;
+						rv_yaw += -x_multi * DEG2RAD * Geommath::WorldUp;
+						rv_pitch += -y_multi * DEG2RAD * Geommath::WorldRight;
+					}
 				}
+					// TODO figure out the range & condition for gamepad trigger
 				// Move up and down in global frame by pressing right and left trigger
 				{
 					float left_trigger = input->GetGamepadLeftTrigger();

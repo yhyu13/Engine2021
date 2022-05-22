@@ -191,8 +191,8 @@ void longmarch::PickingPass::Render()
 			}
 			scene->Draw(m_drawBind);
 		}
-	, { Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE, 
-		Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT });
+	, { &Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE, 
+		&Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT });
 
 	// Bind multi draw func
 	Renderer3D::s_Data.multiDrawBuffer.multiDrawRenderPassCallback.submitCallback = &m_submitBatchBind;

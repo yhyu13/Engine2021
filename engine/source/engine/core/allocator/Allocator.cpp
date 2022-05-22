@@ -51,7 +51,7 @@ void longmarch::Allocator::AllocateNewPage() noexcept
 #endif
         alloc->m_pPageList.push_back(pNewPage);
 
-        BlockHeader* pBlock = pNewPage->Blocks();
+        BlockHeader* pBlock = pNewPage->GetBlockHeader();
         blockSize_t size = alloc->m_szBlockSize;
         // link each block in the page
         for (auto i(0u); i < alloc->m_nBlocksPerPage - 1; ++i)
@@ -66,7 +66,7 @@ void longmarch::Allocator::AllocateNewPage() noexcept
         pBlock->pNext.free = true;
         pBlock->pNext = nullptr;
 
-        alloc->m_pFreeList = pNewPage->Blocks();
+        alloc->m_pFreeList = pNewPage->GetBlockHeader();
     }
 }
 
@@ -81,12 +81,12 @@ void* longmarch::Allocator::Allocate() noexcept
         }
         freeBlock = m_pFreeList;
         m_pFreeList = freeBlock->pNext;
+#if defined(_DEBUG)
+        --m_nFreeBlocks;
+        FillAllocatedBlock(freeBlock);
+#endif
     }
     freeBlock->pNext.free = false;
-#if defined(_DEBUG)
-	--m_nFreeBlocks;
-	FillAllocatedBlock(freeBlock);
-#endif
     return BlockHeader::GetPtr(freeBlock);
 }
 
@@ -111,11 +111,11 @@ void longmarch::Allocator::Free(void* p)
             LOCK_GUARD_NC();
             block->pNext = m_pFreeList;
             m_pFreeList = block;
-        }
 #if defined(_DEBUG)
-		++m_nFreeBlocks;
-		FillFreeBlock(block);
+            ++m_nFreeBlocks;
+            FillFreeBlock(block);
 #endif
+        }
     }
 }
 
@@ -140,7 +140,7 @@ void longmarch::Allocator::FreeAll() noexcept
 void longmarch::Allocator::FillFreePage(PageHeader* pPage) noexcept
 {
 	// blocks
-	BlockHeader* pBlock = pPage->Blocks();
+	BlockHeader* pBlock = pPage->GetBlockHeader();
 	for (uint32_t i = 0; i < m_nBlocksPerPage; i++)
 	{
 		FillFreeBlock(pBlock);

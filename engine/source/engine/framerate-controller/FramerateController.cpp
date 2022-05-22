@@ -20,7 +20,7 @@ namespace longmarch
         m_tickStart(0),
         m_tickEnd(0),
         m_targetFrameTimeMilli(0.0f),
-        m_highPrecisionMode(false)
+        m_highPrecisionMode(true)
     {
         m_targetFrameTimeMilli = 1000.0 / static_cast<double>(m_maxFramerate);
         m_frameTimeSec = m_targetFrameTimeMilli * 1e-3;
@@ -36,10 +36,10 @@ namespace longmarch
         m_tickEnd = m_timer.Mark<std::milli, double>();
 
         // Doing all 3 stages of waiting would safe total CPU usage from 30% to less than 10% for on a 8 cores PC
-        // 1. thread sleep (not precise enough, often result in frame stutter)
+        // 1. thread sleep has roughly +/- 1 millisecond accuracy
         if (!m_highPrecisionMode)
         {
-            int k = static_cast<int>(m_targetFrameTimeMilli);
+            auto k = static_cast<int>(m_targetFrameTimeMilli);
             while (--k >= 2)
             {
                 while (m_targetFrameTimeMilli - m_tickEnd > static_cast<double>(k))
@@ -50,10 +50,9 @@ namespace longmarch
             }
         }
 
-        // 2. yield
+        // 2. thread yield has roughly +/- 30 microsecond accuracy, it could work as a more accurate sleep function at fine grain.
         while (m_tickEnd < m_targetFrameTimeMilli * .99)
         {
-            // yield has roughly +/- 30 microsecond accuracy, it could work as a more accurate sleep function at fine grain.
             std::this_thread::yield();
             m_tickEnd = m_timer.Mark<std::milli, double>();
         }

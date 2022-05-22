@@ -71,7 +71,7 @@ namespace longmarch
     {
         NONINSTANTIABLE(PageHeader);
 
-        inline BlockHeader* Blocks()
+        inline BlockHeader* GetBlockHeader()
         {
             return reinterpret_cast<BlockHeader*>(this);
         }
@@ -97,7 +97,7 @@ namespace longmarch
         std::vector<PageHeader*> m_pPageList;
 
         // the free block list
-        BlockHeader* m_pFreeList = {nullptr};
+        BlockHeader * volatile m_pFreeList = {nullptr};
 
         size_t m_szDataSize = {0};
         size_t m_szPageSize = {0};
@@ -106,24 +106,24 @@ namespace longmarch
         size_t m_nBlocksPerPage = {0};
 
 #if defined(_DEBUG)
-		// statistics
-		std::atomic_size_t    m_nPages = { 0 };
-		std::atomic_size_t    m_nBlocks = { 0 };
-		std::atomic_size_t    m_nFreeBlocks = { 0 };
+        // statistics
+        std::atomic_size_t m_nPages = {0};
+        std::atomic_size_t m_nBlocks = {0};
+        std::atomic_size_t m_nFreeBlocks = {0};
 
-		// debug patterns
-		constexpr static const uint8_t PATTERN_ALIGN = 0xFC;
-		constexpr static const uint8_t PATTERN_ALLOC = 0xFD;
-		constexpr static const uint8_t PATTERN_FREE = 0xFE;
+        // debug patterns
+        constexpr static const uint8_t PATTERN_ALIGN = 0xFC;
+        constexpr static const uint8_t PATTERN_ALLOC = 0xFD;
+        constexpr static const uint8_t PATTERN_FREE = 0xFE;
 
-		// fill a free page with debug patterns
-		void FillFreePage(PageHeader* pPage) noexcept;
+        // fill a free page with debug patterns
+        void FillFreePage(PageHeader* pPage) noexcept;
 
-		// fill a block with debug patterns
-		void FillFreeBlock(BlockHeader* pBlock) noexcept;
+        // fill a block with debug patterns
+        void FillFreeBlock(BlockHeader* pBlock) noexcept;
 
-		// fill an allocated block with debug patterns
-		void FillAllocatedBlock(BlockHeader* pBlock) noexcept;
+        // fill an allocated block with debug patterns
+        void FillAllocatedBlock(BlockHeader* pBlock) noexcept;
 #endif
     };
 }

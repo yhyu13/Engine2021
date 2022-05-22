@@ -3,7 +3,7 @@
 #include "Lock.h"
 
 #ifndef _SHIPPING
-#define DEBUG_TIMER
+//#define DEBUG_TIMER
 #endif // !_SHIPPING
 
 

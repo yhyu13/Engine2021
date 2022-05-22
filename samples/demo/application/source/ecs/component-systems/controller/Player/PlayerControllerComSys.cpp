@@ -49,7 +49,7 @@ void longmarch::PlayerControllerComSys::Update(double dt)
 		friction_local_v *= powf(0.001f, dt);
 		friction_global_v *= powf(0.001f, dt);
 	}
-	if ((input->IsKeyTriggered(KEY_1) && bUINotHoldKeyBoard) || input->IsGamepadButtonTriggered(GAMEPAD_BUTTON_RIGHT_THUMB))
+	if ((input->IsKeyTriggered(KEY_LEFT_ALT) && bUINotHoldKeyBoard) || input->IsGamepadButtonTriggered(GAMEPAD_BUTTON_RIGHT_THUMB))
 	{
 		static Quaternion rot = trans->GetGlobalRot();
 		static Vec3f pos = trans->GetGlobalPos();
@@ -107,11 +107,16 @@ void longmarch::PlayerControllerComSys::Update(double dt)
 				{
 					rv_pitch += -y_multi * DEG2RAD * Geommath::WorldRight;
 				}
+				break;
 			}
+			// If RMB is not pressed, do UE4 like mouse scroll:
+			// panning on local front/back
+			if (bUINotHoldMouse)
 			{
 				auto& offsets = input->GetMouseScrollOffsets();
 				float y_offset = offsets.y;
 				cam->SetZoom(cam->GetZoom() - y_offset * speed_up_multi);
+				break;
 			}
 			break;
 		case longmarch::PerspectiveCameraType::FIRST_PERSON:
@@ -197,6 +202,7 @@ void longmarch::PlayerControllerComSys::Update(double dt)
 				local_v += (y_offset * speed_up_multi) * v_max * Geommath::WorldFront;
 				break;
 			}
+			break;
 		}
 	}
 	// Gamepad inputs
@@ -229,22 +235,27 @@ void longmarch::PlayerControllerComSys::Update(double dt)
 				// Move by left axis, rotate by right axis
 				{
 					gamepad_left_aixs = input->GetGamepadLeftStickXY();
+					if (gamepad_left_aixs != Vec2f())
+					{
+						float x_multi = gamepad_left_aixs.x;
+						float y_multi = gamepad_left_aixs.y;
 
-					float x_multi = gamepad_left_aixs.x;
-					float y_multi = gamepad_left_aixs.y;
-
-					friction_local_v += x_multi * v_speed * Geommath::WorldRight;
-					friction_local_v += -y_multi * v_speed * Geommath::WorldFront;
+						friction_local_v += x_multi * v_speed * Geommath::WorldRight;
+						friction_local_v += -y_multi * v_speed * Geommath::WorldFront;
+					}
 				}
 				{
 					gamepad_right_aixs = input->GetGamepadRightStickXY();
+					if (gamepad_right_aixs != Vec2f())
+					{
+						float x_multi = gamepad_right_aixs.x * rotation_speed;
+						float y_multi = gamepad_right_aixs.y * rotation_speed;
 
-					float x_multi = gamepad_right_aixs.x * rotation_speed;
-					float y_multi = gamepad_right_aixs.y * rotation_speed;
-
-					rv_yaw += -x_multi * DEG2RAD * Geommath::WorldUp;
-					rv_pitch += -y_multi * DEG2RAD * Geommath::WorldRight;
+						rv_yaw += -x_multi * DEG2RAD * Geommath::WorldUp;
+						rv_pitch += -y_multi * DEG2RAD * Geommath::WorldRight;
+					}
 				}
+					// TODO figure out the range & condition for gamepad trigger
 				// Move up and down in global frame by pressing right and left trigger
 				{
 					float left_trigger = input->GetGamepadLeftTrigger();
@@ -300,7 +311,8 @@ void longmarch::PlayerControllerComSys::Update(double dt)
 		trans->SetLocalRotVel(rv_pitch);
 		break;
 	}
-
-	// Copy the player's transform into player camera's
+	
+	// Copy the player's transform into player camera's since the current setting is to attach player camera to the player
+	// So we don't have to write camera transformation logic
 	cam_trans->Copy(trans.GetPtr());
 }

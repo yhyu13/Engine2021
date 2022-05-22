@@ -178,11 +178,11 @@ namespace longmarch
 #endif
 
 	template<typename Func, typename T>
-	void LongMarch_ForEach(Func callback, std::initializer_list<std::vector<T>> list) 
+	void LongMarch_ForEach(Func callback, std::initializer_list<const std::vector<T>*> list) 
 	{
 		for (auto& vec : list) 
 		{
-			std::for_each(vec.begin(), vec.end(), callback);
+			std::for_each(vec->begin(), vec->end(), callback);
 		}
 	}
 
@@ -270,11 +270,11 @@ namespace longmarch
 	using LongMarch_Vector = std::vector<T, longmarch::Mallocator<T>>;
 
 	template<typename Func, typename T>
-	inline void LongMarch_ForEach(Func callback, std::initializer_list<LongMarch_Vector<T>> list)
+	inline void LongMarch_ForEach(Func callback, std::initializer_list<const LongMarch_Vector<T>*> list)
 	{
 		for (auto& vec : list) 
 		{
-			std::for_each(vec.begin(), vec.end(), callback);
+			std::for_each(vec->begin(), vec->end(), callback);
 		}
 	}
 

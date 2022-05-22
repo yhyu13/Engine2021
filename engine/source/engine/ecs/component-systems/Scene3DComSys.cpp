@@ -143,8 +143,8 @@ void longmarch::Scene3DComSys::Render()
 				}
 			}
 		}
-		, { Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE, 
-			Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT});
+		, { &Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_OPAQUE, 
+			&Renderer3D::s_Data.cpuBuffer.RENDERABLE_OBJ_TRANSPARENT});
 	}
 }
 

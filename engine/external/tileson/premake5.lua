@@ -19,7 +19,7 @@ project "tileson"
 	}
 
 	filter "system:windows"
-		cppdialect "C++latest"
+		cppdialect "C++20"
         systemversion "latest"
         staticruntime "On"
 

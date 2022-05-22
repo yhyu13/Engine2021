@@ -19,6 +19,7 @@ project "jsoncpp"
 	}
 
 	filter "system:windows"
+		cppdialect "C++17"
         systemversion "latest"
         staticruntime "On"
 

@@ -174,7 +174,7 @@ project "engine"
 		compileas "C++"
 
 	filter "system:windows"
-		cppdialect "C++latest"
+		cppdialect "C++20"
 		staticruntime "On"
 		systemversion "latest"
 
@@ -217,10 +217,9 @@ project "engine"
 		floatingpoint "Fast"
 		symbols "On"
 		optimize "Debug"
-		--flags "LinkTimeOptimization"
 
 	filter "configurations:Release"
-		buildoptions "/MD /Zi /utf-8 /EHsc /Ob2"
+		buildoptions "/MD /Zi /utf-8 /EHsc /Ob2 /LTCG"
 		flags "MultiProcessorCompile"
 		vectorextensions "AVX2"
 		floatingpoint "Fast"
@@ -281,7 +280,7 @@ project "application"
 	}
 	
 	filter "system:windows"
-		cppdialect "C++latest"
+		cppdialect "C++20"
 		staticruntime "On"
 		systemversion "latest"
 		files { 'resources.rc', '**.ico' }

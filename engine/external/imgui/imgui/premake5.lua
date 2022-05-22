@@ -21,6 +21,7 @@ project "imgui"
     }
     
     filter "system:windows"
+        cppdialect "C++20"
         systemversion "latest"
         staticruntime "On"
         

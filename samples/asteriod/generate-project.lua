@@ -166,7 +166,7 @@ project "engine"
 		compileas "C++"
 
 	filter "system:windows"
-		cppdialect "C++latest"
+		cppdialect "C++20"
 		staticruntime "On"
 		systemversion "latest"
 
@@ -272,7 +272,7 @@ project "application"
 	}
 	
 	filter "system:windows"
-		cppdialect "C++latest"
+		cppdialect "C++20"
 		staticruntime "On"
 		systemversion "latest"
 		files { 'resources.rc', '**.ico' }

@@ -50,7 +50,7 @@ namespace longmarch
 
 		using BaseEventPtr = std::shared_ptr<BaseEventHandler>;
 		using EventHandlersMap = LongMarch_UnorderedMap<size_t, BaseEventPtr>;
-		struct EventHandlers final : public BaseAtomicClass2
+		struct EventHandlers final : public BaseAtomicClass
 		{
 			auto begin() const { return handlersMap.begin(); }
 			auto end() const { return handlersMap.end(); }
@@ -94,9 +94,9 @@ namespace longmarch
 				m_ptr->LockNC();
 				if (auto it = m_ptr->m_subscribers.find(m_type); it != m_ptr->m_subscribers.end())
 				{
-					it->second.Lock2();
+					it->second.Lock();
 					it->second.handlersMap.erase(m_mask);
-					it->second.Unlock2();
+					it->second.UnLock();
 				}
 				m_ptr->UnlockNC();
 			}
@@ -116,11 +116,11 @@ namespace longmarch
 			LongMarch_HashCombine(mask, reinterpret_cast<uintptr_t>(&Function));
 			LongMarch_HashCombine(mask, reinterpret_cast<uintptr_t>(instance));
 			auto& subs = m_subscribers[eventType];
-			subs.Lock2();
+			subs.Lock();
 			if (!LongMarch_contains(subs.handlersMap, mask))
 			{
 				subs.handlersMap.emplace(mask, MemoryManager::Make_shared<InstanceEventHandler<T, EventType>>(instance, Function));
-				subs.Unlock2();
+				subs.UnLock();
 				return MemoryManager::Make_shared<EventSubHandle>(this, eventType, mask);
 			}
 			else
@@ -140,11 +140,11 @@ namespace longmarch
 			LOCK_GUARD_NC();
 			size_t mask = reinterpret_cast<size_t>(&Function);
 			auto& subs = m_subscribers[eventType];
-			subs.Lock2();
+			subs.Lock();
 			if (!LongMarch_contains(subs.handlersMap, mask))
 			{
 				subs.handlersMap.emplace(mask, MemoryManager::Make_shared<GlobalEventHandler<EventType>>(Function));
-				subs.Unlock2();
+				subs.UnLock();
 				return MemoryManager::Make_shared<EventSubHandle>(this, eventType, mask);
 			}
 			else
@@ -177,7 +177,7 @@ namespace longmarch
 			}
 			auto& subs = it->second;
 			UnlockNC();
-			subs.Lock2();
+			subs.Lock();
 			for (auto& [_, handler] : subs)
 			{
 				if (handler != nullptr)
@@ -185,7 +185,7 @@ namespace longmarch
 					handler->Execute(_e);
 				}
 			}
-			subs.Unlock2();
+			subs.UnLock();
 		}
 
 		//! Instanct execution of an async event in a background thread
@@ -199,7 +199,7 @@ namespace longmarch
 				ENGINE_EXCEPT_IF(it == m_subscribers.end(), L"Event with type " + str2wstr(Str(e->m_type)) + L" is not registered in the event queue of type: " + str2wstr(typeid(EventType).name()));
 				auto& subs = it->second;
 				UnlockNC();
-				subs.Lock2();
+				subs.Lock();
 				for (auto& [_, handler] : subs)
 				{
 					if (handler)
@@ -207,7 +207,7 @@ namespace longmarch
 						handler->Execute(_e);
 					}
 				}
-				subs.Unlock2();
+				subs.UnLock();
 			}));
 		}
 

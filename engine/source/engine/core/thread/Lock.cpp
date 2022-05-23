@@ -3,168 +3,173 @@
 #include "Lock.h"
 
 #ifndef _SHIPPING
-//#define DEBUG_TIMER
+#define DEADLOCK_TIMER 0 // Debug break unfriendly, disabled unless you need to debug deak lock
+#else
+#define DEADLOCK_TIMER 0
 #endif // !_SHIPPING
+
+#if DEADLOCK_TIMER
+#define SET_DEADLOCK_TIMER() Timer timer
+#define ASSERT_DEADLOCK_TIMER() ASSERT(timer.Mark() < 1.0, "Dead lock?")
+#else
+#define SET_DEADLOCK_TIMER()
+#define ASSERT_DEADLOCK_TIMER()
+#endif
 
 
 namespace longmarch
 {
-	std::atomic_flag stbi_hdr_write_lock;
-	std::atomic_flag stbi_png_write_lock;
+    // define extern variables
+    std::atomic_flag stbi_hdr_write_lock;
+    std::atomic_flag stbi_png_write_lock;
 }
 
 longmarch::atomic_flag_guard::atomic_flag_guard(std::atomic_flag& flag) noexcept
-	:
-	m_lock(&flag)
+    :
+    m_lock(&flag)
 {
-#ifdef DEBUG_TIMER
-	Timer timer;
-#endif
-	while (m_lock->test_and_set(std::memory_order_acq_rel))
-	{
-#ifdef DEBUG_TIMER
-		ASSERT(timer.Mark() < 1.0, "Dead lock?");
-#endif
-		while (m_lock->test(std::memory_order_relaxed))
-		{
-#ifdef DEBUG_TIMER
-			ASSERT(timer.Mark() < 1.0, "Dead lock?");
-#endif
-			std::this_thread::yield();
-		}
-	}
+    SET_DEADLOCK_TIMER();
+    while (m_lock->test_and_set(std::memory_order_acq_rel))
+    {
+        ASSERT_DEADLOCK_TIMER();
+        while (m_lock->test(std::memory_order_relaxed))
+        {
+            ASSERT_DEADLOCK_TIMER();
+            std::this_thread::yield();
+        }
+    }
 }
 
 longmarch::atomic_flag_guard::~atomic_flag_guard() noexcept
 {
-	m_lock->clear(std::memory_order_release);
+    m_lock->clear(std::memory_order_release);
 }
 
-longmarch::atomic_bool_guard::atomic_bool_guard(std::atomic_bool& flag) noexcept
-	:
-	m_lock(&flag)
+longmarch::adaptive_atomic_guard::adaptive_atomic_guard(std::mutex& flag, int64_t& period) noexcept
+    :
+    m_lock(&flag),
+    m_period_nano(&period)
 {
-#ifdef DEBUG_TIMER
-	Timer timer;
-#endif
-	bool expected = false;
-	while (!m_lock->compare_exchange_strong(expected, true, std::memory_order_acq_rel))
-		{
-#ifdef DEBUG_TIMER
-		ASSERT(timer.Mark() < 1.0, "Dead lock?");
-#endif
-		expected = false;
-		while (m_lock->load(std::memory_order_relaxed))
-		{
-		#ifdef DEBUG_TIMER
-        		ASSERT(timer.Mark() < 1.0, "Dead lock?");
-        #endif
-			std::this_thread::yield();
-		}
-	}
+    SET_DEADLOCK_TIMER();
+    Timer _timer;
+    int64_t _marked_nano = 0ull;
+    const auto _period_nano = *m_period_nano * 2;
+    while (!m_lock->try_lock())
+    {
+        ASSERT_DEADLOCK_TIMER();
+        std::this_thread::yield();
+        _marked_nano = _timer.Mark<std::nano, int64_t>();
+        if (_marked_nano >= _period_nano)
+        {
+            m_lock->lock();
+            break;
+        }
+    }
+    *m_period_nano += (_marked_nano - *m_period_nano) / 2;
 }
 
-longmarch::atomic_bool_guard::~atomic_bool_guard() noexcept
+longmarch::adaptive_atomic_guard::~adaptive_atomic_guard() noexcept
 {
-	m_lock->store(false, std::memory_order_release);
+    m_lock->unlock();
 }
 
 void longmarch::BaseAtomicClassStatic::LockS() noexcept
 {
-#ifdef DEBUG_TIMER
-	Timer timer;
-#endif
-	while (sc_flag.test_and_set(std::memory_order_acq_rel))
-	{
-#ifdef DEBUG_TIMER
-		ASSERT(timer.Mark() < 1.0, "Dead lock?");
-#endif
-		while (sc_flag.test(std::memory_order_relaxed))
-		{
-		#ifdef DEBUG_TIMER
-        		ASSERT(timer.Mark() < 1.0, "Dead lock?");
-        #endif
-			std::this_thread::yield();
-		}
-	}
+    SET_DEADLOCK_TIMER();
+    while (sc_flag.test_and_set(std::memory_order_acq_rel))
+    {
+        ASSERT_DEADLOCK_TIMER();
+        while (sc_flag.test(std::memory_order_relaxed))
+        {
+            ASSERT_DEADLOCK_TIMER();
+            std::this_thread::yield();
+        }
+    }
 }
 
 void longmarch::BaseAtomicClassStatic::UnlockS() noexcept
 {
-	sc_flag.clear(std::memory_order_release);
+    sc_flag.clear(std::memory_order_release);
 }
 
 void longmarch::BaseAtomicClassNI::LockNI() noexcept
 {
-#ifdef DEBUG_TIMER
-	Timer timer;
-#endif
-	while (ni_flag.test_and_set(std::memory_order_acq_rel))
-	{
-#ifdef DEBUG_TIMER
-		ASSERT(timer.Mark() < 1.0, "Dead lock?");
-#endif
-		while (ni_flag.test(std::memory_order_relaxed))
-		{
-#ifdef DEBUG_TIMER
-			ASSERT(timer.Mark() < 1.0, "Dead lock?");
-#endif
-			std::this_thread::yield();
-		}
-	}
+    SET_DEADLOCK_TIMER();
+    while (ni_flag.test_and_set(std::memory_order_acq_rel))
+    {
+        ASSERT_DEADLOCK_TIMER();
+        while (ni_flag.test(std::memory_order_relaxed))
+        {
+            ASSERT_DEADLOCK_TIMER();
+            std::this_thread::yield();
+        }
+    }
 }
 
 void longmarch::BaseAtomicClassNI::UnlockNI() noexcept
 {
-	ni_flag.clear(std::memory_order_release);
+    ni_flag.clear(std::memory_order_release);
 }
 
 void longmarch::BaseAtomicClassNC::LockNC() const noexcept
 {
-#ifdef DEBUG_TIMER
-	Timer timer;
-#endif
-	while (nc_flag.test_and_set(std::memory_order_acq_rel))
-	{
-#ifdef DEBUG_TIMER
-		ASSERT(timer.Mark() < 1.0, "Dead lock?");
-#endif
-		while (nc_flag.test(std::memory_order_relaxed))
-		{
-#ifdef DEBUG_TIMER
-			ASSERT(timer.Mark() < 1.0, "Dead lock?");
-#endif
-			std::this_thread::yield();
-		}
-	}
+    SET_DEADLOCK_TIMER();
+    while (nc_flag.test_and_set(std::memory_order_acq_rel))
+    {
+        ASSERT_DEADLOCK_TIMER();
+        while (nc_flag.test(std::memory_order_relaxed))
+        {
+            ASSERT_DEADLOCK_TIMER();
+            std::this_thread::yield();
+        }
+    }
 }
 
 void longmarch::BaseAtomicClassNC::UnlockNC() const noexcept
 {
-	nc_flag.clear(std::memory_order_release);
+    nc_flag.clear(std::memory_order_release);
 }
 
-void longmarch::BaseAtomicClass2::Lock2() const noexcept
+void longmarch::BaseAtomicClass::Lock() const noexcept
 {
-#ifdef DEBUG_TIMER
-	Timer timer;
-#endif
-	while (m_flag.test_and_set(std::memory_order_acq_rel))
-	{
-#ifdef DEBUG_TIMER
-		ASSERT(timer.Mark() < 1.0, "Dead lock?");
-#endif
-		while (m_flag.test(std::memory_order_relaxed))
-		{
-		#ifdef DEBUG_TIMER
-        		ASSERT(timer.Mark() < 1.0, "Dead lock?");
-        #endif
-			std::this_thread::yield();
-		}
-	}
+    SET_DEADLOCK_TIMER();
+    while (m_flag.test_and_set(std::memory_order_acq_rel))
+    {
+        ASSERT_DEADLOCK_TIMER();
+        while (m_flag.test(std::memory_order_relaxed))
+        {
+            ASSERT_DEADLOCK_TIMER();
+            std::this_thread::yield();
+        }
+    }
 }
 
-void longmarch::BaseAtomicClass2::Unlock2() const noexcept
+void longmarch::BaseAtomicClass::UnLock() const noexcept
 {
-	m_flag.clear(std::memory_order_release);
+    m_flag.clear(std::memory_order_release);
+}
+
+void AdaptiveAtomicClassNC::LockAdaptiveNC() const noexcept
+{
+    SET_DEADLOCK_TIMER();
+    Timer _timer;
+    int64_t _marked_nano = 0ull;
+    const auto _period_nano = nc_period_nano * 2;
+    while (!nc_mutex.try_lock())
+    {
+        ASSERT_DEADLOCK_TIMER();
+        std::this_thread::yield();
+        _marked_nano = _timer.Mark<std::nano, int64_t>();
+        if (_marked_nano >= _period_nano)
+        {
+            nc_mutex.lock();
+            break;
+        }
+    }
+    nc_period_nano += (_marked_nano - nc_period_nano) / 2;
+}
+
+void AdaptiveAtomicClassNC::UnlockAdaptiveNC() const noexcept
+{
+    nc_mutex.unlock();
 }

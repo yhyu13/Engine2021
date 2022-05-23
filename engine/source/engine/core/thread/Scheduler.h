@@ -58,7 +58,7 @@ namespace longmarch
 		std::condition_variable m_cv;
 	};
 
-	class Scheduler : BaseAtomicClassNC, BaseAtomicClassStatic
+	class Scheduler : AdaptiveAtomicClassNC, BaseAtomicClassStatic
 	{
 	public:
 		NONCOPYABLE(Scheduler);
@@ -90,7 +90,7 @@ namespace longmarch
 			while (!m_event.wait_for(m_tick - drift))
 			{
 				{
-					LOCK_GUARD_NC();
+					LOCK_GUARD_ADAPTIVE_NC();
 					++m_ticks;
 					auto it = std::begin(m_events);
 					auto end = std::end(m_events);
@@ -132,7 +132,7 @@ namespace longmarch
 		template<typename T, typename F, typename... Args>
 		[[nodiscard]] SchedulerHandle set_timeout(T&& timeout, F f, Args&&... args)
 		{
-			LOCK_GUARD_NC();
+			LOCK_GUARD_ADAPTIVE_NC();
 			assert(std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count() >= m_tick.count());
 			auto _event = std::make_shared<manual_event>();
 			auto proc = [=]() {
@@ -150,7 +150,7 @@ namespace longmarch
 		template<typename T, typename F, typename... Args>
 		[[nodiscard]] SchedulerHandle set_interval(T&& interval, F f, Args&&... args)
 		{
-			LOCK_GUARD_NC();
+			LOCK_GUARD_ADAPTIVE_NC();
 			assert(std::chrono::duration_cast<std::chrono::nanoseconds>(interval).count() >= m_tick.count());
 			auto _event = std::make_shared<manual_event>();
 			auto proc = [=]() {
@@ -168,7 +168,7 @@ namespace longmarch
 		template<typename T, typename F, typename... Args>
 		[[nodiscard]] SchedulerHandle set_interval_conditioanl(T&& interval, F f, Args&&... args)
 		{
-			LOCK_GUARD_NC();
+			LOCK_GUARD_ADAPTIVE_NC();
 			assert(std::chrono::duration_cast<std::chrono::nanoseconds>(interval).count() >= m_tick.count());
 			auto _event = std::make_shared<manual_event>();
 			auto proc = [=]() {

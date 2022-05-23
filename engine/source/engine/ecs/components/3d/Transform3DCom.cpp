@@ -14,7 +14,7 @@ void longmarch::Transform3DCom::Update(double ts)
 	{
 		return;
 	}
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	float dt = static_cast<float>(ts);
 	{
 		parent_g_total_velocity = (Geommath::GetTranslation(parentTr) - Geommath::GetTranslation(prev_parentTr)) / (dt);
@@ -42,7 +42,7 @@ void longmarch::Transform3DCom::SetModelTr(const Mat4& m)
 
 Mat4 longmarch::Transform3DCom::GetModelTr() const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return parentTr * Geommath::ToTransformMatrix(rtp_pos, rtp_rotation, l_scale);
 }
 
@@ -55,7 +55,7 @@ Mat4 longmarch::Transform3DCom::GetSuccessionModelTr(const Transform3DCom& child
 
 Mat4 longmarch::Transform3DCom::GetSuccessionModelTr(bool apply_trans, bool apply_rot, bool apply_scale) const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	auto _pos = (apply_trans) ? rtp_pos : Vec3f(0.0f);
 	auto _rot = (apply_rot) ? rtp_rotation : Geommath::UnitQuat;
 	auto _scale = (apply_scale) ? rtp_scale : Vec3f(1.0f);
@@ -64,7 +64,7 @@ Mat4 longmarch::Transform3DCom::GetSuccessionModelTr(bool apply_trans, bool appl
 
 Mat4 longmarch::Transform3DCom::GetPrevModelTr() const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return prev_parentTr * Geommath::ToTransformMatrix(prev_rtp_pos, prev_rtp_rotation, l_scale);
 }
 
@@ -77,7 +77,7 @@ Mat4 longmarch::Transform3DCom::GetPrevSuccessionModelTr(const Transform3DCom& c
 
 Mat4 longmarch::Transform3DCom::GetPrevSuccessionModelTr(bool apply_trans, bool apply_rot, bool apply_scale) const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	auto _pos = (apply_trans) ? prev_rtp_pos : Vec3f(0.0f);
 	auto _rot = (apply_rot) ? prev_rtp_rotation : Geommath::UnitQuat;
 	auto _scale = (apply_scale) ? rtp_scale : Vec3f(1.0f);
@@ -86,140 +86,140 @@ Mat4 longmarch::Transform3DCom::GetPrevSuccessionModelTr(bool apply_trans, bool 
 
 void longmarch::Transform3DCom::SetParentModelTr(const Mat4& m)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	parentTr = m;
 }
 
 void longmarch::Transform3DCom::ResetParentModelTr()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	parentTr = Mat4(1.0f);
 }
 
 void longmarch::Transform3DCom::AddGlobalScale(const Vec3f& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	const auto& parent_scale = Geommath::GetScale(parentTr);
 	rtp_scale = (parent_scale * rtp_scale + v) / parent_scale;
 }
 
 void longmarch::Transform3DCom::SetGlobalScale(const Vec3f& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	rtp_scale = v / Geommath::GetScale(parentTr);
 }
 
 Vec3f longmarch::Transform3DCom::GetGlobalScale()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return Geommath::GetScale(parentTr) * rtp_scale;
 }
 
 void longmarch::Transform3DCom::AddRelativeToParentScale(const Vec3f& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	rtp_scale += v;
 }
 
 void longmarch::Transform3DCom::SetRelativeToParentScale(const Vec3f& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	rtp_scale = v;
 }
 
 Vec3f longmarch::Transform3DCom::GetRelativeToParentScale()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return rtp_scale;
 }
 
 void longmarch::Transform3DCom::AddLocalScale(const Vec3f& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	l_scale += v;
 }
 
 void longmarch::Transform3DCom::SetLocalScale(const Vec3f& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	l_scale = v;
 }
 
 Vec3f longmarch::Transform3DCom::GetLocalScale()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return l_scale;
 }
 
 void longmarch::Transform3DCom::AddGlobalPos(const Vec3f& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	rtp_pos += Geommath::GetRotation(parentTr) * Geommath::GetScale(parentTr) * v;
 }
 
 void longmarch::Transform3DCom::SetGlobalPos(const Vec3f& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	rtp_pos = Geommath::GetRotation(parentTr) * Geommath::GetScale(parentTr) * (v - Geommath::GetTranslation(parentTr));
 }
 
 Vec3f longmarch::Transform3DCom::GetGlobalPos()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return Geommath::GetTranslation(parentTr) + Geommath::GetRotation(parentTr) * Geommath::GetScale(parentTr) * rtp_pos;
 }
 
 Vec3f longmarch::Transform3DCom::GetPrevGlobalPos()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return Geommath::GetTranslation(prev_parentTr) + Geommath::GetRotation(prev_parentTr) * Geommath::GetScale(parentTr) * prev_rtp_pos;
 }
 
 void longmarch::Transform3DCom::AddRelativeToParentPos(const Vec3f& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	rtp_pos += v;
 }
 
 void longmarch::Transform3DCom::SetRelativeToParentPos(const Vec3f& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	rtp_pos = v;
 }
 
 Vec3f longmarch::Transform3DCom::GetRelativeToParentPos()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return rtp_pos;
 }
 
 Vec3f longmarch::Transform3DCom::GetPrevRelativeToParentPos()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return prev_rtp_pos;
 }
 
 void longmarch::Transform3DCom::AddLocalPos(const Vec3f& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	rtp_pos += rtp_rotation * v;
 }
 
 void longmarch::Transform3DCom::AddGlobalVel(const Vec3f& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	rtp_velocity += v * Geommath::GetRotation(parentTr);
 }
 
 void longmarch::Transform3DCom::SetGlobalVel(const Vec3f& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	rtp_velocity = (v - parent_g_total_velocity) * Geommath::GetRotation(parentTr);
 }
 
 Vec3f longmarch::Transform3DCom::GetGlobalVel()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return parent_g_total_velocity + Geommath::GetRotation(parentTr) * rtp_velocity;
 }
 
@@ -230,141 +230,141 @@ void longmarch::Transform3DCom::AddRelativeToParentVel(const Vec3f& v)
 
 void longmarch::Transform3DCom::SetRelativeToParentVel(const Vec3f& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	rtp_velocity = v;
 }
 
 Vec3f longmarch::Transform3DCom::GetRelativeToParentVel()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return rtp_velocity;
 }
 
 void longmarch::Transform3DCom::AddLocalVel(const Vec3f& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	l_velocity += v;
 }
 
 void longmarch::Transform3DCom::SetLocalVel(const Vec3f& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	l_velocity = v;
 }
 
 Vec3f longmarch::Transform3DCom::GetLocalVel()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return l_velocity;
 }
 
 void longmarch::Transform3DCom::AddGlobalRot(const Quaternion& r)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	const auto& _q = Geommath::QuatProd(r, Geommath::QuatProd(Geommath::GetRotation(parentTr), rtp_rotation));
 	rtp_rotation = Geommath::QuatProd(Geommath::Conjugate(Geommath::GetRotation(parentTr)), _q);
 }
 
 void longmarch::Transform3DCom::SetGlobalRot(const Quaternion& r)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	rtp_rotation = Geommath::QuatProd(Geommath::Conjugate(Geommath::GetRotation(parentTr)), r);
 }
 
 Quaternion longmarch::Transform3DCom::GetGlobalRot()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return Geommath::QuatProd(Geommath::GetRotation(parentTr), rtp_rotation);
 }
 
 Quaternion longmarch::Transform3DCom::GetPrevGlobalRot()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return Geommath::QuatProd(Geommath::GetRotation(prev_parentTr), prev_rtp_rotation);
 }
 
 void longmarch::Transform3DCom::AddRelativeToParentRot(const Quaternion& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	rtp_rotation = Geommath::QuatProd(v, rtp_rotation);
 }
 
 void longmarch::Transform3DCom::SetRelativeToParentRot(const Quaternion& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	rtp_rotation = v;
 }
 
 Quaternion longmarch::Transform3DCom::GetRelativeToParentRot()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return rtp_rotation;
 }
 
 void longmarch::Transform3DCom::AddLocalRot(const Quaternion& r)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	rtp_rotation = Geommath::QuatProd(rtp_rotation, (r));
 }
 
 void longmarch::Transform3DCom::AddLocalRotVel(const Vec3f& r)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	l_rotational_velocity += r;
 }
 
 void longmarch::Transform3DCom::SetLocalRotVel(const Vec3f& r)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	l_rotational_velocity = r;
 }
 
 Vec3f longmarch::Transform3DCom::GetLocalRotVel()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return l_rotational_velocity;
 }
 
 void longmarch::Transform3DCom::AddGlobalRotVel(const Vec3f& r)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	rtp_rotational_velocity += r * Geommath::GetRotation(parentTr);
 }
 
 void longmarch::Transform3DCom::SetGlobalRotVel(const Vec3f& r)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	rtp_rotational_velocity = (r - parent_g_rotational_velocity) * Geommath::GetRotation(parentTr);
 }
 
 Vec3f longmarch::Transform3DCom::GetGlobalRotVel()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return Geommath::GetRotation(parentTr) * rtp_rotational_velocity;
 }
 
 void longmarch::Transform3DCom::AddRelativeToParentRotVel(const Vec3f& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	rtp_rotational_velocity += v;
 }
 
 void longmarch::Transform3DCom::SetRelativeToParentRotVel(const Vec3f& v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	rtp_rotational_velocity = v;
 }
 
 Vec3f longmarch::Transform3DCom::GetRelativeToParentRotVel()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return rtp_rotational_velocity;
 }
 
 void longmarch::Transform3DCom::JsonSerialize(Json::Value& value)
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	{
 		Json::Value output;
 		output["id"] = "Transform3DCom";
@@ -645,7 +645,7 @@ void longmarch::Transform3DCom::ImGuiRender()
 void longmarch::Transform3DCom::Copy(BaseComponentInterface* other)
 {
 	// This Copy function is just an example
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	auto com = static_cast<Transform3DCom*>(other);
 	prev_parentTr = com->prev_parentTr;
 	parentTr = com->parentTr;

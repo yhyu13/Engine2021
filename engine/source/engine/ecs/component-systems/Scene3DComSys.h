@@ -56,7 +56,7 @@ namespace longmarch
 		std::string m_RenderShaderName = { "" };
 		bool m_enableDebugDraw{ true };
 #ifdef MULTITHREAD_PRE_RENDER_UPDATE
-		AtomicQueue<std::shared_future<void>> m_threadJob;
+		AtomicQueueNC<std::shared_future<void>> m_threadJob;
 #endif
 	};
 }

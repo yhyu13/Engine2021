@@ -55,7 +55,7 @@ namespace longmarch
 	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
 	template <typename ComponentType>
-	struct BaseComponent : public BaseAtomicClass2, public BaseComponentInterface
+	struct BaseComponent : public BaseAtomicClass, public BaseComponentInterface
 	{
 		BaseComponent() = default;
 		explicit BaseComponent(GameWorld* world) : m_world(world) {}

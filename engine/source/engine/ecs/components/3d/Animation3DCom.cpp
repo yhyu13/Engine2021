@@ -17,7 +17,7 @@ longmarch::Animation3DCom::Animation3DCom(const EntityDecorator& _this)
 
 void longmarch::Animation3DCom::SetAnimationCollection(const std::string& name)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	if (ResourceManager<Animation3D>::GetInstance()->Has(name))
 	{
 		m_animaRef = ResourceManager<Animation3D>::GetInstance()->TryGet(name)->Get();
@@ -32,7 +32,7 @@ void longmarch::Animation3DCom::SetAnimationCollection(const std::string& name)
 
 void longmarch::Animation3DCom::SetCurrentAnimation(const AnimationSetting& anima)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	if (m_animaRef->HasAnimation(anima.name))
 	{
 		currentAnimName = anima.name;
@@ -52,14 +52,14 @@ void longmarch::Animation3DCom::SetCurrentAnimation(const AnimationSetting& anim
 
 void longmarch::Animation3DCom::SetAnimationTickTimer(float period)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	animationTickTimer.Reset();
 	animationTickTimer.SetPeriod(period);
 }
 
 void longmarch::Animation3DCom::UpdateAnimation(double dt, Scene3DNode* sceneNode)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	if (currentAnimName != "None" && !pause && m_animaRef)
 	{
 		currentTime += dt * playBackSpeed;
@@ -114,7 +114,7 @@ void longmarch::Animation3DCom::UpdateAnimation(double dt, Scene3DNode* sceneNod
 void longmarch::Animation3DCom::JsonSerialize(Json::Value& value)
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	{
 		Json::Value output;
 		output["id"] = "Animation3DCom";

@@ -3,20 +3,20 @@
 
 void longmarch::PerspectiveCameraCom::SetCamera(const PerspectiveCamera& cam)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	m_camera = cam;
 }
 
 PerspectiveCamera* longmarch::PerspectiveCameraCom::GetCamera()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return &m_camera;
 }
 
 void longmarch::PerspectiveCameraCom::JsonSerialize(Json::Value& value)
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	{
 		Json::Value output;
 		output["id"] = "PerspectiveCameraCom";
@@ -39,7 +39,7 @@ void longmarch::PerspectiveCameraCom::JsonDeserialize(const Json::Value& value)
 	{
 		return;
 	}
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	{
 		{
 			auto& val = value["LookAt"];

@@ -14,7 +14,7 @@ longmarch::Scene3DCom::Scene3DCom(const EntityDecorator& _this)
 
 void longmarch::Scene3DCom::SetSceneData(const Scene3DCom::SceneDataRef& obj)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	if (obj)
 	{
 		m_objDatasRef = obj->Copy();
@@ -27,13 +27,13 @@ void longmarch::Scene3DCom::SetSceneData(const Scene3DCom::SceneDataRef& obj)
 
 void longmarch::Scene3DCom::SetSceneData(const ResourceManager<Scene3DNode>::ResourceHandle& handle)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	m_objDatasHandle = handle;
 }
 
 Scene3DCom::SceneDataRef& longmarch::Scene3DCom::GetSceneData(bool waitOnHandle)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	if (m_objDatasHandle && m_objDatasHandle->IsFutureValid())
 	{
 		if (waitOnHandle)
@@ -56,97 +56,97 @@ Scene3DCom::SceneDataRef& longmarch::Scene3DCom::GetSceneData(bool waitOnHandle)
 
 void longmarch::Scene3DCom::SetShaderName(const std::string& name)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	m_shaderName = name;
 }
 
 bool longmarch::Scene3DCom::IsVisible() const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return m_visible;
 }
 
 void longmarch::Scene3DCom::SetVisiable(bool b)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	m_visible = b;
 }
 
 bool longmarch::Scene3DCom::IsHideInGame() const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return m_hideInGame;
 }
 
 void longmarch::Scene3DCom::SetHideInGame(bool b)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	m_hideInGame = b;
 }
 
 bool longmarch::Scene3DCom::IsCastShadow() const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return m_castShadow;
 }
 
 void longmarch::Scene3DCom::SetCastShadow(bool b)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	m_castShadow = b;
 }
 
 bool longmarch::Scene3DCom::IsCastReflection() const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return m_castReflection;
 }
 
 void longmarch::Scene3DCom::SetCastReflection(bool b)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	m_castReflection = b;
 }
 
 bool longmarch::Scene3DCom::IsParticleRenderType() const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return m_renderType == Renderer3D::RENDER_TYPE::PARTICLE;
 }
 
 void longmarch::Scene3DCom::SetParticleRenderType(bool v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	m_renderType = Renderer3D::RENDER_TYPE::PARTICLE;
 }
 
 bool longmarch::Scene3DCom::IsTranslucenctRenderType() const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return m_renderType == Renderer3D::RENDER_TYPE::TRANSLUCENT;
 }
 
 void longmarch::Scene3DCom::SetTranslucenctRenderType(bool v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	m_renderType = Renderer3D::RENDER_TYPE::TRANSLUCENT;
 }
 
 int longmarch::Scene3DCom::GetTranslucencySortPriority() const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return m_translucencySortPriority;
 }
 
 void longmarch::Scene3DCom::SetTranslucencySortPriority(int v)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	m_translucencySortPriority = v;
 }
 
 void longmarch::Scene3DCom::SetShouldDraw(bool b, bool _override)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	(_override) ? m_shoudlDraw = b : m_shoudlDraw &= b;
 }
 
@@ -159,7 +159,7 @@ void longmarch::Scene3DCom::Draw()
 {
 	GetSceneData(false);
 	{
-		LOCK_GUARD2();
+		LOCK_GUARD();
 		if (m_shoudlDraw && m_objDatasRef)
 		{
 			const auto trans = EntityDecorator{ m_this , m_world }.GetComponent<Transform3DCom>();
@@ -175,7 +175,7 @@ void longmarch::Scene3DCom::Draw(const std::function<void(const Renderer3D::Rend
 {
 	GetSceneData(false);
 	{
-		LOCK_GUARD2();
+		LOCK_GUARD();
 		if (m_shoudlDraw && m_objDatasRef)
 		{
 			auto trans = EntityDecorator{ m_this , m_world }.GetComponent<Transform3DCom>();
@@ -195,7 +195,7 @@ void longmarch::Scene3DCom::Draw(const std::function<void(const Renderer3D::Rend
 void longmarch::Scene3DCom::JsonSerialize(Json::Value& value)
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	{
 		Json::Value output;
 		output["id"] = "Scene3DCom";

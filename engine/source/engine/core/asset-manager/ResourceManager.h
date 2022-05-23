@@ -29,7 +29,7 @@ namespace longmarch
 		using ResourcePromise = std::promise<ResourcePtr>;
 		using ResourceLoadFromFile = std::function<ResourcePtr(const fs::path&)>;
 
-		struct ResourceTask final : public BaseAtomicClass2
+		struct ResourceTask final : public BaseAtomicClass
 		{
 			ResourceTask() = default;
 			// Define only copy constructor/assingment to avoid implicit defining move operations 
@@ -48,14 +48,14 @@ namespace longmarch
 			//! Is the future contains a valid shared state
 			bool IsFutureValid() const noexcept
 			{
-				LOCK_GUARD2();
+				LOCK_GUARD();
 				return future.valid();
 			}
 
 			//! Invalidate both resource and future
 			void Reset() noexcept
 			{
-				LOCK_GUARD2();
+				LOCK_GUARD();
 				ptr.reset();
 				future = std::move(ResourceFuture());
 			}
@@ -63,7 +63,7 @@ namespace longmarch
 			//! Set future and invalidate resource
 			void SetFuture(const ResourceFuture& future_) noexcept
 			{
-				LOCK_GUARD2();
+				LOCK_GUARD();
 				ptr.reset();
 				future = future_;
 			}
@@ -71,7 +71,7 @@ namespace longmarch
 			//! Set callback on successful getting, callback is only called once and callback is presistent on copying
 			void SetCallback(const ResourceCallback& callback_)
 			{
-				LOCK_GUARD2();
+				LOCK_GUARD();
 				callback = callback_;
 				if (ptr && callback)
 				{
@@ -82,7 +82,7 @@ namespace longmarch
 			//! Call future.wait_for(0), if not ready, return nullptr
 			[[nodiscard]] ResourcePtr TryGet()
 			{
-				LOCK_GUARD2();
+				LOCK_GUARD();
 				if (ptr != nullptr)
 				{
 					return ptr;
@@ -121,7 +121,7 @@ namespace longmarch
 			//! Call future.get(). Wait until the resource is ready.
 			[[nodiscard]] ResourcePtr Get()
 			{
-				LOCK_GUARD2();
+				LOCK_GUARD();
 				if (ptr != nullptr)
 				{
 					return ptr;
@@ -161,7 +161,7 @@ namespace longmarch
 			//! casting to bool
 			operator bool() const noexcept
 			{
-				LOCK_GUARD2();
+				LOCK_GUARD();
 				return ptr != nullptr;
 			}
 
@@ -169,12 +169,12 @@ namespace longmarch
 			friend bool operator==(const ResourceTask& lhs, const ResourceTask& rhs) noexcept
 			{
 				bool ret = false;
-				lhs.Lock2(); rhs.Lock2();
+				lhs.Lock(); rhs.Lock();
 				if (lhs.ptr && rhs.ptr)
 				{
 					ret = (lhs.ptr == rhs.ptr);
 				}
-				lhs.Unlock2(); rhs.Unlock2();
+				lhs.UnLock(); rhs.UnLock();
 				return ret;
 			}
 		private:

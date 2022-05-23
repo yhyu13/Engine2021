@@ -54,15 +54,15 @@ namespace longmarch
 		template<class T, typename... Arguments>
 		void Draw(T* drawable, Arguments&&... args)
 		{
-			Lock2();
+			Lock();
 			if (m_shoudlDraw)
 			{
-				Unlock2();
+				UnLock();
 				drawable->Draw(args...);
-				Lock2();
+				Lock();
 			}
 			m_shoudlDraw = true;
-			Unlock2();
+			UnLock();
 		}
 
 		virtual void JsonSerialize(Json::Value& value) override;

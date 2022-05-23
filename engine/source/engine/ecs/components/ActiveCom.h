@@ -15,13 +15,13 @@ namespace longmarch
 
 		void SetActive(bool active)
 		{
-			LOCK_GUARD2();
+			LOCK_GUARD();
 			m_active = active;
 		}
 
 		bool IsActive()
 		{
-			LOCK_GUARD2();
+			LOCK_GUARD();
 			return m_active;
 		}
 

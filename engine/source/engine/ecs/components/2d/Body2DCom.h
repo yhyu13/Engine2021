@@ -122,7 +122,7 @@ namespace longmarch
 		template<typename Shape, typename ...Args>
 		void ChooseShape(Shape s, Args... args)
 		{
-			LOCK_GUARD2()
+			LOCK_GUARD()
 			shape = MemoryManager::Make_shared<s>(args);
 		}
 

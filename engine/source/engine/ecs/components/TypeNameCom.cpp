@@ -8,7 +8,7 @@ longmarch::TypeNameCom::TypeNameCom(const std::string& _name)
 
 void longmarch::TypeNameCom::SetTypeName(const std::string& _name)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	if (std::strlen(m_type) > 0)
 	{
 		ENGINE_EXCEPT(L"Type name should be initialized to emtpy!");
@@ -25,19 +25,19 @@ void longmarch::TypeNameCom::SetTypeName(const std::string& _name)
 
 const char* longmarch::TypeNameCom::GetTypeName() const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
     return m_type;
 }
 
 bool longmarch::TypeNameCom::IsSameType(const char* _name) const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return strcmp(m_type, _name) == 0;
 }
 
 bool longmarch::TypeNameCom::IsBaseTypeOf(const char* _name) const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	if (std::strlen(m_type) >= std::strlen(_name))
 	{
 		return false;
@@ -57,7 +57,7 @@ bool longmarch::TypeNameCom::IsBaseTypeOf(const char* _name) const
 
 bool longmarch::TypeNameCom::IsDerivedTypeOf(const char* _name) const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	if (std::strlen(m_type) <= std::strlen(_name))
 	{
 		return false;
@@ -78,7 +78,7 @@ bool longmarch::TypeNameCom::IsDerivedTypeOf(const char* _name) const
 void longmarch::TypeNameCom::JsonSerialize(Json::Value& value)
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	{
 		Json::Value output;
 		output["id"] = "TypeNameCom";

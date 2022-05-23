@@ -11,7 +11,7 @@
 
 namespace longmarch
 {
-    class Scene : BaseAtomicClass2
+    class Scene : BaseAtomicClass
     {
     public:
         Scene() = default;

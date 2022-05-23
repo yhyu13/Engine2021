@@ -178,7 +178,7 @@ namespace longmarch
     // move simulation of Scene forward by given timestep
     void Scene::Step(float dt)
     {
-        LOCK_GUARD2();
+        LOCK_GUARD();
         m_contactPairs.clear();
 
         // reset collision status of all rigid bodies
@@ -252,7 +252,7 @@ namespace longmarch
     // by default give a AABB
     std::shared_ptr<RigidBody> Scene::CreateRigidBody()
     {
-        LOCK_GUARD2();
+        LOCK_GUARD();
         //mutex mtxTest;
 
         auto rb = MemoryManager::Make_shared<RigidBody>();
@@ -267,55 +267,55 @@ namespace longmarch
     // note: need to make sure that after calling the remove functions, the relevant rigid bodies also have the pointers removed
     void Scene::RemoveRigidBody(const std::shared_ptr<RigidBody>& rb)
     {
-        LOCK_GUARD2();
+        LOCK_GUARD();
         std::erase(m_rbList, rb);
     }
 
     void Scene::RemoveAllBodies()
     {
-        LOCK_GUARD2();
+        LOCK_GUARD();
         m_rbList.clear();
     }
 
     void Scene::SetGameWorld(GameWorld* world)
     {
-        LOCK_GUARD2();
+        LOCK_GUARD();
         m_parentWorld = world;
     }
 
     void Scene::SetGravity(const Vec3f& g)
     {
-        LOCK_GUARD2();
+        LOCK_GUARD();
         m_gravity = g;
     }
 
     void Scene::EnableSleep(bool enabled)
     {
-        LOCK_GUARD2();
+        LOCK_GUARD();
         m_enableSleep = enabled;
     }
 
     void Scene::EnableFriction(bool enabled)
     {
-        LOCK_GUARD2();
+        LOCK_GUARD();
         m_enableFriction = enabled;
     }
 
     void Scene::EnableUpdate(bool update)
     {
-        LOCK_GUARD2();
+        LOCK_GUARD();
         m_enableUpdate = update;
     }
 
     bool Scene::IsUpdateEnabled() const
     {
-        LOCK_GUARD2();
+        LOCK_GUARD();
         return m_enableUpdate;
     }
 
     void Scene::RenderDebug()
     {
-        LOCK_GUARD2();
+        LOCK_GUARD();
         // render the BVH tree
         //m_aabbTree.Render();
 

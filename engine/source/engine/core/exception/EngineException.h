@@ -48,7 +48,7 @@ namespace longmarch
 		unsigned int line;
 
 		//! You should not use inline static for template classes
-		static AtomicQueue<EngineException> m_queue;
+		static AtomicQueueNC<EngineException> m_queue;
 	};
 
 	class NotImplementedException : public std::logic_error

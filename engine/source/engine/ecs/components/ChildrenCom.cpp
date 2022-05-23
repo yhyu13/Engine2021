@@ -13,7 +13,7 @@ longmarch::ChildrenCom::ChildrenCom(const EntityDecorator& _this)
 
 void longmarch::ChildrenCom::AddEntity(const Entity& child)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	if (!LongMarch_Contains(m_children, child))
 	{
 		m_children.emplace_back(child);
@@ -25,13 +25,13 @@ void longmarch::ChildrenCom::AddEntity(const Entity& child)
 
 bool longmarch::ChildrenCom::HasEntity(const Entity& child)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return LongMarch_Contains(m_children, child);
 }
 
 void longmarch::ChildrenCom::AddEntityWOR(const Entity& child)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	if (!LongMarch_Contains(m_children, child))
 	{
 		m_children.emplace_back(child);
@@ -39,13 +39,13 @@ void longmarch::ChildrenCom::AddEntityWOR(const Entity& child)
 }
 
 const LongMarch_Vector<Entity> longmarch::ChildrenCom::GetChildren() {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return m_children;
 }
 
 bool longmarch::ChildrenCom::RemoveEntity(const Entity& child)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	if (auto it = std::find(m_children.begin(), m_children.end(), child); it != m_children.end())
 	{
 		if (auto transCom = m_world->GetComponent<Transform3DCom>(*it); transCom.Valid())
@@ -63,12 +63,12 @@ bool longmarch::ChildrenCom::RemoveEntity(const Entity& child)
 
 void longmarch::ChildrenCom::RemoveAll()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	m_children.clear();
 }
 
 bool longmarch::ChildrenCom::IsLeaf()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return m_children.empty();
 }

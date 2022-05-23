@@ -14,19 +14,19 @@ longmarch::IDNameCom::IDNameCom(const Entity& _this, const std::string& _name)
 
 void longmarch::IDNameCom::SetName(const std::string& name)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	m_name = name;
 }
 
 std::string longmarch::IDNameCom::GetName()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return m_name;
 }
 
 std::string longmarch::IDNameCom::GetUniqueName()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return Str(m_this) + "_" + m_name;
 }
 
@@ -38,7 +38,7 @@ Entity longmarch::IDNameCom::GetEntity()
 void longmarch::IDNameCom::JsonSerialize(Json::Value& value)
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	{
 		Json::Value output;
 		output["id"] = "IDNameCom";

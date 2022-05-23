@@ -8,7 +8,7 @@
 void longmarch::LightCom::JsonSerialize(Json::Value& value)
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	{
 		Json::Value output;
 		output["id"] = "LightCom";
@@ -147,7 +147,7 @@ void longmarch::LightCom::JsonDeserialize(const Json::Value& value)
 	{
 		return;
 	}
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	{
 		bool type_init = false;
 		{

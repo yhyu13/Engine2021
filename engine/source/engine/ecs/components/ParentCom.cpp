@@ -14,7 +14,7 @@ longmarch::ParentCom::ParentCom(const EntityDecorator& _this)
 
 void longmarch::ParentCom::SetParent(const Entity& parent)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	auto world = m_world;
 	{
 		// Remove previous parent
@@ -29,7 +29,7 @@ void longmarch::ParentCom::SetParent(const Entity& parent)
 
 void longmarch::ParentCom::SetParentWOR(const Entity& parent)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	auto world = m_world;
 	{
 		// Remove previous parent
@@ -42,18 +42,18 @@ void longmarch::ParentCom::SetParentWOR(const Entity& parent)
 }
 
 const Entity longmarch::ParentCom::GetParent() {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return m_Parent;
 }
 
 bool longmarch::ParentCom::IsRoot()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return m_Parent == Entity();
 }
 
 bool longmarch::ParentCom::IsSceneRoot()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return m_Parent.m_type == (EntityType)EngineEntityType::SCENE_ROOT;
 }

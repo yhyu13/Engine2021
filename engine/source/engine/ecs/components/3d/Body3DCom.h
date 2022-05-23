@@ -33,7 +33,7 @@ namespace longmarch
 		template<typename Shape, typename ...Args>
 		void CreateBoundingVolume(Args... args)
 		{
-			LOCK_GUARD2();
+			LOCK_GUARD();
 			m_boundingVolume = MemoryManager::Make_shared<Shape>(args...);
 		}
 

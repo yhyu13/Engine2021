@@ -3,7 +3,7 @@
 
 namespace longmarch
 {
-    AtomicQueue<EngineException> EngineException::m_queue;
+    AtomicQueueNC<EngineException> EngineException::m_queue;
 }
 
 const std::wstring& longmarch::EngineException::GetNote() const

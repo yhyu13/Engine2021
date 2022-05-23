@@ -28,7 +28,7 @@ namespace longmarch
 
 		void SetActive(bool b)
 		{
-			LOCK_GUARD2();
+			LOCK_GUARD();
 			m_ParticleActive = b;
 		}
 

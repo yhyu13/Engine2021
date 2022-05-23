@@ -10,19 +10,19 @@ longmarch::Body3DCom::Body3DCom(const Entity& e)
 
 std::shared_ptr<Shape> longmarch::Body3DCom::GetBoundingVolume() const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return m_boundingVolume;
 }
 
 bool longmarch::Body3DCom::HasRigidBody() const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	return m_body != nullptr;
 }
 
 RBType longmarch::Body3DCom::GetRigidBodyType() const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	if (m_body)
 	{
 		return m_body->GetRBType();
@@ -32,19 +32,19 @@ RBType longmarch::Body3DCom::GetRigidBodyType() const
 
 void longmarch::Body3DCom::AssignRigidBody(const std::shared_ptr<RigidBody>& rb)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	m_body = rb;
 }
 
 void longmarch::Body3DCom::UnassignRigidBody()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	m_body = nullptr;
 }
 
 void longmarch::Body3DCom::UpdateRigidBody()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	if (m_body)
 	{
 		m_body->SetMass(m_mass);
@@ -54,7 +54,7 @@ void longmarch::Body3DCom::UpdateRigidBody()
 
 void longmarch::Body3DCom::UpdateBody3DCom()
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	if (m_body)
 	{
 		m_mass = m_body->GetMass();
@@ -64,7 +64,7 @@ void longmarch::Body3DCom::UpdateBody3DCom()
 
 const longmarch::RBTransform& longmarch::Body3DCom::GetRBTrans() const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	ENGINE_EXCEPT_IF(m_body == nullptr, L"Trying to access Rigid Body Transform but Rigid Body does not exist!");
 
 	return m_body->GetRBTrans();
@@ -72,7 +72,7 @@ const longmarch::RBTransform& longmarch::Body3DCom::GetRBTrans() const
 
 bool longmarch::Body3DCom::IsRBAwake() const
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	if (!m_body)
 	{
 		return false;
@@ -82,7 +82,7 @@ bool longmarch::Body3DCom::IsRBAwake() const
 
 void longmarch::Body3DCom::JsonSerialize(Json::Value& value)
 {
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
 	{
 		Json::Value output;
@@ -159,7 +159,7 @@ void longmarch::Body3DCom::JsonDeserialize(const Json::Value& value)
 	{
 		return;
 	}
-	LOCK_GUARD2();
+	LOCK_GUARD();
 	{
 		if (auto& bv = value["bounding-volume"]; !bv.isNull())
 		{

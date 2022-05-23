@@ -14,19 +14,19 @@ namespace longmarch
 
 	void Particle3DCom::SetParticleSystem(const std::shared_ptr<ParticleSystem3D>& particleSystem)
 	{
-		LOCK_GUARD2();
+		LOCK_GUARD();
 		m_particleSystem = particleSystem;
 	}
 
 	void Particle3DCom::Update(const double frametime, const PerspectiveCamera* camera)
 	{
-		LOCK_GUARD2();
+		LOCK_GUARD();
 		m_particleSystem->Update(frametime, camera->GetWorldPosition());
 	}
 
 	void Particle3DCom::PrepareDrawDataWithViewMatrix(const Mat4& viewMatrix)
 	{
-		LOCK_GUARD2();
+		LOCK_GUARD();
 		// Quite expensive matrix calculation on CPU
 		if (m_render)
 		{
@@ -52,7 +52,7 @@ namespace longmarch
 
 	void Particle3DCom::Draw()
 	{
-		LOCK_GUARD2();
+		LOCK_GUARD();
 		if (m_render)
 		{
 			Renderer3D::DrawParticles(m_instancedDataList);
@@ -62,7 +62,7 @@ namespace longmarch
 
 	void Particle3DCom::Draw(const std::function<void(const Renderer3D::ParticleInstanceDrawData&)>& drawFunc)
 	{
-		LOCK_GUARD2();
+		LOCK_GUARD();
 		if (m_render)
 		{
 			drawFunc(m_instancedDataList);
@@ -72,25 +72,25 @@ namespace longmarch
 
 	void Particle3DCom::SetCenter(const Vec3f& center)
 	{
-		LOCK_GUARD2();
+		LOCK_GUARD();
 		m_particleSystem->SetCenter(center);
 	}
 
 	void Particle3DCom::SetRendering(bool b)
 	{
-		LOCK_GUARD2();
+		LOCK_GUARD();
 		m_render = b;
 	}
 
 	bool Particle3DCom::IsRendering() const
 	{
-		LOCK_GUARD2();
+		LOCK_GUARD();
 		return m_render;
 	}
 
 	void Particle3DCom::SetPPS(unsigned int count)
 	{
-		LOCK_GUARD2();
+		LOCK_GUARD();
 		m_particleSystem->m_particlePerSecond = count;
 	}
 

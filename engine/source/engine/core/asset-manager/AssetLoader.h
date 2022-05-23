@@ -290,7 +290,7 @@ namespace longmarch
 	private:
 		inline static Timer s_watcherTimer{ 2.0 }; //!< timer for periodically checking watched files
 		inline static LongMarch_UnorderedMap_flat<std::string, bool> s_pathInLoadingLUT;
-		inline static AtomicQueue<LoaderRef> s_watcherQueue;
-		inline static AtomicQueue<LoaderRef> s_asyncLoaderQueue;
+		inline static AtomicQueueNC<LoaderRef> s_watcherQueue;
+		inline static AtomicQueueNC<LoaderRef> s_asyncLoaderQueue;
 	};
 }

@@ -95,4 +95,9 @@ namespace longmarch
     {
         m_highPrecisionMode = enable;
     }
+
+    bool FramerateController::GetHighPrecisionMode() const
+    {
+        return m_highPrecisionMode;
+    }
 }

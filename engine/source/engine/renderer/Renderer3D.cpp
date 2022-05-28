@@ -1180,7 +1180,7 @@ void longmarch::Renderer3D::EditorRenderGraphicsSettings()
                 }
                 // High precision Frame control
                 {
-                    static bool checkHighPFPSMode = false;
+                    static bool checkHighPFPSMode = FramerateController::GetInstance()->GetHighPrecisionMode();
                     if (ImGui::Checkbox("High precision Frame control", &checkHighPFPSMode))
                     {
                         FramerateController::GetInstance()->SetHighPrecisionMode(checkHighPFPSMode);

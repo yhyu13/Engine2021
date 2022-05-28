@@ -3,7 +3,7 @@
 #include "Lock.h"
 
 #ifndef _SHIPPING
-#define DEADLOCK_TIMER 0 // Debug break unfriendly, disabled unless you need to debug deak lock
+#define DEADLOCK_TIMER 1 // Debug break unfriendly, disabled unless you need to debug deak lock
 #else
 #define DEADLOCK_TIMER 0
 #endif // !_SHIPPING

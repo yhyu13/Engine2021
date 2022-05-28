@@ -18,6 +18,7 @@ namespace longmarch
         void SetMaxFrameRate(unsigned int newMax);
         //! Enable high precision mode to obtain more stable framerate at the cost of higher CPU usage
         void SetHighPrecisionMode(bool enable);
+        bool GetHighPrecisionMode() const;
     private:
         FramerateController();
     private:

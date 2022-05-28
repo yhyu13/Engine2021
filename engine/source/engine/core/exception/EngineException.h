@@ -1,6 +1,6 @@
 #pragma once
 #include "../EngineCore.h"
-#include "../thread/Lock.h"
+#include "../thread/Queue.h"
 #include <string>
 #include <exception>
 

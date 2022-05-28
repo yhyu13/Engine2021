@@ -456,7 +456,7 @@ namespace longmarch
             const uint32_t fragTexture_3_slot = {3u};
             const uint32_t fragTexture_4_slot = {4u};
             const uint32_t fragTexture_empty_slot = {5u};
-            //<! Slots before this slot are reserved for uniform texture bindings, you can bind custom textures (including gbuffer textures) after this slot
+            //<! Slots before this slot are reserved for global texture bindings, you can bind custom textures (including gbuffer textures) after this slot
 
             Vec2u window_size;
             Vec2u resolution;

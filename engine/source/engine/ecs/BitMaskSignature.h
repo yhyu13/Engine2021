@@ -151,7 +151,7 @@ namespace longmarch {
 			return oldMask.IsAMatch(target) && !this->IsAMatch(target);
 		}
 
-		// return true if this mask contain all 1s in target
+		// return true if this mask contain all bits in target
 		inline bool IsAMatch(const BitMaskSignature& target) const noexcept 
 		{
 			return

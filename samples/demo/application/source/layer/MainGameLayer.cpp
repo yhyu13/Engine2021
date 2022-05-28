@@ -192,6 +192,8 @@ void longmarch::MainGameLayer::Update(double ts)
 	GameWorld::GetCurrent()->MultiThreadUpdate(ts);
 #else
 	GameWorld::GetCurrent()->Update(ts);
+	GameWorld::GetCurrent()->Update2(ts);
+	GameWorld::GetCurrent()->Update3(ts);
 #endif // MULTITHREAD_UPDATE
 }
 

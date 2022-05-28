@@ -273,8 +273,8 @@ void longmarch::GameWorld::Update3(double frameTime)
 
 void longmarch::GameWorld::MultiThreadUpdate(double frameTime)
 {
-	m_jobs.emplace_back(
-		std::move(StealThreadPool::GetInstance()->enqueue_task([frameTime, this]()
+	m_jobs.push(
+		std::move(s_JobPool.enqueue_task([frameTime, this]()
 			{
 				_MultiThreadExceptionCatcher([frameTime, this]()
 					{
@@ -283,15 +283,15 @@ void longmarch::GameWorld::MultiThreadUpdate(double frameTime)
 						Update3(frameTime);
 					});
 			})
-		));
+		).share());
 }
 
 void longmarch::GameWorld::MultiThreadJoin()
 {
 	while (!m_jobs.empty())
 	{
-		m_jobs.back().wait();
-		m_jobs.pop_back();
+		m_jobs.front().wait();
+		m_jobs.pop();
 	}
 }
 
@@ -611,7 +611,7 @@ void longmarch::GameWorld::_ParEach2(const LongMarch_Vector<Entity>& es, typenam
 			return;
 		}
 		int num_e = es.size();
-		auto& pool = s_pool_fine_grained;
+		auto& pool = s_parEach2Pool;
 		auto _begin = es.begin();
 		auto _end = es.end();
 		int split_size = num_e / pool.threads;

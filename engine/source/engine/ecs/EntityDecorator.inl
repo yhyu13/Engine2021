@@ -24,35 +24,35 @@ namespace longmarch
 		return GetWorld()->HasComponent<ComponentType>(m_entity);
 	}
 
-	__LongMarch_TRVIAL_TEMPLATE__
+	__LongMarch_TRIVIAL_TEMPLATE__
 	LongMarch_Vector<BaseComponentInterface*> EntityDecorator::GetAllComponent() const
 	{
 		return GetWorld()->GetAllComponent(m_entity);
 	}
 }
 
-__LongMarch_TRVIAL_TEMPLATE__
+__LongMarch_TRIVIAL_TEMPLATE__
 std::ostream& operator<<(std::ostream& os, const longmarch::EntityDecorator& ed)
 {
 	os << ed.GetWorld()->GetName() << ":" << ed.GetEntity();
 	return os;
 }
 
-__LongMarch_TRVIAL_TEMPLATE__
+__LongMarch_TRIVIAL_TEMPLATE__
 bool operator==(const EntityDecorator& lhs, const EntityDecorator& rhs)
 {
 	ASSERT(lhs.GetWorld() == rhs.GetWorld(), Str(lhs) + " is in a differnet world of " + Str(rhs));
 	return lhs.GetEntity() == rhs.GetEntity();
 }
 
-__LongMarch_TRVIAL_TEMPLATE__
+__LongMarch_TRIVIAL_TEMPLATE__
 bool operator!=(const EntityDecorator& lhs, const EntityDecorator& rhs)
 {
 	ASSERT(lhs.GetWorld() == rhs.GetWorld(), Str(lhs) + " is in a differnet world of " + Str(rhs));
 	return lhs.GetEntity() != rhs.GetEntity();
 }
 
-__LongMarch_TRVIAL_TEMPLATE__
+__LongMarch_TRIVIAL_TEMPLATE__
 bool operator<(const EntityDecorator& lhs, const EntityDecorator& rhs)
 {
 	ASSERT(lhs.GetWorld() == rhs.GetWorld(), Str(lhs) + " is in a differnet world of " + Str(rhs));

@@ -92,12 +92,10 @@ namespace longmarch
 		_iter m_end;
 	};
 
-	/*
-		Use this method to get all components for an entity.
-		(_TRIVIAL_ template resolves undefined class at compile time)
-	 */
-#ifndef __LongMarch_TRVIAL_TEMPLATE__
-#define __LongMarch_TRVIAL_TEMPLATE__ template<typename ...__TRIVIAL__>
+
+#ifndef __LongMarch_TRIVIAL_TEMPLATE__
+// resolves undefined class or multiple definitions for inline function that are declared and defined in header
+#define __LongMarch_TRIVIAL_TEMPLATE__ template<typename ...__TRIVIAL__>
 #endif
 
 #ifndef LongMarch_ArraySize
@@ -252,7 +250,7 @@ namespace longmarch
 		}
 	}
 
-	__LongMarch_TRVIAL_TEMPLATE__
+	__LongMarch_TRIVIAL_TEMPLATE__
 		inline const std::vector<const char*> LongMarch_StrVec2ConstChar(const std::vector<std::string>& vs)
 	{
 		std::vector<const char*> vc;
@@ -344,7 +342,7 @@ namespace longmarch
 		}
 	}
 
-	__LongMarch_TRVIAL_TEMPLATE__
+	__LongMarch_TRIVIAL_TEMPLATE__
 		inline const LongMarch_Vector<const char*> LongMarch_StrVec2ConstChar(const LongMarch_Vector<std::string>& vs)
 	{
 		LongMarch_Vector<const char*> vc;

@@ -38,6 +38,11 @@ namespace longmarch
 		GLint MaxTextureImageUnits = 0;
 		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &MaxTextureImageUnits);
 		ENGINE_INFO(Str("Max fragment texture : %d", MaxTextureImageUnits));
+
+#ifndef _SHIPPING
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		glDebugMessageCallback(GLDebugMessageCallback, NULL);
+#endif
 	}
 
 	void OpenGLRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)

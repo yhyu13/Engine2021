@@ -33,7 +33,7 @@ namespace longmarch
 		template<typename ComponentType>
 		bool HasComponent() const;
 
-		__LongMarch_TRVIAL_TEMPLATE__
+		__LongMarch_TRIVIAL_TEMPLATE__
 		LongMarch_Vector<BaseComponentInterface*> GetAllComponent() const;
 
 		inline bool Valid() const
@@ -94,16 +94,16 @@ namespace longmarch
 	};
 }
 
-__LongMarch_TRVIAL_TEMPLATE__
+__LongMarch_TRIVIAL_TEMPLATE__
 std::ostream& operator<<(std::ostream& os, const longmarch::EntityDecorator& ed);
 
-__LongMarch_TRVIAL_TEMPLATE__
+__LongMarch_TRIVIAL_TEMPLATE__
 bool operator==(const EntityDecorator& lhs, const EntityDecorator& rhs);
 
-__LongMarch_TRVIAL_TEMPLATE__
+__LongMarch_TRIVIAL_TEMPLATE__
 bool operator!=(const EntityDecorator& lhs, const EntityDecorator& rhs);
 
-__LongMarch_TRVIAL_TEMPLATE__
+__LongMarch_TRIVIAL_TEMPLATE__
 bool operator<(const EntityDecorator& lhs, const EntityDecorator& rhs);
 
 /*

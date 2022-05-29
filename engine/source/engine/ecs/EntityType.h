@@ -77,7 +77,7 @@ namespace longmarch
 	};
 }
 
-__LongMarch_TRVIAL_TEMPLATE__
+__LongMarch_TRIVIAL_TEMPLATE__
 std::ostream& operator<<(std::ostream& o, const longmarch::EngineEntityType& n)
 {
 	const char* s = 0;

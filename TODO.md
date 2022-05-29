@@ -1,4 +1,6 @@
-TODO List
+TODO List : 
+
+*Major feature*:
 
 (1) Refactor ECS Archtype memory management : instead of using entities and component manager, using entity->Archtype->component managers.
 
@@ -22,3 +24,12 @@ c, Change the way delete an entity works:
 (4) Vulkan renderer, integrate with VulkanSceneGraph(?it's quite big a 3rd party project, what excatly should we integrate?)
 a, consider render thread, draw thread design that support wide range of frame limit
 
+*Minor Feature*:
+
+(1) Fix SMAAT2X
+
+(2) Implement best quality TAA available
+
+(3) Integrate XeGTAO
+
+(4) Refactor Animation update from preupdate to update

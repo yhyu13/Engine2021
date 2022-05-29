@@ -121,20 +121,20 @@ namespace longmarch
 		}
 
 		//! Dispatcher to parent world
-		__LongMarch_TRVIAL_TEMPLATE__
+		__LongMarch_TRIVIAL_TEMPLATE__
 			inline void ForEach(typename Identity<std::function<void(EntityDecorator e)>>::Type func)
 		{
 			m_parentWorld->ForEach(GetRegisteredEntities(), func);
 		}
 		//! Dispatcher to parent world
-		__LongMarch_TRVIAL_TEMPLATE__
+		__LongMarch_TRIVIAL_TEMPLATE__
 			[[nodiscard]] inline std::future<void> BackEach(typename Identity<std::function<void(EntityDecorator e)>>::Type func)
 		{
 			return m_parentWorld->BackEach(GetRegisteredEntities(), func);
 		}
 
 		//! Dispatcher to parent world
-		__LongMarch_TRVIAL_TEMPLATE__
+		__LongMarch_TRIVIAL_TEMPLATE__
 			[[nodiscard]] inline std::future<void> ParEach(typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split = -1)
 		{
 			return m_parentWorld->ParEach(GetRegisteredEntities(), func, min_split);

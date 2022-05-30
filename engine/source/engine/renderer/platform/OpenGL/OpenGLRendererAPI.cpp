@@ -565,5 +565,15 @@ namespace longmarch
 			break;
 		}
 	}
+
+	void OpenGLRendererAPI::PushDebugMarker(const char* msg)
+	{
+		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, msg);
+	}
+
+	void OpenGLRendererAPI::PopDebugMarker()
+	{
+		glPopDebugGroup();
+	}
 }
 

@@ -5,62 +5,74 @@
 
 namespace longmarch
 {
-	class VulkanRendererAPI : public RendererAPI
-	{
-	public:
-		NONCOPYABLE(VulkanRendererAPI);
-		VulkanRendererAPI()
-		{
-			s_eAPI = API::Vulkan;
-		}
-		static RendererAPI* GetInstance()
-		{
-			static VulkanRendererAPI instance;
-			return static_cast<RendererAPI*>(&instance);
-		}
+    class VulkanRendererAPI : public RendererAPI
+    {
+    public:
+        NONCOPYABLE(VulkanRendererAPI);
 
-		virtual void Init() override;
-		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
-		virtual void SetClearColor(const glm::vec4& color) override;
-		virtual void ClearColorOnly() override;
-		virtual void ClearDepthOnly() override;
-		virtual void Clear() override;
+        VulkanRendererAPI()
+        {
+            s_eAPI = API::Vulkan;
+        }
 
-		virtual void DrawTriangleIndexed(const std::shared_ptr<VertexArray>& vertexArray) override;
-		virtual void DrawLineIndexed(const std::shared_ptr<VertexArray>& vertexArray) override;
-		virtual void DrawTriangleIndexedInstanced(const std::shared_ptr<VertexArray>& vertexArray, uint32_t count) override;
-		virtual void DrawLineIndexedInstanced(const std::shared_ptr<VertexArray>& vertexArray, uint32_t count) override;
-		virtual void MultiDrawTriangleIndexedIndirect(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<IndexedIndirectCommandBuffer>& commandBuffer) override;
+        static RendererAPI* GetInstance()
+        {
+            static VulkanRendererAPI instance;
+            return static_cast<RendererAPI*>(&instance);
+        }
 
-		virtual void DispatchCompute(uint32_t num_groups_x, uint32_t num_groups_y, uint32_t num_groups_z) override;
-		virtual void PlaceMemoryBarrier(MemoryBarrierBitEnum e) override;
+        virtual void Init() override;
+        virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
+        virtual void SetClearColor(const glm::vec4& color) override;
+        virtual void ClearColorOnly() override;
+        virtual void ClearDepthOnly() override;
+        virtual void Clear() override;
 
-		virtual void PolyModeFill() override;
-		virtual void PolyModeLine() override;
-		virtual void PolyLineWidth(uint32_t width) override;
-		virtual void PolyOffset(bool enabled, float factor, float units) override;
+        virtual void DrawTriangleIndexed(const std::shared_ptr<VertexArray>& vertexArray) override;
+        virtual void DrawLineIndexed(const std::shared_ptr<VertexArray>& vertexArray) override;
+        virtual void
+        DrawTriangleIndexedInstanced(const std::shared_ptr<VertexArray>& vertexArray, uint32_t count) override;
+        virtual void DrawLineIndexedInstanced(const std::shared_ptr<VertexArray>& vertexArray, uint32_t count) override;
+        virtual void MultiDrawTriangleIndexedIndirect(const std::shared_ptr<VertexArray>& vertexArray,
+                                                      const std::shared_ptr<IndexedIndirectCommandBuffer>&
+                                                      commandBuffer) override;
 
-		virtual void BindDefaultFrameBuffer() override;
+        virtual void DispatchCompute(uint32_t num_groups_x, uint32_t num_groups_y, uint32_t num_groups_z) override;
+        virtual void PlaceMemoryBarrier(MemoryBarrierBitEnum e) override;
 
-		virtual void TransferColorBit(uint32_t src, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_w, uint32_t dest_h) override;
-		virtual void TransferColorBit(uint32_t src, uint32_t src_tex, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_tex, uint32_t dest_w, uint32_t dest_h) override;
-		virtual void TransferDepthBit(uint32_t src, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_w, uint32_t dest_h) override;
-		virtual void TransferStencilBit(uint32_t src, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_w, uint32_t dest_h) override;
+        virtual void PolyModeFill() override;
+        virtual void PolyModeLine() override;
+        virtual void PolyLineWidth(uint32_t width) override;
+        virtual void PolyOffset(bool enabled, float factor, float units) override;
 
-		virtual void Reverse_Z(bool b) override;
+        virtual void BindDefaultFrameBuffer() override;
 
-		virtual void DepthTest(bool enabled, bool write) override;
-		virtual void DepthFunc(longmarch::RendererAPI::CompareEnum e) override;
-		virtual void DepthClamp(bool enabled) override;
+        virtual void TransferColorBit(uint32_t src, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_w,
+                                      uint32_t dest_h) override;
+        virtual void TransferColorBit(uint32_t src, uint32_t src_tex, uint32_t src_w, uint32_t src_h, uint32_t dest,
+                                      uint32_t dest_tex, uint32_t dest_w, uint32_t dest_h) override;
+        virtual void TransferDepthBit(uint32_t src, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_w,
+                                      uint32_t dest_h) override;
+        virtual void TransferStencilBit(uint32_t src, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_w,
+                                        uint32_t dest_h) override;
 
-		virtual void StencilTest(bool enabled, bool write) override;
-		virtual void StencilFunc(longmarch::RendererAPI::CompareEnum e) override;
+        virtual void Reverse_Z(bool b) override;
 
-		virtual void CullFace(bool enabled, bool front) override;
-		virtual void Blend(bool enabled) override;
-		virtual void BlendFunc(longmarch::RendererAPI::BlendFuncEnum e) override;
+        virtual void DepthTest(bool enabled, bool write) override;
+        virtual void DepthFunc(longmarch::RendererAPI::CompareEnum e) override;
+        virtual void DepthClamp(bool enabled) override;
 
-	private:
-		inline static PolyMode s_polyMode = PolyMode::NONE;
-	};
+        virtual void StencilTest(bool enabled, bool write) override;
+        virtual void StencilFunc(longmarch::RendererAPI::CompareEnum e) override;
+
+        virtual void CullFace(bool enabled, bool front) override;
+        virtual void Blend(bool enabled) override;
+        virtual void BlendFunc(longmarch::RendererAPI::BlendFuncEnum e) override;
+
+        virtual void PushDebugMarker(const char* msg) override;
+        virtual void PopDebugMarker() override;
+
+    private:
+        inline static PolyMode s_polyMode = PolyMode::NONE;
+    };
 }

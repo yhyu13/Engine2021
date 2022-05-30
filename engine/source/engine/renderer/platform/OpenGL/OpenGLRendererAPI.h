@@ -60,6 +60,9 @@ namespace longmarch
 		virtual void Blend(bool enabled) override;
 		virtual void BlendFunc(longmarch::RendererAPI::BlendFuncEnum e) override;
 
+		virtual void PushDebugMarker(const char* msg) override;
+		virtual void PopDebugMarker() override;
+		
 	private:
 		inline static PolyMode s_polyMode = PolyMode::NONE;
 	};

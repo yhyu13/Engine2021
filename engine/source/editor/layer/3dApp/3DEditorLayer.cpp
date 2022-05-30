@@ -198,33 +198,39 @@ void longmarch::_3DEditorLayer::BuildRenderPipeline()
 			std::function<void(bool, const Vec3f&, float, float)> f_setDistanceCullingParam = std::bind(&Scene3DComSys::SetDistanceCullingParam, scene3DComSys, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
 			std::function<void(const std::string&)> f_setRenderShaderName = std::bind(&Scene3DComSys::SetRenderShaderName, scene3DComSys, std::placeholders::_1);
 
+			GPU_NAMED_SCOPE(_3DEditorLayer);
 			{
 				Renderer3D::BeginRendering(cam);
 				{
+					GPU_NAMED_SCOPE(Shadow_Pass);
 					GPU_TIME(Shadow_Pass);
 					ENG_TIME("Shadow pass");
 					Renderer3D::BeginShadowing(cam, f_render_opaque, f_render_translucent, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
 					Renderer3D::EndShadowing();
 				}
 				{
+					GPU_NAMED_SCOPE(Opaque_Scene_pass);
 					GPU_TIME(Opaque_Scene_pass);
 					ENG_TIME("Opaque Scene pass");
 					Renderer3D::BeginOpaqueScene(cam, f_render_opaque, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
 					Renderer3D::EndOpaqueScene();
 				}
 				{
+					GPU_NAMED_SCOPE(Opaque_Lighting_pass);
 					GPU_TIME(Opaque_Lighting_pass);
 					ENG_TIME("Opaque Lighting pass");
 					Renderer3D::BeginOpaqueLighting(cam, f_render_opaque, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
 					Renderer3D::EndOpaqueLighting();
 				}
 				{
+					GPU_NAMED_SCOPE(Transparent_Scene_pass);
 					GPU_TIME(Transparent_Scene_pass);
 					ENG_TIME("Transparent Scene pass");
 					Renderer3D::BeginTransparentSceneAndLighting(cam, f_render_translucent, f_setVFCullingParam, f_setDistanceCullingParam, f_setRenderShaderName);
 					Renderer3D::EndTransparentSceneAndLighting();
 				}
 				{
+					GPU_NAMED_SCOPE(Postprocessing_pass);
 					GPU_TIME(Postprocessing_pass);
 					ENG_TIME("Postprocessing pass");
 					Renderer3D::BeginPostProcessing();

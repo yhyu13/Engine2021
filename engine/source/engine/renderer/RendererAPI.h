@@ -100,6 +100,9 @@ namespace longmarch
 		virtual void Blend(bool enabled) = 0;
 		virtual void BlendFunc(longmarch::RendererAPI::BlendFuncEnum e) = 0;
 
+		virtual void PushDebugMarker(const char* msg) = 0;
+		virtual void PopDebugMarker() = 0;
+
 		inline static API WhichAPI() { return s_eAPI; }
 
 	protected:

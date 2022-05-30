@@ -124,3 +124,11 @@ void longmarch::VulkanRendererAPI::Blend(bool enabled)
 void longmarch::VulkanRendererAPI::BlendFunc(longmarch::RendererAPI::BlendFuncEnum e)
 {
 }
+
+void VulkanRendererAPI::PushDebugMarker(const char* msg)
+{
+}
+
+void VulkanRendererAPI::PopDebugMarker()
+{
+}

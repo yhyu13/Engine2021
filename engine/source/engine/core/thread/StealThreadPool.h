@@ -34,7 +34,7 @@ namespace longmarch
 		void enqueue_work(F&& f, Args&&... args)
 		{
 			auto work = [p = std::forward<F>(f), t = std::make_tuple(std::forward<Args>(args)...)]() { std::apply(p, t); };
-			auto i = m_index++;
+			const auto i = (m_index = ++m_index % m_count);
 
 			for (auto n(0u); n < m_count * K; ++n)
 			{
@@ -56,7 +56,7 @@ namespace longmarch
 			auto task = std::make_shared<task_type>(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
 			auto result = task->get_future();
 			auto work = [task = std::move(task)]() { (*task)(); };
-			const auto i = m_index++;
+			const auto i = (m_index = ++m_index % m_count);
 
 			for (auto n(0u); n < m_count * K; ++n)
 			{
@@ -71,15 +71,15 @@ namespace longmarch
 	public:
 		const unsigned int threads;
 	private:
-		using Proc = CACHE_ALIGN64 std::function<void(void)>;
+		using Proc = std::function<void(void)>;
 		using Queue = blocking_queue<Proc>;
 		using Queues = std::vector<Queue>;
-		using Thread = CACHE_ALIGN64 std::thread;
+		using Thread = std::thread;
 		using Threads = std::vector<Thread>;
+
 		Queues m_queues;
 		Threads m_threads;
-		CACHE_ALIGN64 std::atomic_uint m_index = { 0u };
-		CACHE_ALIGN64 std::atomic_flag m_done;
+		std::atomic_uint m_index = { 0u };
 		const unsigned int m_count;
 		constexpr inline static const unsigned int K = { 2u };
 	};

@@ -279,14 +279,14 @@ namespace longmarch
         //!< Contains all entities and their compoenent bit masks
         std::shared_ptr<EntityManager> m_entityManager;
         //!< Contains all entities and their compoenent bit masks
-        LongMarch_UnorderedMap_Par_flat<Entity, BitMaskSignature> m_entityMaskMap;
-        //!< Contains all entities and their compoenent bit masks
-        
-        LongMarch_Map<BitMaskSignature, LongMarch_Vector<Entity>> m_maskEntityVecMap;
+        LongMarch_UnorderedMap_Par_node<Entity, BitMaskSignature> m_entityMaskMap;
+        //!< Contains all compoenent bit masks and their corresponding entities
+        LongMarch_UnorderedMap_node<BitMaskSignature, LongMarch_Vector<Entity>> m_maskEntityVecMap;
+
         // Component (ECS)
         //!< Contains all component managers which are indexed by component indices
         mutable LongMarch_Vector<std::shared_ptr<BaseComponentManager>> m_componentManagers;
-        
+
         // System (ECS)
         //!< In order array of all systems
         LongMarch_Vector<std::shared_ptr<BaseComponentSystem>> m_systems;
@@ -294,7 +294,7 @@ namespace longmarch
         LongMarch_Vector<std::string> m_systemsName;
         //!< System LUT based on names, iterating over this container does not gaurantee orderness
         LongMarch_UnorderedMap_flat<std::string, std::shared_ptr<BaseComponentSystem>> m_systemsNameMap;
-        
+
         // Misc
         //! Holds multithreaded job that are created in a instance of gameworld
         AtomicQueueNC<std::shared_future<void>> m_jobs;
@@ -307,10 +307,10 @@ namespace longmarch
         inline static LongMarch_UnorderedMap_flat<std::string, LongMarch_Unique_ptr<GameWorld>> allManagedWorlds;
         inline static GameWorld* currentWorld = {nullptr};
 
-        //! Multithreaded pool used in ParEach2 for inner thread multithreading to avoid overflow stalling the default thread pool 
+        //! Multithreaded pool used in ParEach2 for inner function multithreading to avoid overflow stalling the default thread pool 
         inline static StealThreadPool s_parEach2Pool;
-        //! GameWorld class level job pool, used in running game thread in the backgroud
-        inline static StealThreadPool s_JobPool;
+        //! GameWorld class level job pool, used in running game thread in the backgroud or anyother async tasks
+        inline static StealThreadPool s_JobPool{4};
     };
 }
 

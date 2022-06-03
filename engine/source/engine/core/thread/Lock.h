@@ -115,7 +115,7 @@ namespace longmarch
 
     /*
     Base atomic class for NON-COPYABLE classes
-*/
+    */
     struct AdaptiveAtomicClassNC
     {
     public:
@@ -131,6 +131,6 @@ namespace longmarch
 
     protected:
         mutable std::mutex nc_mutex;
-        mutable int64_t nc_period_nano { 50ull };
+        mutable int64_t nc_period_nano { 200ull };
     };
 }

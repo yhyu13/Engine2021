@@ -4,7 +4,10 @@
 #include "engine/core/exception/EngineException.h"
 #include <set>
 
-namespace longmarch {
+#define USE_LARGE_COMPONENT_BIT_MASK 0
+
+namespace longmarch
+{
 	/**
 	 * @brief This class holds bit-masking functionality.
 	 *
@@ -20,12 +23,16 @@ namespace longmarch {
 	 *
 	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
-	class CACHE_ALIGN16 BitMaskSignature 
+	struct CACHE_ALIGN16 BitMaskSignature
 	{
 	public:
 		inline void Reset()
 		{
-			m_mask = m_mask2 = m_mask3 = m_mask4 = 0ull;
+#if USE_LARGE_COMPONENT_BIT_MASK == 0
+			m_mask = 0ull;
+#else
+			m_mask = m_mask2 = 0ull;
+#endif
 		}
 
 		inline const std::set<uint32_t> GetAllComponentIndex() const
@@ -41,6 +48,7 @@ namespace longmarch {
 					}
 				}
 			}
+#if USE_LARGE_COMPONENT_BIT_MASK
 			if (m_mask2 != 0ull)
 			{
 				for (uint32_t i(0u); i < 64u; ++i)
@@ -51,26 +59,7 @@ namespace longmarch {
 					}
 				}
 			}
-			if (m_mask3 != 0ull)
-			{
-				for (uint32_t i(0u); i < 64u; ++i)
-				{
-					if ((m_mask3) & (1ull << i))
-					{
-						ret.insert(i + 128u);
-					}
-				}
-			}
-			if (m_mask4 != 0ull)
-			{
-				for (uint32_t i(0u); i < 64u; ++i)
-				{
-					if ((m_mask4) & (1ull << i))
-					{
-						ret.insert(i + 192u);
-					}
-				}
-			}
+#endif
 			return ret;
 		}
 
@@ -82,18 +71,12 @@ namespace longmarch {
 			{
 				m_mask |= (1ull << com);
 			}
+#if USE_LARGE_COMPONENT_BIT_MASK
 			else if (com < 128ull)
 			{
 				m_mask2 |= (1ull << (com - 64ull));
 			}
-			else if (com < 192ull)
-			{
-				m_mask3 |= (1ull << (com - 128ull));
-			}
-			else if (com < 256ull)
-			{
-				m_mask4 |= (1ull << (com - 192ull));
-			}
+#endif
 			else
 			{
 				ENGINE_EXCEPT(L"Component Index out of range!");
@@ -114,18 +97,12 @@ namespace longmarch {
 			{
 				m_mask &= ~(1ull << com);
 			}
+#if USE_LARGE_COMPONENT_BIT_MASK
 			else if (com < 128ull)
 			{
 				m_mask2 &= ~(1ull << (com - 64ull));
 			}
-			else if (com < 192ull)
-			{
-				m_mask3 &= ~(1ull << (com - 128ull));
-			}
-			else if (com < 256ull)
-			{
-				m_mask4 &= ~(1ull << (com - 192ull));
-			}
+#endif
 			else
 			{
 				ENGINE_EXCEPT(L"Component Index out of range!");
@@ -154,31 +131,59 @@ namespace longmarch {
 		// return true if this mask contain all bits in target
 		inline bool IsAMatch(const BitMaskSignature& target) const noexcept 
 		{
-			return
-				((m_mask & target.m_mask) == target.m_mask)
-				&& ((m_mask2 & target.m_mask2) == target.m_mask2)
-				&& ((m_mask3 & target.m_mask3) == target.m_mask3)
-				&& ((m_mask4 & target.m_mask4) == target.m_mask4);
+#if USE_LARGE_COMPONENT_BIT_MASK == 0
+			return ((m_mask & target.m_mask) == target.m_mask);
+#else
+			return ((m_mask & target.m_mask) == target.m_mask) && ((m_mask2 & target.m_mask2) == target.m_mask2);
+#endif
 		}
 
 		friend inline bool operator==(const BitMaskSignature& lhs, const BitMaskSignature& rhs)
 		{
-			return lhs.m_mask == rhs.m_mask && lhs.m_mask2 == rhs.m_mask2 && lhs.m_mask3 == rhs.m_mask3 && lhs.m_mask4 == rhs.m_mask4;
+#if USE_LARGE_COMPONENT_BIT_MASK == 0
+			return lhs.m_mask == rhs.m_mask;
+#else
+			return lhs.m_mask == rhs.m_mask && lhs.m_mask2 == rhs.m_mask2;
+#endif
 		}
 
-		friend inline bool operator<(const BitMaskSignature& lhs, const BitMaskSignature& rhs) 
+		friend inline bool operator<(const BitMaskSignature& lhs, const BitMaskSignature& rhs)
 		{
-			return lhs.m_mask < rhs.m_mask || lhs.m_mask2 < rhs.m_mask2 || lhs.m_mask3 < rhs.m_mask3 || lhs.m_mask4 < rhs.m_mask4;
+#if USE_LARGE_COMPONENT_BIT_MASK == 0
+			return lhs.m_mask < rhs.m_mask;
+#else
+			return lhs.m_mask < rhs.m_mask && lhs.m_mask2 < rhs.m_mask2;
+#endif
 		}
 
-	private:
 		/*
 			You could create arbitrary many masks that extend the total number of available components
-			256 should be enough.
+			64 should be enough.
 		*/
 		uint64_t m_mask{ 0ull };
+#if USE_LARGE_COMPONENT_BIT_MASK
 		uint64_t m_mask2{ 0ull };
-		uint64_t m_mask3{ 0ull };
-		uint64_t m_mask4{ 0ull };
+#endif
 	};
 }
+
+/*
+	Custum hash function for Entity
+*/
+namespace std
+{
+	template <>
+	struct hash<longmarch::BitMaskSignature>
+	{
+		std::size_t operator()(const longmarch::BitMaskSignature& e) const
+		{
+#if USE_LARGE_COMPONENT_BIT_MASK == 0
+			return hash<uint64_t>()(e.m_mask);
+#else
+			return hash<uint64_t>()(e.m_mask) ^ hash<uint64_t>()(e.m_mask2);
+#endif
+		}
+	};
+}
+
+#undef USE_LARGE_COMPONENT_BIT_MASK

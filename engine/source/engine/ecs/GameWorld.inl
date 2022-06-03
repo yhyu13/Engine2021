@@ -45,10 +45,6 @@ namespace longmarch
     {
         const uint32_t family = GetComponentTypeIndex<ComponentType>();
         this->LockNC();
-        if (family >= m_componentManagers.size())
-        {
-            m_componentManagers.resize(static_cast<size_t>(family) + 1);
-        }
         auto& manager = m_componentManagers[family];
         if (!manager)
         {

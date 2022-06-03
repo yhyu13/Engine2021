@@ -8,7 +8,8 @@
 namespace longmarch
 {
 	class GameWorld;
-
+	typedef uint32_t ComponentIndexType;
+	
 	/**
 	 * @brief Each component-type gets a type-index. The type-index is used in calculating
 		component-signatures (bit-masks).
@@ -19,7 +20,7 @@ namespace longmarch
 	 */
 	struct ComponentTypeIndex
 	{
-		inline static std::atomic_uint32_t s_index = { 0u };
+		inline static std::atomic<ComponentIndexType> s_index = { 0 };
 	};
 
 	/**
@@ -75,9 +76,9 @@ namespace longmarch
 		}
 
 		//! All components of a given type belong to the same type-index. For example, all Position components have the same type-index.
-		static const uint32_t TypeIndex()
+		static const ComponentIndexType TypeIndex()
 		{
-			static const uint32_t index = ComponentTypeIndex::s_index++;
+			static const ComponentIndexType index = ComponentTypeIndex::s_index++;
 			return index;
 		}
 
@@ -92,7 +93,7 @@ namespace longmarch
 	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
 	template <typename ComponentType>
-	static const uint32_t GetComponentTypeIndex()
+	static const ComponentIndexType GetComponentTypeIndex()
 	{
 		return BaseComponent<ComponentType>::TypeIndex();
 	}

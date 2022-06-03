@@ -285,7 +285,7 @@ namespace longmarch
 
         // Component (ECS)
         //!< Contains all component managers which are indexed by component indices
-        mutable LongMarch_Vector<std::shared_ptr<BaseComponentManager>> m_componentManagers;
+        mutable LongMarch_UnorderedMap_flat<ComponentIndexType, std::shared_ptr<BaseComponentManager>> m_componentManagers;
 
         // System (ECS)
         //!< In order array of all systems

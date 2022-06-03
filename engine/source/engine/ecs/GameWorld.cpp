@@ -130,10 +130,11 @@ GameWorld* longmarch::GameWorld::Clone(const std::string& newName, const std::st
 
 			// C
 			newWorld->m_componentManagers.clear();
-			newWorld->m_componentManagers.resize(from->m_componentManagers.size());
+			newWorld->m_componentManagers.reserve(from->m_componentManagers.size());
 			for (auto i(0u); i < from->m_componentManagers.size(); ++i)
 			{
-				if (auto& manager = from->m_componentManagers[i]; manager) //!< For game world that does not contain any entity that use some components, the component manager might be nullptr
+				if (auto& manager = from->m_componentManagers[i];
+					manager) //!< For game world that does not contain any entity that use some components, the component manager might be nullptr
 				{
 					auto copy = manager->Copy();
 					copy->SetWorld(newWorld);
@@ -178,10 +179,11 @@ GameWorld* longmarch::GameWorld::Clone(const std::string& newName, GameWorld* fr
 			
 			// C
 			newWorld->m_componentManagers.clear();
-			newWorld->m_componentManagers.resize(from->m_componentManagers.size());
+			newWorld->m_componentManagers.reserve(from->m_componentManagers.size());
 			for (auto i(0u); i < from->m_componentManagers.size(); ++i)
 			{
-				if (auto& manager = from->m_componentManagers[i]; manager) //!< For game world that does not contain any entity that use some components, the component manager might be nullptr
+				if (auto& manager = from->m_componentManagers[i];
+					manager) //!< For game world that does not contain any entity that use some components, the component manager might be nullptr
 				{
 					auto copy = manager->Copy();
 					copy->SetWorld(newWorld);

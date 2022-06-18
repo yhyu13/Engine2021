@@ -45,10 +45,11 @@ namespace longmarch
             break;
 
         case GL_DEBUG_SOURCE_OTHER:
-            _source = "UNKNOWN";
+            _source = "OTHER";
             break;
 
         default:
+            return;
             _source = "UNKNOWN";
             break;
         }
@@ -84,6 +85,7 @@ namespace longmarch
             break;
 
         default:
+            return;
             _type = "UNKNOWN";
             break;
         }
@@ -107,6 +109,7 @@ namespace longmarch
             break;
 
         default:
+            return;
             _severity = "UNKNOWN";
             break;
         }
@@ -133,6 +136,7 @@ namespace longmarch
             break;
 
         default:
+            return;
             DEBUG_PRINT(output);
             break;
         }

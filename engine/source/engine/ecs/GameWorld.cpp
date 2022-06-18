@@ -26,7 +26,7 @@ longmarch::GameWorld::GameWorld(bool setCurrent, const std::string& name, const 
 GameWorld* longmarch::GameWorld::GetInstance(bool setCurrent, const std::string& name, const fs::path& filePath)
 {
 	auto worldName = (name.empty()) ? filePath.filename().string() : name;
-	auto ptr = LongMarch_Unique_ptr<GameWorld>(new GameWorld(setCurrent, worldName, filePath));
+	auto ptr = std::unique_ptr<GameWorld>(new GameWorld(setCurrent, worldName, filePath));
 	{
 		LOCK_GUARD_S();
 		auto& world = allManagedWorlds[worldName];

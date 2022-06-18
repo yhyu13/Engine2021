@@ -69,9 +69,7 @@ namespace longmarch
 
 #define LOCK_GUARD_NC() atomic_flag_guard __lock_nc(nc_flag)
 
-        BaseAtomicClassNC() noexcept
-        {
-        };
+        BaseAtomicClassNC() noexcept = default;
         virtual ~BaseAtomicClassNC() noexcept = default;
 
         void LockNC() const noexcept;
@@ -82,7 +80,7 @@ namespace longmarch
     };
 
     /*
-        Base atomic class for COPYABLE classes
+        Base atomic class for COPYABLE classes (size is 16 bytes)
         Note, that the state of the lock is not copied over on assignment or copy construction
     */
     struct BaseAtomicClass
@@ -114,7 +112,7 @@ namespace longmarch
     };
 
     /*
-    Base atomic class for NON-COPYABLE classes
+        Base adaptive atomic lock class for NON-COPYABLE classes (size is 96 bytes)
     */
     struct AdaptiveAtomicClassNC
     {
@@ -131,6 +129,6 @@ namespace longmarch
 
     protected:
         mutable std::mutex nc_mutex;
-        mutable int64_t nc_period_nano { 200ull };
+        mutable int64_t nc_period_nano{2000ull};
     };
 }

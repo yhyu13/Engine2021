@@ -205,6 +205,6 @@ namespace longmarch
 		using EventSet = std::set<event_ctx>; // Should not use phmap's block set because iterators are invalidated on erase
 		EventSet m_events;
 	private:
-		inline static LongMarch_UnorderedMap<uint32_t, LongMarch_Unique_ptr<Scheduler>> s_intanceManager;
+		inline static LongMarch_UnorderedMap<uint32_t, std::unique_ptr<Scheduler>> s_intanceManager;
 	};
 }

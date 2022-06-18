@@ -11,15 +11,14 @@
 namespace longmarch
 {
     template <class T>
-    using LongMarch_Shared_ptr = std::shared_ptr<T>;
-    template <class T>
-    struct A4Games_Deleter;
-    template <class T>
-    using LongMarch_Unique_ptr = std::unique_ptr<T>;
+    struct LongMarch_Deleter;
 
-    // Hard to work with custom deleter struct
-    //template<class T>
-    //using LongMarch_Unique_ptr = std::unique_ptr<T, A4Games_Deleter<T>>;
+    // yuhang : TODO implement long march reference counting pointers as inner counting reference
+    //          TODO where the atomic counter is a member of the class
+    // template <class T>
+    // using LongMarch_Shared_ptr = std::shared_ptr<T>;
+    // template <class T>
+    // using LongMarch_Unique_ptr = std::unique_ptr<T>;
 
     /**
      * @brief Custom MemoryManager that uses a segregated memory list for 8 , 32, 64 alignments
@@ -45,7 +44,7 @@ namespace longmarch
 
         // Replacement for make_shared
         template <class T, typename... Arguments>
-        [[nodiscard]] inline constexpr static LongMarch_Shared_ptr<T> Make_shared(Arguments&&... args) noexcept
+        [[nodiscard]] inline constexpr static std::shared_ptr<T> Make_shared(Arguments&&... args) noexcept
         {
 #if CUSTOM_ALLOCATOR == 1
             return std::shared_ptr<T>(New<T>(std::forward<Arguments>(args)...), Delete<T>);
@@ -56,7 +55,7 @@ namespace longmarch
 
         // Replacement for make_unique
         template <class T, typename... Arguments>
-        [[nodiscard]] inline constexpr static LongMarch_Unique_ptr<T> Make_unique(Arguments&&... args) noexcept
+        [[nodiscard]] inline constexpr static std::unique_ptr<T> Make_unique(Arguments&&... args) noexcept
         {
             return std::make_unique<T>(std::forward<Arguments>(args)...);
         }
@@ -124,17 +123,17 @@ namespace longmarch
 
         inline static size_t* s_pBlockSizeLookup = {nullptr};
         inline static Allocator* s_pAllocators = {nullptr};
-        inline static std::atomic_size_t s_AllocatedSize = {0u};
+        inline static CACHE_ALIGN64 std::atomic_size_t s_AllocatedSize = {0u};
         inline static std::once_flag s_flag_init;
 
         template <typename T>
         friend struct Mallocator;
         template <typename T>
-        friend struct A4Games_Deleter;
+        friend struct LongMarch_Deleter;
     };
 
     template <class T>
-    struct A4Games_Deleter
+    struct LongMarch_Deleter
     {
         // deleter
         void operator()(T* p) const
@@ -163,16 +162,13 @@ namespace longmarch
         using propagate_on_container_move_assignment = std::true_type;
         using is_always_equal = std::true_type;
 
-        constexpr Mallocator() noexcept
-        {
-        }
-
-        constexpr Mallocator(const Mallocator&) noexcept = default;
+        Mallocator() noexcept = default;
+        Mallocator(const Mallocator&) noexcept = default;
 
         template <class U>
-        constexpr Mallocator(const Mallocator<U>&) noexcept
+        Mallocator(const Mallocator<U>&) noexcept
         {
-        };
+        }
 
         [[nodiscard]] T* allocate(std::size_t n)
         {

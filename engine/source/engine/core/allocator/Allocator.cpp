@@ -98,7 +98,7 @@ void longmarch::Allocator::Free(void* p)
     {
         throw std::runtime_error(std::string("Double free!"));
     }
-    else if (block->pNext.size != static_cast<blockSize_t>(m_szBlockSize))
+    else if (block->pNext.size != m_szBlockSize)
     [[unlikely]]
     {
         throw std::runtime_error(std::string("Segementation fault!"));

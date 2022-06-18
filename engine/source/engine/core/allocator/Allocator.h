@@ -10,7 +10,7 @@ namespace longmarch
 
     //! Reference : https://stackoverflow.com/questions/16198700/using-the-extra-16-bits-in-64-bit-pointers
     template <typename T>
-    struct __declspec(align(8)) LongMarch_64Ptr
+    struct CACHE_ALIGN8 LongMarch_64Ptr
     {
         NONINSTANTIABLE(LongMarch_64Ptr);
         signed long long ptr : 48; // as per phuclv's comment, we need the type to be signed to be sign extended
@@ -34,7 +34,7 @@ namespace longmarch
         }
     };
 
-    struct __declspec(align(8)) BlockHeader
+    struct CACHE_ALIGN8 BlockHeader
     {
         // Mark BlockHeader as NONINSTANTIABLE to remind ourself only use it as a pointer
         NONINSTANTIABLE(BlockHeader);
@@ -97,7 +97,7 @@ namespace longmarch
         std::vector<PageHeader*> m_pPageList;
 
         // the free block list
-        BlockHeader * volatile m_pFreeList = {nullptr};
+        CACHE_ALIGN64 BlockHeader * m_pFreeList = {nullptr};
 
         size_t m_szDataSize = {0};
         size_t m_szPageSize = {0};
@@ -107,9 +107,9 @@ namespace longmarch
 
 #if defined(_DEBUG)
         // statistics
-        std::atomic_size_t m_nPages = {0};
-        std::atomic_size_t m_nBlocks = {0};
-        std::atomic_size_t m_nFreeBlocks = {0};
+        size_t m_nPages = {0};
+        size_t m_nBlocks = {0};
+        size_t m_nFreeBlocks = {0};
 
         // debug patterns
         constexpr static const uint8_t PATTERN_ALIGN = 0xFC;

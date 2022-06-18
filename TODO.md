@@ -14,9 +14,13 @@ b, Change the way delete an entity works:
 
 3, We need a GC cycle that periodically and smartly (through timing the cost of GC) **do memory defragmenting**.
 
+c, Condsider refactor Entity holding method from class instances into reference counting pointers. This way, we can add validation and archetype bit mask into Entity class (as we no longer cares about sizeof(Entity) since we use pointer now)
+
 ~~(2) RenderDoc debug marker for OpenGL. [check here](https://stackoverflow.com/questions/54278607/how-to-create-debugging-markers-in-opengl)~~
 
-(3) Refacotr memory allocator with ABA lock-free free list or integrate with Intel Thread Building BLock (TBB)
+(3) Refacotr memory allocator with ABA lock-free free list or integrate with Intel Thread Building BLock (TBB) or mimalloc
+
+a, Let Phmap container, std::string, etc use custom allocator
 
 (4) Vulkan renderer, integrate with VulkanSceneGraph(?it's quite big a 3rd party project, what excatly should we integrate?)
 a, consider render thread, draw thread design that support wide range of frame limit

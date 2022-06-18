@@ -27,7 +27,7 @@ std::shared_ptr<BaseComponentSystem> longmarch::AIControllerComSys::Copy() const
 {
 	LOCK_GUARD_NC();
 	auto ret = MemoryManager::Make_shared<AIControllerComSys>();
-	ret->m_bufferedRegisteredEntities = m_bufferedRegisteredEntities; // Must copy
+	ret->m_UserRegisteredEntities = m_UserRegisteredEntities; // Must copy
 	ret->m_systemSignature = m_systemSignature; // Must copy
 	ret->m_bb = MemoryManager::Make_shared<Blackboard>(*m_bb); // Custom variables
 	return ret;

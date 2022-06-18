@@ -54,13 +54,3 @@ void longmarch::EngineException::Update()
 		m_queue.pop();
 	}
 }
-
-std::wstring longmarch::str2wstr(const std::string& str)
-{
-	return std::wstring(str.begin(), str.end());
-}
-
-std::string longmarch::wstr2str(const std::wstring& wstr)
-{
-	return std::string(wstr.begin(), wstr.end());
-}

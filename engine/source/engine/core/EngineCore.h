@@ -80,3 +80,15 @@ std::wstring wStr(const wchar_t* fmt, const Args &... args)
 	_snwprintf_s(str, 1024, fmt, args...);
 	return std::wstring(str);
 }
+
+template<typename ...__TRIVIAL__>
+std::wstring str2wstr(const std::string& str)
+{
+	return std::wstring(str.begin(), str.end());
+}
+
+template<typename ...__TRIVIAL__>
+std::string wstr2str(const std::wstring& wstr)
+{
+	return std::string(wstr.begin(), wstr.end());
+}

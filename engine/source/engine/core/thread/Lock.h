@@ -42,7 +42,7 @@ namespace longmarch
         static void LockS() noexcept;
         static void UnlockS() noexcept;
     protected:
-        inline static std::atomic_flag sc_flag; // c++ 20 default initialization to false
+        CACHE_ALIGN64 inline static std::atomic_flag sc_flag; // c++ 20 default initialization to false
     };
 
     /*
@@ -56,7 +56,7 @@ namespace longmarch
         static void LockNI() noexcept;
         static void UnlockNI() noexcept;
     protected:
-        inline static std::atomic_flag ni_flag; // c++ 20 default initialization to false
+        CACHE_ALIGN64 inline static std::atomic_flag ni_flag; // c++ 20 default initialization to false
     };
 
     /*
@@ -76,11 +76,11 @@ namespace longmarch
         void UnlockNC() const noexcept;
 
     protected:
-        mutable std::atomic_flag nc_flag;
+        CACHE_ALIGN64 mutable std::atomic_flag nc_flag;
     };
 
     /*
-        Base atomic class for COPYABLE classes (size is 16 bytes)
+        Base atomic class for COPYABLE classes
         Note, that the state of the lock is not copied over on assignment or copy construction
     */
     struct BaseAtomicClass
@@ -108,7 +108,7 @@ namespace longmarch
         void UnLock() const noexcept;
 
     protected:
-        mutable std::atomic_flag m_flag;
+        CACHE_ALIGN64 mutable std::atomic_flag m_flag;
     };
 
     /*

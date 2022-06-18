@@ -2,7 +2,7 @@
 
 #include "BaseComponent.h"
 #include "engine/core/exception/EngineException.h"
-#include <set>
+#include <vector>
 
 #define USE_LARGE_COMPONENT_BIT_MASK 0
 
@@ -35,16 +35,21 @@ namespace longmarch
 #endif
 		}
 
-		inline const std::set<uint32_t> GetAllComponentIndex() const
+		inline const std::vector<uint32_t> GetAllComponentIndex() const
 		{
-			std::set<uint32_t> ret;
+			std::vector<uint32_t> ret;
+#if USE_LARGE_COMPONENT_BIT_MASK == 0
+			ret.reserve(64);
+#else
+			ret.reserve(128);
+#endif
 			if (m_mask != 0ull)
 			{
 				for (uint32_t i(0u); i < 64u; ++i)
 				{
 					if ((m_mask) & (1ull << i))
 					{
-						ret.insert(i);
+						ret.push_back(i);
 					}
 				}
 			}
@@ -55,7 +60,7 @@ namespace longmarch
 				{
 					if ((m_mask2) & (1ull << i))
 					{
-						ret.insert(i + 64u);
+						ret.push_back(i + 64u);
 					}
 				}
 			}
@@ -180,7 +185,7 @@ namespace std
 #if USE_LARGE_COMPONENT_BIT_MASK == 0
 			return hash<uint64_t>()(e.m_mask);
 #else
-			return hash<uint64_t>()(e.m_mask) ^ hash<uint64_t>()(e.m_mask2);
+			return hash<uint64_t>()(e.m_mask) ^ hash<uint64_t>()(e.m_mask2 << 1);
 #endif
 		}
 	};

@@ -56,8 +56,6 @@ void longmarch::Body3DComSys::PreRenderUpdate(double dt)
 	has been transfered to the GPU. So we need to initialze the bounding volume before it is rendered.
 	*/
 
-	auto entities = m_bufferedRegisteredEntities;
-
 	ParEach(
 		[this](EntityDecorator e)
 	{
@@ -172,7 +170,7 @@ std::shared_ptr<BaseComponentSystem> longmarch::Body3DComSys::Copy() const
 {
 	LOCK_GUARD_NC();
 	auto ret = MemoryManager::Make_shared<Body3DComSys>();
-	ret->m_bufferedRegisteredEntities = m_bufferedRegisteredEntities; // Must copy
+	ret->m_UserRegisteredEntities = m_UserRegisteredEntities; // Must copy
 	ret->m_systemSignature = m_systemSignature; // Must copy
 	ret->m_scene = MemoryManager::Make_shared<Scene>(*m_scene); // Custom variables
 	return ret;

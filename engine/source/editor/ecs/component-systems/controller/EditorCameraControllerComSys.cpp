@@ -1192,7 +1192,7 @@ std::shared_ptr<BaseComponentSystem> longmarch::EditorCameraControllerComSys::Co
 {
 	LOCK_GUARD_NC();
 	auto ret = MemoryManager::Make_shared<EditorCameraControllerComSys>();
-	ret->m_bufferedRegisteredEntities = m_bufferedRegisteredEntities; // Must copy
+	ret->m_UserRegisteredEntities = m_UserRegisteredEntities; // Must copy
 	ret->m_systemSignature = m_systemSignature; // Must copy
 	ret->m_editingWorld = m_editingWorld; // Custom variables
 	return ret;

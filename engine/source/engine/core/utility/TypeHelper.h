@@ -259,10 +259,12 @@ namespace longmarch
 	}
 }
 
+// Include memory manager in order to use the custom mallocator
 #include "../allocator/MemoryManager.h"
 
 namespace longmarch
 {
+	
 #if CUSTOM_ALLOCATOR == 1
 	template<class T>
 	using LongMarch_Vector = std::vector<T, longmarch::Mallocator<T>>;

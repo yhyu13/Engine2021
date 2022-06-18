@@ -563,13 +563,29 @@ void longmarch::GameWorld::RemoveAllComponent(const Entity& entity)
 		{
 			if (bitSignature.IsAMatch(system->GetSystemSignature()))
 			{
-				system->RemoveEntity(entity);
+				system->RemoveUserEntity(entity);
 			}
 		}
 		// Update bitmask dual map
 		LongMarch_EraseRemove(m_maskEntityVecMap[bitSignature], entity);
 		bitSignature.Reset();
 	}
+}
+
+const LongMarch_Vector<Entity> GameWorld::EntityView(const BitMaskSignature& mask) const
+{
+	ENGINE_EXCEPT_IF(mask.GetAllComponentIndex().empty(), L"GameWorld::EntityView should not receive a trivial bit mask. Double check EntityView argument.");
+	// TODO allow caching and setting dirty mechanism to entity view
+	LongMarch_Vector<Entity> ret;
+	ret.reserve(256);
+	for (const auto& [entity_mask, entities] : m_maskEntityVecMap)
+	{
+		if (entity_mask.IsAMatch(mask))
+		{
+			std::ranges::copy(entities.begin(), entities.end(), std::back_inserter(ret));
+		}
+	}
+	return ret;
 }
 
 void longmarch::GameWorld::ForEach(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(const EntityDecorator& e)>>::Type func) const

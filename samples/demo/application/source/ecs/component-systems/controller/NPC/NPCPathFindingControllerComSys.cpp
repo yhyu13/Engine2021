@@ -24,9 +24,9 @@ void longmarch::NPCPathFindingControllerComSys::_ON_GEN_RND_PATH(EventQueue<CS56
 	auto event = std::static_pointer_cast<CS560GenRndPathEvent>(e);
 	if (m_parentWorld == event->m_entity.GetWorld())
 	{
-		// Remove entity if it was added
+		// Remove entity if it was added because we will add it back later but the adding method does not check existence first
 		{
-			RemoveEntity(event->m_entity);
+			if (RemoveUserEntity(event->m_entity))
 			{
 				// Remove previous debug draw
 				auto& data = m_PatherLUT[event->m_entity];
@@ -40,7 +40,7 @@ void longmarch::NPCPathFindingControllerComSys::_ON_GEN_RND_PATH(EventQueue<CS56
 			}
 		}
 		{
-			AddEntity(event->m_entity);
+			AddUserEntity(event->m_entity);
 
 			LongMarch_Vector<int> indices;
 			LongMarch_Range(indices, 0, NumPoints - 1, 1);
@@ -282,7 +282,7 @@ void longmarch::NPCPathFindingControllerComSys::Update(double dt)
 		return;
 	}
 
-	ForEach(
+	ForEachUser(
 		[this, dt](EntityDecorator e)
 	{
 		if (auto it = m_PatherLUT.find(e); it != m_PatherLUT.end())

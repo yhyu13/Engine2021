@@ -26,7 +26,7 @@ namespace longmarch
      *
      * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
      */
-    class GameWorld final : public BaseAtomicClassNC, public BaseAtomicClassStatic
+    class GameWorld final : public BaseAtomicClassNC, public BaseAtomicClassStatic, public AdaptiveAtomicClassNC
     {
     private:
         NONCOPYABLE(GameWorld);
@@ -203,6 +203,8 @@ namespace longmarch
 
         template <class... Components>
         const LongMarch_Vector<Entity> EntityView() const;
+        
+        const LongMarch_Vector<Entity> EntityView(const BitMaskSignature& bitMask) const;
 
         //! Unity ECS like for each function
         template <class... Components>

@@ -55,43 +55,57 @@ namespace longmarch
     }
 
     template <typename ComponentType>
-    void longmarch::GameWorld::_TryAddEntityForAllComponentSystems(const Entity& entity)
+    void GameWorld::_TryAddEntityForAllComponentSystems(const Entity& entity)
     {
-        LOCK_GUARD_NC();
-        BitMaskSignature& updatedMask = m_entityMaskMap[entity];
-        BitMaskSignature oldMask = updatedMask;
-        updatedMask.AddComponent<ComponentType>();
-        // update the component-mask for the entity once a new component has been added
-        // Update mask to entity vector
-        LongMarch_EraseRemove(m_maskEntityVecMap[oldMask], entity);
-        m_maskEntityVecMap[updatedMask].push_back(entity);
-        // Update all system
-        for (auto& system : m_systems)
+        BitMaskSignature oldMask, newMask;
         {
-            if (updatedMask.IsNewMatch(oldMask, system->GetSystemSignature()))
+            LOCK_GUARD_NC();
+            BitMaskSignature& updatedMask = m_entityMaskMap[entity];
+            oldMask = updatedMask;
+            updatedMask.AddComponent<ComponentType>();
+            newMask = updatedMask;
+            // update the component-mask for the entity once a new component has been added
+            // Update mask to entity vector
+            LongMarch_EraseRemove(m_maskEntityVecMap[oldMask], entity);
+            m_maskEntityVecMap[updatedMask].push_back(entity);
+        }
+        {
+            LOCK_GUARD_ADAPTIVE_NC();
+            // Update all system
+            for (auto& system : m_systems)
             {
-                system->AddEntity(entity);
+                if (newMask.IsNewMatch(oldMask, system->GetSystemSignature()))
+                {
+                    system->AddUserEntity(entity);
+                }
             }
         }
     }
 
     template <typename ComponentType>
-    void longmarch::GameWorld::_TryRemoveEntityForAllComponentSystems(const Entity& entity)
+    void GameWorld::_TryRemoveEntityForAllComponentSystems(const Entity& entity)
     {
-        LOCK_GUARD_NC();
-        BitMaskSignature& updatedMask = m_entityMaskMap[entity];
-        BitMaskSignature oldMask = updatedMask;
-        updatedMask.RemoveComponent<ComponentType>();
-        // update the component-mask for the entity once a new component has been added
-        // Update mask to entity vector
-        LongMarch_EraseRemove(m_maskEntityVecMap[oldMask], entity);
-        m_maskEntityVecMap[updatedMask].push_back(entity);
-        // Update all system
-        for (auto& system : m_systems)
+        BitMaskSignature oldMask, newMask;
         {
-            if (updatedMask.IsNoLongerMatched(oldMask, system->GetSystemSignature()))
+            LOCK_GUARD_NC();
+            BitMaskSignature& updatedMask = m_entityMaskMap[entity];
+            oldMask = updatedMask;
+            updatedMask.RemoveComponent<ComponentType>();
+            newMask = updatedMask;
+            // update the component-mask for the entity once a new component has been added
+            // Update mask to entity vector
+            LongMarch_EraseRemove(m_maskEntityVecMap[oldMask], entity);
+            m_maskEntityVecMap[updatedMask].push_back(entity);
+        }
+        {
+            LOCK_GUARD_ADAPTIVE_NC();
+            // Update all system
+            for (auto& system : m_systems)
             {
-                system->RemoveEntity(entity);
+                if (newMask.IsNoLongerMatched(oldMask, system->GetSystemSignature()))
+                {
+                    system->RemoveUserEntity(entity);
+                }
             }
         }
     }
@@ -99,27 +113,18 @@ namespace longmarch
     template <class ...Components>
     inline const LongMarch_Vector<Entity> GameWorld::EntityView() const
     {
-        LOCK_GUARD_NC();
+        LOCK_GUARD_ADAPTIVE_NC();
         if constexpr (sizeof...(Components) == 0)
         {
+            // Should not reach this statement, double check EntityView argument
+            ENGINE_EXCEPT(L"GameWorld::EntityView should not receive a trivial bit mask. Double check EntityView argument.");
             return LongMarch_Vector<Entity>();
         }
         else
         {
-            LongMarch_Vector<Entity> ret;
-            ret.reserve(256);
             BitMaskSignature mask;
             mask.AddComponent<Components...>();
-            for (const auto& [entity_mask, entities] : m_maskEntityVecMap)
-            {
-                if (entity_mask.IsAMatch(mask))
-                {
-                    std::copy(entities.begin(), entities.end(), std::back_inserter(ret));
-                }
-            }
-            // Sorting entity to incremental order such that the 2nd predicate of ECS is fulfilled, such that the iteration is order with memory layout
-            std::sort(ret.begin(), ret.end(), std::less<Entity>());
-            return ret;
+            return EntityView(mask);
         }
     }
 

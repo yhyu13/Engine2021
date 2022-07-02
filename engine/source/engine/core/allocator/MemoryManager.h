@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include "Allocator.h"
+#include "engine/core/exception/EngineException.h"
 
 #ifdef _DEBUG
 #define CUSTOM_ALLOCATOR 1
@@ -10,18 +11,8 @@
 
 namespace longmarch
 {
-    template <class T>
-    struct LongMarch_Deleter;
-
-    // yuhang : TODO implement long march reference counting pointers as inner counting reference
-    //          TODO where the atomic counter is a member of the class
-    // template <class T>
-    // using LongMarch_Shared_ptr = std::shared_ptr<T>;
-    // template <class T>
-    // using LongMarch_Unique_ptr = std::unique_ptr<T>;
-
     /**
-     * @brief Custom MemoryManager that uses a segregated memory list for 8 , 32, 64 alignments
+     * @brief Custom MemoryManager that uses a segregated memory list for 8 , 32, 64 alignments, etc
      *
      * Use it like : MemoryManager::Make_shared<T>(args...);
      *				 MemoryManager::Make_unique<T>(args...);
@@ -44,7 +35,7 @@ namespace longmarch
 
         // Replacement for make_shared
         template <class T, typename... Arguments>
-        [[nodiscard]] inline constexpr static std::shared_ptr<T> Make_shared(Arguments&&... args) noexcept
+        [[nodiscard]] inline static std::shared_ptr<T> Make_shared(Arguments&&... args) noexcept
         {
 #if CUSTOM_ALLOCATOR == 1
             return std::shared_ptr<T>(New<T>(std::forward<Arguments>(args)...), Delete<T>);
@@ -55,7 +46,7 @@ namespace longmarch
 
         // Replacement for make_unique
         template <class T, typename... Arguments>
-        [[nodiscard]] inline constexpr static std::unique_ptr<T> Make_unique(Arguments&&... args) noexcept
+        [[nodiscard]] inline static std::unique_ptr<T> Make_unique(Arguments&&... args) noexcept
         {
             return std::make_unique<T>(std::forward<Arguments>(args)...);
         }
@@ -63,7 +54,7 @@ namespace longmarch
     private:
         // Replacement for new
         template <class T, typename... Arguments>
-        [[nodiscard]] inline constexpr static T* New(Arguments&&... args) noexcept
+        [[nodiscard]] inline static T* New(Arguments&&... args) noexcept
         {
             s_AllocatedSize += sizeof(T);
             //DEBUG_PRINT("New : " + Str(typeid(T).name()) + " " + Str(sizeof(T)) + " " + Str(s_AllocatedSize));
@@ -76,7 +67,7 @@ namespace longmarch
 
         // Replacement for delete
         template <class T>
-        inline constexpr static void Delete(T* p) noexcept
+        inline static void Delete(T* p) noexcept
         {
             s_AllocatedSize -= sizeof(T);
             //DEBUG_PRINT("Delete : " + Str(typeid(T).name()) + " " + Str(sizeof(T)) + " " + Str(BlockHeader::GetSize(p)) + " " + Str(s_AllocatedSize));
@@ -86,11 +77,10 @@ namespace longmarch
 #else
 			delete p;
 #endif // CUSTOM_ALLOCATOR
+            p = nullptr;
         }
 
     public:
-        [[nodiscard]] static void* Allocate(const size_t size, const size_t alignment) noexcept;
-
         // Replacement for malloc()
         [[nodiscard]] static void* Allocate(const size_t size) noexcept;
 
@@ -128,25 +118,6 @@ namespace longmarch
 
         template <typename T>
         friend struct Mallocator;
-        template <typename T>
-        friend struct LongMarch_Deleter;
-    };
-
-    template <class T>
-    struct LongMarch_Deleter
-    {
-        // deleter
-        void operator()(T* p) const
-        {
-            MemoryManager::s_AllocatedSize -= sizeof(T);
-            //DEBUG_PRINT("Delete : " + Str(typeid(T).name()) + " " + Str(sizeof(T)) + " " + Str(BlockHeader::GetSize(Allocator::GetBlock(p))) + " " + Str(MemoryManager::s_AllocatedSize));
-#if CUSTOM_ALLOCATOR == 1
-            p->~T();
-            MemoryManager::Free(p, sizeof(T));
-#else
-			delete p;
-#endif // CUSTOM_ALLOCATOR
-        };
     };
 
     /*

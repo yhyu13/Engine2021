@@ -2,7 +2,6 @@
 #include "../EngineCore.h"
 #include "../thread/Queue.h"
 #include <string>
-#include <exception>
 
 namespace longmarch
 {

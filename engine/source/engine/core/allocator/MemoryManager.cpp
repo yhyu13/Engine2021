@@ -54,32 +54,7 @@ Allocator* longmarch::MemoryManager::LookUpAllocator(const size_t size) noexcept
     }
 }
 
-[[nodiscard]]
-void* longmarch::MemoryManager::Allocate(const size_t size, const size_t alignment) noexcept
-{
-    // There might be cases where allocation happens before we call Init, so we do init here
-    std::call_once(s_flag_init, MemoryManager::Init);
-
-    uint8_t* p;
-    const size_t _size = ALIGN(size, alignment);
-    if (Allocator* pAlloc = LookUpAllocator(_size))
-    [[likely]]
-    {
-        p = reinterpret_cast<uint8_t*>(pAlloc->Allocate());
-    }
-    else
-    [[unlikely]]
-    {
-        p = reinterpret_cast<uint8_t*>(malloc(_size));
-    }
-
-    p = reinterpret_cast<uint8_t*>(ALIGN(reinterpret_cast<size_t>(p), alignment));
-
-    return reinterpret_cast<void*>(p);
-}
-
 // Replacement for malloc()
-
 [[nodiscard]]
 void* longmarch::MemoryManager::Allocate(const size_t size) noexcept
 {
@@ -103,7 +78,6 @@ void* longmarch::MemoryManager::Allocate(const size_t size) noexcept
 }
 
 // Replacement for free()
-
 void longmarch::MemoryManager::Free(void* p, const size_t size) noexcept
 {
 #if CUSTOM_ALLOCATOR

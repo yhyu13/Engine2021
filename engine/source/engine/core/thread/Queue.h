@@ -8,7 +8,6 @@
 #include <stdexcept>
 #include <type_traits>
 #include <condition_variable>
-#include "Semaphore.h"
 
 namespace longmarch
 {

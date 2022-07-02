@@ -21,6 +21,9 @@ namespace longmarch
 		void* m_collisionData;
 	};
 
+	/*
+	 * GC this entity alone. See EngineGCRecursiveEvent to GC its children.
+	 */
 	struct EngineGCEvent : public Event<EngineEventType> {
 		explicit EngineGCEvent(const EntityDecorator& entity)
 			:
@@ -31,6 +34,9 @@ namespace longmarch
 		EntityDecorator m_entity;
 	};
 
+	/*
+	 * GC this entity and all its children. See EngineGCEvent to GC this entity alone.
+	 */
 	struct EngineGCRecursiveEvent : public Event<EngineEventType> {
 		explicit EngineGCRecursiveEvent(const EntityDecorator& entity)
 			:

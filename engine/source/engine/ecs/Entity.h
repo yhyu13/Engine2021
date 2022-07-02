@@ -1,5 +1,6 @@
 #pragma once
 #include "engine/core/EngineCore.h"
+#include "engine/core/smart-pointer/RefPtr.h"
 #include <iostream>
 
 namespace longmarch
@@ -78,4 +79,22 @@ namespace std
 			return hash<longmarch::EntityID>()(e.m_id);
 		}
 	};
+}
+
+namespace longmarch
+{
+	struct CACHE_ALIGN64 Entity2 : public LongMarch_ReferenceCounter, public Entity
+	{
+		void IncrementRef() noexcept
+		{
+			++m_refCounter;
+		}
+
+		bool DecrementRef() noexcept
+		{
+			return --m_refCounter > 0;
+		}
+	};
+
+	using RefEntity = RefPtr<Entity2>;
 }

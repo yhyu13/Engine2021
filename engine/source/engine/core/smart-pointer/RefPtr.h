@@ -19,7 +19,7 @@ namespace longmarch
         { t.DecrementRef() } -> std::convertible_to<bool>;
     };
 
-    /*
+    /**
      *  @brief A reference pointer requires template class instance method (1) Increment reference (2) Decrement reference
      *  The template class should maintain a mutable atomic reference counter, and the template class should align itself to avoid
      *  false sharing

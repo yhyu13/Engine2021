@@ -8,7 +8,6 @@
 void longmarch::MemoryManager::Init()
 {
     // initialize block size lookup table
-    s_pBlockSizeLookup = new size_t[kMaxBlockSize + 1];
     size_t j = 0;
     for (size_t i = 0; i <= kMaxBlockSize; i++)
     {
@@ -21,7 +20,6 @@ void longmarch::MemoryManager::Init()
         throw std::runtime_error("Memory manger pool initialization has failed.");
     }
     // initialize the allocators
-    s_pAllocators = new Allocator[kNumBlockSizes];
     for (size_t i = 0; i < kNumBlockSizes; i++)
     {
         s_pAllocators[i].Reset(kBlockSizes[i], kPageSize, kAlignment);
@@ -37,21 +35,6 @@ void longmarch::MemoryManager::Shutdown()
        */
     //delete[] s_pAllocators;
     //delete[] s_pBlockSizeLookup;
-}
-
-Allocator* longmarch::MemoryManager::LookUpAllocator(const size_t size) noexcept
-{
-    // check eligibility for lookup
-    if (size <= kMaxBlockSize)
-    [[likely]]
-    {
-        return s_pAllocators + s_pBlockSizeLookup[size];
-    }
-    else
-    [[unlikely]]
-    {
-        return nullptr;
-    }
 }
 
 // Replacement for malloc()

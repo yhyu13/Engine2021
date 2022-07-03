@@ -4,7 +4,11 @@
 
 namespace longmarch
 {
-    // TODO @yuhang : implement class specialized memory manager
+    /**
+     *  @brief A specialized memory manager for a given template class
+     *
+     *  @detail Support maximum class size of 4096 byte, consider using malloc for class bigger than that.
+     */
     template <class T>
     class ENGINE_API TemplateMemoryManager
     {
@@ -74,11 +78,15 @@ namespace longmarch
 
     private:
         
+        constexpr inline static const bool bUseLargeBlock = {sizeof(T) > MemoryManager::kMaxBlockSize};
+        constexpr inline static const uint32_t kMaxElementSize = {1u << 12};
         constexpr inline static const uint32_t kPageSize = {1u << 12};
+        constexpr inline static const uint32_t kPageSizeLarge = {1u << 21};
         constexpr inline static const uint32_t kAlignment = {1u << 3};
         
-        inline static Allocator* s_pAllocator = {nullptr};
         inline static CACHE_ALIGN64 std::atomic_size_t s_AllocatedSize = {0u};
+        
+        inline static Allocator s_Allocator;
         inline static std::once_flag s_flag_init;
     };
 }
@@ -88,9 +96,11 @@ namespace longmarch
     template <class T>
     void TemplateMemoryManager<T>::Init()
     {
-        // initialize the allocators
-        s_pAllocator = new Allocator();
-        s_pAllocator->Reset(sizeof(T), kPageSize, kAlignment);
+        static_assert(sizeof(T) >= kMaxElementSize, "Class has size greater than allowed! Consider using std::malloc instead");
+        // initialize the allocator
+        s_Allocator.Reset(sizeof(T),
+            (!bUseLargeBlock) ? kPageSize : kPageSizeLarge,
+            kAlignment);
     }
 
     template <class T>
@@ -101,7 +111,7 @@ namespace longmarch
            are already deleted. To avoid that error, simply leave these memory
            for the operating system to clean up.
            */
-        //delete s_pAllocator;
+        //delete s_Allocator;
     }
     
     template <class T>
@@ -110,7 +120,7 @@ namespace longmarch
 #if CUSTOM_ALLOCATOR
         // There might be cases where allocation happens before we call Init, so we do init here
         std::call_once(s_flag_init, TemplateMemoryManager::Init);
-        return s_pAllocator->Allocate();
+        return s_Allocator.Allocate();
 #else
         return malloc(size);
 #endif
@@ -120,7 +130,7 @@ namespace longmarch
     void TemplateMemoryManager<T>::Free(void* p) noexcept
     {
 #if CUSTOM_ALLOCATOR
-        s_pAllocator->Free(p);
+        s_Allocator.Free(p);
 #else
         free(p);
 #endif

@@ -12,13 +12,17 @@
 namespace longmarch
 {
     /**
-     * @brief Custom MemoryManager that uses a segregated memory list for 8 , 32, 64 alignments, etc
+     *  @brief Custom MemoryManager that uses a segregated memory list for 8 , 32, 64 alignments, etc
      *
-     * Use it like : MemoryManager::Make_shared<T>(args...);
+     *  Use it like : MemoryManager::Make_shared<T>(args...);
      *				 MemoryManager::Make_unique<T>(args...);
      *				 Use std::allocator to allocate values with smaller than 8 bytes, it is not going to be efficient
      *
-     * @author Hang Yu (yohan680919@gmail.com)
+     *  @details Memory page size 4KB, max block size 960B. Class bigger than 960B would allocated by std::malloc 
+     *
+     *  @attention If you use MemoryManager::New and MemoryManager::Delete, you must new && delete by the same pointer type
+     *  
+     *  @author Hang Yu (yohan680919@gmail.com)
      */
     class ENGINE_API MemoryManager
     {
@@ -88,9 +92,6 @@ namespace longmarch
         static void Free(void* p, const size_t size) noexcept;
 
     private:
-        [[nodiscard]] static Allocator* LookUpAllocator(const size_t size) noexcept;
-
-    private:
         constexpr inline static const uint32_t kBlockSizes[] =
         {
             8, 16, 24, 32, 40, 48, 56,
@@ -99,21 +100,25 @@ namespace longmarch
             128, 160, 192, 224, 256,
             320, 384, 448, 512, 576, 640,
 
-            704, 768, 832, 896, 960, 1024
+            704, 768, 832, 896, 960
         };
 
+        // 4KB per page size
         constexpr inline static const uint32_t kPageSize = {1u << 12};
+
+        // 8 Byte per block size alignment
         constexpr inline static const uint32_t kAlignment = {1u << 3};
 
-        // number of elements in the block size array
-        constexpr inline static const uint32_t kNumBlockSizes = {sizeof(kBlockSizes) / sizeof(kBlockSizes[0])};
+        // Number of elements in the block size array
+        constexpr inline static const uint32_t kNumBlockSizes = std::size(kBlockSizes);
 
-        // largest valid block size
+        // Largest valid block size
         constexpr inline static const uint32_t kMaxBlockSize = {kBlockSizes[kNumBlockSizes - 1]};
 
-        inline static size_t* s_pBlockSizeLookup = {nullptr};
-        inline static Allocator* s_pAllocators = {nullptr};
         inline static CACHE_ALIGN64 std::atomic_size_t s_AllocatedSize = {0u};
+        
+        inline static size_t s_pBlockSizeLookup[kMaxBlockSize + 1] = { 0 };
+        inline static Allocator s_pAllocators[kNumBlockSizes];
         inline static std::once_flag s_flag_init;
 
         template <typename T>

@@ -34,6 +34,11 @@ namespace longmarch
         }
     };
 
+    /**
+     *  @brief BlockHeader has been optimized with platform of 64 bits addresses that only utilize the lower 48 bits
+     *         BlockHeader's pNext pointer has bit utilization of 64 bits in the following order
+     *         1 bit : free | 15 bits : block size | 48 bits : pointer to next free block     
+     */
     struct CACHE_ALIGN8 BlockHeader
     {
         // Mark BlockHeader as NONINSTANTIABLE to remind ourself only use it as a pointer

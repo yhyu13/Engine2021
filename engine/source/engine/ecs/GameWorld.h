@@ -26,7 +26,7 @@ namespace longmarch
      *
      * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
      */
-    class GameWorld final : public BaseAtomicClassNC, public BaseAtomicClassStatic, public AdaptiveAtomicClassNC
+    class GameWorld final : public BaseAtomicClassNC, public BaseAtomicClassStatic
     {
     private:
         NONCOPYABLE(GameWorld);
@@ -309,7 +309,7 @@ namespace longmarch
         inline static LongMarch_UnorderedMap_flat<std::string, std::unique_ptr<GameWorld>> allManagedWorlds;
         inline static GameWorld* currentWorld = {nullptr};
 
-        //! Multithreaded pool used in ParEach2 for inner function multithreading to avoid overflow stalling the default thread pool 
+        //! Multithreaded pool used in ParEach2 for inner function multithreading to avoid thread overflow stalling the default thread pool and the entire program
         inline static StealThreadPool s_parEach2Pool;
         //! GameWorld class level job pool, used in running game thread in the backgroud or any other async tasks
         inline static StealThreadPool s_JobPool{4};

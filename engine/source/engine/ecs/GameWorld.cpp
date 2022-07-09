@@ -558,14 +558,6 @@ void longmarch::GameWorld::RemoveAllComponent(const Entity& entity)
 			ENGINE_EXCEPT_IF(componentIndex >= m_componentManagers.size(), L"Entity " + str2wstr(Str(entity)) + L"is requesting all components before some component managers are initilaized!");
 			m_componentManagers[componentIndex]->RemoveComponentFromEntity(entity);
 		}
-		// Clear bit mask and remove entity from component systems
-		for (auto& system : m_systems)
-		{
-			if (bitSignature.IsAMatch(system->GetSystemSignature()))
-			{
-				system->RemoveUserEntity(entity);
-			}
-		}
 		// Update bitmask dual map
 		LongMarch_EraseRemove(m_maskEntityVecMap[bitSignature], entity);
 		bitSignature.Reset();
@@ -574,6 +566,7 @@ void longmarch::GameWorld::RemoveAllComponent(const Entity& entity)
 
 const LongMarch_Vector<Entity> GameWorld::EntityView(const BitMaskSignature& mask) const
 {
+	LOCK_GUARD_NC();
 	ENGINE_EXCEPT_IF(mask.GetAllComponentIndex().empty(), L"GameWorld::EntityView should not receive a trivial bit mask. Double check EntityView argument.");
 	// TODO allow caching and setting dirty mechanism to entity view
 	LongMarch_Vector<Entity> ret;
@@ -623,13 +616,13 @@ std::future<void> longmarch::GameWorld::ParEach(const LongMarch_Vector<Entity>& 
 void longmarch::GameWorld::_ParEach2(const LongMarch_Vector<Entity>& es, typename Identity<std::function<void(const EntityDecorator& e)>>::Type func, int min_split) const
 {
 	try {
+		auto& pool = s_parEach2Pool;
 		if (es.empty())
 		{
 			// Early return on empty entities
 			return;
 		}
 		int num_e = es.size();
-		auto& pool = s_parEach2Pool;
 		auto _begin = es.begin();
 		auto _end = es.end();
 		int split_size = num_e / pool.threads;
@@ -648,13 +641,15 @@ void longmarch::GameWorld::_ParEach2(const LongMarch_Vector<Entity>& es, typenam
 		{
 			LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
 			_begin += split_size;
-			_jobs.emplace_back(std::move(pool.enqueue_task([this, &func, split_es = std::move(split_es)]() {
+			_jobs.emplace_back(std::move(pool.enqueue_task([this, &func, split_es = std::move(split_es)]()
+				{
 				this->_MultiThreadExceptionCatcher(
 					[this, &func, &split_es]()
 					{
 						this->ForEach(split_es, func);
 					});
-			})));
+				}
+			)));
 		}
 		// Check any entities left
 		if (num_e_left <= 0)
@@ -662,13 +657,15 @@ void longmarch::GameWorld::_ParEach2(const LongMarch_Vector<Entity>& es, typenam
 			split_size += num_e_left;
 			LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
 			ENGINE_EXCEPT_IF((_begin+split_size) != _end, L"Reach end condition does not meet!");
-			_jobs.emplace_back(std::move(pool.enqueue_task([this, &func, split_es = std::move(split_es)]() {
+			_jobs.emplace_back(std::move(pool.enqueue_task([this, &func, split_es = std::move(split_es)]()
+				{
 				this->_MultiThreadExceptionCatcher(
 					[this, &func, &split_es]()
 					{
 						this->ForEach(split_es, func);
 					});
-			})));
+				}
+			)));
 		}
 		for (auto& job : _jobs)
 		{

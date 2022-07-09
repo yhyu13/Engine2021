@@ -43,81 +43,50 @@ namespace longmarch
     template <typename ComponentType>
     ComponentManager<ComponentType>* GameWorld::_GetComponentManager() const
     {
+        LOCK_GUARD_NC();
         const uint32_t family = GetComponentTypeIndex<ComponentType>();
-        this->LockNC();
         auto& manager = m_componentManagers[family];
         if (!manager)
         {
             manager = std::move(MemoryManager::Make_shared<ComponentManager<ComponentType>>());
         }
-        this->UnlockNC();
         return static_cast<ComponentManager<ComponentType>*>(manager.get());
     }
 
     template <typename ComponentType>
     void GameWorld::_TryAddEntityForAllComponentSystems(const Entity& entity)
     {
-        BitMaskSignature oldMask, newMask;
-        {
-            LOCK_GUARD_NC();
-            BitMaskSignature& updatedMask = m_entityMaskMap[entity];
-            oldMask = updatedMask;
-            updatedMask.AddComponent<ComponentType>();
-            newMask = updatedMask;
-            // update the component-mask for the entity once a new component has been added
-            // Update mask to entity vector
-            LongMarch_EraseRemove(m_maskEntityVecMap[oldMask], entity);
-            m_maskEntityVecMap[updatedMask].push_back(entity);
-        }
-        {
-            LOCK_GUARD_ADAPTIVE_NC();
-            // Update all system
-            for (auto& system : m_systems)
-            {
-                if (newMask.IsNewMatch(oldMask, system->GetSystemSignature()))
-                {
-                    system->AddUserEntity(entity);
-                }
-            }
-        }
+        LOCK_GUARD_NC();
+        BitMaskSignature& updatedMask = m_entityMaskMap[entity];
+        const auto  oldMask = updatedMask;
+        updatedMask.AddComponent<ComponentType>();
+        // update the component-mask for the entity once a new component has been added
+        // Update mask to entity vector
+        LongMarch_EraseRemove(m_maskEntityVecMap[oldMask], entity);
+        m_maskEntityVecMap[updatedMask].push_back(entity);
     }
 
     template <typename ComponentType>
     void GameWorld::_TryRemoveEntityForAllComponentSystems(const Entity& entity)
     {
-        BitMaskSignature oldMask, newMask;
-        {
-            LOCK_GUARD_NC();
-            BitMaskSignature& updatedMask = m_entityMaskMap[entity];
-            oldMask = updatedMask;
-            updatedMask.RemoveComponent<ComponentType>();
-            newMask = updatedMask;
-            // update the component-mask for the entity once a new component has been added
-            // Update mask to entity vector
-            LongMarch_EraseRemove(m_maskEntityVecMap[oldMask], entity);
-            m_maskEntityVecMap[updatedMask].push_back(entity);
-        }
-        {
-            LOCK_GUARD_ADAPTIVE_NC();
-            // Update all system
-            for (auto& system : m_systems)
-            {
-                if (newMask.IsNoLongerMatched(oldMask, system->GetSystemSignature()))
-                {
-                    system->RemoveUserEntity(entity);
-                }
-            }
-        }
+        LOCK_GUARD_NC();
+        BitMaskSignature& updatedMask = m_entityMaskMap[entity];
+        const auto oldMask = updatedMask;
+        updatedMask.RemoveComponent<ComponentType>();
+        // update the component-mask for the entity once a new component has been added
+        // Update mask to entity vector
+        LongMarch_EraseRemove(m_maskEntityVecMap[oldMask], entity);
+        m_maskEntityVecMap[updatedMask].push_back(entity);
     }
 
     template <class ...Components>
     inline const LongMarch_Vector<Entity> GameWorld::EntityView() const
     {
-        LOCK_GUARD_ADAPTIVE_NC();
         if constexpr (sizeof...(Components) == 0)
         {
             // Should not reach this statement, double check EntityView argument
-            ENGINE_EXCEPT(L"GameWorld::EntityView should not receive a trivial bit mask. Double check EntityView argument.");
+            ENGINE_EXCEPT(
+                L"GameWorld::EntityView should not receive a trivial bit mask. Double check EntityView argument.");
             return LongMarch_Vector<Entity>();
         }
         else
@@ -170,6 +139,7 @@ namespace longmarch
     {
         try
         {
+            auto& pool = s_parEach2Pool;
             auto es = EntityView<Components...>();
             if (es.empty())
             {
@@ -177,7 +147,6 @@ namespace longmarch
                 return;
             }
             int num_e = es.size();
-            auto& pool = s_parEach2Pool;
             auto _begin = es.begin();
             auto _end = es.end();
             int split_size = num_e / pool.threads;

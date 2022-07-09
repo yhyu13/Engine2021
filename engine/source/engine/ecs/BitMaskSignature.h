@@ -1,7 +1,6 @@
 #pragma once
 
 #include "BaseComponent.h"
-#include "engine/core/exception/EngineException.h"
 #include <vector>
 
 #define USE_LARGE_COMPONENT_BIT_MASK 0

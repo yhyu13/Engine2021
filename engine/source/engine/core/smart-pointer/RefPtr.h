@@ -4,11 +4,18 @@
 
 namespace longmarch
 {
-    struct LongMarch_ReferenceCounter
-    {
-        std::atomic_uint_fast32_t m_refCounter { 0 };
-    };
-    
+#define ADD_REFERENCE_COUTNER() \
+    public: \
+    inline void IncrementRef() noexcept  \
+    {\
+        ++m_refCounter;\
+    }\
+    inline bool DecrementRef() noexcept\
+    {\
+        return --m_refCounter > 0;\
+    }\
+    private: \
+    std::atomic_uint_fast32_t m_refCounter { 0 };
     template <typename T>
     concept ReferenceCountable = requires(T&& t)
     {
@@ -37,9 +44,9 @@ namespace longmarch
     public:
         // Big Five----------------------------------------------------------------------------------------------------
 
-        RefPtr(const T& ref) noexcept
+        RefPtr(T* ref) noexcept
+            : m_ptr(ref)
         {
-            m_ptr = &ref;
             m_ptr->IncrementRef();
         }
 
@@ -132,14 +139,9 @@ namespace longmarch
 
         // Getter-----------------------------------------------------------------------------------------------------------
 
-        [[nodiscard]] T* Get() noexcept
+        [[nodiscard]] T* get() noexcept
         {
             return m_ptr;
-        }
-
-        [[nodiscard]] T& Ref() noexcept
-        {
-            return *m_ptr;
         }
 
     private:

@@ -40,11 +40,6 @@ namespace longmarch
 			m_entityID = 0;
 		}
 
-		bool HasEntity(const Entity& entity) const
-		{
-			// TODO
-		}
-
 		inline const LongMarch_Vector<EntityID> GetAllEntityIDWithType(EntityType type) const
 		{
 			LOCK_GUARD_NC();

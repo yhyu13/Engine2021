@@ -6,92 +6,93 @@
 
 namespace longmarch
 {
-	class GameWorld;
+    class GameWorld;
 
-	template<typename ComponentType>
-	class ComponentDecorator;
+    template <typename ComponentType>
+    class ComponentDecorator;
 
-	struct EntityDecorator
-	{
-		EntityDecorator() = default;
-		explicit EntityDecorator(const Entity& entity, const GameWorld* world)
-			:
-			m_entity(entity),
-			m_world(world)
-		{
-		}
+    struct EntityDecorator
+    {
+        EntityDecorator() = default;
 
-		template<typename ComponentType>
-		void AddComponent(const ComponentType& component);
+        explicit EntityDecorator(const Entity& entity, const GameWorld* world)
+            :
+            m_entity(entity),
+            m_world(world)
+        {
+        }
 
-		template<typename ComponentType>
-		void RemoveComponent();
+        template <typename ComponentType>
+        void AddComponent(const ComponentType& component);
 
-		template<typename ComponentType>
-		ComponentDecorator<ComponentType> GetComponent() const;
+        template <typename ComponentType>
+        void RemoveComponent();
 
-		template<typename ComponentType>
-		bool HasComponent() const;
+        template <typename ComponentType>
+        ComponentDecorator<ComponentType> GetComponent() const;
 
-		__LongMarch_TRIVIAL_TEMPLATE__
-		LongMarch_Vector<BaseComponentInterface*> GetAllComponent() const;
+        template <typename ComponentType>
+        bool HasComponent() const;
 
-		inline bool Valid() const
-		{
-			return m_entity != Entity() && m_world != nullptr;
-		}
+        __LongMarch_TRIVIAL_TEMPLATE__
+        LongMarch_Vector<BaseComponentInterface*> GetAllComponent() const;
 
-		//! Reset entity decocrator (aka. invalidate it)
-		inline void Reset()
-		{
-			m_entity = Entity(); 
-			m_world = nullptr;
-		}
+        inline bool Valid() const
+        {
+            return m_entity != Entity() && m_world != nullptr;
+        }
 
-		inline const Entity GetEntity() const
-		{
-			return m_entity;
-		}
+        //! Reset entity decocrator (aka. invalidate it)
+        inline void Reset()
+        {
+            m_entity = Entity();
+            m_world = nullptr;
+        }
 
-		inline const EntityID GetID() const
-		{
-			return m_entity.m_id;
-		}
+        inline const Entity GetEntity() const
+        {
+            return m_entity;
+        }
 
-		inline const EntityType GetType() const
-		{
-			return m_entity.m_type;
-		}
+        inline const EntityID GetID() const
+        {
+            return m_entity.m_id;
+        }
 
-		inline GameWorld* GetVolatileWorld() const
-		{
-			return const_cast<GameWorld*>(m_world);
-		}
+        inline const EntityType GetType() const
+        {
+            return m_entity.m_type;
+        }
 
-		inline const GameWorld* GetWorld() const
-		{
-			return m_world;
-		}
+        inline GameWorld* GetVolatileWorld() const
+        {
+            return const_cast<GameWorld*>(m_world);
+        }
 
-		inline operator Entity() const
-		{
-			return m_entity;
-		}
+        inline const GameWorld* GetWorld() const
+        {
+            return m_world;
+        }
 
-		inline operator EntityID() const
-		{
-			return m_entity.m_id;
-		}
+        inline operator Entity() const
+        {
+            return m_entity;
+        }
 
-		inline operator EntityType() const
-		{
-			return m_entity.m_type;
-		}
+        inline operator EntityID() const
+        {
+            return m_entity.m_id;
+        }
 
-	private:
-		Entity m_entity;
-		const GameWorld* m_world{ nullptr };
-	};
+        inline operator EntityType() const
+        {
+            return m_entity.m_type;
+        }
+
+    private:
+        Entity m_entity;
+        const GameWorld* m_world{nullptr};
+    };
 }
 
 __LongMarch_TRIVIAL_TEMPLATE__
@@ -111,12 +112,12 @@ bool operator<(const EntityDecorator& lhs, const EntityDecorator& rhs);
 */
 namespace std
 {
-	template <>
-	struct hash<longmarch::EntityDecorator>
-	{
-		std::size_t operator()(const longmarch::EntityDecorator& e) const
-		{
-			return hash<longmarch::EntityID>()(e.GetID());
-		}
-	};
+    template <>
+    struct hash<longmarch::EntityDecorator>
+    {
+        std::size_t operator()(const longmarch::EntityDecorator& e) const
+        {
+            return hash<longmarch::EntityID>()(e.GetID());
+        }
+    };
 }

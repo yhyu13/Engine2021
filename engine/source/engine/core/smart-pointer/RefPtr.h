@@ -16,6 +16,8 @@ namespace longmarch
     }\
     private: \
     std::atomic_uint_fast32_t m_refCounter { 0 };
+
+    // Concept for reference countable classes
     template <typename T>
     concept ReferenceCountable = requires(T&& t)
     {
@@ -37,7 +39,7 @@ namespace longmarch
      *          On destruction, the RefPtr tries to decrement the reference counting
      * 
      */
-    template <class T>
+    template <class T, void Delete(T*)>
         requires ReferenceCountable<T>
     class RefPtr
     {
@@ -54,7 +56,7 @@ namespace longmarch
         {
             if (m_ptr && !m_ptr->DecrementRef())
             {
-                MemoryManager::Delete(m_ptr);
+                Delete(m_ptr);
                 m_ptr = nullptr;
             }
         }
@@ -91,23 +93,26 @@ namespace longmarch
 
         // Polymorphism Casting---------------------------------------------------------------------------------------------
 
-        template <class U>
-        RefPtr(const RefPtr<U>& other) noexcept
+        template <class U, void Delete2(T*)>
+        RefPtr(const RefPtr<U, Delete2>& other) noexcept
         {
+            static_assert(std::is_same_v<T,U> && Delete==Delete2, "RefPtr Polymorphism Casting not allowed!");
             m_ptr = (T*)other.m_ptr;
             m_ptr->IncrementRef();
         }
 
-        template <class U>
-        RefPtr(RefPtr<U>&& other) noexcept
+        template <class U, void Delete2(T*)>
+        RefPtr(RefPtr<U, Delete2>&& other) noexcept
         {
+            static_assert(std::is_same_v<T,U> && Delete==Delete2, "RefPtr Polymorphism Casting not allowed!");
             m_ptr = (T*)other.m_ptr;
             other.m_ptr = nullptr;
         }
 
-        template <class U>
-        RefPtr& operator=(const RefPtr<U>& other) noexcept
+        template <class U, void Delete2(T*)>
+        RefPtr& operator=(const RefPtr<U, Delete2>& other) noexcept
         {
+            static_assert(std::is_same_v<T,U> && Delete==Delete2, "RefPtr Polymorphism Casting not allowed!");
             if (this == &other)
                 return *this;
             m_ptr = (T*)other.m_ptr;
@@ -115,9 +120,10 @@ namespace longmarch
             return *this;
         }
 
-        template <class U>
-        RefPtr& operator=(RefPtr<U>&& other) noexcept
+        template <class U, void Delete2(T*)>
+        RefPtr& operator=(RefPtr<U, Delete2>&& other) noexcept
         {
+            static_assert(std::is_same_v<T,U> && Delete==Delete2, "RefPtr Polymorphism Casting not allowed!");
             if (this == &other)
                 return *this;
             m_ptr = (T*)other.m_ptr;

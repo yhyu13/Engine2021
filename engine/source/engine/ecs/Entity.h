@@ -5,6 +5,8 @@
 
 #include <iostream>
 
+#include "engine/core/allocator/TemplateMemoryManager.h"
+
 namespace longmarch
 {
     typedef uint32_t EntityID;
@@ -18,15 +20,18 @@ namespace longmarch
      * @detail The entities are just the data containers. Each entity gets an
         id. Entities and their components are held together by component
         managers.For more information on component-managers, please check
-        ComponentManager.h.
+        ComponentManager.h. To avoid false sharing, Entity class is 64 bytes aligned
      *
      * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
      */
-    struct CACHE_ALIGN8 Entity
+    struct CACHE_ALIGN64 Entity
     {
-        BitMaskSignature m_comMask; // Store the component bit signature mask
+        ADD_REFERENCE_COUTNER()
+    public:
+        BitMaskSignature m_comMask; // Store the component bit signature mask, determine the layout of components
         EntityID m_id{0}; // Entity id, >0 is valid
-        EntityType m_type{0}; // Entity type, incorporate some OOP functionality because it is useful
+        EntityType m_type{0};
+        // Entity type, incorporate some OOP functionality because it is useful, same type does not necessarily associate with same layout of components
         uint32_t m_comIndex{0}; // Location index stored under an archetype manager for faster getting component
 
         /*
@@ -44,14 +49,18 @@ namespace longmarch
         }
 
         Entity(const Entity& other)
-            : m_id(other.m_id),
-              m_type(other.m_type)
+            : m_comMask(other.m_comMask),
+              m_id(other.m_id),
+              m_type(other.m_type),
+              m_comIndex(other.m_comIndex)
         {
         }
 
         Entity(Entity&& other) noexcept
-            : m_id(other.m_id),
-              m_type(other.m_type)
+            : m_comMask(std::move(other.m_comMask)),
+              m_id(other.m_id),
+              m_type(other.m_type),
+              m_comIndex(other.m_comIndex)
         {
         }
 
@@ -59,8 +68,10 @@ namespace longmarch
         {
             if (this == &other)
                 return *this;
+            m_comMask = other.m_comMask;
             m_id = other.m_id;
             m_type = other.m_type;
+            m_comIndex = other.m_comIndex;
             return *this;
         }
 
@@ -68,11 +79,12 @@ namespace longmarch
         {
             if (this == &other)
                 return *this;
+            m_comMask = std::move(other.m_comMask);
             m_id = other.m_id;
             m_type = other.m_type;
+            m_comIndex = other.m_comIndex;
             return *this;
         }
-
 
         bool Valid() const
         {
@@ -96,15 +108,13 @@ namespace longmarch
             {
                 os << index << ',';
             }
-            os << ')'; 
+            os << ')';
             return os;
         }
-
-        ADD_REFERENCE_COUTNER()
     };
 
     // define reference counted pointer
-    using SharedPtrEntity = RefPtr<Entity>;
+    using SharedPtrEntity = RefPtr<Entity, TemplateMemoryManager<Entity>::Delete>;
 }
 
 /*

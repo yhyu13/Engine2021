@@ -55,7 +55,6 @@ namespace longmarch
             return std::make_unique<T>(std::forward<Arguments>(args)...);
         }
 
-    private:
         // Replacement for new
         template <class T, typename... Arguments>
         [[nodiscard]] inline static T* New(Arguments&&... args) noexcept
@@ -84,14 +83,13 @@ namespace longmarch
             p = nullptr;
         }
 
-    public:
         // Replacement for malloc()
         [[nodiscard]] static void* Allocate(const size_t size) noexcept;
 
         // Replacement for free()
         static void Free(void* p, const size_t size) noexcept;
 
-    private:
+    public:
         constexpr inline static const uint32_t kBlockSizes[] =
         {
             8, 16, 24, 32, 40, 48, 56,
@@ -115,9 +113,10 @@ namespace longmarch
         // Largest valid block size
         constexpr inline static const uint32_t kMaxBlockSize = {kBlockSizes[kNumBlockSizes - 1]};
 
+    private:
         inline static CACHE_ALIGN64 std::atomic_size_t s_AllocatedSize = {0u};
-        
-        inline static size_t s_pBlockSizeLookup[kMaxBlockSize + 1] = { 0 };
+
+        inline static size_t s_pBlockSizeLookup[kMaxBlockSize + 1] = {0};
         inline static Allocator s_pAllocators[kNumBlockSizes];
         inline static std::once_flag s_flag_init;
 

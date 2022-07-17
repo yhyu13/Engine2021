@@ -41,7 +41,6 @@ namespace longmarch
             return std::make_unique<T>(std::forward<Arguments>(args)...);
         }
 
-    private:
         // Replacement for new
         template <typename... Arguments>
         [[nodiscard]] inline static T* New(Arguments&&... args) noexcept
@@ -69,7 +68,6 @@ namespace longmarch
             p = nullptr;
         }
 
-    public:
         // Replacement for malloc()
         [[nodiscard]] static void* Allocate() noexcept;
 
@@ -77,15 +75,14 @@ namespace longmarch
         static void Free(void* p) noexcept;
 
     private:
-        
         constexpr inline static const bool bUseLargeBlock = {sizeof(T) > MemoryManager::kMaxBlockSize};
         constexpr inline static const uint32_t kMaxElementSize = {1u << 12};
         constexpr inline static const uint32_t kPageSize = {1u << 12};
         constexpr inline static const uint32_t kPageSizeLarge = {1u << 21};
         constexpr inline static const uint32_t kAlignment = {1u << 3};
-        
+
         inline static CACHE_ALIGN64 std::atomic_size_t s_AllocatedSize = {0u};
-        
+
         inline static Allocator s_Allocator;
         inline static std::once_flag s_flag_init;
     };
@@ -96,11 +93,12 @@ namespace longmarch
     template <class T>
     void TemplateMemoryManager<T>::Init()
     {
-        static_assert(sizeof(T) >= kMaxElementSize, "Class has size greater than allowed! Consider using std::malloc instead");
+        static_assert(sizeof(T) >= kMaxElementSize,
+            "Class has size greater than allowed! Consider using std::malloc instead");
         // initialize the allocator
         s_Allocator.Reset(sizeof(T),
-            (!bUseLargeBlock) ? kPageSize : kPageSizeLarge,
-            kAlignment);
+                          (!bUseLargeBlock) ? kPageSize : kPageSizeLarge,
+                          kAlignment);
     }
 
     template <class T>
@@ -113,7 +111,7 @@ namespace longmarch
            */
         //delete s_Allocator;
     }
-    
+
     template <class T>
     void* TemplateMemoryManager<T>::Allocate() noexcept
     {

@@ -17,8 +17,8 @@ void longmarch::Transform3DCom::Update(double ts)
 	LOCK_GUARD();
 	float dt = static_cast<float>(ts);
 	{
-		parent_g_total_velocity = (Geommath::GetTranslation(parentTr) - Geommath::GetTranslation(prev_parentTr)) / (dt);
-		parent_g_rotational_velocity = (Geommath::ToEulerAngles(Geommath::GetRotation(parentTr)) - Geommath::ToEulerAngles(Geommath::GetRotation(prev_parentTr))) / (dt);
+		g_total_velocity = (Geommath::GetTranslation(parentTr) - Geommath::GetTranslation(prev_parentTr)) / (dt);
+		g_rotational_velocity = (Geommath::ToEulerAngles(Geommath::GetRotation(parentTr)) - Geommath::ToEulerAngles(Geommath::GetRotation(prev_parentTr))) / (dt);
 		prev_parentTr = parentTr;
 		prev_rtp_pos = rtp_pos;
 		rtp_pos += dt * (rtp_velocity + rtp_rotation * l_velocity);
@@ -214,13 +214,13 @@ void longmarch::Transform3DCom::AddGlobalVel(const Vec3f& v)
 void longmarch::Transform3DCom::SetGlobalVel(const Vec3f& v)
 {
 	LOCK_GUARD();
-	rtp_velocity = (v - parent_g_total_velocity) * Geommath::GetRotation(parentTr);
+	rtp_velocity = (v - g_total_velocity) * Geommath::GetRotation(parentTr);
 }
 
 Vec3f longmarch::Transform3DCom::GetGlobalVel()
 {
 	LOCK_GUARD();
-	return parent_g_total_velocity + Geommath::GetRotation(parentTr) * rtp_velocity;
+	return g_total_velocity + Geommath::GetRotation(parentTr) * rtp_velocity;
 }
 
 void longmarch::Transform3DCom::AddRelativeToParentVel(const Vec3f& v)
@@ -334,7 +334,7 @@ void longmarch::Transform3DCom::AddGlobalRotVel(const Vec3f& r)
 void longmarch::Transform3DCom::SetGlobalRotVel(const Vec3f& r)
 {
 	LOCK_GUARD();
-	rtp_rotational_velocity = (r - parent_g_rotational_velocity) * Geommath::GetRotation(parentTr);
+	rtp_rotational_velocity = (r - g_rotational_velocity) * Geommath::GetRotation(parentTr);
 }
 
 Vec3f longmarch::Transform3DCom::GetGlobalRotVel()
@@ -651,14 +651,14 @@ void longmarch::Transform3DCom::Copy(BaseComponentInterface* other)
 	parentTr = com->parentTr;
 	prev_rtp_rotation = com->prev_rtp_rotation;
 	rtp_rotation = com->rtp_rotation;
-	parent_g_rotational_velocity = com->parent_g_rotational_velocity;
+	g_rotational_velocity = com->g_rotational_velocity;
 	rtp_rotational_velocity = com->rtp_rotational_velocity;
 	l_rotational_velocity = com->l_rotational_velocity;
 	prev_rtp_pos = com->prev_rtp_pos;
 	rtp_pos = com->rtp_pos;
 	l_velocity = com->l_velocity;
 	rtp_velocity = com->rtp_velocity;
-	parent_g_total_velocity = com->parent_g_total_velocity;
+	g_total_velocity = com->g_total_velocity;
 	rtp_scale = com->rtp_scale;
 	l_scale = com->l_scale;
 	m_apply_parent_trans = com->m_apply_parent_trans;

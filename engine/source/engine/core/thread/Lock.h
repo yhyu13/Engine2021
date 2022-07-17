@@ -42,7 +42,7 @@ namespace longmarch
         static void LockS() noexcept;
         static void UnlockS() noexcept;
     protected:
-        CACHE_ALIGN64 inline static std::atomic_flag sc_flag; // c++ 20 default initialization to false
+        CACHE_ALIGN inline static std::atomic_flag sc_flag; // c++ 20 default initialization to false
     };
 
     /*
@@ -56,13 +56,13 @@ namespace longmarch
         static void LockNI() noexcept;
         static void UnlockNI() noexcept;
     protected:
-        CACHE_ALIGN64 inline static std::atomic_flag ni_flag; // c++ 20 default initialization to false
+        CACHE_ALIGN inline static std::atomic_flag ni_flag; // c++ 20 default initialization to false
     };
 
     /*
         Base atomic class for NON-COPYABLE classes
     */
-    struct BaseAtomicClassNC
+    struct MS_ALIGN8 BaseAtomicClassNC
     {
     public:
         NONCOPYABLE(BaseAtomicClassNC);
@@ -76,14 +76,16 @@ namespace longmarch
         void UnlockNC() const noexcept;
 
     protected:
-        CACHE_ALIGN64 mutable std::atomic_flag nc_flag;
+         mutable std::atomic_flag nc_flag;
+    private:
+         std::byte __PADDING__[PLATFORM_CACHE_LINE - sizeof(std::atomic_flag)];
     };
 
     /*
         Base atomic class for COPYABLE classes
-        Note, that the state of the lock is not copied over on assignment or copy construction
+        Note, that the state of the lock is not copied over on assignment or copy construction (size is 64 bytes)
     */
-    struct BaseAtomicClass
+    struct MS_ALIGN8 BaseAtomicClass
     {
     public:
 #define LOCK_GUARD() atomic_flag_guard __lock(m_flag)
@@ -108,13 +110,15 @@ namespace longmarch
         void UnLock() const noexcept;
 
     protected:
-        CACHE_ALIGN64 mutable std::atomic_flag m_flag;
+        mutable std::atomic_flag m_flag;
+    private:
+        std::byte __PADDING__[PLATFORM_CACHE_LINE - sizeof(std::atomic_flag) - sizeof(void*)];
     };
 
     /*
-        Base adaptive atomic lock class for NON-COPYABLE classes (size is 96 bytes)
+        Base adaptive atomic lock class for NON-COPYABLE classes (size is 128 bytes)
     */
-    struct AdaptiveAtomicClassNC
+    struct MS_ALIGN8 AdaptiveAtomicClassNC
     {
     public:
         NONCOPYABLE(AdaptiveAtomicClassNC);
@@ -130,5 +134,7 @@ namespace longmarch
     protected:
         mutable std::mutex nc_mutex;
         mutable int64_t nc_period_nano{2000ull};
+    private:
+        std::byte __PADDING__[2 * PLATFORM_CACHE_LINE - sizeof(std::mutex) - sizeof(std::int64_t) - sizeof(void*)];
     };
 }

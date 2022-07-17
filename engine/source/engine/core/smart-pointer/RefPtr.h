@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "engine/core/allocator/MemoryManager.h"
+#include "engine/core/allocator/TemplateMemoryManager.h"
 
 namespace longmarch
 {
@@ -15,7 +16,7 @@ namespace longmarch
         return --m_refCounter > 0;\
     }\
     private: \
-    std::atomic_uint_fast32_t m_refCounter { 0 };
+    mutable std::atomic_uint_fast32_t m_refCounter { 0 };
 
     // Concept for reference countable classes
     template <typename T>
@@ -37,34 +38,45 @@ namespace longmarch
      *
      *  @detail On construction, the RefPtr increment the reference counting
      *          On destruction, the RefPtr tries to decrement the reference counting
+     *
+     *  @attention Only those T* created by RefPtr<T>::Allocator::New can be managed by RefPtr<T>
      * 
      */
-    template <class T, void Delete(T*)>
+    template <class T>
         requires ReferenceCountable<T>
     class RefPtr
     {
     public:
+        using Allocator = TemplateMemoryManager<T>;
+        
         // Big Five----------------------------------------------------------------------------------------------------
+        RefPtr()
+            : m_ptr(nullptr)
+        {
+        }
 
-        RefPtr(T* ref) noexcept
+        RefPtr(T* ref)
             : m_ptr(ref)
         {
             m_ptr->IncrementRef();
         }
 
-        ~RefPtr() noexcept
+        ~RefPtr()
         {
             if (m_ptr && !m_ptr->DecrementRef())
             {
-                Delete(m_ptr);
+                Allocator::Delete(m_ptr);
                 m_ptr = nullptr;
             }
         }
 
-        RefPtr(const RefPtr& other) noexcept
+        RefPtr(const RefPtr& other)
             : m_ptr(other.m_ptr)
         {
-            m_ptr->IncrementRef();
+            if (m_ptr)
+            {
+                m_ptr->IncrementRef();
+            }
         }
 
         RefPtr(RefPtr&& other) noexcept
@@ -73,12 +85,16 @@ namespace longmarch
             other.m_ptr = nullptr;
         }
 
-        RefPtr& operator=(const RefPtr& other) noexcept
+        RefPtr& operator=(const RefPtr& other)
         {
             if (this == &other)
                 return *this;
+            this->~RefPtr();
             m_ptr = other.m_ptr;
-            m_ptr->IncrementRef();
+            if (m_ptr)
+            {
+                m_ptr->IncrementRef();
+            }
             return *this;
         }
 
@@ -86,6 +102,7 @@ namespace longmarch
         {
             if (this == &other)
                 return *this;
+            this->~RefPtr();
             m_ptr = other.m_ptr;
             other.m_ptr = nullptr;
             return *this;
@@ -93,62 +110,78 @@ namespace longmarch
 
         // Polymorphism Casting---------------------------------------------------------------------------------------------
 
-        template <class U, void Delete2(T*)>
-        RefPtr(const RefPtr<U, Delete2>& other) noexcept
+        template <class U>
+        RefPtr(const RefPtr<U>& other) noexcept
         {
-            static_assert(std::is_same_v<T,U> && Delete==Delete2, "RefPtr Polymorphism Casting not allowed!");
-            m_ptr = (T*)other.m_ptr;
-            m_ptr->IncrementRef();
+            static_assert(std::is_same_v<T, U>, "RefPtr Polymorphism Casting not allowed!");
         }
 
-        template <class U, void Delete2(T*)>
-        RefPtr(RefPtr<U, Delete2>&& other) noexcept
+        template <class U>
+        RefPtr(RefPtr<U>&& other) noexcept
         {
-            static_assert(std::is_same_v<T,U> && Delete==Delete2, "RefPtr Polymorphism Casting not allowed!");
-            m_ptr = (T*)other.m_ptr;
-            other.m_ptr = nullptr;
+            static_assert(std::is_same_v<T, U>, "RefPtr Polymorphism Casting not allowed!");
         }
 
-        template <class U, void Delete2(T*)>
-        RefPtr& operator=(const RefPtr<U, Delete2>& other) noexcept
+        template <class U>
+        RefPtr& operator=(const RefPtr<U>& other) noexcept
         {
-            static_assert(std::is_same_v<T,U> && Delete==Delete2, "RefPtr Polymorphism Casting not allowed!");
-            if (this == &other)
-                return *this;
-            m_ptr = (T*)other.m_ptr;
-            m_ptr->IncrementRef();
-            return *this;
+            static_assert(std::is_same_v<T, U>, "RefPtr Polymorphism Casting not allowed!");
         }
 
-        template <class U, void Delete2(T*)>
-        RefPtr& operator=(RefPtr<U, Delete2>&& other) noexcept
+        template <class U>
+        RefPtr& operator=(RefPtr<U>&& other) noexcept
         {
-            static_assert(std::is_same_v<T,U> && Delete==Delete2, "RefPtr Polymorphism Casting not allowed!");
-            if (this == &other)
-                return *this;
-            m_ptr = (T*)other.m_ptr;
-            other.m_ptr = nullptr;
-            return *this;
+            static_assert(std::is_same_v<T, U>, "RefPtr Polymorphism Casting not allowed!");
         }
 
         // Operator overloading---------------------------------------------------------------------------------------------
 
         T* operator->() noexcept
         {
+            ASSERT(valid(), "RefPtr nullptr error!");
             return m_ptr;
         }
 
         T& operator*() noexcept
         {
+            ASSERT(valid(), "RefPtr nullptr error!");
             return *m_ptr;
         }
 
-        // Getter-----------------------------------------------------------------------------------------------------------
+        const T* operator->() const noexcept
+        {
+            ASSERT(valid(), "RefPtr nullptr error!");
+            return m_ptr;
+        }
+
+        const T& operator*() const noexcept
+        {
+            ASSERT(valid(), "RefPtr nullptr error!");
+            return *m_ptr;
+        }
+
+        // Methods---------------------------------------------------------------------------------------------
 
         [[nodiscard]] T* get() noexcept
         {
             return m_ptr;
         }
+
+        [[nodiscard]] const T* get() const noexcept
+        {
+            return m_ptr;
+        }
+
+        void reset() noexcept
+        {
+            this->~RefPtr();
+        }
+
+        [[nodiscard]] bool valid() noexcept
+        {
+            return m_ptr != nullptr;
+        }
+
 
     private:
         T* m_ptr{nullptr};

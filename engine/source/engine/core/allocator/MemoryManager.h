@@ -114,7 +114,7 @@ namespace longmarch
         constexpr inline static const uint32_t kMaxBlockSize = {kBlockSizes[kNumBlockSizes - 1]};
 
     private:
-        inline static CACHE_ALIGN64 std::atomic_size_t s_AllocatedSize = {0u};
+        inline static CACHE_ALIGN std::atomic_size_t s_AllocatedSize = {0u};
 
         inline static size_t s_pBlockSizeLookup[kMaxBlockSize + 1] = {0};
         inline static Allocator s_pAllocators[kNumBlockSizes];

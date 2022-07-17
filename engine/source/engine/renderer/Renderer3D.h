@@ -37,6 +37,7 @@ namespace longmarch
 #ifndef LongMarch_MAX_SCENE_PASS_BATCH
 #define LongMarch_MAX_SCENE_PASS_BATCH 16 // After this number of textures are to be drawn, the batch buffer is flushed to render because this is the max number of textures that gpu shader has registerd
 
+
 #endif
 
 #ifndef LongMarch_GUASSIAN_KERNEL_MIN
@@ -137,7 +138,8 @@ namespace longmarch
 
         struct RenderData_CPU
         {
-            explicit RenderData_CPU(const Entity& e, std::shared_ptr<MeshData> mesh, std::shared_ptr<Material> mat,
+            explicit RenderData_CPU(const Entity& e, std::shared_ptr<MeshData> mesh,
+                                    std::shared_ptr<Material> mat,
                                     const Mat4& Tr, const Mat4& prevTr)
                 :
                 entity(e),
@@ -679,7 +681,8 @@ namespace longmarch
         //! For custom render pass
         static void Draw(const RenderData_CPU& data);
         //! For lighting, shadow pass
-        static void Draw(Entity entity, const std::shared_ptr<MeshData>& Mesh, const std::shared_ptr<Material>& Mat,
+        static void Draw(Entity entity, const std::shared_ptr<MeshData>& Mesh,
+                         const std::shared_ptr<Material>& Mat,
                          const Mat4& transform, const Mat4& PrevTransform, const std::string& shaderName);
         static void Draw(Entity entity, const std::shared_ptr<Scene3DNode>& sceneNode, const Mat4& transform,
                          const Mat4& PrevTransform, const std::string& shaderName);

@@ -9,7 +9,7 @@ namespace longmarch
 	/*
 	Data class that stores type name of a entity, used to determine entity type and potentially can used to represent base-derived relationship
 	*/
-	struct CACHE_ALIGN16 TypeNameCom final: BaseComponent<TypeNameCom>
+	struct MS_ALIGN16 TypeNameCom final: BaseComponent<TypeNameCom>
 	{
 		TypeNameCom() = default;
 		explicit TypeNameCom(const std::string& _name);

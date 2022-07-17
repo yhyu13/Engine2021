@@ -4691,7 +4691,8 @@ void longmarch::Renderer3D::Draw(const RenderData_CPU& data)
 *   This Draw function is for component to drive scene drawing
 *   the multidraw pipeline
 **************************************************************/
-void longmarch::Renderer3D::Draw(Entity entity, const std::shared_ptr<Scene3DNode>& sceneNode, const Mat4& transform,
+void longmarch::Renderer3D::Draw(Entity entity, const std::shared_ptr<Scene3DNode>& sceneNode,
+                                 const Mat4& transform,
                                  const Mat4& PrevTransform, const std::string& shaderName)
 {
     const auto& _sceneData = *sceneNode;
@@ -4713,8 +4714,8 @@ void longmarch::Renderer3D::Draw(Entity entity, const std::shared_ptr<Scene3DNod
             }
 
             // Bone offset need to placed after Draw() since there is a chance for multidraw to commit early within Draw() 
-            std::copy(boneTransform.begin(), boneTransform.end(),
-                      std::back_inserter(_multiDrawBuffer.MultiDraw_BoneTransformMatrix));
+            std::ranges::copy(boneTransform.begin(), boneTransform.end(),
+                              std::back_inserter(_multiDrawBuffer.MultiDraw_BoneTransformMatrix));
         }
         break;
     case RENDER_MODE::CANONICAL:

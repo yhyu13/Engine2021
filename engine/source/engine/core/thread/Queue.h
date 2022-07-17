@@ -2,10 +2,7 @@
 #pragma once
 #include <mutex>
 #include <queue>
-#include <atomic>
-#include <chrono>
 #include <utility>
-#include <stdexcept>
 #include <type_traits>
 #include <condition_variable>
 
@@ -146,8 +143,8 @@ namespace longmarch
         }
 
     private:
-        CACHE_ALIGN64 mutable std::mutex m_mutex;
-        CACHE_ALIGN64 std::condition_variable m_ready;
+        CACHE_ALIGN mutable std::mutex m_mutex;
+        CACHE_ALIGN std::condition_variable m_ready;
         std::queue<T> m_queue;
         bool m_done = false;
     };

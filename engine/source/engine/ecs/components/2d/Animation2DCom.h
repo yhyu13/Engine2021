@@ -11,7 +11,7 @@ namespace longmarch
 	/*
 	Data class that stores references to the current animation and maintain an animation state map
 	*/
-	struct CACHE_ALIGN16 Animation2DCom final : BaseComponent<Animation2DCom>
+	struct MS_ALIGN16 Animation2DCom final : BaseComponent<Animation2DCom>
 	{
 		Animation2DCom()
 			:m_animationState("")

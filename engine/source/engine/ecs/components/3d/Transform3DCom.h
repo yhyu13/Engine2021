@@ -6,7 +6,7 @@
 
 namespace longmarch
 {
-    struct CACHE_ALIGN16 Transform3DCom final : BaseComponent<Transform3DCom>
+    struct MS_ALIGN16 Transform3DCom final : BaseComponent<Transform3DCom>
     {
         Transform3DCom() = default;
         explicit Transform3DCom(const EntityDecorator& _this);

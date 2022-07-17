@@ -5,31 +5,31 @@
 
 namespace longmarch
 {
-	/**
-	 * @brief Editor's object picking sytem
-	 *
-	 * @author Hang Yu (yohan680919@gmail.com)
-	 */
-	class EditorPickingComSys final : public BaseComponentSystem
-	{
-	public:
-		NONCOPYABLE(EditorPickingComSys);
-		COMSYS_DEFAULT_COPY(EditorPickingComSys);
+    /**
+     * @brief Editor's object picking sytem
+     *
+     * @author Hang Yu (yohan680919@gmail.com)
+     */
+    class EditorPickingComSys final : public BaseComponentSystem
+    {
+    public:
+        NONCOPYABLE(EditorPickingComSys);
+        COMSYS_DEFAULT_COPY(EditorPickingComSys);
 
-		EditorPickingComSys() = default;
-		virtual void Init() override;
-		virtual void Render() override;
-		virtual void Render2() override;
-		virtual void RenderUI() override;
+        EditorPickingComSys() = default;
+        virtual void Init() override;
+        virtual void Render() override;
+        virtual void Render2() override;
+        virtual void RenderUI() override;
 
-		void SetSceneDockDrawList(ImDrawList* drawList);
+        void SetSceneDockDrawList(ImDrawList* drawList);
 
-	private:
-		void ManipulatePickedEntityGizmos(const Entity& e);
+    private:
+        void ManipulatePickedEntityGizmos(const Entity& e);
 
-	private:
-		PickingPass m_pickingPass;
-		OutlinePass m_outlinePass;
-		ImDrawList* m_sceneDockDrawList{ nullptr };
-	};
+    private:
+        PickingPass m_pickingPass;
+        OutlinePass m_outlinePass;
+        ImDrawList* m_sceneDockDrawList{nullptr};
+    };
 }

@@ -24,15 +24,10 @@ namespace longmarch
      *
      * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
      */
-    struct CACHE_ALIGN64 Entity
+    struct Entity
     {
-        ADD_REFERENCE_COUTNER()
-    public:
-        BitMaskSignature m_comMask; // Store the component bit signature mask, determine the layout of components
         EntityID m_id{0}; // Entity id, >0 is valid
         EntityType m_type{0};
-        // Entity type, incorporate some OOP functionality because it is useful, same type does not necessarily associate with same layout of components
-        uint32_t m_comIndex{0}; // Location index stored under an archetype manager for faster getting component
 
         /*
         Default constructor creates : (EntityID:0, EntityType : 0).
@@ -49,18 +44,14 @@ namespace longmarch
         }
 
         Entity(const Entity& other)
-            : m_comMask(other.m_comMask),
-              m_id(other.m_id),
-              m_type(other.m_type),
-              m_comIndex(other.m_comIndex)
+            : m_id(other.m_id),
+              m_type(other.m_type)
         {
         }
 
         Entity(Entity&& other) noexcept
-            : m_comMask(std::move(other.m_comMask)),
-              m_id(other.m_id),
-              m_type(other.m_type),
-              m_comIndex(other.m_comIndex)
+            : m_id(other.m_id),
+              m_type(other.m_type)
         {
         }
 
@@ -68,10 +59,8 @@ namespace longmarch
         {
             if (this == &other)
                 return *this;
-            m_comMask = other.m_comMask;
             m_id = other.m_id;
             m_type = other.m_type;
-            m_comIndex = other.m_comIndex;
             return *this;
         }
 
@@ -79,10 +68,8 @@ namespace longmarch
         {
             if (this == &other)
                 return *this;
-            m_comMask = std::move(other.m_comMask);
             m_id = other.m_id;
             m_type = other.m_type;
-            m_comIndex = other.m_comIndex;
             return *this;
         }
 
@@ -93,7 +80,7 @@ namespace longmarch
 
         friend inline bool operator==(const Entity& lhs, const Entity& rhs)
         {
-            return lhs.m_id == rhs.m_id && lhs.m_type == rhs.m_type && lhs.m_comMask == rhs.m_comMask;
+            return lhs.m_id == rhs.m_id && lhs.m_type == rhs.m_type;
         }
 
         friend inline bool operator<(const Entity& lhs, const Entity& rhs)
@@ -103,18 +90,10 @@ namespace longmarch
 
         friend inline std::ostream& operator<<(std::ostream& os, const longmarch::Entity& e)
         {
-            os << '(' << e.m_id << '/' << e.m_type << '/';
-            for (const auto index : e.m_comMask.GetAllComponentIndex())
-            {
-                os << index << ',';
-            }
-            os << ')';
+            os << '(' << e.m_id << '/' << e.m_type << ')';
             return os;
         }
     };
-
-    // define reference counted pointer
-    using SharedPtrEntity = RefPtr<Entity, TemplateMemoryManager<Entity>::Delete>;
 }
 
 /*

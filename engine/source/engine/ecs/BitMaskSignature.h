@@ -22,7 +22,7 @@ namespace longmarch
 	 *
 	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
-	struct CACHE_ALIGN8 BitMaskSignature
+	struct MS_ALIGN8 BitMaskSignature
 	{
 	public:
 		inline void Reset()

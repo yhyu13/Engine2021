@@ -4,7 +4,7 @@
 
 namespace longmarch
 {
-	class CACHE_ALIGN16 AABB : public Shape
+	class MS_ALIGN16 AABB : public Shape
 	{
 	public:
 		NONCOPYABLE(AABB);

@@ -2,10 +2,13 @@
 #include <sstream>
 #include "engine/core/logging/LoggingCore.h"
 
-#define CACHE_ALIGN8 __declspec(align(8))
-#define CACHE_ALIGN16 __declspec(align(16))
-#define CACHE_ALIGN32 __declspec(align(32))
-#define CACHE_ALIGN64 __declspec(align(64))
+#define MS_ALIGN8 __declspec(align(8))
+#define MS_ALIGN16 __declspec(align(16))
+#define MS_ALIGN32 __declspec(align(32))
+#define MS_ALIGN64 __declspec(align(64))
+
+#define PLATFORM_CACHE_LINE 64
+#define CACHE_ALIGN __declspec(align(PLATFORM_CACHE_LINE))
 
 #define TWO_5 32
 #define TWO_6 64
@@ -49,46 +52,46 @@
 #define PRINT(...) 
 #endif // DEBUG
 
-template<class T>
+template <class T>
 std::wstring wStr(const T& t)
 {
-	std::wstringstream ss;
-	ss << t;
-	return ss.str();
+    std::wstringstream ss;
+    ss << t;
+    return ss.str();
 }
 
-template<class T>
+template <class T>
 std::string Str(const T& t)
 {
-	std::stringstream ss;
-	ss << t;
-	return ss.str();
+    std::stringstream ss;
+    ss << t;
+    return ss.str();
 }
 
-template<typename... Args>
-std::string Str(const char* fmt, const Args &... args)
+template <typename... Args>
+std::string Str(const char* fmt, const Args&... args)
 {
-	char str[1024];
-	_snprintf_s(str, 1024, fmt, args...);
-	return std::string(str);
+    char str[1024];
+    _snprintf_s(str, 1024, fmt, args...);
+    return std::string(str);
 }
 
-template<typename... Args>
-std::wstring wStr(const wchar_t* fmt, const Args &... args)
+template <typename... Args>
+std::wstring wStr(const wchar_t* fmt, const Args&... args)
 {
-	wchar_t str[1024];
-	_snwprintf_s(str, 1024, fmt, args...);
-	return std::wstring(str);
+    wchar_t str[1024];
+    _snwprintf_s(str, 1024, fmt, args...);
+    return std::wstring(str);
 }
 
-template<typename ...__TRIVIAL__>
+template <typename ...__TRIVIAL__>
 std::wstring str2wstr(const std::string& str)
 {
-	return std::wstring(str.begin(), str.end());
+    return std::wstring(str.begin(), str.end());
 }
 
-template<typename ...__TRIVIAL__>
+template <typename ...__TRIVIAL__>
 std::string wstr2str(const std::wstring& wstr)
 {
-	return std::string(wstr.begin(), wstr.end());
+    return std::string(wstr.begin(), wstr.end());
 }

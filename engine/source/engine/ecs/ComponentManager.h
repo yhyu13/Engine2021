@@ -193,7 +193,7 @@ namespace longmarch
         // Stores all entities indexed by the index of the component instance in m_components
         LongMarch_Vector<Entity> m_entities;
         // Maps the entity to the index of the component instance in the m_components
-        LongMarch_UnorderedMap_flat<Entity, int> m_entitiesAndComponentIndexes;
+        LongMarch_UnorderedMap_Par_node<Entity, int> m_entitiesAndComponentIndexes;
         // Contains all component managers which are indexed by component indices
         LongMarch_UnorderedMap_flat<ComponentIndexType, std::shared_ptr<BaseComponentManager>> m_componentManagers;
     };

@@ -3,7 +3,7 @@
 
 namespace longmarch
 {
-	class CACHE_ALIGN16 Circle final : public Shape
+	class MS_ALIGN16 Circle final : public Shape
 	{
 	public:
 		NONCOPYABLE(Circle);

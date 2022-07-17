@@ -58,7 +58,7 @@ namespace longmarch
     {
         LOCK_GUARD_NC();
         BitMaskSignature& updatedMask = m_entityMaskMap[entity];
-        const auto  oldMask = updatedMask;
+        const auto oldMask = updatedMask;
         updatedMask.AddComponent<ComponentType>();
         // update the component-mask for the entity once a new component has been added
         // Update mask to entity vector

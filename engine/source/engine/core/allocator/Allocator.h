@@ -1,5 +1,4 @@
 #pragma once
-#include <stddef.h>
 #include <stdint.h>
 #include <vector>
 #include "../thread/Lock.h"
@@ -10,7 +9,7 @@ namespace longmarch
 
     //! Reference : https://stackoverflow.com/questions/16198700/using-the-extra-16-bits-in-64-bit-pointers
     template <typename T>
-    struct CACHE_ALIGN8 LongMarch_64Ptr
+    struct MS_ALIGN8 LongMarch_64Ptr
     {
         NONINSTANTIABLE(LongMarch_64Ptr);
         signed long long ptr : 48; // as per phuclv's comment, we need the type to be signed to be sign extended
@@ -39,7 +38,7 @@ namespace longmarch
      *         BlockHeader's pNext pointer has bit utilization of 64 bits in the following order
      *         1 bit : free | 15 bits : block size | 48 bits : pointer to next free block     
      */
-    struct CACHE_ALIGN8 BlockHeader
+    struct MS_ALIGN8 BlockHeader
     {
         // Mark BlockHeader as NONINSTANTIABLE to remind ourself only use it as a pointer
         NONINSTANTIABLE(BlockHeader);
@@ -102,7 +101,7 @@ namespace longmarch
         std::vector<PageHeader*> m_pPageList;
 
         // the free block list
-        CACHE_ALIGN64 BlockHeader * m_pFreeList = {nullptr};
+        CACHE_ALIGN BlockHeader * m_pFreeList = {nullptr};
 
         size_t m_szDataSize = {0};
         size_t m_szPageSize = {0};

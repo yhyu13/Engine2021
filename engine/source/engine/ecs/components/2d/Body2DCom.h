@@ -9,7 +9,7 @@
 namespace longmarch
 {
 	
-	struct CACHE_ALIGN16 Body2DCom final : BaseComponent<Body2DCom>
+	struct MS_ALIGN16 Body2DCom final : BaseComponent<Body2DCom>
 	{
 	public:
 		Body2DCom() = default;

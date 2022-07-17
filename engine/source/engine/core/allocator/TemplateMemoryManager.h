@@ -81,7 +81,7 @@ namespace longmarch
         constexpr inline static const uint32_t kPageSizeLarge = {1u << 21};
         constexpr inline static const uint32_t kAlignment = {1u << 3};
 
-        inline static CACHE_ALIGN64 std::atomic_size_t s_AllocatedSize = {0u};
+        inline static CACHE_ALIGN std::atomic_size_t s_AllocatedSize = {0u};
 
         inline static Allocator s_Allocator;
         inline static std::once_flag s_flag_init;

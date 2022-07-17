@@ -19,7 +19,8 @@ namespace longmarch
           m_friction(0.0f),
           m_shape(nullptr),
           m_awake(false)
-    {}
+    {
+    }
 
     void RigidBody::ApplyLinearForce(const Vec3f& force)
     {
@@ -142,11 +143,11 @@ namespace longmarch
             switch (m_shape->GetType())
             {
             case Shape::SHAPE_TYPE::AABB:
-            {
-                auto aabbShape = std::static_pointer_cast<AABB>(m_shape);
-                aabbExtents = aabbShape->GetMax() - aabbShape->GetMin();
-            }
-            break;
+                {
+                    auto aabbShape = std::static_pointer_cast<AABB>(m_shape);
+                    aabbExtents = aabbShape->GetMax() - aabbShape->GetMin();
+                }
+                break;
             default:
                 ENGINE_EXCEPT(L"Logic error!");
                 break;
@@ -163,11 +164,6 @@ namespace longmarch
     {
         return m_entity;
     }
-
-    //const Entity& RigidBody::GetEntity() const
-    //{
-    //    return m_entity;
-    //}
 
     void RigidBody::SetMass(float mass)
     {
@@ -246,7 +242,8 @@ namespace longmarch
 
     void RigidBody::UpdateAABBShape()
     {
-        m_shape->SetModelTrAndUpdate(Geommath::ToTransformMatrix(m_transform.m_pos, m_transform.m_rot, m_transform.m_scale));
+        m_shape->SetModelTrAndUpdate(
+            Geommath::ToTransformMatrix(m_transform.m_pos, m_transform.m_rot, m_transform.m_scale));
     }
 
     void RigidBody::SetAABBShape(const Vec3f& aabbMin, const Vec3f& aabbMax)

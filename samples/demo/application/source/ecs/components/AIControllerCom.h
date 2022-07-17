@@ -6,28 +6,26 @@
 
 namespace longmarch
 {
-	struct CACHE_ALIGN16 AIControllerCom final : BaseComponent<AIControllerCom>
-	{
-	public:
-		// Member Functions
-		AIControllerCom() = default;
-		explicit AIControllerCom(const EntityDecorator& _this);
+    struct MS_ALIGN16 AIControllerCom final : BaseComponent<AIControllerCom>
+    {
+    public:
+        // Member Functions
+        AIControllerCom() = default;
+        explicit AIControllerCom(const EntityDecorator& _this);
 
-		void Update(double dt);
+        void Update(double dt);
 
-		BehaviorTree& GetBT();
-		void SetBT(const fs::path& filepath);
+        BehaviorTree& GetBT();
+        void SetBT(const fs::path& filepath);
 
-		Blackboard* GetBlackboard();
-		void SetBlackboard(Blackboard* blackboard);
+        Blackboard* GetBlackboard();
+        void SetBlackboard(Blackboard* blackboard);
 
-	public:
-		Entity m_this;
+    public:
+        Entity m_this;
 
-	private:
-		BehaviorTree BT;
-		Blackboard* bb{ nullptr };
-	};
+    private:
+        BehaviorTree BT;
+        Blackboard* bb{nullptr};
+    };
 }
-
-

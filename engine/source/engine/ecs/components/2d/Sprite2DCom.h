@@ -8,7 +8,7 @@
 namespace longmarch
 {
 	/* Data class of sprite */
-	struct CACHE_ALIGN16 Sprite2DCom final : BaseComponent<Sprite2DCom>
+	struct MS_ALIGN16 Sprite2DCom final : BaseComponent<Sprite2DCom>
 	{
 		Sprite2DCom()
 		{

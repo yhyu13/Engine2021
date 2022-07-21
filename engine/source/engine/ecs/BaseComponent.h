@@ -7,94 +7,109 @@
 
 namespace longmarch
 {
-	class GameWorld;
-	typedef uint32_t ComponentIndexType;
-	
-	/**
-	 * @brief Each component-type gets a type-index. The type-index is used in calculating
-		component-signatures (bit-masks).
-	 *
-	 * For more information, please check BitMaskSignature.h.
-	 *
-	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
-	 */
-	struct ComponentTypeIndex
-	{
-		inline static std::atomic<ComponentIndexType> s_index = { 0 };
-	};
+    class GameWorld;
+    typedef uint32_t ComponentTypeIndex_T;
 
-	/**
-	 * @brief Interaface class for all components
-	 *
-	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
-	 */
-	struct BaseComponentInterface
-	{
-		virtual ~BaseComponentInterface() = default;
-		//! JsonCPP deserialization
-		virtual void JsonDeserialize(const Json::Value& value) {}
-		//! JsonCPP serialization
-		virtual void JsonSerialize(Json::Value& value) {}
-		//! Editor component inspection
-		virtual void ImGuiRender() {}
-		//! Customize copying data from one component to another
-		virtual void Copy(BaseComponentInterface* other) {}
-	};
+    /**
+     * @brief Each component-type gets a type-index. The type-index is used in calculating
+        component-signatures (bit-masks).
+     *
+     * For more information, please check BitMaskSignature.h.
+     *
+     * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
+     */
+    struct ComponentTypeIndex
+    {
+        inline static std::atomic<ComponentTypeIndex_T> s_index = {0};
+    };
 
-	/**
-	 * @brief Every component in the ECS architecture is simply a data-storage unit.
-	 *
-	 * To create new components:
+    /**
+     * @brief Interaface class for all components
+     *
+     * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
+     */
+    struct BaseComponentInterface
+    {
+        virtual ~BaseComponentInterface() = default;
+        //! JsonCPP deserialization
+        virtual void JsonDeserialize(const Json::Value& value)
+        {
+        }
 
-		// CRTP
-		struct Transform : BaseComponent<Transform> {
-			explicit Transform(float x, float y) : x(x), y(y) {};
-			float x;
-			float y;
-		};
-	 *
-	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
-	 */
-	template <typename ComponentType>
-	struct BaseComponent : public BaseAtomicClass, public BaseComponentInterface
-	{
-		BaseComponent() = default;
-		explicit BaseComponent(GameWorld* world) : m_world(world) {}
-		virtual ~BaseComponent() = default;
+        //! JsonCPP serialization
+        virtual void JsonSerialize(Json::Value& value) const
+        {
+        }
 
-		//! Set the component to be in a new world
-		void SetWorld(GameWorld* world) const
-		{
-			m_world = world;
-		}
+        //! Editor component inspection
+        virtual void ImGuiRender()
+        {
+        }
 
-		//! Reset component datas to default values
-		void Reset()
-		{
-			static auto _default = ComponentType();
-			this->Copy(&_default);
-		}
+        //! Customize copying data from one component to another
+        virtual void Copy(BaseComponentInterface* other)
+        {
+        }
+    };
 
-		//! All components of a given type belong to the same type-index. For example, all Position components have the same type-index.
-		static const ComponentIndexType TypeIndex()
-		{
-			static const ComponentIndexType index = ComponentTypeIndex::s_index++;
-			return index;
-		}
+    /**
+     * @brief Every component in the ECS architecture is simply a data-storage unit.
+     *
+     * To create new components:
 
-	public:
-		mutable GameWorld* m_world{ nullptr };
-	};
+        // CRTP
+        struct Transform : BaseComponent<Transform> {
+            explicit Transform(float x, float y) : x(x), y(y) {};
+            float x;
+            float y;
+        };
+     *
+     * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
+     */
+    template <typename ComponentType>
+    struct BaseComponent : public BaseAtomicClass, public BaseComponentInterface
+    {
+        BaseComponent() = default;
 
-	/**
-	 * @brief Use this function to get the family-code for a component-type.
-			  Example usage: GetComponentFamily<Transform>()
-	 *
-	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
-	 */
-	template <typename ComponentType>
-	static const ComponentIndexType GetComponentTypeIndex()
-	{
-		return BaseComponent<ComponentType>::TypeIndex();
-	}
+        explicit BaseComponent(GameWorld* world) : m_world(world)
+        {
+        }
+
+        virtual ~BaseComponent() = default;
+
+        //! Set the component to be in a new world
+        void SetWorld(GameWorld* world) const
+        {
+            m_world = world;
+        }
+
+        //! Reset component datas to default values
+        void Reset()
+        {
+            static auto _default = ComponentType();
+            this->Copy(&_default);
+        }
+
+        //! All components of a given type belong to the same type-index. For example, all Position components have the same type-index.
+        static const ComponentTypeIndex_T TypeIndex()
+        {
+            static const ComponentTypeIndex_T index = ComponentTypeIndex::s_index++;
+            return index;
+        }
+
+    public:
+        mutable GameWorld* m_world{nullptr};
+    };
+
+    /**
+     * @brief Use this function to get the family-code for a component-type.
+              Example usage: GetComponentFamily<Transform>()
+     *
+     * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
+     */
+    template <typename ComponentType>
+    static const ComponentTypeIndex_T GetComponentTypeIndex()
+    {
+        return BaseComponent<ComponentType>::TypeIndex();
+    }
 }

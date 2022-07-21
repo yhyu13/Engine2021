@@ -34,15 +34,15 @@ std::shared_ptr<TileMap> longmarch::TileMap::LoadFromFile(const fs::path& path)
 	}
 	else if (map->getStatus() == tson::Map::ParseStatus::FileNotFound)
 	{
-		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"TJson tilemap at " + str2wstr(path.string()) + L" does not exist!");
+		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"TJson tilemap at " + wStr(path.string()) + L" does not exist!");
 	}
 	else if (map->getStatus() == tson::Map::ParseStatus::MissingData)
 	{
-		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Json tilemap at " + str2wstr(path.string()) + L" has missing data!");
+		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Json tilemap at " + wStr(path.string()) + L" has missing data!");
 	}
 	else if (map->getStatus() == tson::Map::ParseStatus::ParseError)
 	{
-		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Tileson fails to parse json tilemap at " + str2wstr(path.string()) + L"!");
+		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Tileson fails to parse json tilemap at " + wStr(path.string()) + L"!");
 	}
 
 	return nullptr;

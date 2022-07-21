@@ -256,7 +256,7 @@ void longmarch::MainObjectFactory::LoadSystems(const fs::path& filepath, GameWor
 		auto system = AddComponentSystemByName(systems[i].asString(), world);
 		if (!system)
 		{
-			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Unknown system: " + str2wstr(systems[i].asString()));
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Unknown system: " + wStr(systems[i].asString()));
 		}
 	}
 	DEBUG_PRINT("Finish loading system.");
@@ -332,7 +332,7 @@ void longmarch::MainObjectFactory::DeserializedCom(EntityDecorator entity, const
 	auto com = AddComponentByName(id.asString(), entity);
 	if (!com)
 	{
-		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Unknown component: " + str2wstr(id.asString()));
+		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Unknown component: " + wStr(id.asString()));
 	}
 	com->JsonDeserialize(value);
 }

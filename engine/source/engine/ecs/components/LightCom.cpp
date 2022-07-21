@@ -5,7 +5,7 @@
 #define USE_DIRECTIONAL_LIGHT_COMPARE_TEXTURE
 #define USE_POINT_LIGHT_ARRAY_TEXTURE
 
-void longmarch::LightCom::JsonSerialize(Json::Value& value)
+void longmarch::LightCom::JsonSerialize(Json::Value& value) const
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
 	LOCK_GUARD();

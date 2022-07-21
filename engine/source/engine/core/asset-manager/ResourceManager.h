@@ -308,7 +308,7 @@ namespace longmarch
 			}
 			ENGINE_EXCEPT_IF(!m_loadFromFileFunc, L"Resource type : " + wStr(typeid(T).name()) + L" does not provide a valid LoadFromFile function!");
 			auto resource = m_loadFromFileFunc(filePath);
-			ENGINE_EXCEPT_IF(!resource, L"Resource at " + str2wstr(filePath.string()) + L" has failed to load!");
+			ENGINE_EXCEPT_IF(!resource, L"Resource at " + wStr(filePath.string()) + L" has failed to load!");
 			AddResource(Name, filePath, resource);
 			return ResourceTask(resource);
 		}
@@ -338,7 +338,7 @@ namespace longmarch
 			ENGINE_EXCEPT_IF(!m_loadFromFileFunc, L"Resource type : " + wStr(typeid(T).name()) + L" does not provide a valid LoadFromFile function!");
 			ResourceTask task(std::async(std::launch::async, [this, filePath, Name]() {
 				auto resource = m_loadFromFileFunc(filePath);
-				ENGINE_EXCEPT_IF(!resource, L"Resource at " + str2wstr(filePath.string()) + L" has failed to load!");
+				ENGINE_EXCEPT_IF(!resource, L"Resource at " + wStr(filePath.string()) + L" has failed to load!");
 				return resource;
 			}).share());
 			m_resources[Name] = std::make_pair(filePath, task);
@@ -363,7 +363,7 @@ namespace longmarch
 						ENGINE_EXCEPT_IF(!m_loadFromFileFunc, L"Resource type : " + wStr(typeid(T).name()) + L" does not provide a valid LoadFromFile function!");
 						res_ref.SetFuture(std::async(std::launch::async, [this, filePath, Name]() {
 							auto resource = m_loadFromFileFunc(filePath);
-							ENGINE_EXCEPT_IF(!resource, L"Resource at " + str2wstr(filePath.string()) + L" has failed to load!");
+							ENGINE_EXCEPT_IF(!resource, L"Resource at " + wStr(filePath.string()) + L" has failed to load!");
 							return resource;
 						}).share());
 						return res_ref;

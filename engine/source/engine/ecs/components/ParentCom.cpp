@@ -24,10 +24,10 @@ void longmarch::ParentCom::SetParent(const Entity& parent)
 		}
 		m_Parent = parent;
 	}
-	world->GetComponent<ChildrenCom>(parent)->AddEntityWOR(m_this);
+	world->GetComponent<ChildrenCom>(parent)->AddEntityWORecursion(m_this);
 }
 
-void longmarch::ParentCom::SetParentWOR(const Entity& parent)
+void longmarch::ParentCom::SetParentWORecursion(const Entity& parent)
 {
 	LOCK_GUARD();
 	auto world = m_world;

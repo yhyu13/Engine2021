@@ -69,7 +69,7 @@ void longmarch::FABRIKResolver::UpdateIKTarget(const std::string& ee_name, const
 	}
 	else
 	{
-		ENGINE_EXCEPT(str2wstr(ee_name) + L" is not managed!");
+		ENGINE_EXCEPT(wStr(ee_name) + L" is not managed!");
 	}
 }
 
@@ -87,7 +87,7 @@ void longmarch::FABRIKResolver::UpdateIKPole(const std::string& ee_name, const M
 	}
 	else
 	{
-		ENGINE_EXCEPT(str2wstr(ee_name) + L" is not managed!");
+		ENGINE_EXCEPT(wStr(ee_name) + L" is not managed!");
 	}
 }
 
@@ -226,7 +226,7 @@ void longmarch::FABRIKResolver::UpdateBoneTransform(const FABRIKData& data)
 		}
 		else
 		{
-			ENGINE_EXCEPT(L"IK Bone does not exists: " + str2wstr(bone_name));
+			ENGINE_EXCEPT(L"IK Bone does not exists: " + wStr(bone_name));
 		}
 	}
 }

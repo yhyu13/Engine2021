@@ -29,7 +29,7 @@ namespace longmarch
 		void SetRendering(bool b);
 		bool IsRendering() const;
 
-		virtual void JsonSerialize(Json::Value& value) override;
+		virtual void JsonSerialize(Json::Value& value) const override;
 		virtual void JsonDeserialize(const Json::Value& value) override;
 		virtual void ImGuiRender() override;
 

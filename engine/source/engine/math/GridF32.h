@@ -18,7 +18,7 @@ namespace longmarch {
 			{
 				return m_array[i];
 			}
-			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Array " + str2wstr(Str(i)) + L" out of bound!");
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Array " + wStr(Str(i)) + L" out of bound!");
 		}
 		const float& operator[](size_t i) const
 		{
@@ -26,7 +26,7 @@ namespace longmarch {
 			{
 				return m_array[i];
 			}
-			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Array " + str2wstr(Str(i)) + L" out of bound!");
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Array " + wStr(Str(i)) + L" out of bound!");
 		}
 	private:
 		float* m_array;
@@ -86,7 +86,7 @@ namespace longmarch {
 			{
 				return GridF32Proxy(m_grid[i], m_y);
 			}
-			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Array " + str2wstr(Str(i)) + L" out of bound!");
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Array " + wStr(Str(i)) + L" out of bound!");
 		}
 		const GridF32Proxy operator[](size_t i) const
 		{
@@ -94,7 +94,7 @@ namespace longmarch {
 			{
 				return GridF32Proxy(m_grid[i], m_y);
 			}
-			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Array " + str2wstr(Str(i)) + L" out of bound!");
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Array " + wStr(Str(i)) + L" out of bound!");
 		}
 
 	private:
@@ -154,7 +154,7 @@ namespace longmarch {
 			{
 				return m_grid[i];
 			}
-			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Array " + str2wstr(Str(i)) + L" out of bound!");
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Array " + wStr(Str(i)) + L" out of bound!");
 		}
 
 		const float& operator[](size_t i) const
@@ -163,7 +163,7 @@ namespace longmarch {
 			{
 				return m_grid[i];
 			}
-			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Array " + str2wstr(Str(i)) + L" out of bound!");
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Array " + wStr(Str(i)) + L" out of bound!");
 		}
 
 		ArrayF32 operator*(float value)

@@ -61,16 +61,24 @@ namespace longmarch
         static void RemoveManagedWorld(GameWorld* world);
 
         /**
-         * @brief	Clone a given world with a new name, throw exception if the world does not exist
-         * @param	name		the name of the world
+         * > Clone a world from an existing world
+         * 
+         * @param newWorldName The name of the new world to be created.
+         * @param fromWorldName The name of the world to clone from.
+         * 
+         * @return A pointer to a GameWorld object.
          */
-        static GameWorld* Clone(const std::string& newName, const std::string& name);
+        static GameWorld* Clone(const std::string& newWorldName, const std::string& fromWorldName);
 
         /**
-         * @brief	Clone a given world with a new name
-         * @param	world		the pointer to the world
+         * It copies the entities, components and systems from the `from` world to the `newWorld` world
+         * 
+         * @param newName The name of the new world.
+         * @param from The world to copy from.
+         * 
+         * @return A pointer to a GameWorld object.
          */
-        static GameWorld* Clone(const std::string& newName, GameWorld* world);
+        static GameWorld* Clone(const std::string& newName, const GameWorld* from);
 
         inline const std::string& GetName() const { return m_name; }
         inline void SetPause(bool b) { m_paused = b; }
@@ -107,16 +115,16 @@ namespace longmarch
         //! Remove a specific entity and all its components
         void RemoveEntityAndComponents(const Entity& entity);
 
-        /*
-            Launch RemoveAllEntities() for each componenet system.
-            This method does not remove components or entities by itself.
-            You should create a GC component system that effectly remove all components and entities
-        */
-        void RemoveAllEntities();
-        /*
-            Remove all component systems
-        */
-        void RemoveAllComponentSystems();
+        // /*
+        //     Launch RemoveAllRegisteredUserEntities() for each componenet system.
+        //     This method does not remove components or entities by itself.
+        //     You should create a GC component system that effectly remove all components and entities
+        // */
+        // void RemoveAllRegisteredUserEntities();
+        // /*
+        //     Remove all component systems
+        // */
+        // void RemoveAllComponentSystems();
 
         /**************************************************************
         *	Entity
@@ -260,16 +268,8 @@ namespace longmarch
                        typename Identity<std::function<void(const EntityDecorator& e)>>::Type func,
                        int min_split = -1) const;
 
-        //! Helper function for adding/removing entity from component system
-        template <typename ComponentType>
-        void _TryAddEntityForAllComponentSystems(const Entity& entity);
-
         template <typename ComponentType>
         void _TryRemoveEntityForAllComponentSystems(const Entity& entity);
-
-        //! Get the component-manager for a given component-type. Example usage: _GetComponentManager<ComponentType>();
-        template <typename ComponentType>
-        ComponentManager<ComponentType>* _GetComponentManager() const;
 
         //! Helper method for pareach
         template <class... Components>
@@ -277,25 +277,24 @@ namespace longmarch
                       int min_split = -1) const;
 
     private:
-        // Entity (ECS)
-        //!< Contains all entities and their compoenent bit masks
+        
+        // Entity (E)
+        //!< Contains all entities
         std::shared_ptr<EntityManager> m_entityManager;
-        //!< Contains all entities and their compoenent bit masks
+        //!< Contains all entities and their component bit masks
         LongMarch_UnorderedMap_Par_node<Entity, BitMaskSignature> m_entityMaskMap;
-        //!< Contains all compoenent bit masks and their corresponding entities
-        LongMarch_UnorderedMap_node<BitMaskSignature, LongMarch_Vector<Entity>> m_maskEntityVecMap;
 
-        // Component (ECS)
-        //!< Contains all component managers which are indexed by component indices
-        mutable LongMarch_UnorderedMap_flat<ComponentIndexType, std::shared_ptr<BaseComponentManager>> m_componentManagers;
+        // Component (C)
+        //!< Contains all components bit masks and their corresponding entities
+        LongMarch_UnorderedMap_node<BitMaskSignature, std::shared_ptr<ArcheTypeManager>> m_maskArcheTypeMap;
 
-        // System (ECS)
+        // System (S)
         //!< In order array of all systems
         LongMarch_Vector<std::shared_ptr<BaseComponentSystem>> m_systems;
         //!< In order array of all names of systems
         LongMarch_Vector<std::string> m_systemsName;
         //!< System LUT based on names, iterating over this container does not gaurantee orderness
-        LongMarch_UnorderedMap_flat<std::string, std::shared_ptr<BaseComponentSystem>> m_systemsNameMap;
+        LongMarch_UnorderedMap_node<std::string, std::shared_ptr<BaseComponentSystem>> m_systemsNameMap;
 
         // Misc
         //! Holds multithreaded job that are created in a instance of gameworld

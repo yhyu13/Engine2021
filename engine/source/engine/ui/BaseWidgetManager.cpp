@@ -26,7 +26,7 @@ BaseWidget* longmarch::BaseWidgetManager::GetWidget(const std::string& name)
 	}
 	else
 	{
-		ENGINE_EXCEPT(str2wstr(name) + L" does not exist!");
+		ENGINE_EXCEPT(wStr(name) + L" does not exist!");
 		return nullptr;
 	}
 }
@@ -39,7 +39,7 @@ void longmarch::BaseWidgetManager::SetVisible(const std::string& name, bool visi
 	}
 	else
 	{
-		ENGINE_EXCEPT(str2wstr(name) + L" does not exist!");
+		ENGINE_EXCEPT(wStr(name) + L" does not exist!");
 	}
 }
 
@@ -51,7 +51,7 @@ bool longmarch::BaseWidgetManager::GetVisible(const std::string& name)
 	}
 	else
 	{
-		ENGINE_EXCEPT(str2wstr(name) + L" does not exist!");
+		ENGINE_EXCEPT(wStr(name) + L" does not exist!");
 		return false;
 	}
 }

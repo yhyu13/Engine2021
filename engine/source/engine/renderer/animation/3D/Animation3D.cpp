@@ -14,7 +14,7 @@ std::shared_ptr<Animation3D> longmarch::Animation3D::LoadAnimation(const aiScene
 		{
 			animName = Str(i);
 		}
-		ENGINE_EXCEPT_IF(animationCollection.contains(animName), L"Animation already exists : " + str2wstr(animName));
+		ENGINE_EXCEPT_IF(animationCollection.contains(animName), L"Animation already exists : " + wStr(animName));
 
 		auto& _anim = animationCollection[animName];
 		_anim.Duration = anim->mDuration;
@@ -117,7 +117,7 @@ void longmarch::Animation3D::CalculateBoneTransform(const std::string& animation
 	}
 	else
 	{
-		ENGINE_EXCEPT(L"Unregistered animation: " + str2wstr(animationName));
+		ENGINE_EXCEPT(L"Unregistered animation: " + wStr(animationName));
 	}
 }
 
@@ -134,7 +134,7 @@ const Animation3D::SkeletalAnimation& longmarch::Animation3D::GetAnimation(const
 	}
 	else
 	{
-		ENGINE_EXCEPT(L"Is not a valid animation : " + str2wstr(name));
+		ENGINE_EXCEPT(L"Is not a valid animation : " + wStr(name));
 		return SkeletalAnimation();
 	}
 }
@@ -182,7 +182,7 @@ void longmarch::Animation3D::CalculateBoneTransformRecursive(const SkeletalAnima
 		else
 		{
 			// There might be missing bones for no apprent reason, thus the exception is commentted out
-			//ENGINE_EXCEPT(L"Unregistered bone in a animation : " + str2wstr(node.name));
+			//ENGINE_EXCEPT(L"Unregistered bone in a animation : " + wStr(node.name));
 		}
 	}
 	else

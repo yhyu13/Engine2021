@@ -80,7 +80,7 @@ bool longmarch::Body3DCom::IsRBAwake() const
 	return m_body->IsAwake();
 }
 
-void longmarch::Body3DCom::JsonSerialize(Json::Value& value)
+void longmarch::Body3DCom::JsonSerialize(Json::Value& value) const
 {
 	LOCK_GUARD();
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");

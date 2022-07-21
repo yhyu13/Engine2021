@@ -2,6 +2,7 @@
 #include "OpenGLTexture.h"
 #include "engine/EngineEssential.h"
 #include "engine/math/MathUtil.h"
+#include "engine/core/utility/FSafe.h"
 
 #include <stb_image.h>
 #include <stb_image_write.h>
@@ -165,7 +166,7 @@ namespace longmarch {
 		{
 			m_RenderTargetID = SOIL_load_OGL_texture(_path.c_str(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_DDS_LOAD_DIRECT);
 			auto error = SOIL_last_result();
-			ENGINE_EXCEPT_IF(m_RenderTargetID == 0, L"Texture loading fails at : " + str2wstr(_path) + L" with error : " + wStr(error));
+			ENGINE_EXCEPT_IF(m_RenderTargetID == 0, L"Texture loading fails at : " + wStr(_path) + L" with error : " + wStr(error));
 			m_float_type = false;
 		}
 		else
@@ -258,15 +259,17 @@ namespace longmarch {
 		glReadPixels(0, 0, output_width, output_height, m_DataFormat, GL_UNSIGNED_BYTE, pixels);
 		GLCHECKERROR;
 
-		FILE* output_image;
-		output_image = fopen(_path.c_str(), "wt");
+		// yuhang : Double check we file path is valid
+		FILE* output_image = nullptr;
+		FOpenS(output_image, _path.c_str(), "wt");
 		if (!output_image)
 		{
-			EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Fail to open file location: " + str2wstr(_path) + L"!"));
+			EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Fail to open file location: " + wStr(_path) + L"!"));
 		}
 		PRINT("Writing .PNG to : " + _path);
 		PRINT("width: " + Str(output_width) + " Height: " + Str(output_height) + " Channel: " + Str(m_channels));
 		fclose(output_image);
+		
 		int result;
 		{
 			atomic_flag_guard lock(stbi_png_write_lock);
@@ -275,7 +278,7 @@ namespace longmarch {
 		}
 		if (result == 0)
 		{
-			EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Fail to wirte to file location: " + str2wstr(_path) + L"!"));
+			EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Fail to wirte to file location: " + wStr(_path) + L"!"));
 		}
 		free(pixels);
 	}
@@ -300,15 +303,17 @@ namespace longmarch {
 		glReadPixels(0, 0, output_width, output_height, m_DataFormat, GL_FLOAT, pixels);
 		GLCHECKERROR;
 
-		FILE* output_image;
-		output_image = fopen(_path.c_str(), "wt");
+		// yuhang : Double check we file path is valid
+		FILE* output_image = nullptr;
+		FOpenS(output_image, _path.c_str(), "wt");
 		if (!output_image)
 		{
-			EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Fail to open file location: " + str2wstr(_path) + L"!"));
+			EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Fail to open file location: " + wStr(_path) + L"!"));
 		}
 		PRINT("Writing .HDR to : " + _path);
 		PRINT("width: " + Str(output_width) + " Height: " + Str(output_height) + " Channel: " + Str(m_channels));
 		fclose(output_image);
+		
 		int result;
 		{
 			atomic_flag_guard lock(stbi_hdr_write_lock);
@@ -317,7 +322,7 @@ namespace longmarch {
 		}
 		if (result == 0)
 		{
-			EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Fail to wirte to file location: " + str2wstr(_path) + L"!"));
+			EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Fail to wirte to file location: " + wStr(_path) + L"!"));
 		}
 		free(pixels);
 	}

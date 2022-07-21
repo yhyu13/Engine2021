@@ -192,7 +192,7 @@ void longmarch::Scene3DCom::Draw(const std::function<void(const Renderer3D::Rend
 	}
 }
 
-void longmarch::Scene3DCom::JsonSerialize(Json::Value& value)
+void longmarch::Scene3DCom::JsonSerialize(Json::Value& value) const
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
 	LOCK_GUARD();

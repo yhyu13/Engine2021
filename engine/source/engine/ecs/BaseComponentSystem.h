@@ -114,7 +114,7 @@ namespace longmarch
 		return ret; \
 		}
 
-        inline virtual void RemoveAllEntities()
+        inline virtual void RemoveAllRegisteredUserEntities()
         {
             LOCK_GUARD_NC();
             m_UserRegisteredEntities.clear();
@@ -200,7 +200,7 @@ namespace longmarch
             else
             [[unlikely]]
             {
-                ENGINE_EXCEPT(L"GetRegisteredEntities() called on a trivial bit mask");
+                ENGINE_EXCEPT(L"GetRegisteredEntities() called on a trivial bit mask. This should not happen because system with trivial bit mask should always use User Registered Entities.");
                 return LongMarch_Vector<Entity>();
             }
         }

@@ -10,7 +10,7 @@ namespace longmarch
 		void SetCamera(const PerspectiveCamera & cam);
 		PerspectiveCamera* GetCamera();
 
-		virtual void JsonSerialize(Json::Value& value) override;
+		virtual void JsonSerialize(Json::Value& value) const override;
 		virtual void JsonDeserialize(const Json::Value& value) override;
 		virtual void ImGuiRender() override;
 

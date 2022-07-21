@@ -147,7 +147,7 @@ void longmarch::SceneHierarchyDock::Render()
                         else
                         {
                             ENGINE_EXCEPT(
-                                str2wstr(Str(entity_0)) + L" does not contain a IDName component but it should!");
+                                wStr(Str(entity_0)) + L" does not contain a IDName component but it should!");
                         }
                         ImGui::EndPopup();
                     }

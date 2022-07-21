@@ -101,7 +101,7 @@ Mat4 longmarch::Skeleton::GetBoneTransform(const std::string& bone_name, const B
 	}
 	else
 	{
-		ENGINE_EXCEPT(L"Bone does not exists in this skeleton: " + str2wstr(bone_name));
+		ENGINE_EXCEPT(L"Bone does not exists in this skeleton: " + wStr(bone_name));
 		return Mat4();
 	}
 }
@@ -110,7 +110,7 @@ const Skeleton::Node& longmarch::Skeleton::GetBoneNode(const std::string& bone_n
 {
 	if (!IsBoneNode(bone_name))
 	{
-		ENGINE_EXCEPT(L"Node is not a managed bone in this skeleton: " + str2wstr(bone_name));
+		ENGINE_EXCEPT(L"Node is not a managed bone in this skeleton: " + wStr(bone_name));
 	}
 	static std::function<const Node&(const Node&, const std::string&)> findBoneNode = [](const Node& parent, const std::string& bone_name) -> const Node&
 	{
@@ -138,7 +138,7 @@ const Skeleton::Node& longmarch::Skeleton::GetBoneNode(const std::string& bone_n
 	}
 	else
 	{
-		ENGINE_EXCEPT(L"Can't find bone: " + str2wstr(bone_name));
+		ENGINE_EXCEPT(L"Can't find bone: " + wStr(bone_name));
 		return Skeleton::Node();
 	}
 }

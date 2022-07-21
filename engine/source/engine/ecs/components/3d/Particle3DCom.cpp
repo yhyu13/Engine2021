@@ -94,7 +94,7 @@ namespace longmarch
 		m_particleSystem->m_particlePerSecond = count;
 	}
 
-	void Particle3DCom::JsonSerialize(Json::Value& value)
+	void Particle3DCom::JsonSerialize(Json::Value& value) const
 	{
 	}
 

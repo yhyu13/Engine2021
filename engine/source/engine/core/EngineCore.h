@@ -33,7 +33,7 @@
 							Class& operator=(const Class&) = delete; Class& operator=(const Class&&) = delete;
 
 #ifndef _SHIPPING
-#define ASSERT(x, ...) { if(!(x)) { if (Logger::init) ENGINE_CRITICAL("Assertion failed: {2} at {0} : {1}", __FILE__, __LINE__, __VA_ARGS__); __debugbreak(); } }
+#define ASSERT(x, ...) { if(!(x)) { if (Logger::init) ENGINE_CRITICAL("Assertion failed: {2} at {0} : {1}", __FILE__, __LINE__, std::string(##__VA_ARGS__)); __debugbreak(); } }
 #else
 #define ASSERT(x, ...)
 #endif // DEBUG
@@ -85,13 +85,13 @@ std::wstring wStr(const wchar_t* fmt, const Args&... args)
 }
 
 template <typename ...__TRIVIAL__>
-std::wstring str2wstr(const std::string& str)
+std::wstring wStr(const std::string& str)
 {
     return std::wstring(str.begin(), str.end());
 }
 
 template <typename ...__TRIVIAL__>
-std::string wstr2str(const std::wstring& wstr)
+std::string Str(const std::wstring& wstr)
 {
     return std::string(wstr.begin(), wstr.end());
 }

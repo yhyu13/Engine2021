@@ -136,19 +136,19 @@ namespace longmarch
 					}
 					else [[unlikely]]
 					{
-						ENGINE_EXCEPT(str2wstr(name) + L" which has type : " + str2wstr(it->second->m_type_name) + L" could not be cast to type : " + wStr(typeid(U).name()));
+						ENGINE_EXCEPT(wStr(name) + L" which has type : " + wStr(it->second->m_type_name) + L" could not be cast to type : " + wStr(typeid(U).name()));
 						return nullptr;
 					}
 				}
 				else [[unlikely]]
 				{
-					ENGINE_EXCEPT(str2wstr(name) + L" which has type : " + str2wstr(it->second->m_type_name) + L" is empty!");
+					ENGINE_EXCEPT(wStr(name) + L" which has type : " + wStr(it->second->m_type_name) + L" is empty!");
 					return nullptr;
 				}
 			}
 			else [[unlikely]]
 			{
-				ENGINE_EXCEPT(str2wstr(name) + L" is not registered yet!");
+				ENGINE_EXCEPT(wStr(name) + L" is not registered yet!");
 				return nullptr;
 			}
 		}
@@ -172,19 +172,19 @@ namespace longmarch
 					}
 					else [[unlikely]]
 					{
-						ENGINE_EXCEPT(str2wstr(name) + L" which has type : " + str2wstr(it->second->m_type_name) + L" could not be cast to type : " + wStr(typeid(U).name()));
+						ENGINE_EXCEPT(wStr(name) + L" which has type : " + wStr(it->second->m_type_name) + L" could not be cast to type : " + wStr(typeid(U).name()));
 						return nullptr;
 					}
 				}
 				else [[unlikely]]
 				{
-					ENGINE_EXCEPT(str2wstr(name) + L" which has type : " + str2wstr(it->second->m_type_name) + L" is empty!");
+					ENGINE_EXCEPT(wStr(name) + L" which has type : " + wStr(it->second->m_type_name) + L" is empty!");
 					return nullptr;
 				}
 			}
 			else [[unlikely]]
 			{
-				ENGINE_EXCEPT(str2wstr(name) + L" is not registered yet!");
+				ENGINE_EXCEPT(wStr(name) + L" is not registered yet!");
 				return nullptr;
 			}
 		}

@@ -78,7 +78,7 @@ namespace longmarch
     protected:
          mutable std::atomic_flag nc_flag;
     private:
-         std::byte __PADDING__[PLATFORM_CACHE_LINE - sizeof(std::atomic_flag)];
+         std::byte __PADDING__[PLATFORM_CACHE_LINE - sizeof(std::atomic_flag) - sizeof(void*)];
     };
 
     /*

@@ -1,5 +1,6 @@
 #pragma once
 #include "GameWorld.h"
+#include "lgc.h"
 #include "engine/ecs/components/ActiveCom.h"
 
 namespace longmarch
@@ -7,76 +8,115 @@ namespace longmarch
     template <typename ComponentType>
     inline bool GameWorld::HasComponent(const Entity& entity) const
     {
-        ComponentManager<ComponentType>* manager = this->_GetComponentManager<ComponentType>();
-        return manager->HasEntity(entity);
+        LOCK_GUARD_NC();
+        if (const auto it = m_entityMaskMap.find(entity);
+            it != m_entityMaskMap.end())
+        {
+            return it->second.IsAMatch(BitMaskSignature::Create<ComponentType>());
+        }
+        else
+        {
+            return false;
+        }
     }
 
+    // TODO @yuhang : implement Move component
     template <typename ComponentType>
     inline void GameWorld::AddComponent(const Entity& entity, const ComponentType& component)
     {
-        ComponentManager<ComponentType>* manager = this->_GetComponentManager<ComponentType>();
-        component.SetWorld(this);
-        if (manager->AddComponentToEntity(entity, component))
+        LOCK_GUARD_NC();
+        BitMaskSignature& newMask = m_entityMaskMap[entity];
+        const auto oldMask = newMask;
+        newMask.AddComponent<ComponentType>();
+
+        if (oldMask == newMask)
         {
-            _TryAddEntityForAllComponentSystems<ComponentType>(entity);
+            ENGINE_EXCEPT(
+                wStr(Str("Entity %s already has component type %s", Str(entity), typeid(ComponentType).name())));
+            return;
         }
+
+        const auto& oldManager = m_maskArcheTypeMap[oldMask];
+        auto& newManager = m_maskArcheTypeMap[newMask];
+        if (oldManager)
+        {
+            if (!newManager)
+            {
+                newManager = MemoryManager::Make_shared<ArcheTypeManager>();
+                newManager->CopyComponentManagerFrom(*oldManager);
+                newManager->AddComponentManger<ComponentType>();
+            }
+            // Transfer entity from old manager to new manager
+            oldManager->MoveOutEntity(entity, *newManager);
+        }
+        else
+        {
+            ASSERT(oldMask == BitMaskSignature(),
+                   "Fails to retrive proper bist mask for entity. OldManager is nullptr only if mask is empty.")
+            if (!newManager)
+            {
+                newManager = MemoryManager::Make_shared<ArcheTypeManager>();
+                newManager->AddComponentManger<ComponentType>();
+            }
+        }
+        component.SetWorld(this);
+        newManager->AddComponentToEntity(entity, component);
     }
 
     template <typename ComponentType>
     inline void GameWorld::RemoveComponent(const Entity& entity)
     {
-        ComponentManager<ComponentType>* manager = this->_GetComponentManager<ComponentType>();
-        if (manager->RemoveComponentFromEntity(entity))
+        LOCK_GUARD_NC();
+        BitMaskSignature& newMask = m_entityMaskMap[entity];
+        const auto oldMask = newMask;
+        newMask.RemoveComponent<ComponentType>();
+
+        if (oldMask == newMask)
         {
-            _TryRemoveEntityForAllComponentSystems<ComponentType>(entity);
+            ENGINE_EXCEPT(
+                wStr(Str("Entity %s already removed component type %s", Str(entity), typeid(ComponentType).name())));
+            return;
         }
+
+        const auto& oldManager = m_maskArcheTypeMap[oldMask];
+        auto& newManager = m_maskArcheTypeMap[newMask];
+        ASSERT(oldManager && newManager);
+        // Transfer entity from old manager to new manager
+        oldManager->MoveOutEntity(entity, *newManager);
     }
 
     template <typename ComponentType>
     inline ComponentDecorator<ComponentType> GameWorld::GetComponent(const Entity& entity) const
     {
-        ComponentManager<ComponentType>* manager = this->_GetComponentManager<ComponentType>();
-        return ComponentDecorator<ComponentType>(EntityDecorator{entity, this}, manager->GetComponentByEntity(entity));
-    }
-
-    //! Get the component-manager for a given component-type. Example usage: _GetComponentManager<ComponentType>();
-    template <typename ComponentType>
-    ComponentManager<ComponentType>* GameWorld::_GetComponentManager() const
-    {
         LOCK_GUARD_NC();
-        const uint32_t family = GetComponentTypeIndex<ComponentType>();
-        auto& manager = m_componentManagers[family];
-        if (!manager)
+        ComponentType* com = nullptr;
+        if (const auto it = m_entityMaskMap.find(entity);
+            it != m_entityMaskMap.end())
         {
-            manager = std::move(MemoryManager::Make_shared<ComponentManager<ComponentType>>());
+            if (const auto& mask = it->second;
+                mask.IsAMatch(BitMaskSignature::Create<ComponentType>()))
+            {
+                if (const auto iter_manager = m_maskArcheTypeMap.find(mask);
+                    iter_manager != m_maskArcheTypeMap.end())
+                {
+                    if (const auto& manager = iter_manager->second;
+                        manager)
+                    {
+                        com = manager->GetComponentByEntity<ComponentType>(entity);
+                    }
+                    else
+                    {
+                        ASSERT(mask == BitMaskSignature());
+                    }
+                }
+            }
         }
-        return static_cast<ComponentManager<ComponentType>*>(manager.get());
-    }
-
-    template <typename ComponentType>
-    void GameWorld::_TryAddEntityForAllComponentSystems(const Entity& entity)
-    {
-        LOCK_GUARD_NC();
-        BitMaskSignature& updatedMask = m_entityMaskMap[entity];
-        const auto oldMask = updatedMask;
-        updatedMask.AddComponent<ComponentType>();
-        // update the component-mask for the entity once a new component has been added
-        // Update mask to entity vector
-        LongMarch_EraseRemove(m_maskEntityVecMap[oldMask], entity);
-        m_maskEntityVecMap[updatedMask].push_back(entity);
-    }
-
-    template <typename ComponentType>
-    void GameWorld::_TryRemoveEntityForAllComponentSystems(const Entity& entity)
-    {
-        LOCK_GUARD_NC();
-        BitMaskSignature& updatedMask = m_entityMaskMap[entity];
-        const auto oldMask = updatedMask;
-        updatedMask.RemoveComponent<ComponentType>();
-        // update the component-mask for the entity once a new component has been added
-        // Update mask to entity vector
-        LongMarch_EraseRemove(m_maskEntityVecMap[oldMask], entity);
-        m_maskEntityVecMap[updatedMask].push_back(entity);
+        else
+        {
+            WARN_PRINT(
+                Str("GameWorld::GetComponent: Fail to find Entity '%s' in world '%s'", Str(entity), this->GetName()));
+        }
+        return ComponentDecorator<ComponentType>(EntityDecorator{entity, this}, com);
     }
 
     template <class ...Components>
@@ -91,9 +131,7 @@ namespace longmarch
         }
         else
         {
-            BitMaskSignature mask;
-            mask.AddComponent<Components...>();
-            return EntityView(mask);
+            return EntityView(BitMaskSignature::Create<Components...>());
         }
     }
 

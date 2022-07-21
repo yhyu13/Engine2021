@@ -35,7 +35,7 @@ namespace longmarch
 			ManageEventSubHandle(queue->Subscribe<EntityGCComSys>(this, EngineEventType::GC_RECURSIVE, &EntityGCComSys::_ON_GC_RECURSIVE));
 		}
 
-		virtual void RemoveAllEntities() override;
+		virtual void RemoveAllRegisteredUserEntities() override;
 		virtual void PostRenderUpdate(double dt) override;
 
 	private:

@@ -26,7 +26,7 @@ namespace longmarch
 		//! Return true if drop off execeed maximum distance (which implies that shadow would rather be turn off)
 		bool HandleShadowBufferDropOff(float distance);
 
-		virtual void JsonSerialize(Json::Value& value) override;
+		virtual void JsonSerialize(Json::Value& value) const override;
 		virtual void JsonDeserialize(const Json::Value& value) override;
 		virtual void ImGuiRender() override;
 	public:

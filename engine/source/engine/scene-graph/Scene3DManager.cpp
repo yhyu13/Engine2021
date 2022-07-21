@@ -239,7 +239,7 @@ void longmarch::Scene3DManager::RecurseLoad(Scene3DNode& sceneData, const std::s
 					}
 					else
 					{
-						ENGINE_EXCEPT(L"Bone " + str2wstr(boneName) + L" does not exist in the skeleton!");
+						ENGINE_EXCEPT(L"Bone " + wStr(boneName) + L" does not exist in the skeleton!");
 					}
 				}
 			}

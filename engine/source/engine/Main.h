@@ -23,11 +23,11 @@ int main(int argc, char** argv)
 	{
 		const std::wstring eMsg = e.GetFullMessage() +
 			L"\n\nException caught!";
-		ERROR_PRINT(wstr2str(e.GetExceptionType()));
-		ERROR_PRINT(wstr2str(eMsg));
+		ERROR_PRINT(Str(e.GetExceptionType()));
+		ERROR_PRINT(Str(eMsg));
+		ASSERT(false, "Engine Exception Caught, please check log");
 		longmarch::Engine::ShowMessageBox(e.GetExceptionType(), eMsg);
 		longmarch::Engine::SetQuit(true);
-		ASSERT(false, "Engine Exception Caught, please check log");
 	}
 	catch (const std::exception& e)
 	{
@@ -35,18 +35,18 @@ int main(int argc, char** argv)
 		const std::wstring eMsg = std::wstring(whatStr.begin(), whatStr.end()) +
 			L"\n\nException caught!";
 		ERROR_PRINT("Unhandled STL Exception");
-		ERROR_PRINT(wstr2str(eMsg));
-		longmarch::Engine::ShowMessageBox(str2wstr("Unhandled STL Exception"), eMsg);
+		ERROR_PRINT(Str(eMsg));
+		ASSERT(false, "STL Exception Caught, please check log");
+		longmarch::Engine::ShowMessageBox(wStr("Unhandled STL Exception"), eMsg);
 		longmarch::Engine::SetQuit(true); 
-		ASSERT(false, "Engine Exception Caught, please check log");
 	}
 	catch (...)
 	{
-		ERROR_PRINT("Unhandled Non-STL Exception");
+		ERROR_PRINT("Unhandled Exception");
 		ERROR_PRINT("...");
-		longmarch::Engine::ShowMessageBox(str2wstr("Unhandled STL Exception"), str2wstr("..."));
+		ASSERT(false, "Exception Caught, please check log");
+		longmarch::Engine::ShowMessageBox(wStr("Unhandled Exception"), wStr("..."));
 		longmarch::Engine::SetQuit(true);
-		ASSERT(false, "Engine Exception Caught, please check log");
 	}
 	delete engine;
 	return 0;

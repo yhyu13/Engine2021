@@ -275,7 +275,7 @@ void longmarch::Animation3DComSys::DrawDebugSkeletonRecursive(const std::shared_
 		else
 		{
 			// There might be missing bones for no apprent reason, thus the exception is commentted out
-			//ENGINE_EXCEPT(L"Unregistered bone in a animation : " + str2wstr(node.name));
+			//ENGINE_EXCEPT(L"Unregistered bone in a animation : " + wStr(node.name));
 		}
 	}
 	else

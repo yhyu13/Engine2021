@@ -45,6 +45,7 @@ std::ostream& operator<<(std::ostream& o, longmarch::GameDebugEventType n) {
 	const char* s = 0;
 #define PROCESS_VAL(p) case(p): s = #p; break;
 	switch (n) {
+		// TODO @yuhang fill in GameDebugEventType enum to str
 	default: s = "(invalid value)"; break;
 	}
 #undef PROCESS_VAL
@@ -55,6 +56,7 @@ std::ostream& operator<<(std::ostream& o, longmarch::GameSettingEventType n) {
 	const char* s = 0;
 #define PROCESS_VAL(p) case(p): s = #p; break;
 	switch (n) {
+		// TODO @yuhang fill in GameSettingEventType enum to str
 	default: s = "(invalid value)"; break;
 	}
 #undef PROCESS_VAL

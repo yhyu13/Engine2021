@@ -360,7 +360,7 @@ void longmarch::NPCPathFindingControllerComSys::Update(double dt)
 				}
 				else
 				{
-					ENGINE_EXCEPT(str2wstr(Str(e)) + L"has no Transform3DCom!");
+					ENGINE_EXCEPT(wStr(Str(e)) + L"has no Transform3DCom!");
 				}
 			}
 		}

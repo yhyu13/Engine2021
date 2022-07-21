@@ -48,10 +48,10 @@ namespace longmarch
 					DEBUG_PRINT(_debug_name + " : AbortException caught!");
 				}
 				catch (std::exception& e) {
-					ENGINE_EXCEPT(str2wstr(_debug_name) + L" : Exception caught from Coroutine: " + wStr(e.what()) + L"!");
+					ENGINE_EXCEPT(wStr(_debug_name) + L" : Exception caught from Coroutine: " + wStr(e.what()) + L"!");
 				}
 				catch (...) {
-					ENGINE_EXCEPT(str2wstr(_debug_name) + L" : Unknown exception caught from Coroutine!");
+					ENGINE_EXCEPT(wStr(_debug_name) + L" : Unknown exception caught from Coroutine!");
 				}
 				_is_done = true;
 				_control_is_outer = true;

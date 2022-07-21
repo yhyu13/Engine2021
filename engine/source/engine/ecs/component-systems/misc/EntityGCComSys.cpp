@@ -3,9 +3,9 @@
 #include "EntityGCComSys.h"
 #include "engine/ecs/components/ChildrenCom.h"
 
-void longmarch::EntityGCComSys::RemoveAllEntities()
+void longmarch::EntityGCComSys::RemoveAllRegisteredUserEntities()
 {
-	BaseComponentSystem::RemoveAllEntities();
+	BaseComponentSystem::RemoveAllRegisteredUserEntities();
 	{
 		LOCK_GUARD_NC();
 		for (auto e = firstEntityType; e != lastEntityType; ++e)

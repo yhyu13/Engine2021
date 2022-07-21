@@ -274,7 +274,7 @@ namespace longmarch {
 	{
 		if (s_Data->ShaderMap.find(shader) == s_Data->ShaderMap.end())
 		{
-			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Shader called " + str2wstr(shader) + L" has not been managed!");
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Shader called " + wStr(shader) + L" has not been managed!");
 		}
 		s_Data->QuadShader = s_Data->ShaderMap[shader];
 		s_Data->QuadShader->Bind();
@@ -291,7 +291,7 @@ namespace longmarch {
 	{
 		if (s_Data->ShaderMap.find(shader) == s_Data->ShaderMap.end())
 		{
-			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Shader called " + str2wstr(shader) + L" has not been managed!");
+			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Shader called " + wStr(shader) + L" has not been managed!");
 		}
 		s_Data->QuadShader = s_Data->ShaderMap[shader];
 		s_Data->QuadShader->Bind();

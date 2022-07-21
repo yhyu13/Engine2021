@@ -54,7 +54,7 @@ namespace longmarch
 		else
 		{
 			// attempted to get value that hasn't been set yet
-			ENGINE_EXCEPT(str2wstr(key) + L" does not exist in bb!");
+			ENGINE_EXCEPT(wStr(key) + L" does not exist in bb!");
 		}
 
 		// if we manage to get here, just default construct the value

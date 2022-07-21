@@ -9,7 +9,7 @@ void longmarch::TileMapManager::SetCurrentMapName(const std::string& name)
 	}
 	else
 	{
-		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"The map " + str2wstr(name) + L" has not been managed!");
+		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"The map " + wStr(name) + L" has not been managed!");
 	}
 }
 
@@ -27,7 +27,7 @@ std::shared_ptr<TileMap> longmarch::TileMapManager::GetCurrentMap()
 	}
 	else
 	{
-		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"The map " + str2wstr(m_currentMapName) + L" has not been added!");
+		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"The map " + wStr(m_currentMapName) + L" has not been added!");
 	}
 }
 

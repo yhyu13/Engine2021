@@ -171,7 +171,7 @@ namespace longmarch
 				ENGINE_WARN("Event with type " + (Str(e->m_type)) + " is not registered in the event queue of type: " + (typeid(EventType).name()));
 				return;
 #else
-				ENGINE_EXCEPT(L"Event with type " + str2wstr(Str(e->m_type)) + L" is not registered in the event queue of type: " + str2wstr(typeid(EventType).name()));
+				ENGINE_EXCEPT(L"Event with type " + wStr(Str(e->m_type)) + L" is not registered in the event queue of type: " + wStr(typeid(EventType).name()));
 				return;
 #endif
 			}
@@ -196,7 +196,7 @@ namespace longmarch
 				auto& _e = std::static_pointer_cast<BaseEvent>(e);
 				LockNC();
 				auto& it = m_subscribers.find(e->m_type);
-				ENGINE_EXCEPT_IF(it == m_subscribers.end(), L"Event with type " + str2wstr(Str(e->m_type)) + L" is not registered in the event queue of type: " + str2wstr(typeid(EventType).name()));
+				ENGINE_EXCEPT_IF(it == m_subscribers.end(), L"Event with type " + wStr(Str(e->m_type)) + L" is not registered in the event queue of type: " + wStr(typeid(EventType).name()));
 				auto& subs = it->second;
 				UnlockNC();
 				subs.Lock();

@@ -26,7 +26,7 @@ void longmarch::Animation3DCom::SetAnimationCollection(const std::string& name)
 	}
 	else
 	{
-		ENGINE_EXCEPT(L"Is not a managed animation : " + str2wstr(name));
+		ENGINE_EXCEPT(L"Is not a managed animation : " + wStr(name));
 	}
 }
 
@@ -46,7 +46,7 @@ void longmarch::Animation3DCom::SetCurrentAnimation(const AnimationSetting& anim
 	}
 	else
 	{
-		ENGINE_EXCEPT(L"Is not a valid animation : " + str2wstr(anima.name));
+		ENGINE_EXCEPT(L"Is not a valid animation : " + wStr(anima.name));
 	}
 }
 
@@ -111,7 +111,7 @@ void longmarch::Animation3DCom::UpdateAnimation(double dt, Scene3DNode* sceneNod
 	}
 }
 
-void longmarch::Animation3DCom::JsonSerialize(Json::Value& value)
+void longmarch::Animation3DCom::JsonSerialize(Json::Value& value) const
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
 	LOCK_GUARD();
@@ -161,7 +161,7 @@ void longmarch::Animation3DCom::JsonDeserialize(const Json::Value& value)
 		}
 		else
 		{
-			ENGINE_EXCEPT(str2wstr(val.asString()) + L" animation does not eixst!");
+			ENGINE_EXCEPT(wStr(val.asString()) + L" animation does not eixst!");
 		}
 	}
 	if (auto& val = value["skeleton"]; !val.isNull())
@@ -173,7 +173,7 @@ void longmarch::Animation3DCom::JsonDeserialize(const Json::Value& value)
 		}
 		else
 		{
-			ENGINE_EXCEPT(str2wstr(val.asString()) + L" skeleton does not eixst!");
+			ENGINE_EXCEPT(wStr(val.asString()) + L" skeleton does not eixst!");
 		}
 	}
 	if (auto& val = value["IKSetting"]; !val.isNull())

@@ -4,23 +4,24 @@
 
 namespace longmarch
 {
-	struct ChildrenCom;
-	/*
-	Data class that stores references to owner entity type
-	*/
-	struct MS_ALIGN16 ParentCom final: BaseComponent<ParentCom>
-	{
-		explicit ParentCom(const EntityDecorator & _this);
-		void SetParent(const Entity& parent);
-		const Entity GetParent();
-		bool IsRoot();
-		bool IsSceneRoot();
+    struct ChildrenCom;
+    /*
+    Data class that stores references to owner entity type
+    */
+    struct MS_ALIGN16 ParentCom final : BaseComponent<ParentCom>
+    {
+        ParentCom() = default;
+        explicit ParentCom(const EntityDecorator& _this);
+        void SetParent(const Entity& parent);
+        const Entity GetParent();
+        bool IsRoot();
+        bool IsSceneRoot();
 
-		friend ChildrenCom;
-	private:
-		void SetParentWOR(const Entity& parent); //!< Set parent without recursion
-	private:
-		Entity m_this;
-		Entity m_Parent;
-	};
+    private:
+        friend ChildrenCom;
+        void SetParentWORecursion(const Entity& parent); //!< Set parent without recursion
+    private:
+        Entity m_this;
+        Entity m_Parent;
+    };
 }

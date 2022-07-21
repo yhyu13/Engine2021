@@ -1,5 +1,6 @@
 #include "engine-precompiled-header.h"
 #include "Image2D.h"
+#include "engine/core/utility/FSafe.h"
 #include <stb_image.h>
 #include <stb_image_write.h>
 
@@ -198,15 +199,17 @@ void longmarch::Image2D::WriteToPNG(const fs::path& _path) const
 	/// READ THE PIXELS VALUES from FBO AND SAVE TO A .HDR FILE
 	uint8_t* pixels = (uint8_t*)m_data;
 
-	FILE* output_image;
-	output_image = fopen(path.c_str(), "wt");
+	// yuhang : Double check we file path is valid
+	FILE* output_image = nullptr;
+	FOpenS(output_image, path.c_str(), "wt");
 	if (!output_image)
 	{
-		EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Fail to open file location: " + str2wstr(path) + L"!"));
+		EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Fail to open file location: " + wStr(path) + L"!"));
 	}
 	PRINT("Writing .PNG to : " + path);
 	PRINT("width: " + Str(output_width) + " Height: " + Str(output_height) + " Channel: " + Str(m_Channels));
 	fclose(output_image);
+	
 	int result;
 	{
 		atomic_flag_guard lock(stbi_png_write_lock);
@@ -215,7 +218,7 @@ void longmarch::Image2D::WriteToPNG(const fs::path& _path) const
 	}
 	if (result == 0)
 	{
-		EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Fail to wirte to file location: " + str2wstr(path) + L"!"));
+		EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Fail to wirte to file location: " + wStr(path) + L"!"));
 	}
 }
 
@@ -238,15 +241,17 @@ void longmarch::Image2D::WriteToHDR(const fs::path& _path) const
 
 	float* pixels = (float*)m_data;
 
-	FILE* output_image;
-	output_image = fopen(path.c_str(), "wt");
+	// yuhang : Double check we file path is valid
+	FILE* output_image = nullptr;
+	FOpenS(output_image, path.c_str(), "wt");
 	if (!output_image)
 	{
-		EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Fail to open file location: " + str2wstr(path) + L"!"));
+		EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Fail to open file location: " + wStr(path) + L"!"));
 	}
 	PRINT("Writing .HDR to : " + path);
 	PRINT("width: " + Str(output_width) + " Height: " + Str(output_height) + " Channel: " + Str(m_Channels));
 	fclose(output_image);
+	
 	int result;
 	{
 		atomic_flag_guard lock(stbi_hdr_write_lock);
@@ -255,6 +260,6 @@ void longmarch::Image2D::WriteToHDR(const fs::path& _path) const
 	}
 	if (result == 0)
 	{
-		EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Fail to wirte to file location: " + str2wstr(path) + L"!"));
+		EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Fail to wirte to file location: " + wStr(path) + L"!"));
 	}
 }

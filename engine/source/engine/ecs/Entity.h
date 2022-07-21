@@ -93,6 +93,12 @@ namespace longmarch
             os << '(' << e.m_id << '/' << e.m_type << ')';
             return os;
         }
+
+        friend inline std::wostream& operator<<(std::wostream& os, const longmarch::Entity& e)
+        {
+            os << '(' << e.m_id << '/' << e.m_type << ')';
+            return os;
+        }
     };
 }
 

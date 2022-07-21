@@ -13,7 +13,7 @@ PerspectiveCamera* longmarch::PerspectiveCameraCom::GetCamera()
 	return &m_camera;
 }
 
-void longmarch::PerspectiveCameraCom::JsonSerialize(Json::Value& value)
+void longmarch::PerspectiveCameraCom::JsonSerialize(Json::Value& value) const
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
 	LOCK_GUARD();

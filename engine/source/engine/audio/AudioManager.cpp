@@ -170,7 +170,7 @@ int longmarch::AudioManager::PlaySoundByName(const std::string& strSoundName, co
 	auto tFoundIt = m_fmodInstance->mSounds.find(strSoundName);
 	if (tFoundIt == m_fmodInstance->mSounds.end())
 	{
-		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Sound at " + str2wstr(strSoundName) + L" has not been loaded!");
+		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Sound at " + wStr(strSoundName) + L" has not been loaded!");
 	}
 	FMOD::Channel* pChannel = nullptr;
 	AudioManager::ErrorCheck(m_fmodInstance->mpSystem->playSound(tFoundIt->second, nullptr, true, &pChannel));
@@ -199,7 +199,7 @@ int longmarch::AudioManager::StopSound(const std::string& strSoundName)
 	auto tFoundIt = m_fmodInstance->mSounds.find(strSoundName);
 	if (tFoundIt == m_fmodInstance->mSounds.end())
 	{
-		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Sound at " + str2wstr(strSoundName) + L" has not been loaded!");
+		throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Sound at " + wStr(strSoundName) + L" has not been loaded!");
 	}
 	int id = GetSoundChannel(strSoundName);
 	if (id != -1)

@@ -4762,7 +4762,7 @@ void longmarch::Renderer3D::Draw(Entity entity, const std::shared_ptr<MeshData>&
     if (auto it = s_Data.ShaderMap.find(shaderName); it == s_Data.ShaderMap.end())
     [[unlikely]]
     {
-        ENGINE_EXCEPT(L"Shader called " + str2wstr(shaderName) + L" has not been managed!");
+        ENGINE_EXCEPT(L"Shader called " + wStr(shaderName) + L" has not been managed!");
     }
     else if (s_Data.CurrentShader != it->second)
     {
@@ -5331,7 +5331,7 @@ void longmarch::Renderer3D::BuildAllTexture()
                 }
                 else
                 {
-                    ENGINE_EXCEPT(str2wstr(name) + L" skybox should be loaded here!");
+                    ENGINE_EXCEPT(wStr(name) + L" skybox should be loaded here!");
                 }
             }
         }

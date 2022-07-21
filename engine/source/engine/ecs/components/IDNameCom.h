@@ -16,7 +16,7 @@ namespace longmarch
 		std::string GetUniqueName();
 		Entity GetEntity();
 
-		virtual void JsonSerialize(Json::Value& value) override;
+		virtual void JsonSerialize(Json::Value& value) const override;
 		virtual void JsonDeserialize(const Json::Value& value) override;
 		virtual void ImGuiRender() override;
 		

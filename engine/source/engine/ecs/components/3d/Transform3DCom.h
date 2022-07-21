@@ -150,7 +150,7 @@ namespace longmarch
         //! In Euler rad
         Vec3f GetLocalRotVel();
 
-        virtual void JsonSerialize(Json::Value& value) override;
+        virtual void JsonSerialize(Json::Value& value) const override;
         virtual void JsonDeserialize(const Json::Value& value) override;
         virtual void ImGuiRender() override;
 

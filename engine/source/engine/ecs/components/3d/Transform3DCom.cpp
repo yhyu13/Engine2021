@@ -361,7 +361,7 @@ Vec3f longmarch::Transform3DCom::GetRelativeToParentRotVel()
 	return rtp_rotational_velocity;
 }
 
-void longmarch::Transform3DCom::JsonSerialize(Json::Value& value)
+void longmarch::Transform3DCom::JsonSerialize(Json::Value& value) const
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
 	LOCK_GUARD();

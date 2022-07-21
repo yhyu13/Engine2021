@@ -59,7 +59,7 @@ const EntityType longmarch::ObjectFactory::GetEntityTypeFromName(const std::stri
 			return list.at(s_type);
 		}
 	}
-	ENGINE_EXCEPT(L"Entity type " + str2wstr(s_type) + L" is not found!");
+	ENGINE_EXCEPT(L"Entity type " + wStr(s_type) + L" is not found!");
 	EntityType temp;
 	return temp;
 }

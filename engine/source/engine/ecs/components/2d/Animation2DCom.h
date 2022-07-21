@@ -30,7 +30,7 @@ namespace longmarch
 			}
 			else
 			{
-				throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Animation2D state " + str2wstr(m_animationState) + L"has failed to be getted!");
+				throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Animation2D state " + wStr(m_animationState) + L"has failed to be getted!");
 			}
 		}
 		std::string GetCurrentAnimationState()
@@ -53,12 +53,12 @@ namespace longmarch
 				}
 				else
 				{
-					throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Animation2D state " + str2wstr(m_animationState) + L"has failed to be set!");
+					throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Animation2D state " + wStr(m_animationState) + L"has failed to be set!");
 				}
 			}
 			else
 			{
-				throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Animation2D state " + str2wstr(m_animationState) + L"has not been managed!");
+				throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Animation2D state " + wStr(m_animationState) + L"has not been managed!");
 			}
 		}
 	private:

@@ -19,7 +19,7 @@ void longmarch::TypeNameCom::SetTypeName(const std::string& _name)
 	}
 	else
 	{
-		ENGINE_EXCEPT(str2wstr(_name) + L" type name is greater than max length : " + wStr(ECS_TYPE_NAME_MAX_LEN));
+		ENGINE_EXCEPT(wStr(_name) + L" type name is greater than max length : " + wStr(ECS_TYPE_NAME_MAX_LEN));
 	}
 }
 
@@ -75,7 +75,7 @@ bool longmarch::TypeNameCom::IsDerivedTypeOf(const char* _name) const
 	}
 }
 
-void longmarch::TypeNameCom::JsonSerialize(Json::Value& value)
+void longmarch::TypeNameCom::JsonSerialize(Json::Value& value) const
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
 	LOCK_GUARD();

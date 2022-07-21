@@ -34,7 +34,7 @@ namespace longmarch
 #endif
 		}
 
-		inline const std::vector<uint32_t> GetAllComponentIndex() const
+		inline const std::vector<uint32_t> GetAllComponentTypeIndex() const
 		{
 			std::vector<uint32_t> ret;
 #if USE_LARGE_COMPONENT_BIT_MASK == 0
@@ -83,7 +83,7 @@ namespace longmarch
 #endif
 			else
 			{
-				ENGINE_EXCEPT(L"Component Index out of range!");
+				ASSERT(false, "Component Index out of range!");
 			}
 		}
 
@@ -160,6 +160,24 @@ namespace longmarch
 #endif
 		}
 
+		template<typename ComponentType>
+		static BitMaskSignature Create()
+		{
+			BitMaskSignature ret;
+			ret.AddComponent<ComponentType>();
+			return ret;
+		}
+
+		template<typename C1, typename C2, typename... ComponentTypes>
+		static BitMaskSignature Create()
+		{
+			BitMaskSignature ret;
+			ret.AddComponent<C1, C2, ComponentTypes...>();
+			return ret;
+		}
+		
+
+	public:
 		/*
 			You could create arbitrary many masks that extend the total number of available components
 			64 should be enough.

@@ -43,6 +43,7 @@ std::wstring longmarch::EngineException::GetExceptionType() const
 void longmarch::EngineException::Push(EngineException&& e)
 {
     m_queue.push(e);
+    ASSERT(false, "EngineException::Push throw!");
 	throw e;
 }
 
@@ -50,6 +51,7 @@ void longmarch::EngineException::Update()
 {
 	while (!m_queue.empty())
 	{
+	    ASSERT(false, "EngineException::Update throw!");
 		throw m_queue.front();
 		m_queue.pop();
 	}

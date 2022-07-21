@@ -35,7 +35,7 @@ Entity longmarch::IDNameCom::GetEntity()
 	return m_this;
 }
 
-void longmarch::IDNameCom::JsonSerialize(Json::Value& value)
+void longmarch::IDNameCom::JsonSerialize(Json::Value& value) const
 {
 	ENGINE_EXCEPT_IF(value.isNull(), L"Trying to write to a null json value!");
 	LOCK_GUARD();

@@ -5,7 +5,7 @@
 namespace longmarch
 {
 	/* Data class of mesh, material */
-	struct MS_ALIGN16 PerspectiveCameraCom final: BaseComponent<PerspectiveCameraCom>
+	struct CACHE_ALIGN PerspectiveCameraCom final: BaseComponent<PerspectiveCameraCom>
 	{
 		void SetCamera(const PerspectiveCamera & cam);
 		PerspectiveCamera* GetCamera();

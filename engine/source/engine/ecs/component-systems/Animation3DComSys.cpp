@@ -180,7 +180,7 @@ void longmarch::Animation3DComSys::DebugDraw(EntityDecorator e)
 
 EntityDecorator longmarch::Animation3DComSys::InitDebugSkeletonRecursive(EntityDecorator parent, const Skeleton::Node& node, int debug_bone_type)
 {
-	auto world = parent.GetVolatileWorld();
+	auto world = parent.Volatile().GetWorld();
 
 	auto node_ = world->GenerateEntity3DNoCollision((EntityType)EngineEntityType::DEBUG_OBJ, true, false);
 	auto parentChildCom = parent.GetComponent<ChildrenCom>();
@@ -226,7 +226,7 @@ EntityDecorator longmarch::Animation3DComSys::InitDebugSkeletonRecursive(EntityD
 
 EntityDecorator longmarch::Animation3DComSys::InitDebugEETarget(EntityDecorator parent)
 {
-	auto world = parent.GetVolatileWorld();
+	auto world = parent.Volatile().GetWorld();
 
 	auto node_ = world->GenerateEntity3DNoCollision((EntityType)EngineEntityType::DEBUG_OBJ, true, false);
 	auto parentChildCom = parent.GetComponent<ChildrenCom>();

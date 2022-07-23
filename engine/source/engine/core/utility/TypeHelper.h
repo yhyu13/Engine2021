@@ -102,12 +102,6 @@ namespace longmarch
 #define LongMarch_ArraySize(x) (sizeof(x) / sizeof(*x))
 #endif
 
-	template <typename T>
-	struct Identity
-	{
-		using Type = T;
-	};
-
 	template <typename T> 
 	inline int LongMarch_sgn(T val)
 	{

@@ -4,15 +4,15 @@
 namespace longmarch
 {
     template <typename ComponentType>
-    void EntityDecorator::AddComponent(const ComponentType& component)
+    void EntityDecoratorVolatile::AddComponent(const ComponentType& component) const
     {
-        GetVolatileWorld()->AddComponent<ComponentType>(m_entity, component);
+        GetWorld()->AddComponent<ComponentType>(m_entity, component);
     }
 
     template <typename ComponentType>
-    void EntityDecorator::RemoveComponent()
+    void EntityDecoratorVolatile::RemoveComponent() const
     {
-        GetVolatileWorld()->RemoveComponent<ComponentType>(m_entity);
+        GetWorld()->RemoveComponent<ComponentType>(m_entity);
     }
 
     template <typename ComponentType>

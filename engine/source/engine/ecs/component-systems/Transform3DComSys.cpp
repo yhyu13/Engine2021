@@ -17,7 +17,7 @@ void longmarch::Transform3DComSys::DebugDraw(EntityDecorator e)
 		{
 			trans->debug.initRotation = true;
 			auto parent = EntityDecorator{ trans->m_this, trans->m_world };
-			auto world = parent.GetVolatileWorld();
+			auto world = parent.Volatile().GetWorld();
 			auto node_ = world->GenerateEntity3DNoCollision((EntityType)EngineEntityType::DEBUG_OBJ, true, false);
 			/*
 			Entity generation logics should happen in component-system instead of in component because it might trigger a component data reallocation that invalidate the component data on our hands.
@@ -79,7 +79,7 @@ void longmarch::Transform3DComSys::DebugDraw(EntityDecorator e)
 		{
 			trans->debug.initVelocity = true;
 			auto parent = EntityDecorator{ trans->m_this, trans->m_world };
-			auto world = parent.GetVolatileWorld();
+			auto world = parent.Volatile().GetWorld();
 			auto node_ = world->GenerateEntity3DNoCollision((EntityType)EngineEntityType::DEBUG_OBJ, true, false);
 
 			trans.Update();

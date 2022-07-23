@@ -6,7 +6,7 @@
 
 longmarch::ParentCom::ParentCom(const EntityDecorator& _this)
 	:
-	BaseComponent(_this.GetVolatileWorld()),
+	BaseComponent(_this.Volatile().GetWorld()),
 	m_this(_this.GetEntity()),
 	m_Parent(Entity())
 {

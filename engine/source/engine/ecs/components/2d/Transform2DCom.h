@@ -5,7 +5,7 @@
 
 namespace longmarch
 {
-	struct MS_ALIGN16 Transform2DCom final : BaseComponent<Transform2DCom> 
+	struct CACHE_ALIGN Transform2DCom final : BaseComponent<Transform2DCom> 
 	{
 		Transform2DCom()
 		{

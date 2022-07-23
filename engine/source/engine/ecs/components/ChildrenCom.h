@@ -9,7 +9,7 @@ namespace longmarch
     /*
     Data class that stores references to children entities
     */
-    struct MS_ALIGN16 ChildrenCom final : BaseComponent<ChildrenCom>
+    struct CACHE_ALIGN ChildrenCom final : BaseComponent<ChildrenCom>
     {
         ChildrenCom() = default;
         explicit ChildrenCom(const EntityDecorator& _this);

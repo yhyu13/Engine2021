@@ -61,6 +61,17 @@ namespace longmarch
 
         virtual ~BaseComponentSystem() = default;
 
+        // yuhang : every component system should have a explicit copy constructor named Copy() in order to be cloned between gameworlds
+        virtual std::shared_ptr<BaseComponentSystem> Copy() const = 0;
+#define COMSYS_DEFAULT_COPY(SystemType) \
+        virtual std::shared_ptr<BaseComponentSystem> Copy() const override \
+        { \
+            auto ret = MemoryManager::Make_shared<SystemType>(); \
+            ret->m_UserRegisteredEntities = m_UserRegisteredEntities; \
+            ret->m_systemSignature = m_systemSignature; \
+            return ret; \
+        }
+
         /*
             Override Init to register components and event call backs
         */
@@ -73,10 +84,6 @@ namespace longmarch
         }
 
         virtual void Update2(double frameTime)
-        {
-        }
-
-        virtual void Update3(double frameTime)
         {
         }
 
@@ -102,19 +109,7 @@ namespace longmarch
         {
         }
 
-        virtual std::shared_ptr<BaseComponentSystem> Copy() const = 0;
-
-#define COMSYS_DEFAULT_COPY(SystemType) \
-		virtual std::shared_ptr<BaseComponentSystem> Copy() const override \
-		{ \
-		LOCK_GUARD_NC(); \
-		auto ret = MemoryManager::Make_shared<SystemType>(); \
-		ret->m_UserRegisteredEntities = m_UserRegisteredEntities; \
-		ret->m_systemSignature = m_systemSignature; \
-		return ret; \
-		}
-
-        inline virtual void RemoveAllRegisteredUserEntities()
+        inline virtual void RemoveAllRegisteredEntities()
         {
             LOCK_GUARD_NC();
             m_UserRegisteredEntities.clear();
@@ -122,7 +117,6 @@ namespace longmarch
 
         inline void SetWorld(GameWorld* world) const
         {
-            LOCK_GUARD_NC();
             m_parentWorld = world;
         }
 
@@ -142,7 +136,7 @@ namespace longmarch
 
         //! Dispatcher to parent world
         __LongMarch_TRIVIAL_TEMPLATE__
-        inline void ForEach(typename Identity<std::function<void(EntityDecorator e)>>::Type func) const
+        inline void ForEach(const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func) const
         {
             m_parentWorld->ForEach(GetRegisteredEntities(), func);
         }
@@ -150,7 +144,7 @@ namespace longmarch
         //! Dispatcher to parent world
         __LongMarch_TRIVIAL_TEMPLATE__
         [[nodiscard]] inline std::future<void> BackEach(
-            typename Identity<std::function<void(EntityDecorator e)>>::Type func) const
+            const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func) const
         {
             return m_parentWorld->BackEach(GetRegisteredEntities(), func);
         }
@@ -158,14 +152,13 @@ namespace longmarch
         //! Dispatcher to parent world
         __LongMarch_TRIVIAL_TEMPLATE__
         [[nodiscard]] inline std::future<void> ParEach(
-            typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split = -1) const
+            const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func, int min_split = -1) const
         {
             return m_parentWorld->ParEach(GetRegisteredEntities(), func, min_split);
         }
 
         //! Dispatcher to parent world
-        __LongMarch_TRIVIAL_TEMPLATE__
-        inline void ForEachUser(typename Identity<std::function<void(EntityDecorator e)>>::Type func) const
+        inline void ForEachUser(const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func) const
         {
             m_parentWorld->ForEach(GetUserRegisteredEntities(), func);
         }
@@ -173,7 +166,7 @@ namespace longmarch
         //! Dispatcher to parent world
         __LongMarch_TRIVIAL_TEMPLATE__
         [[nodiscard]] inline std::future<void> BackEachUser(
-            typename Identity<std::function<void(EntityDecorator e)>>::Type func) const
+            const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func) const
         {
             return m_parentWorld->BackEach(GetUserRegisteredEntities(), func);
         }
@@ -181,7 +174,7 @@ namespace longmarch
         //! Dispatcher to parent world
         __LongMarch_TRIVIAL_TEMPLATE__
         [[nodiscard]] inline std::future<void> ParEachUser(
-            typename Identity<std::function<void(EntityDecorator e)>>::Type func, int min_split = -1) const
+            const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func, int min_split = -1) const
         {
             return m_parentWorld->ParEach(GetUserRegisteredEntities(), func, min_split);
         }
@@ -191,7 +184,6 @@ namespace longmarch
          **/
         inline const LongMarch_Vector<Entity> GetRegisteredEntities() const
         {
-            LOCK_GUARD_NC();
             if (m_systemSignature != BitMaskSignature())
             [[likely]]
             {
@@ -200,7 +192,8 @@ namespace longmarch
             else
             [[unlikely]]
             {
-                ENGINE_EXCEPT(L"GetRegisteredEntities() called on a trivial bit mask. This should not happen because system with trivial bit mask should always use User Registered Entities.");
+                ENGINE_EXCEPT(
+                    L"GetRegisteredEntities() called on a trivial bit mask. This should not happen because system with trivial bit mask should always use User Registered Entities.");
                 return LongMarch_Vector<Entity>();
             }
         }

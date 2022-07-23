@@ -39,10 +39,10 @@ namespace longmarch
 			{
 				auto anima = e.GetComponent<Animation3DCom>();
 				auto scene = e.GetComponent<Scene3DCom>();
-				auto sceneNode = scene->GetSceneData(false);
+				const auto& sceneNode = scene->GetSceneData(false);
 				if (sceneNode)
 				{
-					anima->UpdateAnimation(dt, sceneNode.get());
+					anima->UpdateAnimation(dt, sceneNode);
 				}
 			}
 			).wait();

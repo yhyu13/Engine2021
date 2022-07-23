@@ -224,15 +224,6 @@ void longmarch::GameWorld::Update2(double frameTime)
     }
 }
 
-void longmarch::GameWorld::Update3(double frameTime)
-{
-    if (m_paused) frameTime = 0.0;
-    for (auto& system : m_systems)
-    {
-        system->Update3(frameTime);
-    }
-}
-
 void longmarch::GameWorld::MultiThreadUpdate(double frameTime)
 {
     m_jobs.push(
@@ -242,7 +233,6 @@ void longmarch::GameWorld::MultiThreadUpdate(double frameTime)
                 {
                     Update(frameTime);
                     Update2(frameTime);
-                    Update3(frameTime);
                 });
             })
         ).share());
@@ -322,30 +312,13 @@ void longmarch::GameWorld::RemoveFromParentHelper(Entity e)
     }
 }
 
-// void longmarch::GameWorld::RemoveAllRegisteredUserEntities()
-// {
-//     for (auto& system : m_systems)
-//     {
-//         system->RemoveAllRegisteredUserEntities();
-//     }
-//     m_entityMaskMap.clear();
-//     m_maskEntityVecMap.clear();
-// }
-//
-// void longmarch::GameWorld::RemoveAllComponentSystems()
-// {
-//     m_systems.clear();
-//     m_systemsName.clear();
-//     m_systemsNameMap.clear();
-// }
-
 EntityDecorator longmarch::GameWorld::GenerateEntity(EntityType type, bool active, bool add_to_root)
 {
     auto entity = EntityDecorator{m_entityManager->Create(type), this};
-    entity.AddComponent(ActiveCom(active));
-    entity.AddComponent(IDNameCom(entity));
-    entity.AddComponent(ParentCom(entity));
-    entity.AddComponent(ChildrenCom(entity));
+    entity.Volatile().AddComponent(ActiveCom(active));
+    entity.Volatile().AddComponent(IDNameCom(entity));
+    entity.Volatile().AddComponent(ParentCom(entity));
+    entity.Volatile().AddComponent(ChildrenCom(entity));
     if (add_to_root)
     {
         auto root = GetTheOnlyEntityWithType((EntityType)(EngineEntityType::SCENE_ROOT));
@@ -357,17 +330,17 @@ EntityDecorator longmarch::GameWorld::GenerateEntity(EntityType type, bool activ
 EntityDecorator longmarch::GameWorld::GenerateEntity3D(EntityType type, bool active, bool add_to_root)
 {
     auto entity = GenerateEntity(type, active, add_to_root);
-    entity.AddComponent(Transform3DCom(entity));
-    entity.AddComponent(Scene3DCom(entity));
-    entity.AddComponent(Body3DCom(entity));
+    entity.Volatile().AddComponent(Transform3DCom(entity));
+    entity.Volatile().AddComponent(Scene3DCom(entity));
+    entity.Volatile().AddComponent(Body3DCom(entity));
     return entity;
 }
 
 EntityDecorator longmarch::GameWorld::GenerateEntity3DNoCollision(EntityType type, bool active, bool add_to_root)
 {
     auto entity = GenerateEntity(type, active, add_to_root);
-    entity.AddComponent(Transform3DCom(entity));
-    entity.AddComponent(Scene3DCom(entity));
+    entity.Volatile().AddComponent(Transform3DCom(entity));
+    entity.Volatile().AddComponent(Scene3DCom(entity));
     return entity;
 }
 
@@ -431,23 +404,15 @@ longmarch::GameWorld::GetAllComponentSystemNamePair()
 
 void longmarch::GameWorld::RemoveEntity(const Entity& entity)
 {
+    // Remove components first
+    RemoveAllComponent(entity);
+
+    // Then remove the entity
     LOCK_GUARD_NC();
     m_entityManager->Destroy(entity);
     const auto it = m_entityMaskMap.find(entity);
     ASSERT(it != m_entityMaskMap.end());
-    const auto mask = it->second;
     m_entityMaskMap.erase(it);
-    auto& manager = m_maskArcheTypeMap[mask];
-    if (manager)
-    {
-        manager->RemoveEntity(entity);
-    }
-}
-
-void longmarch::GameWorld::RemoveEntityAndComponents(const Entity& entity)
-{
-    RemoveAllComponent(entity);
-    RemoveEntity(entity);
 }
 
 const Entity longmarch::GameWorld::GetTheOnlyEntityWithType(EntityType type) const
@@ -564,7 +529,7 @@ const LongMarch_Vector<Entity> GameWorld::EntityView(const BitMaskSignature& mas
 }
 
 void longmarch::GameWorld::ForEach(const LongMarch_Vector<Entity>& es,
-                                   typename Identity<std::function<void(const EntityDecorator& e)>>::Type func) const
+                                   const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func) const
 {
     for (const auto& e : es)
     {
@@ -577,7 +542,7 @@ void longmarch::GameWorld::ForEach(const LongMarch_Vector<Entity>& es,
 
 [[nodiscard]]
 std::future<void> longmarch::GameWorld::BackEach(const LongMarch_Vector<Entity>& es,
-                                                 typename Identity<std::function<void(const EntityDecorator& e)>>::Type
+                                                 const std::type_identity_t<std::function<void(const EntityDecorator& e)>>&
                                                  func) const
 {
     return StealThreadPool::GetInstance()->enqueue_task(
@@ -594,7 +559,7 @@ std::future<void> longmarch::GameWorld::BackEach(const LongMarch_Vector<Entity>&
 
 [[nodiscard]]
 std::future<void> longmarch::GameWorld::ParEach(const LongMarch_Vector<Entity>& es,
-                                                typename Identity<std::function<void(const EntityDecorator& e)>>::Type
+                                                const std::type_identity_t<std::function<void(const EntityDecorator& e)>>&
                                                 func, int min_split) const
 {
     return StealThreadPool::GetInstance()->enqueue_task([this, es, min_split, func = std::move(func)]()
@@ -604,7 +569,7 @@ std::future<void> longmarch::GameWorld::ParEach(const LongMarch_Vector<Entity>& 
 }
 
 void longmarch::GameWorld::_ParEach2(const LongMarch_Vector<Entity>& es,
-                                     typename Identity<std::function<void(const EntityDecorator& e)>>::Type func,
+                                     const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func,
                                      int min_split) const
 {
     try
@@ -620,7 +585,7 @@ void longmarch::GameWorld::_ParEach2(const LongMarch_Vector<Entity>& es,
         auto _end = es.end();
         int split_size = num_e / pool.threads;
         // Minimum split size
-        min_split = std::max(1, min_split);
+        min_split = std::max(16, min_split);
         split_size = std::max(split_size, min_split);
         // Even number split size
         if (split_size % 2 != 0)

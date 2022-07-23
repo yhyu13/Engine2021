@@ -32,7 +32,7 @@ namespace longmarch
 
         virtual void SwapBack(size_t index) = 0;
         virtual void PopBack() = 0;
-        
+
         //! Copy/Clone all data from component manager to a new one
         virtual std::shared_ptr<BaseComponentManager> Copy() const = 0;
         //! Create new component manager of the same component type with empty data
@@ -126,7 +126,7 @@ namespace longmarch
         {
             return m_components.size();
         }
-        
+
         virtual void ExpandSize(size_t newSize) override
         {
             ASSERT(newSize >= m_components.size());
@@ -138,7 +138,7 @@ namespace longmarch
             ASSERT(HasIndex(index));
             std::iter_swap(m_components.begin() + index, m_components.end() - 1);
         }
-        
+
         virtual void PopBack() override
         {
             m_components.pop_back();
@@ -163,7 +163,7 @@ namespace longmarch
                 com.SetWorld(world);
             }
         }
-        
+
     private:
         friend class ArcheTypeManager;
         // Stores all the component instances in an array
@@ -178,7 +178,7 @@ namespace longmarch
      *
      * @author Hang Yu (yohan680919@gmail.com)
      */
-    class ArcheTypeManager : public BaseAtomicClassNC
+    class ArcheTypeManager
     {
     public:
         NONCOPYABLE(ArcheTypeManager);
@@ -188,10 +188,9 @@ namespace longmarch
             m_entities.reserve(RESERVE_SIZE);
             m_entitiesAndComponentIndexes.reserve(RESERVE_SIZE);
         }
-        
+
         void CopyComponentManagerFrom(const ArcheTypeManager& other)
         {
-            LOCK_GUARD_NC();
             ASSERT(this->m_entities.empty());
             ASSERT(this->m_entitiesAndComponentIndexes.empty());
             ASSERT(this->m_componentManagers.empty());
@@ -201,11 +200,10 @@ namespace longmarch
                 this->m_componentManagers[comType] = comManger->Create();
             }
         }
-        
+
         template <typename ComponentType>
         void AddComponentManger()
         {
-            LOCK_GUARD_NC();
             ASSERT(this->m_entities.empty());
             ASSERT(this->m_entitiesAndComponentIndexes.empty());
             auto type = GetComponentTypeIndex<ComponentType>();
@@ -213,11 +211,11 @@ namespace longmarch
             m_componentManagers[type] = MemoryManager::Make_shared<ComponentManager<ComponentType>>();
         }
 
-        [[nodiscard]] BaseComponentInterface* GetBaseComponentByEntity(const Entity& entity, ComponentTypeIndex_T comTypeIndex) const
+        [[nodiscard]] BaseComponentInterface* GetBaseComponentByEntity(const Entity& entity,
+                                                                       ComponentTypeIndex_T comTypeIndex) const
         {
-            LOCK_GUARD_NC();
             size_t index;
-            if (_HasEntityNoLock(entity, index))
+            if (_HasEntity(entity, index))
             {
                 ASSERT(m_componentManagers.contains(comTypeIndex));
                 const auto& manager = m_componentManagers.at(comTypeIndex);
@@ -236,9 +234,8 @@ namespace longmarch
         template <typename ComponentType>
         [[nodiscard]] ComponentType* GetComponentByEntity(const Entity& entity) const
         {
-            LOCK_GUARD_NC();
             size_t index;
-            if (_HasEntityNoLock(entity, index))
+            if (_HasEntity(entity, index))
             {
                 ASSERT(m_componentManagers.contains(GetComponentTypeIndex<ComponentType>()));
                 auto manager = static_cast<ComponentManager<ComponentType>*>(m_componentManagers.at(
@@ -259,12 +256,11 @@ namespace longmarch
         template <typename ComponentType>
         void AddComponentToEntity(const Entity& entity, const ComponentType& component)
         {
-            LOCK_GUARD_NC();
             auto manager = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[GetComponentTypeIndex<
                 ComponentType>()].get());
             ASSERT(manager, Str("ArcheType should already contain %s", typeid(ComponentType).name()));
             size_t index;
-            if (!_HasEntityNoLock(entity, index))
+            if (!_HasEntity(entity, index))
             {
                 index = m_entities.size();
                 m_entities.push_back(entity);
@@ -278,12 +274,11 @@ namespace longmarch
         template <typename ComponentType>
         void MoveComponentToEntity(const Entity& entity, ComponentType&& component)
         {
-            LOCK_GUARD_NC();
             auto manager = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[GetComponentTypeIndex<
                 ComponentType>()].get());
             ASSERT(manager, Str("ArcheType should already contain %s", typeid(ComponentType).name()));
             size_t index;
-            if (!_HasEntityNoLock(entity, index))
+            if (!_HasEntity(entity, index))
             {
                 index = m_entities.size();
                 m_entities.push_back(entity);
@@ -293,58 +288,56 @@ namespace longmarch
             manager->MoveComponentToIndex(index, component);
             ASSERT(m_entities.size() == manager->m_components.size());
         }
-        
+
         void MoveOutEntity(const Entity& entity, ArcheTypeManager& other)
         {
-            this->LockNC();
-            other.LockNC();
-
             // Sanity checks
             ASSERT(this->m_componentManagers.size() != other.m_componentManagers.size());
             size_t index;
-            ASSERT(!other._HasEntityNoLock(entity, index), Str("Cannot move in a managed entity %s", Str(entity)));
-            ASSERT(this->_HasEntityNoLock(entity, index), Str("Cannot move out a unmanaged entity %s", Str(entity)));
+            ASSERT(!other._HasEntity(entity, index), Str("Cannot move in a managed entity %s", Str(entity)));
+            ASSERT(this->_HasEntity(entity, index), Str("Cannot move out a unmanaged entity %s", Str(entity)));
 
             // Emplace entity to the other manager
             const size_t emplaceIndex = other._AddEntityAndExpandComponentArray(entity);
-            
+
             if (const bool updateBasedOnThis = m_componentManagers.size() < other.m_componentManagers.size();
                 updateBasedOnThis)
             {
                 for (const auto& [comType, comManger] : this->m_componentManagers)
                 {
-                    ASSERT(other.m_componentManagers.contains(comType), Str("Component type %ud not contained by other", comType));
-                    other.m_componentManagers[comType]->MoveBaseComponentByIndex(emplaceIndex, comManger->GetBaseComponentByIndex(index));
+                    ASSERT(other.m_componentManagers.contains(comType),
+                           Str("Component type %ud not contained by other", comType));
+                    other.m_componentManagers[comType]->MoveBaseComponentByIndex(
+                        emplaceIndex, comManger->GetBaseComponentByIndex(index));
                 }
             }
             else
             {
                 for (auto& [comType, comManger] : other.m_componentManagers)
                 {
-                    ASSERT(this->m_componentManagers.contains(comType), Str("Component type %ud not contained by other", comType));
-                    comManger->MoveBaseComponentByIndex(emplaceIndex, this->m_componentManagers[comType]->GetBaseComponentByIndex(index));
+                    ASSERT(this->m_componentManagers.contains(comType),
+                           Str("Component type %ud not contained by other", comType));
+                    comManger->MoveBaseComponentByIndex(emplaceIndex,
+                                                        this->m_componentManagers[comType]->GetBaseComponentByIndex(
+                                                            index));
                 }
             }
-            other.UnlockNC();
             // Destroy entity for this manager
             this->_RemoveEntityAtIndex(entity, index);
-            this->UnlockNC();
         }
 
         void RemoveEntity(const Entity& entity)
         {
-            LOCK_GUARD_NC();
             size_t index;
-            ASSERT(this->_HasEntityNoLock(entity, index), Str("Cannot remove a unmanaged entity %s", Str(entity)));
+            ASSERT(this->_HasEntity(entity, index), Str("Cannot remove a unmanaged entity %s", Str(entity)));
             // Destroy entity for this manager
             this->_RemoveEntityAtIndex(entity, index);
         }
 
         [[nodiscard]] bool HasEntity(const Entity& entity) const
         {
-            LOCK_GUARD_NC();
             size_t _;
-            return _HasEntityNoLock(entity, _);
+            return _HasEntity(entity, _);
         }
 
         [[nodiscard]] const LongMarch_Vector<Entity>& GetEntityView() const
@@ -355,7 +348,7 @@ namespace longmarch
         [[nodiscard]] std::shared_ptr<ArcheTypeManager> Copy() const
         {
             auto ret = MemoryManager::Make_shared<ArcheTypeManager>();
-            LOCK_GUARD_NC();
+
             ret->m_entities = m_entities;
             ret->m_entitiesAndComponentIndexes = m_entitiesAndComponentIndexes;
             for (const auto& [comType, comManager] : m_componentManagers)
@@ -367,7 +360,6 @@ namespace longmarch
 
         void SetWorld(GameWorld* world) const
         {
-            LOCK_GUARD_NC();
             for (const auto& [_, comManger] : m_componentManagers)
             {
                 comManger->SetWorld(world);
@@ -378,7 +370,7 @@ namespace longmarch
         [[nodiscard]] size_t _AddEntityAndExpandComponentArray(const Entity& entity)
         {
             size_t index;
-            ASSERT(!_HasEntityNoLock(entity, index));
+            ASSERT(!_HasEntity(entity, index));
             // Push back entity
             index = m_entities.size();
             m_entities.push_back(entity);
@@ -397,15 +389,17 @@ namespace longmarch
         {
             ASSERT(index < m_entities.size());
             const bool shouldSwapBack = index != (m_entities.size() - 1);
-            
+
             auto lastEntity = m_entities.back();
-            if (shouldSwapBack) [[likely]]
+            if (shouldSwapBack)
+            [[likely]]
             {
                 std::iter_swap(m_entities.begin() + index, m_entities.end() - 1);
             }
             m_entities.pop_back();
-            
-            if (shouldSwapBack) [[likely]]
+
+            if (shouldSwapBack)
+            [[likely]]
             {
                 m_entitiesAndComponentIndexes[lastEntity] = index;
             }
@@ -413,15 +407,16 @@ namespace longmarch
 
             for (const auto& [comType, comManager] : m_componentManagers)
             {
-                if (shouldSwapBack) [[likely]]
+                if (shouldSwapBack)
+                [[likely]]
                 {
                     comManager->SwapBack(index);
                 }
                 comManager->PopBack();
             }
         }
-        
-        [[nodiscard]] bool _HasEntityNoLock(const Entity& entity, size_t& index) const
+
+        [[nodiscard]] bool _HasEntity(const Entity& entity, size_t& index) const
         {
             if (const auto it = m_entitiesAndComponentIndexes.find(entity);
                 it != m_entitiesAndComponentIndexes.end())

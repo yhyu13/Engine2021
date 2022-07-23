@@ -138,7 +138,7 @@ namespace longmarch
     //! Unity ECS like for each function
     template <class ...Components>
     inline void GameWorld::ForEach(
-        typename Identity<std::function<void(const EntityDecorator& e, Components&...)>>::Type func) const
+        const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func) const
     {
         for (const auto& e : EntityView<Components...>())
         {
@@ -154,7 +154,7 @@ namespace longmarch
     template <class ...Components>
     [[nodiscard]]
     inline auto GameWorld::BackEach(
-        typename Identity<std::function<void(const EntityDecorator& e, Components&...)>>::Type func) const
+        const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func) const
     {
         return StealThreadPool::GetInstance()->enqueue_task(
             [this, func = std::move(func)]()
@@ -172,7 +172,7 @@ namespace longmarch
     //! Helper method for pareach (defined in Gameworld.h)
     template <class... Components>
     void GameWorld::_ParEach(
-        typename Identity<std::function<void(const EntityDecorator& e, Components&...)>>::Type func,
+        const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func,
         int min_split) const
     {
         try

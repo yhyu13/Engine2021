@@ -38,6 +38,7 @@ namespace longmarch
 #define LongMarch_MAX_SCENE_PASS_BATCH 16 // After this number of textures are to be drawn, the batch buffer is flushed to render because this is the max number of textures that gpu shader has registerd
 
 
+
 #endif
 
 #ifndef LongMarch_GUASSIAN_KERNEL_MIN
@@ -92,7 +93,7 @@ namespace longmarch
 
         enum class RENDER_TYPE : int32_t
         {
-            OPAQUE2 = 0,
+            OPAQUES = 0,
             TRANSLUCENT,
             PARTICLE,
             CUSTOM

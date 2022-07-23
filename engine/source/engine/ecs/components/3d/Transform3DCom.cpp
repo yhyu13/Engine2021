@@ -3,7 +3,7 @@
 
 longmarch::Transform3DCom::Transform3DCom(const EntityDecorator& _this)
 	:
-	BaseComponent(_this.GetVolatileWorld()),
+	BaseComponent(_this.Volatile().GetWorld()),
 	m_this(_this.GetEntity())
 {
 }

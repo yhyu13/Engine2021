@@ -78,7 +78,8 @@ namespace longmarch
     protected:
          mutable std::atomic_flag nc_flag;
     private:
-         std::byte __PADDING__[PLATFORM_CACHE_LINE - sizeof(std::atomic_flag) - sizeof(void*)];
+        // yuhang : No need for padding, class inherit from base atomic class should CACHE_ALIGN on demand
+        // std::byte __PADDING__[PLATFORM_CACHE_LINE - sizeof(std::atomic_flag) - sizeof(void*)];
     };
 
     /*
@@ -112,7 +113,8 @@ namespace longmarch
     protected:
         mutable std::atomic_flag m_flag;
     private:
-        std::byte __PADDING__[PLATFORM_CACHE_LINE - sizeof(std::atomic_flag) - sizeof(void*)];
+        // yuhang : No need for padding, class inherit from base atomic class should CACHE_ALIGN on demand
+        //std::byte __PADDING__[PLATFORM_CACHE_LINE - sizeof(std::atomic_flag) - sizeof(void*)];
     };
 
     /*
@@ -134,7 +136,9 @@ namespace longmarch
     protected:
         mutable std::mutex nc_mutex;
         mutable int64_t nc_period_nano{2000ull};
+        
     private:
-        std::byte __PADDING__[2 * PLATFORM_CACHE_LINE - sizeof(std::mutex) - sizeof(std::int64_t) - sizeof(void*)];
+        // yuhang : No need for padding, class inherit from base atomic class should CACHE_ALIGN on demand
+        //std::byte __PADDING__[2 * PLATFORM_CACHE_LINE - sizeof(std::mutex) - sizeof(std::int64_t) - sizeof(void*)];
     };
 }

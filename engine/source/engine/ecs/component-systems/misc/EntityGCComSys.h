@@ -6,6 +6,11 @@
 #include "engine/ecs/EntityType.h"
 #include "engine/core/utility/TypeHelper.h"
 
+// yuhang : since EntityGCComSys handles both engine and application entity types, and since we don't really know how many of them are there
+// so we simply set a pesudo range
+#define FIRST_ENTITY_TYPE_ENUM 0
+#define LAST_ENTITY_TYPE_ENUM 256
+
 namespace longmarch
 {
 	/**
@@ -16,8 +21,8 @@ namespace longmarch
 	class EntityGCComSys final : public BaseComponentSystem
 	{
 	public:
-		EntityType firstEntityType = { (EntityType)0 };//{ (EntityType)EngineObjectType::EMPTY };
-		EntityType lastEntityType = { (EntityType)256 };//{ (EntityType)EngineObjectType::NUM };
+		constexpr static EntityType firstEntityType = { FIRST_ENTITY_TYPE_ENUM };
+		constexpr static EntityType lastEntityType = { LAST_ENTITY_TYPE_ENUM };
 
 	public:
 		NONCOPYABLE(EntityGCComSys);
@@ -25,7 +30,7 @@ namespace longmarch
 
 		EntityGCComSys()
 		{
-			m_GCList.reserve(1024);
+			m_UserRegisteredEntities.reserve(1024);
 		}
 
 		virtual void Init() override
@@ -35,7 +40,7 @@ namespace longmarch
 			ManageEventSubHandle(queue->Subscribe<EntityGCComSys>(this, EngineEventType::GC_RECURSIVE, &EntityGCComSys::_ON_GC_RECURSIVE));
 		}
 
-		virtual void RemoveAllRegisteredUserEntities() override;
+		virtual void RemoveAllRegisteredEntities() override;
 		virtual void PostRenderUpdate(double dt) override;
 
 	private:
@@ -44,8 +49,8 @@ namespace longmarch
 		void _ON_GC(EventQueue<EngineEventType>::EventPtr e);
 		void _ON_GC_RECURSIVE(EventQueue<EngineEventType>::EventPtr e);
 		void GCRecursive(EntityDecorator e);
-
-	private:
-		LongMarch_Vector<Entity> m_GCList;
 	};
 }
+
+#undef FIRST_ENTITY_TYPE_ENUM
+#undef LAST_ENTITY_TYPE_ENUM

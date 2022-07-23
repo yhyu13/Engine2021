@@ -7,7 +7,7 @@ namespace longmarch
 	/*
 	Data class that stores ID and name of a entity (which is used as a mean to indentification from UI/editor)
 	*/
-	struct MS_ALIGN16 IDNameCom final: BaseComponent<IDNameCom> 
+	struct CACHE_ALIGN IDNameCom final: BaseComponent<IDNameCom> 
 	{
 		IDNameCom() = default;
 		explicit IDNameCom(const Entity& _this, const std::string& _name = "");

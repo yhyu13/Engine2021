@@ -54,9 +54,9 @@ void longmarch::MainGameLayer::Init()
 	}
 }
 
-void TEST_DS_Lights();
-void TEST_BRDF_Materials();
-void TEST_Skeletal_Animations();
+static void TEST_DS_Lights();
+static void TEST_BRDF_Materials();
+static void TEST_Skeletal_Animations();
 void longmarch::MainGameLayer::BuildTestScene()
 {
 	TEST_DS_Lights();
@@ -360,7 +360,7 @@ void longmarch::MainGameLayer::_ON_WINDOW_INTERRUPT(EventQueue<EngineEventType>:
 	GameWorld::GetCurrent()->SetPause(!event->m_isFocused && Engine::GetPaused());
 }
 
-void TEST_BRDF_Materials()
+static void TEST_BRDF_Materials()
 {
 	auto& engineConfiguration = FileSystem::GetCachedJsonCPP(FileSystem::ResolveProtocol("$root:engine-config.json"));
 	uint32_t num_materials = engineConfiguration["test"]["Test-material-number"].asUInt();
@@ -416,7 +416,7 @@ void TEST_BRDF_Materials()
 	}
 }
 
-void TEST_DS_Lights()
+static void TEST_DS_Lights()
 {
 	auto& engineConfiguration = FileSystem::GetCachedJsonCPP(FileSystem::ResolveProtocol("$root:engine-config.json"));
 	uint32_t num_lights = engineConfiguration["test"]["Test-light-number"].asUInt();
@@ -457,7 +457,7 @@ void TEST_DS_Lights()
 				LightCom lightCom;
 				lightCom.shadow.bCastShadow = false;
 				lightCom.pointLight.radius = radius;
-				entity.AddComponent(lightCom);
+				entity.Volatile().AddComponent(lightCom);
 
 				auto trans = entity.GetComponent<Transform3DCom>();
 				auto trans_root = rotation_root_1.GetComponent<Transform3DCom>();
@@ -482,7 +482,7 @@ void TEST_DS_Lights()
 	}
 }
 
-void TEST_Skeletal_Animations()
+static void TEST_Skeletal_Animations()
 {
 	auto& engineConfiguration = FileSystem::GetCachedJsonCPP(FileSystem::ResolveProtocol("$root:engine-config.json"));
 	uint32_t num_animation = engineConfiguration["test"]["Test-skeletal-animation-number"].asUInt();
@@ -530,7 +530,7 @@ void TEST_Skeletal_Animations()
 					anima.m_animaRef->skeletonRef = ResourceManager<Skeleton>::GetInstance()->TryGet("Locomotion_prefab")->Get();
 					anima.currentAnimName = (RAND_F(0.0, 1.0) <= 0.5) ? "Idle" : "C_Walk_IP";
 					anima.playBackSpeed = RAND_F(0.5, 2.0);
-					entity.AddComponent(anima);
+					entity.Volatile().AddComponent(anima);
 
 					auto root_childrenCom_1 = world->GetComponent<ChildrenCom>(rotation_root_1);
 					root_childrenCom_1->AddEntity(entity);

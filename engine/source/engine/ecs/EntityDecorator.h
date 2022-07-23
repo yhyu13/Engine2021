@@ -11,7 +11,32 @@ namespace longmarch
     template <typename ComponentType>
     class ComponentDecorator;
 
-    struct EntityDecorator
+    struct MS_ALIGN8 EntityDecoratorVolatile
+    {
+        explicit EntityDecoratorVolatile(const Entity& entity, GameWorld* world)
+            :
+            m_entity(entity),
+            m_world(world)
+        {
+        }
+
+        template <typename ComponentType>
+        void AddComponent(const ComponentType& component) const;
+
+        template <typename ComponentType>
+        void RemoveComponent() const;
+
+        inline GameWorld* GetWorld() const
+        {
+            return m_world;
+        }
+
+    private:
+        Entity m_entity;
+        GameWorld* m_world{nullptr};
+    };
+
+    struct MS_ALIGN8 EntityDecorator
     {
         EntityDecorator() = default;
 
@@ -23,30 +48,29 @@ namespace longmarch
         }
 
         template <typename ComponentType>
-        void AddComponent(const ComponentType& component);
+        [[nodiscard]] ComponentDecorator<ComponentType> GetComponent() const;
 
         template <typename ComponentType>
-        void RemoveComponent();
-
-        template <typename ComponentType>
-        ComponentDecorator<ComponentType> GetComponent() const;
-
-        template <typename ComponentType>
-        bool HasComponent() const;
+        [[nodiscard]] bool HasComponent() const;
 
         __LongMarch_TRIVIAL_TEMPLATE__
-        LongMarch_Vector<BaseComponentInterface*> GetAllComponent() const;
+        [[nodiscard]] LongMarch_Vector<BaseComponentInterface*> GetAllComponent() const;
 
         inline bool Valid() const
         {
             return m_entity != Entity() && m_world != nullptr;
         }
 
-        //! Reset entity decocrator (aka. invalidate it)
+        //! Reset entity decorator (aka. invalidate it)
         inline void Reset()
         {
             m_entity = Entity();
             m_world = nullptr;
+        }
+
+        inline EntityDecoratorVolatile Volatile() const
+        {
+            return EntityDecoratorVolatile{GetEntity(), const_cast<GameWorld*>(GetWorld())};
         }
 
         inline const Entity GetEntity() const
@@ -62,11 +86,6 @@ namespace longmarch
         inline const EntityType GetType() const
         {
             return m_entity.m_type;
-        }
-
-        inline GameWorld* GetVolatileWorld() const
-        {
-            return const_cast<GameWorld*>(m_world);
         }
 
         inline const GameWorld* GetWorld() const
@@ -115,9 +134,10 @@ namespace std
     template <>
     struct hash<longmarch::EntityDecorator>
     {
-        std::size_t operator()(const longmarch::EntityDecorator& e) const
+        std::size_t operator()(const longmarch::EntityDecorator& e) const noexcept
         {
-            return hash<longmarch::EntityID>()(e.GetID());
+            // TODO @yuhang : consider combine world hash into hash of entity decorator
+            return hash<longmarch::Entity>()(e.GetEntity());
         }
     };
 }

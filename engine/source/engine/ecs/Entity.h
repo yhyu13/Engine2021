@@ -24,7 +24,7 @@ namespace longmarch
      *
      * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
      */
-    struct Entity
+    struct MS_ALIGN8 Entity
     {
         EntityID m_id{0}; // Entity id, >0 is valid
         EntityType m_type{0};
@@ -110,7 +110,7 @@ namespace std
     template <>
     struct hash<longmarch::Entity>
     {
-        std::size_t operator()(const longmarch::Entity& e) const
+        std::size_t operator()(const longmarch::Entity& e) const noexcept
         {
             return hash<longmarch::EntityID>()(e.m_id);
         }

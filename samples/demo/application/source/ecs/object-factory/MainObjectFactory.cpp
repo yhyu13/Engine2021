@@ -52,7 +52,7 @@ BaseComponentInterface* longmarch::MainObjectFactory::AddComponentByName(const s
 			{
 				if (!e.HasComponent<AIControllerCom>())
 				{
-					e.AddComponent(AIControllerCom(e));
+					e.Volatile().AddComponent(AIControllerCom(e));
 				}
 				com = e.GetComponent<AIControllerCom>().GetPtr();
 			}
@@ -61,7 +61,7 @@ BaseComponentInterface* longmarch::MainObjectFactory::AddComponentByName(const s
 			{
 				if (!e.HasComponent<Particle3DCom>())
 				{
-					e.AddComponent(Particle3DCom(e));
+					e.Volatile().AddComponent(Particle3DCom(e));
 				}
 				com = e.GetComponent<Particle3DCom>().GetPtr();
 			}

@@ -88,7 +88,6 @@ namespace longmarch
         void Init();
         void Update(double frameTime);
         void Update2(double frameTime);
-        void Update3(double frameTime);
 
         void MultiThreadUpdate(double frameTime);
         void MultiThreadJoin();
@@ -101,30 +100,13 @@ namespace longmarch
         void RenderUI();
 
         /**************************************************************
-        *	Remover
+        *	Helper
         **************************************************************/
         //! Helper method that inactivates an entity
         void InactivateHelper(Entity e);
 
         //! Helper method that removes an entity from its parent
         void RemoveFromParentHelper(Entity e);
-
-        //! Remove a specific entity only, its components still persists
-        void RemoveEntity(const Entity& entity);
-
-        //! Remove a specific entity and all its components
-        void RemoveEntityAndComponents(const Entity& entity);
-
-        // /*
-        //     Launch RemoveAllRegisteredUserEntities() for each componenet system.
-        //     This method does not remove components or entities by itself.
-        //     You should create a GC component system that effectly remove all components and entities
-        // */
-        // void RemoveAllRegisteredUserEntities();
-        // /*
-        //     Remove all component systems
-        // */
-        // void RemoveAllComponentSystems();
 
         /**************************************************************
         *	Entity
@@ -155,6 +137,9 @@ namespace longmarch
             Scene3DCom,
         */
         EntityDecorator GenerateEntity3DNoCollision(EntityType type, bool active, bool add_to_root);
+
+        //! Remove a specific entity and all its components
+        void RemoveEntity(const Entity& entity);
 
         //! Check if entity is valid and exists in this gameworld
         bool HasEntity(const Entity& entity) const;
@@ -211,22 +196,23 @@ namespace longmarch
 
         template <class... Components>
         const LongMarch_Vector<Entity> EntityView() const;
-        
+
         const LongMarch_Vector<Entity> EntityView(const BitMaskSignature& bitMask) const;
 
         //! Unity ECS like for each function
         template <class... Components>
-        void ForEach(typename Identity<std::function<void(const EntityDecorator& e, Components&...)>>::Type func) const;
+        void ForEach(
+            const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func) const;
 
         //! Unity ECS like for each function (single worker thread), func is moved
         template <class... Components>
         [[nodiscard]] auto BackEach(
-            typename Identity<std::function<void(const EntityDecorator& e, Components&...)>>::Type func) const;
+            const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func) const;
 
         //! Unity ECS like for each function (multi worker thread), func is moved
         template <class... Components>
         [[nodiscard]] auto ParEach(
-            typename Identity<std::function<void(const EntityDecorator& e, Components&...)>>::Type func,
+            const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func,
             int min_split = -1) const
         {
             return StealThreadPool::GetInstance()->enqueue_task([this, min_split, func = std::move(func)]()
@@ -237,21 +223,23 @@ namespace longmarch
 
         //! Unity ECS like for each function
         void ForEach(const LongMarch_Vector<Entity>& es,
-                     typename Identity<std::function<void(const EntityDecorator& e)>>::Type func) const;
+                     const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func) const;
 
         //! Unity ECS like for each function (single worker thread), func is moved
         [[nodiscard]] std::future<void> BackEach(const LongMarch_Vector<Entity>& es,
-                                                 typename Identity<std::function<void(const EntityDecorator& e)>>::Type
+                                                 const std::type_identity_t<std::function<void
+                                                     (const EntityDecorator& e)>>&
                                                  func) const;
 
         //! Unity ECS like for each function (multi worker thread), func is moved
         [[nodiscard]] std::future<void> ParEach(const LongMarch_Vector<Entity>& es,
-                                                typename Identity<std::function<void(const EntityDecorator& e)>>::Type
+                                                const std::type_identity_t<std::function<void
+                                                    (const EntityDecorator& e)>>&
                                                 func, int min_split = -1) const;
 
     private:
         //! Helper method that wraps exception handling for thread job
-        inline void _MultiThreadExceptionCatcher(typename Identity<std::function<void()>>::Type func) const
+        inline void _MultiThreadExceptionCatcher(const std::type_identity_t<std::function<void()>>& func) const
         {
             ENGINE_TRY_CATCH({ func(); });
         };
@@ -265,19 +253,15 @@ namespace longmarch
 
         //! Helper method for pareach
         void _ParEach2(const LongMarch_Vector<Entity>& es,
-                       typename Identity<std::function<void(const EntityDecorator& e)>>::Type func,
+                       const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func,
                        int min_split = -1) const;
-
-        template <typename ComponentType>
-        void _TryRemoveEntityForAllComponentSystems(const Entity& entity);
 
         //! Helper method for pareach
         template <class... Components>
-        void _ParEach(typename Identity<std::function<void(const EntityDecorator& e, Components&...)>>::Type func,
+        void _ParEach(const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func,
                       int min_split = -1) const;
 
     private:
-        
         // Entity (E)
         //!< Contains all entities
         std::shared_ptr<EntityManager> m_entityManager;

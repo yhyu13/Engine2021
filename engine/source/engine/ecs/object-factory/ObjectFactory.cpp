@@ -81,7 +81,7 @@ const std::string longmarch::ObjectFactory::GetEntityNameFromType(EntityType e_t
 BaseComponentInterface* longmarch::ObjectFactory::AddComponentByName(const std::string& com_type, EntityDecorator entity) const
 {
 	/*
-	 1, Modify this map for new component
+	 1, Modify this map for new component TODO @yuhang : Refactor
 	*/
 	static const std::unordered_map<std::string, int> m{
 	{"Transform3DCom", 1},
@@ -105,7 +105,7 @@ BaseComponentInterface* longmarch::ObjectFactory::AddComponentByName(const std::
 		{
 			if (!entity.HasComponent<Transform3DCom>())
 			{
-				entity.AddComponent(Transform3DCom(entity));
+				entity.Volatile().AddComponent(Transform3DCom(entity));
 			}
 			auto com = entity.GetComponent<Transform3DCom>();
 			ret = com.GetPtr();
@@ -115,7 +115,7 @@ BaseComponentInterface* longmarch::ObjectFactory::AddComponentByName(const std::
 		{
 			if (!entity.HasComponent<PerspectiveCameraCom>())
 			{
-				entity.AddComponent(PerspectiveCameraCom());
+				entity.Volatile().AddComponent(PerspectiveCameraCom());
 			}
 			auto com = entity.GetComponent<PerspectiveCameraCom>();
 			ret = com.GetPtr();
@@ -125,7 +125,7 @@ BaseComponentInterface* longmarch::ObjectFactory::AddComponentByName(const std::
 		{
 			if (!entity.HasComponent<Scene3DCom>())
 			{
-				entity.AddComponent(Scene3DCom(entity));
+				entity.Volatile().AddComponent(Scene3DCom(entity));
 			}
 			auto com = entity.GetComponent<Scene3DCom>();
 			ret = com.GetPtr();
@@ -135,7 +135,7 @@ BaseComponentInterface* longmarch::ObjectFactory::AddComponentByName(const std::
 		{
 			if (!entity.HasComponent<Body3DCom>())
 			{
-				entity.AddComponent(Body3DCom());
+				entity.Volatile().AddComponent(Body3DCom());
 			}
 			auto com = entity.GetComponent<Body3DCom>();
 			ret = com.GetPtr();
@@ -145,7 +145,7 @@ BaseComponentInterface* longmarch::ObjectFactory::AddComponentByName(const std::
 		{
 			if (!entity.HasComponent<LightCom>())
 			{
-				entity.AddComponent(LightCom());
+				entity.Volatile().AddComponent(LightCom());
 			}
 			auto com = entity.GetComponent<LightCom>();
 			ret = com.GetPtr();
@@ -155,7 +155,7 @@ BaseComponentInterface* longmarch::ObjectFactory::AddComponentByName(const std::
 		{
 			if (!entity.HasComponent<IDNameCom>())
 			{
-				entity.AddComponent(IDNameCom(entity, Str(entity)));
+				entity.Volatile().AddComponent(IDNameCom(entity, Str(entity)));
 			}
 			auto com = entity.GetComponent<IDNameCom>();
 			ret = com.GetPtr();
@@ -165,7 +165,7 @@ BaseComponentInterface* longmarch::ObjectFactory::AddComponentByName(const std::
 		{
 			if (!entity.HasComponent<Animation3DCom>())
 			{
-				entity.AddComponent(Animation3DCom(entity));
+				entity.Volatile().AddComponent(Animation3DCom(entity));
 			}
 			auto com = entity.GetComponent<Animation3DCom>();
 			ret = com.GetPtr();
@@ -182,7 +182,7 @@ BaseComponentInterface* longmarch::ObjectFactory::AddComponentByName(const std::
 std::shared_ptr<BaseComponentSystem> longmarch::ObjectFactory::AddComponentSystemByName(const std::string& comsys_type, GameWorld* world) const
 {
 	/*
-		1, Modify this map for new compoent systems
+		1, Modify this map for new compoent systems  TODO @yuhang : Refactor
 	*/
 	static const std::unordered_map<std::string, int> m{
 	{"Scene3DComSys", 1},
@@ -231,7 +231,7 @@ std::shared_ptr<BaseComponentSystem> longmarch::ObjectFactory::AddComponentSyste
 bool longmarch::ObjectFactory::RemoveComponentByName(const std::string& com_type, EntityDecorator entity) const
 {
 	/*
-	 1, Modify this map for new compoent
+	 1, Modify this map for new compoent  TODO @yuhang : Refactor
 	*/
 	static const std::unordered_map<std::string, int> m{
 	{"Transform3DCom", 1},
@@ -254,7 +254,7 @@ bool longmarch::ObjectFactory::RemoveComponentByName(const std::string& com_type
 		{
 			if (entity.HasComponent<Transform3DCom>())
 			{
-				entity.RemoveComponent<Transform3DCom>();
+				entity.Volatile().RemoveComponent<Transform3DCom>();
 			}
 			return true;
 		}
@@ -263,7 +263,7 @@ bool longmarch::ObjectFactory::RemoveComponentByName(const std::string& com_type
 		{
 			if (entity.HasComponent<PerspectiveCameraCom>())
 			{
-				entity.RemoveComponent<PerspectiveCameraCom>();
+				entity.Volatile().RemoveComponent<PerspectiveCameraCom>();
 			}
 			return true;
 		}
@@ -272,7 +272,7 @@ bool longmarch::ObjectFactory::RemoveComponentByName(const std::string& com_type
 		{
 			if (entity.HasComponent<Scene3DCom>())
 			{
-				entity.RemoveComponent<Scene3DCom>();
+				entity.Volatile().RemoveComponent<Scene3DCom>();
 			}
 			return true;
 		}
@@ -281,7 +281,7 @@ bool longmarch::ObjectFactory::RemoveComponentByName(const std::string& com_type
 		{
 			if (entity.HasComponent<Body3DCom>())
 			{
-				entity.RemoveComponent<Body3DCom>();
+				entity.Volatile().RemoveComponent<Body3DCom>();
 			}
 			return true;
 		}
@@ -290,7 +290,7 @@ bool longmarch::ObjectFactory::RemoveComponentByName(const std::string& com_type
 		{
 			if (entity.HasComponent<LightCom>())
 			{
-				entity.RemoveComponent<LightCom>();
+				entity.Volatile().RemoveComponent<LightCom>();
 			}
 			return true;
 		}
@@ -299,7 +299,7 @@ bool longmarch::ObjectFactory::RemoveComponentByName(const std::string& com_type
 		{
 			if (entity.HasComponent<IDNameCom>())
 			{
-				entity.RemoveComponent<IDNameCom>();
+				entity.Volatile().RemoveComponent<IDNameCom>();
 			}
 			return true;
 		}
@@ -308,7 +308,7 @@ bool longmarch::ObjectFactory::RemoveComponentByName(const std::string& com_type
 		{
 			if (entity.HasComponent<Animation3DCom>())
 			{
-				entity.RemoveComponent<Animation3DCom>();
+				entity.Volatile().RemoveComponent<Animation3DCom>();
 			}
 			return true;
 		}
@@ -324,7 +324,7 @@ bool longmarch::ObjectFactory::RemoveComponentByName(const std::string& com_type
 bool longmarch::ObjectFactory::RemoveComponentSystemByName(const std::string& comsys_type, GameWorld* world) const
 {
 	/*
-		1, Modify this map for new compoent systems
+		1, Modify this map for new compoent systems  TODO @yuhang : Refactor
 	*/
 	static const std::unordered_map<std::string, int> m{
 	{"Scene3DComSys", 1},

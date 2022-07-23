@@ -6,7 +6,7 @@
 
 namespace longmarch
 {
-    struct MS_ALIGN16 AIControllerCom final : BaseComponent<AIControllerCom>
+    struct CACHE_ALIGN AIControllerCom final : BaseComponent<AIControllerCom>
     {
     public:
         // Member Functions

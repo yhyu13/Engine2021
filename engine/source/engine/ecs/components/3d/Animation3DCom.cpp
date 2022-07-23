@@ -10,7 +10,7 @@
 
 longmarch::Animation3DCom::Animation3DCom(const EntityDecorator& _this)
 	:
-	BaseComponent(_this.GetVolatileWorld()),
+	BaseComponent(_this.Volatile().GetWorld()),
 	m_this(_this.GetEntity())
 {
 }
@@ -57,9 +57,10 @@ void longmarch::Animation3DCom::SetAnimationTickTimer(float period)
 	animationTickTimer.SetPeriod(period);
 }
 
-void longmarch::Animation3DCom::UpdateAnimation(double dt, Scene3DNode* sceneNode)
+void longmarch::Animation3DCom::UpdateAnimation(double dt, const std::shared_ptr<Scene3DNode>& sceneNode)
 {
 	LOCK_GUARD();
+	ASSERT(sceneNode);
 	if (currentAnimName != "None" && !pause && m_animaRef)
 	{
 		currentTime += dt * playBackSpeed;

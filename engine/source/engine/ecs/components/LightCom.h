@@ -8,7 +8,7 @@ namespace longmarch
 	/*
 		A universal component manages lights parameters and shadowing parameters
 	*/
-	struct CACHE_ALIGN LightCom final: BaseComponent<LightCom>
+	struct CACHE_ALIGN LightCom final: public BaseComponent<LightCom>
 	{
 	public:
 		enum class LIGHT_TYPE : uint32_t // Light type order is critical

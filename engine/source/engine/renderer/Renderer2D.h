@@ -15,7 +15,7 @@ namespace longmarch
 		float TexIndex;
 	};
 
-	class ENGINE_API Renderer2D : public BaseAtomicClassNI
+	class ENGINE_API Renderer2D : private BaseAtomicClassNI
 	{
 	public:
 		NONINSTANTIABLE(Renderer2D);

@@ -27,7 +27,8 @@ namespace longmarch
 	 * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
 	 */
 	template <typename EventType>
-	class EventQueue final : public BaseAtomicClassNC {
+	class EventQueue final : protected BaseAtomicClassNC
+	{
 	public:
 		NONCOPYABLE(EventQueue);
 		using EventPtr = std::shared_ptr<Event<EventType>>;	// Define event smart pointer type
@@ -158,7 +159,7 @@ namespace longmarch
 			}
 		}
 
-		//! Instanct execution of a synchronous event
+		//! Intantieous execution of a synchronous event
 		inline void Publish(EventPtr e)
 		{
 			auto _e = std::static_pointer_cast<BaseEvent>(e);

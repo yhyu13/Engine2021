@@ -153,7 +153,7 @@ namespace longmarch
      * Atomic queue, noncopyable, using spin lock underneath
      */
     template <typename T>
-    class AtomicQueueNC final : public BaseAtomicClassNC
+    class AtomicQueueNC final : private BaseAtomicClassNC
     {
     public:
         NONCOPYABLE(AtomicQueueNC);

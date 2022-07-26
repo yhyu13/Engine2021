@@ -57,7 +57,7 @@ namespace longmarch
 		inline void IncrementSemaphoreIndex() { SemaphoreIndex = (SemaphoreIndex + 1) % ImageCount; }
 	};
 
-	class VulkanContext final : public GraphicsContext, public BaseAtomicClassStatic
+	class VulkanContext final : public GraphicsContext, private BaseAtomicClassStatic
 	{
 	private:
 		// Logic device

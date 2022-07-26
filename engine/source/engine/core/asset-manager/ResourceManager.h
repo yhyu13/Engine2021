@@ -16,7 +16,7 @@ namespace longmarch
 	 * @author Hang Yu (yohan680919@gmail.com)
 	 */
 	template<typename T>
-	class ENGINE_API ResourceManager : public BaseAtomicClassNC
+	class ENGINE_API ResourceManager : private BaseAtomicClassNC
 	{
 	private:
 		ResourceManager() = default;
@@ -29,7 +29,7 @@ namespace longmarch
 		using ResourcePromise = std::promise<ResourcePtr>;
 		using ResourceLoadFromFile = std::function<ResourcePtr(const fs::path&)>;
 
-		struct ResourceTask final : public BaseAtomicClass
+		struct ResourceTask final : private BaseAtomicClass
 		{
 			ResourceTask() = default;
 			// Define only copy constructor/assingment to avoid implicit defining move operations 

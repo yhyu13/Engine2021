@@ -5,7 +5,7 @@
 
 namespace longmarch
 {
-    class Shape : public BaseAtomicClassNC
+    class Shape : protected BaseAtomicClassNC
     {
     public:
         enum class SHAPE_TYPE

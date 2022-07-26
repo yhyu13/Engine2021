@@ -58,7 +58,7 @@ namespace longmarch
     struct Transform3DCom;
     struct Body3DCom;
 
-    class ENGINE_API Renderer3D : public BaseAtomicClassNC, public BaseAtomicClassStatic
+    class ENGINE_API Renderer3D : private BaseAtomicClassNC, private BaseAtomicClassStatic
     {
     public:
         NONCOPYABLE(Renderer3D);

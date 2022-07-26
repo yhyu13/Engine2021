@@ -49,7 +49,7 @@ namespace longmarch
      *
      * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
      */
-    class BaseComponentSystem : public BaseAtomicClassNC, public BaseEventSubHandleClass
+    class BaseComponentSystem : protected BaseAtomicClassNC, public BaseEventSubHandleClass
     {
     public:
         NONCOPYABLE(BaseComponentSystem);

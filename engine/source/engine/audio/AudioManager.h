@@ -37,7 +37,7 @@ namespace longmarch {
 		Channel2SoundMap mChannels2Sound;
 	};
 
-	class ENGINE_API AudioManager final : public BaseAtomicClassNC, public BaseEventSubHandleClass
+	class ENGINE_API AudioManager final : private BaseAtomicClassNC, public BaseEventSubHandleClass
 	{
 	private:
 		NONCOPYABLE(AudioManager);

@@ -14,7 +14,7 @@
 
 namespace longmarch
 {
-	class ENGINE_API PhysicsManager final : public BaseAtomicClassNC, public BaseEventSubHandleClass
+	class ENGINE_API PhysicsManager final : private BaseAtomicClassNC, public BaseEventSubHandleClass
 	{
 	public:
 		static PhysicsManager* GetInstance();

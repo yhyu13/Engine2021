@@ -10,7 +10,7 @@ namespace longmarch
     // mouse cursor coordinate : origin at upper left conrer, +x = right, +y = down. Range from [0,width],[0,height]
     // screen space(aka. view) un-normalized coordinate : origin at center, +x= right, +y = up. Range from [-aspectWByH,aspectWByH],[-1,1]
     // screen space(aka. view) normalized coordinate : origin at center, +x= right, +y = up. Range from [-1,1],[-1,1]
-    class ENGINE_API InputManager final : public BaseAtomicClassNC
+    class ENGINE_API InputManager final : private BaseAtomicClassNC
     {
     private:
         NONCOPYABLE(InputManager);

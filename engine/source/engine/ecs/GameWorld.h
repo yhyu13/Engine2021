@@ -26,7 +26,7 @@ namespace longmarch
      *
      * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
      */
-    class GameWorld final : public BaseAtomicClassNC, public BaseAtomicClassStatic
+    class GameWorld final : private BaseAtomicClassNC, private BaseAtomicClassStatic
     {
     private:
         NONCOPYABLE(GameWorld);

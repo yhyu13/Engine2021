@@ -10,7 +10,7 @@
 
 namespace longmarch
 {
-	struct ConnectableUpdater : public BaseAtomicClassNC
+	struct ConnectableUpdater : private BaseAtomicClassNC
 	{
 		NONCOPYABLE(ConnectableUpdater);
 		ConnectableUpdater() = default;
@@ -38,7 +38,7 @@ namespace longmarch
 		std::vector<std::function<void()>> m_updaters;
 	};
 
-	struct ConnectableUpdater2 : public BaseAtomicClassNC
+	struct ConnectableUpdater2 : private BaseAtomicClassNC
 	{
 		NONCOPYABLE(ConnectableUpdater2);
 		ConnectableUpdater2() = default;

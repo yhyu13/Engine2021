@@ -20,6 +20,9 @@
 #define TWO_12 4096
 #define TWO_16 65536
 
+#define __COMBINE_(X,Y) X##Y  // yuhang : mostly used for combine variable name with line number (e.g. COMBINE(x, __LINE__))
+#define COMBINE(X,Y) __COMBINE_(X,Y)
+
 #ifdef ENGINE_BUILD_DLL
 #define ENGINE_API __declspec(dllexport)
 #else

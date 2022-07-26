@@ -11,7 +11,7 @@ namespace longmarch
 	 *
 	 * @author Hang Yu (yohan680919@gmail.com)
 	 */
-	class RenderPass3D : public BaseAtomicClassNC
+	class RenderPass3D : private BaseAtomicClassNC
 	{
 	protected:
 		struct VFCParam

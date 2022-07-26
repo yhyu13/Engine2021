@@ -16,7 +16,7 @@ namespace longmarch
 
 	 * @author Hang Yu (yohan680919@gmail.com)
 	 */
-	class ServiceLocator : public BaseAtomicClassNI
+	class ServiceLocator : private BaseAtomicClassNI
 	{
 	public:
 		NONINSTANTIABLE(ServiceLocator);

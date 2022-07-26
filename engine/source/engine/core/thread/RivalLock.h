@@ -15,10 +15,11 @@ namespace longmarch
     public:
         static constexpr auto NUM_GROUPS = _NUM_GROUPS_;
         static_assert(NUM_GROUPS > 1);
-        
+
         NONCOPYABLE(RivalLock);
-        
+
         RivalLock() = default;
+
         explicit RivalLock(std::initializer_list<RivalGroup> list)
         {
             ASSERT(list.size() == NUM_GROUPS, "RivalLock template does not match init argument.");
@@ -55,10 +56,16 @@ namespace longmarch
                 }
             }
 
-            RivalGroup* temp = nullptr;
-            while (!m_currentGroupPtr.compare_exchange_weak(temp, groupPtr) && temp != groupPtr)
+            // RivalGroup* temp = nullptr;
+            // while (!m_currentGroupPtr.compare_exchange_weak(temp, groupPtr) && temp != groupPtr)
+            // {
+            //     temp = nullptr;
+            //     std::this_thread::yield();
+            // }
+
+            auto _address = (void**)&m_currentGroupPtr;
+            while (InterlockedCompareExchangePointer(_address, groupPtr, nullptr) != groupPtr)
             {
-                temp = nullptr;
                 std::this_thread::yield();
             }
             ++m_programCounter;
@@ -74,7 +81,8 @@ namespace longmarch
         }
 
     private:
-        CACHE_ALIGN std::atomic<RivalGroup*> m_currentGroupPtr{nullptr};
+        // CACHE_ALIGN std:atomic<RivalGroup*> m_currentGroupPtr{nullptr};
+        CACHE_ALIGN volatile RivalGroup* m_currentGroupPtr{nullptr};
         CACHE_ALIGN std::atomic_uint_fast32_t m_programCounter{0};
         RivalGroup m_groups[NUM_GROUPS];
     };
@@ -102,5 +110,4 @@ namespace longmarch
     };
 
 #define LOCK_GUARD_RIVAL(lock, group) rival_lock_guard<(lock.NUM_GROUPS)> __lock_rival(lock, group)
-
 }

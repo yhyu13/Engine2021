@@ -10,6 +10,7 @@ namespace longmarch
     // used in stbi image parallel read/write
     extern std::atomic_flag stbi_png_write_lock;
 
+    // A RAII class that locks the atomic flag in the constructor and unlocks it in the destructor.
     struct atomic_flag_guard
     {
         NONCOPYABLE(atomic_flag_guard);
@@ -20,6 +21,7 @@ namespace longmarch
         std::atomic_flag* m_lock;
     };
 
+    // A RAII wrapper for a mutex.
     struct adaptive_atomic_guard
     {
         NONCOPYABLE(adaptive_atomic_guard);
@@ -31,23 +33,32 @@ namespace longmarch
         int64_t* m_period_nano;
     };
 
-    /*
-        Base atomic class for class static method
-    */
+
+    //  1. It is a base class for all atomic static classes.
+    //  2. It provides a static lock for all atomic classes.
+    //  3. It provides a static lock guard for all atomic classes.
+    //  4. It provides a protected non-virtual destructor that prevents delete by base pointer.
+    //  5. It provides a static atomic flag for all atomic classes.
     struct BaseAtomicClassStatic
     {
     public:
-        virtual ~BaseAtomicClassStatic() = default;
 #define LOCK_GUARD_S() atomic_flag_guard __lock_s(sc_flag)
         static void LockS() noexcept;
         static void UnlockS() noexcept;
     protected:
+        // yuhang : protected non-virtual destructor that prevents delete by base pointer
+        ~BaseAtomicClassStatic() noexcept = default;
+
+    protected:
         CACHE_ALIGN inline static std::atomic_flag sc_flag; // c++ 20 default initialization to false
     };
 
-    /*
-        Base atomic class for NON-INSTANTIABLE classes
-    */
+
+    //  1. A base class for all atomic non-instantiable classes.
+    //  2. It provides a static lock for all atomic classes.
+    //  3. It provides a static lock guard for all atomic classes.
+    //  4. It provides a protected non-virtual destructor that prevents delete by base pointer.
+    //  5. It provides a static atomic flag for all atomic classes.
     struct BaseAtomicClassNI
     {
     public:
@@ -59,9 +70,13 @@ namespace longmarch
         CACHE_ALIGN inline static std::atomic_flag ni_flag; // c++ 20 default initialization to false
     };
 
-    /*
-        Base atomic class for NON-COPYABLE classes
-    */
+
+    // 1. It is a base class for all atomic non-copyable classes.
+    // 2. It provides a lock for all atomic classes.
+    // 3. It provides a lock guard for all atomic classes.
+    // 4. It provides a protected non-virtual destructor that prevents delete by base pointer.
+    // 5. It provides a atomic flag for all atomic classes.
+    // 6. The atomic flag is padded to be cache aligned to avoid false sharing
     struct MS_ALIGN8 BaseAtomicClassNC
     {
     public:
@@ -69,29 +84,33 @@ namespace longmarch
 
 #define LOCK_GUARD_NC() atomic_flag_guard __lock_nc(nc_flag)
 
-        BaseAtomicClassNC() noexcept = default;
-        virtual ~BaseAtomicClassNC() noexcept = default;
+        BaseAtomicClassNC() = default;
 
         void LockNC() const noexcept;
         void UnlockNC() const noexcept;
+    protected:
+        // yuhang : protected non-virtual destructor that prevents delete by base pointer
+        ~BaseAtomicClassNC() noexcept = default;
 
     protected:
-         mutable std::atomic_flag nc_flag;
+        mutable std::atomic_flag nc_flag;
     private:
-        std::byte __PADDING__[PLATFORM_CACHE_LINE - sizeof(std::atomic_flag)];
+        // yuhang : use byte padding instead of CACHE_ALIGN specifier so that inherited class is not affected by this alignment
+        std::byte COMBINE(__PADDING_, __LINE__)[PLATFORM_CACHE_LINE - sizeof(std::atomic_flag)];
     };
 
-    /*
-        Base atomic class for COPYABLE classes
-        Note, that the state of the lock is not copied over on assignment or copy construction (size is 64 bytes)
-    */
+    // 1. It is a base class for all atomic copyable classes. The lock state is not copied.
+    // 2. It provides a lock for all atomic classes.
+    // 3. It provides a lock guard for all atomic classes.
+    // 4. It provides a protected non-virtual destructor that prevents delete by base pointer.
+    // 5. It provides a atomic flag for all atomic classes.
+    // 6. The atomic flag is padded to be cache aligned to avoid false sharing
     struct MS_ALIGN8 BaseAtomicClass
     {
     public:
 #define LOCK_GUARD() atomic_flag_guard __lock(m_flag)
 
         BaseAtomicClass() noexcept = default;
-        virtual ~BaseAtomicClass() noexcept = default;
 
         BaseAtomicClass(const BaseAtomicClass& other) noexcept
         {
@@ -108,16 +127,23 @@ namespace longmarch
 
         void Lock() const noexcept;
         void UnLock() const noexcept;
+    protected:
+        // yuhang : protected non-virtual destructor that prevents delete by base pointer
+        ~BaseAtomicClass() noexcept = default;
 
     protected:
         mutable std::atomic_flag m_flag;
     private:
-        std::byte __PADDING__[PLATFORM_CACHE_LINE - sizeof(std::atomic_flag)];
+        // yuhang : use byte padding instead of CACHE_ALIGN specifier so that inherited class is not affected by this alignment
+        std::byte COMBINE(__PADDING_, __LINE__)[PLATFORM_CACHE_LINE - sizeof(std::atomic_flag)];
     };
 
-    /*
-        Base adaptive atomic lock class for NON-COPYABLE classes (size is 128 bytes)
-    */
+    
+    // 1. It is a base class for all atomic non-copyable classes.
+    // 2. It provides a spin-mutex lock for all atomic classes.
+    // 3. It provides a lock guard for all atomic classes.
+    // 4. It provides a protected non-virtual destructor that prevents delete by base pointer.
+    // 5. The mutex is padded to be cache aligned to avoid false sharing
     struct MS_ALIGN8 AdaptiveAtomicClassNC
     {
     public:
@@ -126,16 +152,20 @@ namespace longmarch
 #define LOCK_GUARD_ADAPTIVE_NC() adaptive_atomic_guard __lock_adaptive_nc(nc_mutex, nc_period_nano)
 
         AdaptiveAtomicClassNC() noexcept = default;
-        virtual ~AdaptiveAtomicClassNC() noexcept = default;
 
         void LockAdaptiveNC() const noexcept;
         void UnlockAdaptiveNC() const noexcept;
+    protected:
+        // yuhang : protected non-virtual destructor that prevents delete by base pointer
+        ~AdaptiveAtomicClassNC() noexcept = default;
 
     protected:
         mutable std::mutex nc_mutex;
         mutable int64_t nc_period_nano{2000ull};
-        
+
     private:
-        std::byte __PADDING__[2 * PLATFORM_CACHE_LINE - sizeof(std::mutex) - sizeof(std::int64_t)];
+        // yuhang : use byte padding instead of CACHE_ALIGN specifier so that inherited class is not affected by this alignment
+        // yuhang : std::mutex is usually larger than 64 bytes. Need double check its size with cache line size
+        std::byte COMBINE(__PADDING_, __LINE__)[((sizeof(std::mutex) > PLATFORM_CACHE_LINE) ? 2 * PLATFORM_CACHE_LINE : PLATFORM_CACHE_LINE) - sizeof(std::mutex) - sizeof(std::int64_t)];
     };
 }

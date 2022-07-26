@@ -8,7 +8,7 @@ namespace longmarch
     /*
     Data class that stores references to owner entity type
     */
-    struct CACHE_ALIGN ParentCom final : BaseComponent<ParentCom>
+    struct CACHE_ALIGN ParentCom final : public BaseComponent<ParentCom>
     {
         ParentCom() = default;
         explicit ParentCom(const EntityDecorator& _this);

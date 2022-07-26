@@ -23,7 +23,7 @@ namespace longmarch
 		float colliderDimensionExtent{ 0.75f };
 	};
 
-	struct CACHE_ALIGN Body3DCom final : BaseComponent<Body3DCom>
+	struct CACHE_ALIGN Body3DCom final : public BaseComponent<Body3DCom>
 	{
 	public:
 		Body3DCom() = default;

@@ -58,7 +58,7 @@ namespace longmarch
      * To create new components:
 
         // CRTP
-        struct Transform : BaseComponent<Transform> {
+        struct Transform : public BaseComponent<Transform> {
             explicit Transform(float x, float y) : x(x), y(y) {};
             float x;
             float y;
@@ -67,7 +67,7 @@ namespace longmarch
      * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
      */
     template <typename ComponentType>
-    struct BaseComponent : public BaseAtomicClass, public BaseComponentInterface
+    struct BaseComponent : protected BaseAtomicClass, public BaseComponentInterface
     {
         BaseComponent() = default;
 

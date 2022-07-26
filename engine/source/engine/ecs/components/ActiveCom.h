@@ -4,28 +4,29 @@
 
 namespace longmarch
 {
-	/* Data class of LIfe Time */
-	struct CACHE_ALIGN ActiveCom final : BaseComponent<ActiveCom>
-	{
-		ActiveCom() = default;
-		explicit ActiveCom(bool active)
-		{
-			m_active = active;
-		}
+    /* Data class of LIfe Time */
+    struct CACHE_ALIGN ActiveCom final : public BaseComponent<ActiveCom>
+    {
+        ActiveCom() = default;
 
-		void SetActive(bool active)
-		{
-			LOCK_GUARD();
-			m_active = active;
-		}
+        explicit ActiveCom(bool active)
+        {
+            m_active = active;
+        }
 
-		bool IsActive()
-		{
-			LOCK_GUARD();
-			return m_active;
-		}
+        void SetActive(bool active)
+        {
+            LOCK_GUARD();
+            m_active = active;
+        }
 
-	private:
-		bool m_active{ true };
-	};
+        bool IsActive()
+        {
+            LOCK_GUARD();
+            return m_active;
+        }
+
+    private:
+        bool m_active{true};
+    };
 }

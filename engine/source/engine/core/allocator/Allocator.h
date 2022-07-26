@@ -81,7 +81,7 @@ namespace longmarch
         }
     };
 
-    class Allocator : public BaseAtomicClassNC
+    class Allocator : private BaseAtomicClassNC
     {
     public:
         NONCOPYABLE(Allocator);

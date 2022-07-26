@@ -6,7 +6,7 @@
 namespace longmarch
 {
 	/* Data class of sprite */
-	struct CACHE_ALIGN AttachedMovementCom final : BaseComponent<AttachedMovementCom> 
+	struct CACHE_ALIGN AttachedMovementCom final : public BaseComponent<AttachedMovementCom> 
 	{
 		AttachedMovementCom()
 		{

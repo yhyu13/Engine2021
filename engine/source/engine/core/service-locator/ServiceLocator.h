@@ -189,6 +189,6 @@ namespace longmarch
 			}
 		}
 	private:
-		inline static LongMarch_UnorderedMap_Par<std::string, std::unique_ptr<service_locator_base>> s_nameLocator;
+		inline static LongMarch_UnorderedMap<std::string, std::unique_ptr<service_locator_base>> s_nameLocator;
 	};
 }

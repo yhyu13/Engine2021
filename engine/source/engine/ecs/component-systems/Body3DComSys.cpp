@@ -85,7 +85,6 @@ void longmarch::Body3DComSys::PreRenderUpdate(double dt)
 		{
 			// Generate rigid body BV if possible
 			auto body = e.GetComponent<Body3DCom>();
-			auto trans = e.GetComponent<Transform3DCom>();
 			if (auto aabbPtr = std::dynamic_pointer_cast<AABB>(body->GetBoundingVolume()); aabbPtr)
 			{
 				std::shared_ptr<RigidBody> newRB = m_scene->CreateRigidBody();

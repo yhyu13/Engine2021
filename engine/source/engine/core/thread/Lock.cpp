@@ -9,13 +9,14 @@
 #endif // !_SHIPPING
 
 #if DEADLOCK_TIMER
-#define SET_DEADLOCK_TIMER() Timer timer
-#define ASSERT_DEADLOCK_TIMER() ASSERT(timer.Mark() < 1.0, "Dead lock?")
+#define SET_DEADLOCK_TIMER() Timer __timer
+#define ASSERT_DEADLOCK_TIMER() ASSERT(__timer.Mark() < 1.0f, "Dead lock?")
 #else
 #define SET_DEADLOCK_TIMER()
 #define ASSERT_DEADLOCK_TIMER()
 #endif
 
+#define THREAD_YIELD() //std::this_thread::yield()
 
 namespace longmarch
 {
@@ -35,7 +36,7 @@ longmarch::atomic_flag_guard::atomic_flag_guard(std::atomic_flag& flag) noexcept
         while (m_lock->test(std::memory_order_relaxed))
         {
             ASSERT_DEADLOCK_TIMER();
-            std::this_thread::yield();
+            THREAD_YIELD();
         }
     }
 }
@@ -57,7 +58,7 @@ longmarch::adaptive_atomic_guard::adaptive_atomic_guard(std::mutex& flag, int64_
     while (!m_lock->try_lock())
     {
         ASSERT_DEADLOCK_TIMER();
-        std::this_thread::yield();
+        THREAD_YIELD();
         _marked_nano = _timer.Mark<std::nano, int64_t>();
         if (_marked_nano >= _period_nano)
         {
@@ -82,7 +83,7 @@ void longmarch::BaseAtomicClassStatic::LockS() noexcept
         while (sc_flag.test(std::memory_order_relaxed))
         {
             ASSERT_DEADLOCK_TIMER();
-            std::this_thread::yield();
+            THREAD_YIELD();
         }
     }
 }
@@ -101,7 +102,7 @@ void longmarch::BaseAtomicClassNI::LockNI() noexcept
         while (ni_flag.test(std::memory_order_relaxed))
         {
             ASSERT_DEADLOCK_TIMER();
-            std::this_thread::yield();
+            THREAD_YIELD();
         }
     }
 }
@@ -120,7 +121,7 @@ void longmarch::BaseAtomicClassNC::LockNC() const noexcept
         while (nc_flag.test(std::memory_order_relaxed))
         {
             ASSERT_DEADLOCK_TIMER();
-            std::this_thread::yield();
+            THREAD_YIELD();
         }
     }
 }
@@ -139,7 +140,7 @@ void longmarch::BaseAtomicClass::Lock() const noexcept
         while (m_flag.test(std::memory_order_relaxed))
         {
             ASSERT_DEADLOCK_TIMER();
-            std::this_thread::yield();
+            THREAD_YIELD();
         }
     }
 }
@@ -158,7 +159,7 @@ void AdaptiveAtomicClassNC::LockAdaptiveNC() const noexcept
     while (!nc_mutex.try_lock())
     {
         ASSERT_DEADLOCK_TIMER();
-        std::this_thread::yield();
+        THREAD_YIELD();
         _marked_nano = _timer.Mark<std::nano, int64_t>();
         if (_marked_nano >= _period_nano)
         {

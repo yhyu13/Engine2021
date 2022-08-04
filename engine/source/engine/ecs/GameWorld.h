@@ -13,6 +13,7 @@
 #include "BitMaskSignature.h"
 #include "ComponentManager.h"
 #include "ComponentDecorator.h"
+#include "engine/core/thread/RivalLock.h"
 
 namespace longmarch
 {
@@ -163,14 +164,14 @@ namespace longmarch
         BaseComponentSystem* GetComponentSystem(const std::string& name);
 
         //! In the order of execution of component systems
-        const LongMarch_Vector<std::string> GetAllComponentSystemName();
+        const LongMarch_Vector<std::string> GetAllComponentSystemName() const;
 
         //! In the order of execution of component systems
-        const LongMarch_Vector<std::shared_ptr<BaseComponentSystem>> GetAllComponentSystem();
+        const LongMarch_Vector<std::shared_ptr<BaseComponentSystem>> GetAllComponentSystem() const;
 
         //! In the order of execution of component systems
         const LongMarch_Vector<std::pair<std::string, std::shared_ptr<BaseComponentSystem>>>
-        GetAllComponentSystemNamePair();
+        GetAllComponentSystemNamePair() const;
 
         /**************************************************************
         *	Component
@@ -262,6 +263,17 @@ namespace longmarch
                       int min_split = -1) const;
 
     private:
+        inline static LongMarch_UnorderedMap_flat<std::string, std::unique_ptr<GameWorld>> s_allManagedWorlds;
+        inline static GameWorld* s_currentWorld = {nullptr};
+
+        //! Multithreaded pool used in ParEach2 for inner function multithreading to avoid thread overflow stalling the default thread pool and the entire program
+        inline static StealThreadPool s_parEach2Pool;
+        constexpr static int s_parEachMinSplit {16};
+        
+        //! GameWorld class level job pool, used in running game thread in the background or any other async tasks
+        inline static StealThreadPool s_jobPool{4};
+
+    private:
         // Entity (E)
         //!< Contains all entities
         std::shared_ptr<EntityManager> m_entityManager;
@@ -281,21 +293,14 @@ namespace longmarch
         LongMarch_UnorderedMap_node<std::string, std::shared_ptr<BaseComponentSystem>> m_systemsNameMap;
 
         // Misc
-        //! Holds multithreaded job that are created in a instance of gameworld
+        mutable RivalLock<2> m_rivalLock{{RivalGroup{0}, RivalGroup{1}}};
+
+        //! Holds multi-threaded job that are created in a instance of Gameworld
         AtomicQueueNC<std::shared_future<void>> m_jobs;
         //! Name of the game world
         std::string m_name;
         //! Is game world paused
         std::atomic_bool m_paused = {false};
-
-    private:
-        inline static LongMarch_UnorderedMap_flat<std::string, std::unique_ptr<GameWorld>> allManagedWorlds;
-        inline static GameWorld* currentWorld = {nullptr};
-
-        //! Multithreaded pool used in ParEach2 for inner function multithreading to avoid thread overflow stalling the default thread pool and the entire program
-        inline static StealThreadPool s_parEach2Pool;
-        //! GameWorld class level job pool, used in running game thread in the backgroud or any other async tasks
-        inline static StealThreadPool s_JobPool{4};
     };
 }
 

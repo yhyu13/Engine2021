@@ -1,21 +1,12 @@
 #pragma once
 
-#include <algorithm>
-#include <cassert>
-#include <cstdlib>
-#include <iostream>
-#include <limits>
-#include <stdexcept>
 #include <unordered_map>
 #include <vector>
 
 #include <FastBVH.h>
 
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
+#include "engine/math/Geommath.h"
 
-#include "engine/physics/Circle.h"
 #include "engine/physics/AABB.h"
 #include "engine/physics/dynamics/RigidBody.h"
 

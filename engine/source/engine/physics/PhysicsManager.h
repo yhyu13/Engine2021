@@ -18,19 +18,11 @@ namespace longmarch
 	{
 	public:
 		static PhysicsManager* GetInstance();
-		void Init();
-		void Update(double deltaTime);
-		void Shutdown();
-
-		//uint32_t CreateIsland();
-		//void DeleteIsland(uint32_t id);
-
+		
 		std::shared_ptr<Scene> CreateScene();
 		void AddScene(const std::shared_ptr<Scene>& scene);
 		void DeleteScene(const std::shared_ptr<Scene>& scene);
 
-		//Scene* GetScene(uint32_t sceneID);
-		
 	private:
 		PhysicsManager();
 

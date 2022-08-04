@@ -8,7 +8,8 @@ namespace longmarch
     template <typename ComponentType>
     inline bool GameWorld::HasComponent(const Entity& entity) const
     {
-        LOCK_GUARD_NC();
+        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
+        
         if (const auto it = m_entityMaskMap.find(entity);
             it != m_entityMaskMap.end())
         {
@@ -24,6 +25,7 @@ namespace longmarch
     template <typename ComponentType>
     inline void GameWorld::AddComponent(const Entity& entity, const ComponentType& component)
     {
+        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{1});
         LOCK_GUARD_NC();
         BitMaskSignature& newMask = m_entityMaskMap[entity];
         const auto oldMask = newMask;
@@ -66,6 +68,7 @@ namespace longmarch
     template <typename ComponentType>
     inline void GameWorld::RemoveComponent(const Entity& entity)
     {
+        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{1});
         LOCK_GUARD_NC();
         BitMaskSignature& newMask = m_entityMaskMap[entity];
         const auto oldMask = newMask;
@@ -88,7 +91,8 @@ namespace longmarch
     template <typename ComponentType>
     inline ComponentDecorator<ComponentType> GameWorld::GetComponent(const Entity& entity) const
     {
-        LOCK_GUARD_NC();
+        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
+        
         ComponentType* com = nullptr;
         if (const auto it = m_entityMaskMap.find(entity);
             it != m_entityMaskMap.end())
@@ -189,7 +193,7 @@ namespace longmarch
             auto _end = es.end();
             int split_size = num_e / pool.threads;
             // Minimum split size
-            min_split = std::max(1, min_split);
+            min_split = std::max(s_parEachMinSplit, min_split);
             split_size = std::max(split_size, min_split);
             // Even number split size
             if (split_size % 2 != 0)

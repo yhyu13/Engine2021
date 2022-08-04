@@ -29,7 +29,7 @@ GameWorld* longmarch::GameWorld::GetInstance(bool setCurrent, const std::string&
     auto ptr = std::unique_ptr<GameWorld>(new GameWorld(setCurrent, worldName, filePath));
     {
         LOCK_GUARD_S();
-        auto& world = allManagedWorlds[worldName];
+        auto& world = s_allManagedWorlds[worldName];
         world = std::move(ptr);
         return world.get();
     }
@@ -46,19 +46,19 @@ GameWorld* longmarch::GameWorld::GetInstance(bool setCurrent, const std::string&
 void longmarch::GameWorld::SetCurrent(GameWorld* world)
 {
     LOCK_GUARD_S();
-    currentWorld = world;
+    s_currentWorld = world;
 }
 
 GameWorld* longmarch::GameWorld::GetCurrent()
 {
     LOCK_GUARD_S();
-    return currentWorld;
+    return s_currentWorld;
 }
 
 GameWorld* longmarch::GameWorld::GetManagedWorldByName(const std::string& name)
 {
     LOCK_GUARD_S();
-    if (auto it = allManagedWorlds.find(name); it != allManagedWorlds.end())
+    if (auto it = s_allManagedWorlds.find(name); it != s_allManagedWorlds.end())
     {
         return it->second.get();
     }
@@ -73,20 +73,20 @@ const LongMarch_Vector<std::string> longmarch::GameWorld::GetAllManagedWorldName
 {
     LOCK_GUARD_S();
     LongMarch_Vector<std::string> ret;
-    LongMarch_MapKeyToVec(allManagedWorlds, ret);
+    LongMarch_MapKeyToVec(s_allManagedWorlds, ret);
     return ret;
 }
 
 void longmarch::GameWorld::RemoveManagedWorld(const std::string& name)
 {
     LOCK_GUARD_S();
-    if (auto it = allManagedWorlds.find(name); it != allManagedWorlds.end())
+    if (auto it = s_allManagedWorlds.find(name); it != s_allManagedWorlds.end())
     {
-        if (it->second.get() == currentWorld)
+        if (it->second.get() == s_currentWorld)
         {
-            currentWorld = nullptr;
+            s_currentWorld = nullptr;
         }
-        allManagedWorlds.erase(it);
+        s_allManagedWorlds.erase(it);
     }
     else
     {
@@ -98,16 +98,16 @@ void longmarch::GameWorld::RemoveManagedWorld(GameWorld* world)
 {
     LOCK_GUARD_S();
     bool found = false;
-    for (auto it = allManagedWorlds.begin(); it != allManagedWorlds.end(); ++it)
+    for (auto it = s_allManagedWorlds.begin(); it != s_allManagedWorlds.end(); ++it)
     {
         if (it->second.get() == world)
         {
             found = true;
-            if (world == currentWorld)
+            if (world == s_currentWorld)
             {
-                currentWorld = nullptr;
+                s_currentWorld = nullptr;
             }
-            allManagedWorlds.erase(it);
+            s_allManagedWorlds.erase(it);
         }
     }
     if (!found)
@@ -118,10 +118,9 @@ void longmarch::GameWorld::RemoveManagedWorld(GameWorld* world)
 
 GameWorld* longmarch::GameWorld::Clone(const std::string& newWorldName, const std::string& fromWorldName)
 {
-    ASSERT(newWorldName != fromWorldName, "Clone world must have a different fromWorldName!");
+    ASSERT(newWorldName != fromWorldName, "Clone world must have a different name!");
     const auto fromWorld = GetManagedWorldByName(fromWorldName);
     auto newWorld = Clone(newWorldName, fromWorld);
-    newWorld->Init();
     return newWorld;
 }
 
@@ -227,7 +226,7 @@ void longmarch::GameWorld::Update2(double frameTime)
 void longmarch::GameWorld::MultiThreadUpdate(double frameTime)
 {
     m_jobs.push(
-        std::move(s_JobPool.enqueue_task([frameTime, this]()
+        std::move(s_jobPool.enqueue_task([frameTime, this]()
             {
                 _MultiThreadExceptionCatcher([frameTime, this]()
                 {
@@ -314,7 +313,12 @@ void longmarch::GameWorld::RemoveFromParentHelper(Entity e)
 
 EntityDecorator longmarch::GameWorld::GenerateEntity(EntityType type, bool active, bool add_to_root)
 {
-    auto entity = EntityDecorator{m_entityManager->Create(type), this};
+    EntityDecorator entity;
+    {
+        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{1});
+        LOCK_GUARD_NC();
+        entity = EntityDecorator{m_entityManager->Create(type), this};
+    }
     entity.Volatile().AddComponent(ActiveCom(active));
     entity.Volatile().AddComponent(IDNameCom(entity));
     entity.Volatile().AddComponent(ParentCom(entity));
@@ -346,7 +350,8 @@ EntityDecorator longmarch::GameWorld::GenerateEntity3DNoCollision(EntityType typ
 
 bool longmarch::GameWorld::HasEntity(const Entity& entity) const
 {
-    LOCK_GUARD_NC();
+    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
+    
     return LongMarch_contains(m_entityMaskMap, entity);
 }
 
@@ -361,7 +366,6 @@ void longmarch::GameWorld::AddChildHelper(Entity parent, Entity child)
 
 void longmarch::GameWorld::RegisterSystem(const std::shared_ptr<BaseComponentSystem>& system, const std::string& name)
 {
-    LOCK_GUARD_NC();
     system->SetWorld(this);
     m_systems.emplace_back(system);
     m_systemsName.emplace_back(name);
@@ -380,18 +384,18 @@ BaseComponentSystem* longmarch::GameWorld::GetComponentSystem(const std::string&
     }
 }
 
-const LongMarch_Vector<std::string> longmarch::GameWorld::GetAllComponentSystemName()
+const LongMarch_Vector<std::string> longmarch::GameWorld::GetAllComponentSystemName() const
 {
     return m_systemsName;
 }
 
-const LongMarch_Vector<std::shared_ptr<BaseComponentSystem>> longmarch::GameWorld::GetAllComponentSystem()
+const LongMarch_Vector<std::shared_ptr<BaseComponentSystem>> longmarch::GameWorld::GetAllComponentSystem() const
 {
     return m_systems;
 }
 
 const LongMarch_Vector<std::pair<std::string, std::shared_ptr<BaseComponentSystem>>>
-longmarch::GameWorld::GetAllComponentSystemNamePair()
+longmarch::GameWorld::GetAllComponentSystemNamePair() const
 {
     ASSERT(m_systemsName.size() == m_systems.size(), "Component system sizes do not match!");
     LongMarch_Vector<std::pair<std::string, std::shared_ptr<BaseComponentSystem>>> ret;
@@ -407,6 +411,7 @@ void longmarch::GameWorld::RemoveEntity(const Entity& entity)
     // Remove components first
     RemoveAllComponent(entity);
 
+    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{1});
     // Then remove the entity
     LOCK_GUARD_NC();
     m_entityManager->Destroy(entity);
@@ -443,7 +448,8 @@ const LongMarch_Vector<Entity> longmarch::GameWorld::GetAllEntityWithType(
 const LongMarch_Vector<Entity> longmarch::GameWorld::GetAllEntityWithType(
     const LongMarch_Vector<EntityType>& types) const
 {
-    LOCK_GUARD_NC();
+    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
+    
     LongMarch_Vector<Entity> result;
     for (auto& type : types)
     {
@@ -456,12 +462,14 @@ const LongMarch_Vector<Entity> longmarch::GameWorld::GetAllEntityWithType(
 
 const Entity longmarch::GameWorld::GetEntityFromID(EntityID ID) const
 {
+    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
     return m_entityManager->GetEntityFromID(ID);
 }
 
 const LongMarch_Vector<BaseComponentInterface*> longmarch::GameWorld::GetAllComponent(const Entity& entity) const
 {
-    LOCK_GUARD_NC();
+    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
+    
     LongMarch_Vector<BaseComponentInterface*> ret;
     if (auto it = m_entityMaskMap.find(entity);
         it != m_entityMaskMap.end())
@@ -488,13 +496,15 @@ const LongMarch_Vector<BaseComponentInterface*> longmarch::GameWorld::GetAllComp
     }
     else
     {
-        WARN_PRINT(Str("GameWorld::GetComponent: Fail to find Entity '%s' in world '%s'", Str(entity), this->GetName()));
+        WARN_PRINT(
+            Str("GameWorld::GetComponent: Fail to find Entity '%s' in world '%s'", Str(entity), this->GetName()));
     }
     return ret;
 }
 
 void longmarch::GameWorld::RemoveAllComponent(const Entity& entity)
 {
+    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{1});
     LOCK_GUARD_NC();
     if (auto it = m_entityMaskMap.find(entity);
         it != m_entityMaskMap.end())
@@ -511,7 +521,8 @@ void longmarch::GameWorld::RemoveAllComponent(const Entity& entity)
 
 const LongMarch_Vector<Entity> GameWorld::EntityView(const BitMaskSignature& mask) const
 {
-    LOCK_GUARD_NC();
+    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
+    
     ENGINE_EXCEPT_IF(mask == BitMaskSignature(),
                      L"GameWorld::EntityView should not receive a trivial bit mask. Double check EntityView argument.");
     // TODO @yuhang : allow caching and setting dirty mechanism to entity view
@@ -529,7 +540,8 @@ const LongMarch_Vector<Entity> GameWorld::EntityView(const BitMaskSignature& mas
 }
 
 void longmarch::GameWorld::ForEach(const LongMarch_Vector<Entity>& es,
-                                   const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func) const
+                                   const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func)
+const
 {
     for (const auto& e : es)
     {
@@ -542,7 +554,8 @@ void longmarch::GameWorld::ForEach(const LongMarch_Vector<Entity>& es,
 
 [[nodiscard]]
 std::future<void> longmarch::GameWorld::BackEach(const LongMarch_Vector<Entity>& es,
-                                                 const std::type_identity_t<std::function<void(const EntityDecorator& e)>>&
+                                                 const std::type_identity_t<std::function<void
+                                                     (const EntityDecorator& e)>>&
                                                  func) const
 {
     return StealThreadPool::GetInstance()->enqueue_task(
@@ -559,7 +572,8 @@ std::future<void> longmarch::GameWorld::BackEach(const LongMarch_Vector<Entity>&
 
 [[nodiscard]]
 std::future<void> longmarch::GameWorld::ParEach(const LongMarch_Vector<Entity>& es,
-                                                const std::type_identity_t<std::function<void(const EntityDecorator& e)>>&
+                                                const std::type_identity_t<std::function<void
+                                                    (const EntityDecorator& e)>>&
                                                 func, int min_split) const
 {
     return StealThreadPool::GetInstance()->enqueue_task([this, es, min_split, func = std::move(func)]()
@@ -585,7 +599,7 @@ void longmarch::GameWorld::_ParEach2(const LongMarch_Vector<Entity>& es,
         auto _end = es.end();
         int split_size = num_e / pool.threads;
         // Minimum split size
-        min_split = std::max(16, min_split);
+        min_split = std::max(s_parEachMinSplit, min_split);
         split_size = std::max(split_size, min_split);
         // Even number split size
         if (split_size % 2 != 0)

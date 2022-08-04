@@ -59,15 +59,15 @@ namespace longmarch
 	template <typename Key, typename T>
 	using LongMarch_UnorderedMap_flat = phmap::flat_hash_map<Key, T, LongMarch_HashType<Key>>;
 
-	// For large set of data > 64
+	// For large set of data > 64, warning : no internal lock for parallel access within the same bucket
 	template <typename Key, typename T>
 	using LongMarch_UnorderedMap_Par = phmap::parallel_flat_hash_map<Key, T, LongMarch_HashType<Key>>;
 
-	// For large set of data > 64. All inputs are stable upon insertion, and use this if move is expensive or not allowed
+	// For large set of data > 64, warning : no internal lock for parallel access within the same bucket. All inputs are stable upon insertion, and use this if move is expensive or not allowed
 	template <typename Key, typename T>
 	using LongMarch_UnorderedMap_Par_node = phmap::parallel_node_hash_map<Key, T, LongMarch_HashType<Key>>;
 
-	// For large set of data > 64. Might move all data on insertion
+	// For large set of data > 64, warning : no internal lock for parallel access within the same bucket. Might move all data on insertion
 	template <typename Key, typename T>
 	using LongMarch_UnorderedMap_Par_flat = phmap::parallel_flat_hash_map<Key, T, LongMarch_HashType<Key>>;
 

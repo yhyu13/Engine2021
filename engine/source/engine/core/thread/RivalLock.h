@@ -2,13 +2,45 @@
 #include "engine/core/EngineCore.h"
 #include "engine/core/utility/TypeHelper.h"
 
+#define USE_ATOMIC_RIVAL_PTR 0
+
+#ifndef _SHIPPING
+#define DEADLOCK_TIMER 1 // Debug break unfriendly, disabled unless you need to debug deak lock
+#else
+#define DEADLOCK_TIMER 0
+#endif // !_SHIPPING
+
+#if DEADLOCK_TIMER
+#define SET_DEADLOCK_TIMER() Timer __timer
+#define ASSERT_DEADLOCK_TIMER() ASSERT(__timer.Mark() < 1.0f, "Dead lock?")
+#else
+#define SET_DEADLOCK_TIMER()
+#define ASSERT_DEADLOCK_TIMER()
+#endif
+
+#define THREAD_YIELD() //std::this_thread::yield()
+
 namespace longmarch
 {
+    // yuhang : id of a lock group
     struct RivalGroup
     {
         uint8_t m_groupID;
+
+        friend bool operator==(const RivalGroup& lhs, const RivalGroup& rhs)
+        {
+            return lhs.m_groupID == rhs.m_groupID;
+        }
     };
 
+    /**
+     * @brief Define N rival groups, threads from only one rival group could enter the critical section
+              This is useful for the parallelism of ECS reading actions (Getter) where it can be interrupted by storing actions (Setter) in between w/o
+              much caring about the correctness of data. This way, we can eliminate tetris programming of defining explicit storing or reading stages to avoid reading/writing data in the same time.
+              The programmer can free to use any Getter and Setter w/o caring about atomicity
+     *
+     * @author Hang Yu (yohan680919@gmail.com)
+     */
     template <int _NUM_GROUPS_>
     class RivalLock : private BaseAtomicClassNC
     {
@@ -18,16 +50,14 @@ namespace longmarch
 
         NONCOPYABLE(RivalLock);
 
-        RivalLock() = default;
-
-        explicit RivalLock(std::initializer_list<RivalGroup> list)
+        explicit RivalLock(std::initializer_list<RivalGroup> group_list)
         {
-            ASSERT(list.size() == NUM_GROUPS, "RivalLock template does not match init argument.");
-            m_groups = list;
+            ASSERT(group_list.size() == NUM_GROUPS, "RivalLock template does not match init argument.");
             for (int i = 0; i < NUM_GROUPS; ++i)
             {
+                m_groups[i] = *(group_list.begin() + i);
                 const auto& g1 = m_groups[i];
-                for (int j = i + 1; j < NUM_GROUPS; ++j)
+                for (int j = 0; j < i; ++j)
                 {
                     const auto& g2 = m_groups[j];
                     ASSERT(g1 != g2, "RivalLock accepts unique groups only.");
@@ -56,18 +86,25 @@ namespace longmarch
                 }
             }
 
-            // RivalGroup* temp = nullptr;
-            // while (!m_currentGroupPtr.compare_exchange_weak(temp, groupPtr) && temp != groupPtr)
-            // {
-            //     temp = nullptr;
-            //     std::this_thread::yield();
-            // }
-
+            SET_DEADLOCK_TIMER();
+#if USE_ATOMIC_RIVAL_PTR
+            RivalGroup* temp = nullptr;
+            while (!m_currentGroupPtr.compare_exchange_weak(temp, groupPtr) && temp != groupPtr)
+            {
+                ASSERT_DEADLOCK_TIMER();
+                temp = nullptr;
+                THREAD_YIELD();
+            }
+#else
             auto _address = (void**)&m_currentGroupPtr;
+
+            // TODO @yuhang : InterlockedCompareExchangePointer is limited to windows platform, implement a generic platform interface for this
             while (InterlockedCompareExchangePointer(_address, groupPtr, nullptr) != groupPtr)
             {
-                std::this_thread::yield();
+                ASSERT_DEADLOCK_TIMER();
+                THREAD_YIELD();
             }
+#endif
             ++m_programCounter;
         }
 
@@ -81,8 +118,11 @@ namespace longmarch
         }
 
     private:
-        // CACHE_ALIGN std:atomic<RivalGroup*> m_currentGroupPtr{nullptr};
+#if USE_ATOMIC_RIVAL_PTR
+        CACHE_ALIGN std:atomic<RivalGroup*> m_currentGroupPtr{nullptr};
+#else
         CACHE_ALIGN volatile RivalGroup* m_currentGroupPtr{nullptr};
+#endif
         CACHE_ALIGN std::atomic_uint_fast32_t m_programCounter{0};
         RivalGroup m_groups[NUM_GROUPS];
     };
@@ -109,5 +149,9 @@ namespace longmarch
         RivalLock<_NUM_GROUPS_>* m_lock;
     };
 
-#define LOCK_GUARD_RIVAL(lock, group) rival_lock_guard<(lock.NUM_GROUPS)> __lock_rival(lock, group)
+#define LOCK_GUARD_RIVAL(lock, group) rival_lock_guard<(lock).NUM_GROUPS> __lock_rival(lock, group)
 }
+
+#undef USE_ATOMIC_RIVAL_PTR
+#undef DEBUG_TIMER_ASSERT
+#undef THREAD_YIELD

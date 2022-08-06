@@ -52,7 +52,18 @@ namespace longmarch
         template <class T, typename... Arguments>
         [[nodiscard]] inline static std::unique_ptr<T> Make_unique(Arguments&&... args) noexcept
         {
+#if CUSTOM_ALLOCATOR == 1
+            // https://qastack.cn/programming/19053351/how-do-i-use-a-custom-deleter-with-a-stdunique-ptr-member
+            // yuhang : to enable custom allocator and deallocator for std::unique_ptr, we need to define a deleter struct TDeleter
+            // struct TDeleter {
+            //     void operator()(T* b) { Delete(b); }
+            // };
+            // and with a brand new templated class std::unique_ptr<T, TDeleter>, which is tedious
+            //return std::unique_ptr<T>(New<T>(std::forward<Arguments>(args)...), Delete);
             return std::make_unique<T>(std::forward<Arguments>(args)...);
+#else
+            return std::make_unique<T>(std::forward<Arguments>(args)...);
+#endif // CUSTOM_ALLOCATOR
         }
 
         // Replacement for new
@@ -102,16 +113,16 @@ namespace longmarch
         };
 
         // 4KB per page size
-        constexpr inline static const uint32_t kPageSize = {1u << 12};
+        constexpr inline static uint32_t kPageSize = {1u << 12};
 
         // 8 Byte per block size alignment
-        constexpr inline static const uint32_t kAlignment = {1u << 3};
+        constexpr inline static uint32_t kAlignment = {1u << 3};
 
         // Number of elements in the block size array
-        constexpr inline static const uint32_t kNumBlockSizes = std::size(kBlockSizes);
+        constexpr inline static uint32_t kNumBlockSizes = std::size(kBlockSizes);
 
         // Largest valid block size
-        constexpr inline static const uint32_t kMaxBlockSize = {kBlockSizes[kNumBlockSizes - 1]};
+        constexpr inline static uint32_t kMaxBlockSize = {kBlockSizes[kNumBlockSizes - 1]};
 
     private:
         inline static CACHE_ALIGN std::atomic_size_t s_AllocatedSize = {0u};

@@ -38,7 +38,18 @@ namespace longmarch
         template <typename... Arguments>
         [[nodiscard]] inline static std::unique_ptr<T> Make_unique(Arguments&&... args) noexcept
         {
+#if CUSTOM_ALLOCATOR == 1
+            // https://qastack.cn/programming/19053351/how-do-i-use-a-custom-deleter-with-a-stdunique-ptr-member
+            // yuhang : to enable custom allocator and deallocator for std::unique_ptr, we need to define a deleter struct TDeleter
+            // struct TDeleter {
+            //     void operator()(T* b) { Delete(b); }
+            // };
+            // and with a brand new templated class std::unique_ptr<T, TDeleter>, which is tedious
+            //return std::unique_ptr<T>(New<T>(std::forward<Arguments>(args)...), Delete);
             return std::make_unique<T>(std::forward<Arguments>(args)...);
+#else
+            return std::make_unique<T>(std::forward<Arguments>(args)...);
+#endif // CUSTOM_ALLOCATOR
         }
 
         // Replacement for new
@@ -75,11 +86,11 @@ namespace longmarch
         static void Free(void* p) noexcept;
 
     private:
-        constexpr inline static const bool bUseLargeBlock = {sizeof(T) > MemoryManager::kMaxBlockSize};
-        constexpr inline static const uint32_t kMaxElementSize = {1u << 12};
-        constexpr inline static const uint32_t kPageSize = {1u << 12};
-        constexpr inline static const uint32_t kPageSizeLarge = {1u << 21};
-        constexpr inline static const uint32_t kAlignment = {1u << 3};
+        constexpr inline static bool bUseLargeBlock = {sizeof(T) > MemoryManager::kMaxBlockSize};
+        constexpr inline static uint32_t kPageSize = {1u << 12};
+        constexpr inline static uint32_t kMaxElementSize = {kPageSize - sizeof(BlockHeader)};
+        constexpr inline static uint32_t kPageSizeLarge = {1u << 21};
+        constexpr inline static uint32_t kAlignment = {1u << 3};
 
         inline static CACHE_ALIGN std::atomic_size_t s_AllocatedSize = {0u};
 
@@ -93,7 +104,7 @@ namespace longmarch
     template <class T>
     void TemplateMemoryManager<T>::Init()
     {
-        static_assert(sizeof(T) >= kMaxElementSize,
+        static_assert(sizeof(T) < kMaxElementSize,
             "Class has size greater than allowed! Consider using std::malloc instead");
         // initialize the allocator
         s_Allocator.Reset(sizeof(T),

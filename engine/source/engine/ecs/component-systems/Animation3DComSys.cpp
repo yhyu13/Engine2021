@@ -2,7 +2,6 @@
 #include "Animation3DComSys.h"
 #include "engine/ecs/GameWorld.h"
 #include "engine/ecs/components/ChildrenCom.h"
-#include "engine/ecs/components/ParentCom.h"
 #include "engine/ecs/components/3d/Scene3DCom.h"
 #include "engine/ecs/components/3d/Transform3DCom.h"
 #include "engine/ecs/components/IDNameCom.h"

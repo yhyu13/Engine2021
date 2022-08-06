@@ -1,11 +1,8 @@
 #pragma once
 #include "engine/core/EngineCore.h"
-#include "engine/core/smart-pointer/RefPtr.h"
 #include "BitMaskSignature.h"
 
 #include <iostream>
-
-#include "engine/core/allocator/TemplateMemoryManager.h"
 
 namespace longmarch
 {

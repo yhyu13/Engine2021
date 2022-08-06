@@ -2,7 +2,6 @@
 #include "Entity.h"
 #include "engine/core/utility/TypeHelper.h"
 #include <string>
-#include <map>
 
 namespace longmarch
 {

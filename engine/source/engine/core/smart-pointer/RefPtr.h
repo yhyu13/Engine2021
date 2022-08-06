@@ -1,22 +1,35 @@
 ﻿#pragma once
 
-#include "engine/core/allocator/MemoryManager.h"
 #include "engine/core/allocator/TemplateMemoryManager.h"
 
 namespace longmarch
 {
-#define ADD_REFERENCE_COUTNER() \
-    public: \
-    inline void IncrementRef() noexcept  \
-    {\
-        ++m_refCounter;\
-    }\
-    inline bool DecrementRef() noexcept\
-    {\
-        return --m_refCounter > 0;\
-    }\
-    private: \
-    mutable std::atomic_uint_fast32_t m_refCounter { 0 };
+    // A base class for reference counting which supports non-copyable inherited classes.
+    struct MS_ALIGN8 BaseRefCountClassNC
+    {
+    public:
+        BaseRefCountClassNC() = default;
+        NONCOPYABLE(BaseRefCountClassNC);
+        
+        inline void IncrementRef() const noexcept
+        {
+            ++m_refCounter;
+        }
+
+        inline bool DecrementRef() const noexcept
+        {
+            return --m_refCounter > 0;
+        }
+
+    protected:
+        // yuhang : protected non-virtual destructor that prevents delete by base pointer
+        ~BaseRefCountClassNC() noexcept = default;
+
+    private:
+        mutable std::atomic_uint_fast32_t m_refCounter{0};
+        // yuhang : use byte padding instead of CACHE_ALIGN specifier so that inherited class is not affected by this alignment
+        std::byte COMBINE(__PADDING_, __LINE__)[PLATFORM_CACHE_LINE - sizeof(std::atomic_uint_fast32_t)];
+    };
 
     // Concept for reference countable classes
     template <typename T>
@@ -32,23 +45,21 @@ namespace longmarch
     /**
      *  @brief A reference pointer requires template class instance method (1) Increment reference (2) Decrement reference
      *  The template class should maintain a mutable atomic reference counter, and the template class should align itself to avoid
-     *  false sharing
+     *  false sharing.
      *
-     *  The polymorphism casting uses explicit casting from U to T (i.e. (T*)(U* ptr)).
      *
-     *  @detail On construction, the RefPtr increment the reference counting
-     *          On destruction, the RefPtr tries to decrement the reference counting
+     *  @detail On construction, the RefPtr increment the reference counting.
+     *          On destruction, the RefPtr tries to decrement the reference counting.
      *
-     *  @attention Only those T* created by RefPtr<T>::Allocator::New can be managed by RefPtr<T>
+     *  @attention Only those T* created by RefPtr<T>::Allocator::New can be managed by RefPtr<T>.
      * 
      */
-    template <class T>
-        requires ReferenceCountable<T>
+    template <class T, typename Allocator_T = TemplateMemoryManager<T>>
     class RefPtr
     {
     public:
-        using Allocator = TemplateMemoryManager<T>;
-        
+        using Allocator = Allocator_T;
+
         // Big Five----------------------------------------------------------------------------------------------------
         RefPtr()
             : m_ptr(nullptr)
@@ -162,13 +173,21 @@ namespace longmarch
 
         // Methods---------------------------------------------------------------------------------------------
 
-        [[nodiscard]] T* get() noexcept
+        [[nodiscard]] T* get(bool validate = true) noexcept
         {
+            if (validate)
+            {
+                ASSERT(valid(), "RefPtr nullptr error!");
+            }
             return m_ptr;
         }
 
-        [[nodiscard]] const T* get() const noexcept
+        [[nodiscard]] const T* get(bool validate = true) const noexcept
         {
+            if (validate)
+            {
+                ASSERT(valid(), "RefPtr nullptr error!");
+            }
             return m_ptr;
         }
 
@@ -177,7 +196,7 @@ namespace longmarch
             this->~RefPtr();
         }
 
-        [[nodiscard]] bool valid() noexcept
+        [[nodiscard]] bool valid() const noexcept
         {
             return m_ptr != nullptr;
         }
@@ -185,5 +204,20 @@ namespace longmarch
 
     private:
         T* m_ptr{nullptr};
+    };
+}
+
+/*
+    Custum hash function for RefPtr<T>
+*/
+namespace std
+{
+    template <class T>
+    struct hash<RefPtr<T>>
+    {
+        std::size_t operator()(const RefPtr<T>& ptr) const noexcept
+        {
+            return hash<T*>()(ptr.get(false));
+        }
     };
 }

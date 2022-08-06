@@ -153,5 +153,7 @@ namespace longmarch
 }
 
 #undef USE_ATOMIC_RIVAL_PTR
-#undef DEBUG_TIMER_ASSERT
+#undef DEADLOCK_TIMER
+#undef SET_DEADLOCK_TIMER
+#undef ASSERT_DEADLOCK_TIMER
 #undef THREAD_YIELD

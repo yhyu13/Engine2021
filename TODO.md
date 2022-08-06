@@ -2,7 +2,7 @@ TODO List :
 
 *Major feature*:
 
-(1) Refactor ECS Archtype memory management : instead of using entities and component manager, using entity->Archtype->component managers.
+<!-- (1) Refactor ECS Archtype memory management : instead of using entities and component manager, using entity->Archtype->component managers.
 
 a, You need a archtype2component managers dictionary such that all allocations of components of certain archtype can be managed in per-archtype fashion. **This way, we can eliminate memory diffusion**
 
@@ -16,7 +16,11 @@ b, Change the way delete an entity works:
 
 c, Condsider refactor Entity holding method from class instances into reference counting pointers. This way, we can add validation and archetype bit mask into Entity class (as we no longer cares about sizeof(Entity) since we use pointer now)
 
-~~(2) RenderDoc debug marker for OpenGL. [check here](https://stackoverflow.com/questions/54278607/how-to-create-debugging-markers-in-opengl)~~
+(2) RenderDoc debug marker for OpenGL. [check here](https://stackoverflow.com/questions/54278607/how-to-create-debugging-markers-in-opengl) -->
+
+(1) Using RefPtr to hold GameWorld life cycle
+
+(2) Enable GLM SIMID instructions
 
 (3) Refacotr memory allocator with ABA lock-free free list or integrate with Intel Thread Building BLock (TBB) or mimalloc
 

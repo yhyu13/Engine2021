@@ -1,19 +1,19 @@
 #pragma once
 #include <memory>
 #include <vector>
-#include <map>
 #include "engine/core/exception/EngineException.h"
 #include "engine/core/thread/Lock.h"
 #include "engine/core/thread/ThreadPool.h"
 #include "engine/core/thread/StealThreadPool.h"
 #include "engine/core/utility/TypeHelper.h"
-#include "EntityType.h"
-#include "EntityDecorator.h"
-#include "EntityManager.h"
-#include "BitMaskSignature.h"
-#include "ComponentManager.h"
-#include "ComponentDecorator.h"
 #include "engine/core/thread/RivalLock.h"
+#include "engine/core/smart-pointer/RefPtr.h"
+#include "engine/ecs/EntityDecorator.h"
+#include "engine/ecs/EntityManager.h"
+#include "engine/ecs/BitMaskSignature.h"
+#include "engine/ecs/ComponentManager.h"
+#include "engine/ecs/ComponentDecorator.h"
+#include "engine/ecs/EntityType.h"
 
 namespace longmarch
 {
@@ -27,12 +27,13 @@ namespace longmarch
      *
      * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
      */
-    class GameWorld final : private BaseAtomicClassNC, private BaseAtomicClassStatic
+    class GameWorld final : private BaseAtomicClassNC, private BaseAtomicClassStatic, public BaseRefCountClassNC
     {
     private:
         NONCOPYABLE(GameWorld);
         GameWorld() = delete;
         explicit GameWorld(bool setCurrent, const std::string& name, const fs::path& filePath);
+        friend TemplateMemoryManager<GameWorld>;
 
     public:
         /**
@@ -263,7 +264,7 @@ namespace longmarch
                       int min_split = -1) const;
 
     private:
-        inline static LongMarch_UnorderedMap_flat<std::string, std::unique_ptr<GameWorld>> s_allManagedWorlds;
+        inline static LongMarch_UnorderedMap_flat<std::string, RefPtr<GameWorld>> s_allManagedWorlds;
         inline static GameWorld* s_currentWorld = {nullptr};
 
         //! Multithreaded pool used in ParEach2 for inner function multithreading to avoid thread overflow stalling the default thread pool and the entire program

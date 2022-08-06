@@ -65,7 +65,7 @@ void longmarch::BaseEngineWidgetManager::UpdateGameWorldTabs()
         {
             if (shouldRemove)
             {
-                GameWorld::RemoveManagedWorld(name);
+                GameWorld::RemoveWorld(name);
                 isSelect = isVisible = shouldRemove = false;
             }
         }
@@ -111,7 +111,7 @@ void longmarch::BaseEngineWidgetManager::UpdateGameWorldTabs()
                 if (isVisible)
                 {
                     has_selected = true;
-                    auto world = GameWorld::GetManagedWorldByName(name);
+                    auto world = GameWorld::GetWorldByName(name);
                     ASSERT(world, "Gameworld is nullptr!");
                     // current world is not selected world, switch to selected world
                     if (GameWorld::GetCurrent() != world)
@@ -136,7 +136,7 @@ void longmarch::BaseEngineWidgetManager::UpdateGameWorldTabs()
                 {
                     has_selected = true;
                     isSelect = true;
-                    auto world = GameWorld::GetManagedWorldByName(name);
+                    auto world = GameWorld::GetWorldByName(name);
                     ASSERT(world, "Gameworld is nullptr!");
                     // current world is not selected world, switch to selected world
                     if (GameWorld::GetCurrent() != world)

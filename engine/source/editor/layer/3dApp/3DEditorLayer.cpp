@@ -267,7 +267,7 @@ void longmarch::_3DEditorLayer::_ON_EDITOR_SWITCH_TO_EDITING_MODE(EventQueue<Edi
 		Engine::GetInstance()->SwitchCurrentLayer(Layer::LAYER_TYPE::ENG_LAYER);
 
 		auto world = static_cast<GameWorld*>(event->editing_world);
-		GameWorld::RemoveManagedWorld(GameWorld::GetCurrent());
+		GameWorld::RemoveWorld(GameWorld::GetCurrent());
 		GameWorld::SetCurrent(world);
 	}
 	else

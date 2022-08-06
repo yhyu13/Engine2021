@@ -154,7 +154,7 @@ namespace longmarch
         }
     }
 
-    //! Unity ECS like for each function (single worker thread), func is moved
+    //! Unity ECS like for each function (single worker thread)
     template <class ...Components>
     [[nodiscard]]
     inline auto GameWorld::BackEach(
@@ -171,6 +171,18 @@ namespace longmarch
                 );
             }
         );
+    }
+
+    //! Unity ECS like for each function (multi worker thread)
+    template <class ... Components>
+    auto GameWorld::ParEach(
+        const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func,
+        int min_split) const
+    {
+        return StealThreadPool::GetInstance()->enqueue_task([this, min_split, func = std::move(func)]()
+        {
+            _ParEach<Components...>(func, min_split);
+        });
     }
 
     //! Helper method for pareach (defined in Gameworld.h)

@@ -23,6 +23,25 @@ longmarch::GameWorld::GameWorld(bool setCurrent, const std::string& name, const 
     InitSystemAndScene(FileSystem::ResolveProtocol(filePath));
 }
 
+void GameWorld::Init()
+{
+    auto queue = EventQueue<EngineEventType>::GetInstance();
+    {
+        queue->Subscribe(EngineEventType::ENG_WINDOW_QUIT, &GameWorld::_ON_ENG_WINDOW_QUIT);
+    }
+}
+
+void GameWorld::CleanUp()
+{
+    // Join all jobs
+    for (auto& [name, world] : s_allManagedWorlds)
+    {
+        world->MultiThreadJoin();
+    }
+    // Remove all worlds
+    s_allManagedWorlds.clear();
+}
+
 GameWorld* longmarch::GameWorld::GetInstance(bool setCurrent, const std::string& name, const fs::path& filePath)
 {
     auto worldName = (name.empty()) ? filePath.filename().string() : name;
@@ -55,7 +74,7 @@ GameWorld* longmarch::GameWorld::GetCurrent()
     return s_currentWorld;
 }
 
-GameWorld* longmarch::GameWorld::GetManagedWorldByName(const std::string& name)
+GameWorld* longmarch::GameWorld::GetWorldByName(const std::string& name)
 {
     LOCK_GUARD_S();
     if (auto it = s_allManagedWorlds.find(name); it != s_allManagedWorlds.end())
@@ -77,7 +96,7 @@ const LongMarch_Vector<std::string> longmarch::GameWorld::GetAllManagedWorldName
     return ret;
 }
 
-void longmarch::GameWorld::RemoveManagedWorld(const std::string& name)
+bool longmarch::GameWorld::RemoveWorld(const std::string& name)
 {
     LOCK_GUARD_S();
     if (auto it = s_allManagedWorlds.find(name); it != s_allManagedWorlds.end())
@@ -87,18 +106,20 @@ void longmarch::GameWorld::RemoveManagedWorld(const std::string& name)
             s_currentWorld = nullptr;
         }
         s_allManagedWorlds.erase(it);
+        return true;
     }
     else
     {
         ENGINE_EXCEPT(wStr(name) + L" is not a managed world!");
+        return false;
     }
 }
 
-void longmarch::GameWorld::RemoveManagedWorld(GameWorld* world)
+bool longmarch::GameWorld::RemoveWorld(GameWorld* world)
 {
     LOCK_GUARD_S();
     bool found = false;
-    for (auto it = s_allManagedWorlds.begin(); it != s_allManagedWorlds.end(); ++it)
+    for (auto it = s_allManagedWorlds.begin(); it != s_allManagedWorlds.end();)
     {
         if (it->second.get() == world)
         {
@@ -107,19 +128,22 @@ void longmarch::GameWorld::RemoveManagedWorld(GameWorld* world)
             {
                 s_currentWorld = nullptr;
             }
-            s_allManagedWorlds.erase(it);
+            it = s_allManagedWorlds.erase(it);
         }
+        ++it;
     }
     if (!found)
     {
         ENGINE_EXCEPT(wStr(world->GetName()) + L" is not a managed world!");
+        return false;
     }
+    return true;
 }
 
 GameWorld* longmarch::GameWorld::Clone(const std::string& newWorldName, const std::string& fromWorldName)
 {
     ASSERT(newWorldName != fromWorldName, "Clone world must have a different name!");
-    const auto fromWorld = GetManagedWorldByName(fromWorldName);
+    const auto fromWorld = GetWorldByName(fromWorldName);
     auto newWorld = Clone(newWorldName, fromWorld);
     return newWorld;
 }
@@ -169,8 +193,13 @@ GameWorld* longmarch::GameWorld::Clone(const std::string& newName, const GameWor
         }
         from->UnlockNC();
     }
-    newWorld->Init();
+    newWorld->InitECS();
     return newWorld;
+}
+
+void GameWorld::_ON_ENG_WINDOW_QUIT(EventQueue<EngineEventType>::EventPtr e)
+{
+    CleanUp();
 }
 
 void longmarch::GameWorld::InitSystem(const fs::path& system_file)
@@ -191,11 +220,11 @@ void longmarch::GameWorld::InitSystemAndScene(const fs::path& _file)
     {
         InitSystem(_file);
         InitScene(_file);
-        Init();
+        InitECS();
     }
 }
 
-void longmarch::GameWorld::Init()
+void longmarch::GameWorld::InitECS()
 {
     ENGINE_EXCEPT_IF(m_systems.empty(), L"Calling Init() on an empty GameWorld!");
     for (auto& system : m_systems)

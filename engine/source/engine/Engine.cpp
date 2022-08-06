@@ -132,7 +132,8 @@ namespace longmarch
 
 	void Engine::_ON_ENG_WINDOW_QUIT(EventQueue<EngineEventType>::EventPtr e)
 	{
-		// Nothing
+		// yuhang : log engine quit event to mark as a time stamp in the log
+		PRINT("Engine window quit!");
 	}
 
 	void Engine::_ON_CURSOR_SWITCH_MODE(EventQueue<EngineEventType>::EventPtr e)

@@ -33,10 +33,10 @@ namespace longmarch
 #ifndef APP_ONLY
 			// Create the engine/editor layer (engine UI, renderer pipeline) on top of app
 			// This is how we create an editor!
-			auto engineLayer = MemoryManager::Make_shared<_3DEditorLayer>();
+			auto editorLayer = MemoryManager::Make_shared<_3DEditorLayer>();
 			Engine::SwitchCurrentLayer(Layer::LAYER_TYPE::ENG_LAYER);
-			Engine::PushLayer(engineLayer);
-			engineLayer->Init();
+			Engine::PushLayer(editorLayer);
+			editorLayer->Init();
 #endif
 			// Make window visible in the end of construction
 			GetWindow()->SetVisible(true);

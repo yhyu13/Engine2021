@@ -93,13 +93,14 @@ Load start up screen
 
 void longmarch::MainGameLayer::InitGameWorld()
 {
-	// 2, Init game world.
-	// This step must happen after EventQueue clear as systems in mainGameWorld->Init() would register for event handler at that stage)
-
+	// 1, Init GameWorld
+	GameWorld::Init();
+	
+	// 2, Init instanced game world.
 	auto filepath = FileSystem::ResolveProtocol("$asset:archetype/scene-game.json");
+	GameWorld::GetInstance(true, "sample-game", filepath);
 
-	GameWorld::GetInstance(true, "", filepath);
-
+	// yuhang : enable sound if you like so, it's just a test.
 	//AudioManager::GetInstance()->PlaySoundByName("bgm0", AudioVector3{ 0,0,0 }, -10, 1);
 }
 

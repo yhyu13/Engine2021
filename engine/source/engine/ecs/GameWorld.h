@@ -8,12 +8,16 @@
 #include "engine/core/utility/TypeHelper.h"
 #include "engine/core/thread/RivalLock.h"
 #include "engine/core/smart-pointer/RefPtr.h"
+
 #include "engine/ecs/EntityDecorator.h"
 #include "engine/ecs/EntityManager.h"
 #include "engine/ecs/BitMaskSignature.h"
 #include "engine/ecs/ComponentManager.h"
 #include "engine/ecs/ComponentDecorator.h"
 #include "engine/ecs/EntityType.h"
+
+#include "engine/events/EventQueue.h"
+#include "engine/events/engineEvents/EngineCustomEvent.h"
 
 namespace longmarch
 {
@@ -37,6 +41,16 @@ namespace longmarch
 
     public:
         /**
+         * Init message binding and resources
+         */
+        static void Init();
+
+        /**
+         *  Clean Up all resources held by Gameworld
+         */
+        static void CleanUp();
+
+        /**
          * @brief	Get a game world instance that is automatically managed.
          * @param	setCurrent		set the new instance to be the current world
          * @param	name			name of the new world
@@ -46,21 +60,21 @@ namespace longmarch
         [[nodiscard]] static std::future<GameWorld*> GetInstanceAsync(bool setCurrent, const std::string& name,
                                                                       const fs::path& filePath);
         static void SetCurrent(GameWorld* world);
-        static GameWorld* GetCurrent();
-        static GameWorld* GetManagedWorldByName(const std::string& name);
+        [[nodiscard]] static GameWorld* GetCurrent();
+        [[nodiscard]] static GameWorld* GetWorldByName(const std::string& name);
         static const LongMarch_Vector<std::string> GetAllManagedWorldNames();
 
         /**
          * @brief	Remove a managed world, throw exception if the world does not exist
          * @param	name		the name of the world
          */
-        static void RemoveManagedWorld(const std::string& name);
+        static bool RemoveWorld(const std::string& name);
 
         /**
          * @brief	Remove a managed world, throw exception if the world is not managed
          * @param	world		the pointer to the world
          */
-        static void RemoveManagedWorld(GameWorld* world);
+        static bool RemoveWorld(GameWorld* world);
 
         /**
          * > Clone a world from an existing world
@@ -82,12 +96,14 @@ namespace longmarch
          */
         static GameWorld* Clone(const std::string& newName, const GameWorld* from);
 
+    private:
+        static void _ON_ENG_WINDOW_QUIT(EventQueue<EngineEventType>::EventPtr e);
+
+    public:
         inline const std::string& GetName() const { return m_name; }
         inline void SetPause(bool b) { m_paused = b; }
         inline bool IsPaused() const { return m_paused; }
 
-        //! Initialize all systems
-        void Init();
         void Update(double frameTime);
         void Update2(double frameTime);
 
@@ -206,34 +222,28 @@ namespace longmarch
         void ForEach(
             const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func) const;
 
-        //! Unity ECS like for each function (single worker thread), func is moved
+        //! Unity ECS like for each function (single worker thread)
         template <class... Components>
         [[nodiscard]] auto BackEach(
             const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func) const;
 
-        //! Unity ECS like for each function (multi worker thread), func is moved
+        //! Unity ECS like for each function (multi worker thread)
         template <class... Components>
         [[nodiscard]] auto ParEach(
             const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func,
-            int min_split = -1) const
-        {
-            return StealThreadPool::GetInstance()->enqueue_task([this, min_split, func = std::move(func)]()
-            {
-                _ParEach<Components...>(func, min_split);
-            });
-        }
+            int min_split = -1) const;
 
         //! Unity ECS like for each function
         void ForEach(const LongMarch_Vector<Entity>& es,
                      const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func) const;
 
-        //! Unity ECS like for each function (single worker thread), func is moved
+        //! Unity ECS like for each function (single worker thread)
         [[nodiscard]] std::future<void> BackEach(const LongMarch_Vector<Entity>& es,
                                                  const std::type_identity_t<std::function<void
                                                      (const EntityDecorator& e)>>&
                                                  func) const;
 
-        //! Unity ECS like for each function (multi worker thread), func is moved
+        //! Unity ECS like for each function (multi worker thread)
         [[nodiscard]] std::future<void> ParEach(const LongMarch_Vector<Entity>& es,
                                                 const std::type_identity_t<std::function<void
                                                     (const EntityDecorator& e)>>&
@@ -245,7 +255,9 @@ namespace longmarch
         {
             ENGINE_TRY_CATCH({ func(); });
         };
-
+        
+        //! Init ECS systems
+        void InitECS();
         //! Init both system and scene from a single file
         void InitSystemAndScene(const fs::path& _file);
         //! Call InitSystem before InitScene
@@ -269,8 +281,8 @@ namespace longmarch
 
         //! Multithreaded pool used in ParEach2 for inner function multithreading to avoid thread overflow stalling the default thread pool and the entire program
         inline static StealThreadPool s_parEach2Pool;
-        constexpr static int s_parEachMinSplit {16};
-        
+        constexpr static int s_parEachMinSplit{16};
+
         //! GameWorld class level job pool, used in running game thread in the background or any other async tasks
         inline static StealThreadPool s_jobPool{4};
 

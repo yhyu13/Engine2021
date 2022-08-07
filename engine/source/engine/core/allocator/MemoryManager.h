@@ -20,7 +20,7 @@ namespace longmarch
      *
      *  @details Memory page size 4KB, max block size 960B. Class bigger than 960B would allocated by std::malloc 
      *
-     *  @attention If you use MemoryManager::New and MemoryManager::Delete, you must new && delete by the same pointer type
+     *  @attention DO NOT delete by base pointer! If you use MemoryManager::New and MemoryManager::Delete, you must new && delete by the same pointer type!
      *  
      *  @author Hang Yu (yohan680919@gmail.com)
      */
@@ -66,7 +66,7 @@ namespace longmarch
 #endif // CUSTOM_ALLOCATOR
         }
 
-        // Replacement for new
+        // Replacement for new. DO NOT delete by base pointer! If you use MemoryManager::New and MemoryManager::Delete, you must new && delete by the same pointer type!
         template <class T, typename... Arguments>
         [[nodiscard]] inline static T* New(Arguments&&... args) noexcept
         {

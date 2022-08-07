@@ -191,7 +191,7 @@ GameWorld* longmarch::GameWorld::Clone(const std::string& newName, const GameWor
                 newWorld->m_systemsNameMap[newWorld->m_systemsName[i]] = newWorld->m_systems[i];
             }
         }
-        from->UnlockNC();
+        from->UnLockNC();
     }
     newWorld->InitECS();
     return newWorld;

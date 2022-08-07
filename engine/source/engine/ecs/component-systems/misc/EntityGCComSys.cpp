@@ -60,7 +60,7 @@ void longmarch::EntityGCComSys::GCRecursive(EntityDecorator e)
 	this->LockNC();
 	m_UserRegisteredEntities.push_back(e);
 	m_parentWorld->InactivateHelper(e);
-	this->UnlockNC();
+	this->UnLockNC();
 	for (auto& child : m_parentWorld->GetComponent<ChildrenCom>(e)->GetChildren())
 	{
 		GCRecursive(EntityDecorator{ child ,e.GetWorld() });

@@ -5,7 +5,7 @@
 namespace longmarch
 {
     /**
-     * @brief Timer that set and return time point in sec
+     * @brief Timer that set and return time point in sec/millisec, etc.
      *
      * @author Hang Yu (yohan680919@gmail.com)
      */
@@ -89,41 +89,64 @@ namespace longmarch
 
     private:
         std::chrono::steady_clock::time_point m_last;
-        double m_period = {0.0};
+        double m_period{0.0};
     };
 
     /**
-     * @brief Timer that shall be increamend manually, return time in any units interpreted by the user
+     * @brief Timer that set and return time point in sec/millisec, etc. LazyTimer will now initialized until user called Reset() or Mark()
+     *        This class has the advantage of trivial construction (save couple hundred clocks) for counting down only when you need it. 
      *
      * @author Hang Yu (yohan680919@gmail.com)
      */
-    class Timer2
+    class LazyTimer
     {
     public:
-        Timer2() = default;
+        LazyTimer() = default;
 
-        explicit Timer2(double period)
+        //! Init timer with period in secs
+        explicit LazyTimer(double period)
             :
             m_period(period)
         {
         }
 
-        //! Increment timer by dt
-        inline void Increment(double dt) noexcept
-        {
-            m_now += dt;
-        }
-
         //! Reset timer to now
         inline void Reset() noexcept
         {
-            m_now = 0.0;
+            m_last = std::chrono::steady_clock::now();
+            m_init = true;
+        }
+
+        //! Templated method that return time between now and the last reset, default in sec.
+        template <typename ratio = std::ratio<1>, typename ret_type = double>
+        inline ret_type Mark() noexcept
+        {
+            if (!m_init)
+            {
+                Reset();
+            }
+            return std::chrono::duration<ret_type, ratio>(std::chrono::steady_clock::now() - m_last).count();
         }
 
         //! Return time in seconds between now and the last reset
-        inline double Mark() noexcept
+        inline double MarkSec() noexcept
         {
-            return m_now;
+            return Mark<std::ratio<1>, double>();
+        }
+
+        inline double MarkMilli() noexcept
+        {
+            return Mark<std::milli, double>();
+        }
+
+        inline double MarkMicro() noexcept
+        {
+            return Mark<std::micro, double>();
+        }
+
+        inline double MarkNano() noexcept
+        {
+            return Mark<std::nano, double>();
         }
 
         //! Set period. Use Check to check if period is met.
@@ -155,7 +178,8 @@ namespace longmarch
         }
 
     private:
-        double m_now{0.0};
-        double m_period = {0.0};
+        std::chrono::steady_clock::time_point m_last;
+        double m_period{0.0};
+        bool m_init{false};
     };
 }

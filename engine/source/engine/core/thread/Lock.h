@@ -43,7 +43,7 @@ namespace longmarch
     public:
 #define LOCK_GUARD_S() atomic_flag_guard __lock_s(sc_flag)
         static void LockS() noexcept;
-        static void UnlockS() noexcept;
+        static void UnLockS() noexcept;
     protected:
         // yuhang : protected non-virtual destructor that prevents delete by base pointer
         ~BaseAtomicClassStatic() noexcept = default;
@@ -64,7 +64,7 @@ namespace longmarch
         NONINSTANTIABLE(BaseAtomicClassNI);
 #define LOCK_GUARD_NI() atomic_flag_guard __lock_ni(ni_flag)
         static void LockNI() noexcept;
-        static void UnlockNI() noexcept;
+        static void UnLockNI() noexcept;
     protected:
         CACHE_ALIGN inline static std::atomic_flag ni_flag; // c++ 20 default initialization to false
     };
@@ -86,7 +86,7 @@ namespace longmarch
         BaseAtomicClassNC() = default;
 
         void LockNC() const noexcept;
-        void UnlockNC() const noexcept;
+        void UnLockNC() const noexcept;
     protected:
         // yuhang : protected non-virtual destructor that prevents delete by base pointer
         ~BaseAtomicClassNC() noexcept = default;
@@ -153,7 +153,7 @@ namespace longmarch
         AdaptiveAtomicClassNC() noexcept = default;
 
         void LockAdaptiveNC() const noexcept;
-        void UnlockAdaptiveNC() const noexcept;
+        void UnLockAdaptiveNC() const noexcept;
     protected:
         // yuhang : protected non-virtual destructor that prevents delete by base pointer
         ~AdaptiveAtomicClassNC() noexcept = default;

@@ -36,17 +36,17 @@
 							Class& operator=(const Class&) = delete; Class& operator=(const Class&&) = delete;
 
 #ifndef _SHIPPING
-#define ASSERT(x, ...) { if(!(x)) { if (Logger::init) ENGINE_CRITICAL("Assertion failed: {2} at {0} : {1}", __FILE__, __LINE__, std::string(##__VA_ARGS__)); __debugbreak(); } }
+#define ASSERT(x, ...) do { if(!(x)) { if (Logger::init) ENGINE_CRITICAL("Assertion failed: {2} at {0} : {1}", __FILE__, __LINE__, std::string(##__VA_ARGS__)); __debugbreak(); } } while (0)
 #else
 #define ASSERT(x, ...)
 #endif // DEBUG
 
 #ifndef _SHIPPING
-#define CRITICAL_PRINT(...) { if (Logger::init) ENGINE_CRITICAL(__VA_ARGS__); }
-#define WARN_PRINT(...) { if (Logger::init) ENGINE_WARN(__VA_ARGS__); }
-#define ERROR_PRINT(...) { if (Logger::init) ENGINE_ERROR(__VA_ARGS__); }
-#define DEBUG_PRINT(...) { if (Logger::init) ENGINE_DEBUG(__VA_ARGS__); }
-#define PRINT(...) { if (Logger::init) ENGINE_INFO(__VA_ARGS__); }
+#define CRITICAL_PRINT(...) do { if (Logger::init) ENGINE_CRITICAL(__VA_ARGS__); } while (0)
+#define WARN_PRINT(...) do { if (Logger::init) ENGINE_WARN(__VA_ARGS__); } while (0)
+#define ERROR_PRINT(...) do { if (Logger::init) ENGINE_ERROR(__VA_ARGS__); } while (0)
+#define DEBUG_PRINT(...) do { if (Logger::init) ENGINE_DEBUG(__VA_ARGS__); } while (0)
+#define PRINT(...) do { if (Logger::init) ENGINE_INFO(__VA_ARGS__); } while (0)
 #else
 #define CRITICAL_PRINT(...)
 #define WARN_PRINT(...)

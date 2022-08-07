@@ -9,7 +9,7 @@ namespace longmarch
     inline bool GameWorld::HasComponent(const Entity& entity) const
     {
         LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
-        
+
         if (const auto it = m_entityMaskMap.find(entity);
             it != m_entityMaskMap.end())
         {
@@ -54,7 +54,7 @@ namespace longmarch
         else
         {
             ASSERT(oldMask == BitMaskSignature(),
-                   "Fails to retrive proper bist mask for entity. OldManager is nullptr only if mask is empty.")
+                   "Fails to retrive proper bist mask for entity. OldManager is nullptr only if mask is empty.");
             if (!newManager)
             {
                 newManager = MemoryManager::Make_shared<ArcheTypeManager>();
@@ -92,7 +92,7 @@ namespace longmarch
     inline ComponentDecorator<ComponentType> GameWorld::GetComponent(const Entity& entity) const
     {
         LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
-        
+
         ComponentType* com = nullptr;
         if (const auto it = m_entityMaskMap.find(entity);
             it != m_entityMaskMap.end())

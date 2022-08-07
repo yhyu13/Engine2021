@@ -99,7 +99,7 @@ namespace longmarch
 					it->second.handlersMap.erase(m_mask);
 					it->second.UnLock();
 				}
-				m_ptr->UnlockNC();
+				m_ptr->UnLockNC();
 			}
 
 		private:
@@ -167,7 +167,7 @@ namespace longmarch
 			auto it = m_subscribers.find(e->m_type);
 			if (it == m_subscribers.end())
 			{
-				UnlockNC();
+				UnLockNC();
 #if THROW_ON_UNREGISTERED_EVENT_CALLBACk == 0			
 				ENGINE_WARN("Event with type " + (Str(e->m_type)) + " is not registered in the event queue of type: " + (typeid(EventType).name()));
 				return;
@@ -177,7 +177,7 @@ namespace longmarch
 #endif
 			}
 			auto& subs = it->second;
-			UnlockNC();
+			UnLockNC();
 			subs.Lock();
 			for (auto& [_, handler] : subs)
 			{
@@ -199,7 +199,7 @@ namespace longmarch
 				auto& it = m_subscribers.find(e->m_type);
 				ENGINE_EXCEPT_IF(it == m_subscribers.end(), L"Event with type " + wStr(Str(e->m_type)) + L" is not registered in the event queue of type: " + wStr(typeid(EventType).name()));
 				auto& subs = it->second;
-				UnlockNC();
+				UnLockNC();
 				subs.Lock();
 				for (auto& [_, handler] : subs)
 				{

@@ -74,7 +74,7 @@ int longmarch::Skeleton::GetBoneIndex(const std::string& bone_name) const
 
 void longmarch::Skeleton::ApplyInverseBindTransform(const Skeleton::Bone_Transform_LUT& bone_Transform_LUT_IN, Skeleton::Bone_Transform_LUT& bone_inverseFinalTransform_LUT_OUT) const
 {
-	ASSERT(bone_Transform_LUT_IN.size() == bone_inverseBindTransform_LUT.size(), "Bone transform has different size!")
+	ASSERT(bone_Transform_LUT_IN.size() == bone_inverseBindTransform_LUT.size(), "Bone transform has different size!");
 	if (bone_Transform_LUT_IN.size() != bone_inverseFinalTransform_LUT_OUT.size())
 	{
 		ResetBoneTransform(bone_inverseFinalTransform_LUT_OUT);

@@ -18,15 +18,21 @@ c, Condsider refactor Entity holding method from class instances into reference 
 
 (2) RenderDoc debug marker for OpenGL. [check here](https://stackoverflow.com/questions/54278607/how-to-create-debugging-markers-in-opengl) -->
 
-(1) Using RefPtr to hold GameWorld life cycle
+<!-- (1) Using RefPtr to hold GameWorld life cycle -->
 
-(2) Enable GLM SIMID instructions
+(0) Adding pause command in the spin lock
 
-(3) Refacotr memory allocator with ABA lock-free free list or integrate with Intel Thread Building BLock (TBB) or mimalloc
+(1) Enable GLM SIMD instructions
+
+(2) Implement adding multiple components in the same time to avoid repeately moving components one at a time
+
+(3) Implement linked chunk data structure with std::vector like interface to drop in replace std::vector
+
+(4) Refacotr memory allocator with ABA lock-free free list or integrate with Intel Thread Building BLock (TBB) or mimalloc
 
 a, Let Phmap container, std::string, etc use custom allocator
 
-(4) Vulkan renderer, integrate with VulkanSceneGraph(?it's quite big a 3rd party project, what excatly should we integrate?)
+(5) Implement vulkan renderer, and integrate with VulkanSceneGraph(?it's quite big a 3rd party project, what excatly should we integrate?)
 a, consider render thread, draw thread design that support wide range of frame limit
 
 *Minor Feature*:

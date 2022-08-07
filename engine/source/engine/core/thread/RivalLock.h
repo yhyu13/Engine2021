@@ -2,23 +2,27 @@
 #include "engine/core/EngineCore.h"
 #include "engine/core/utility/TypeHelper.h"
 
+#include <intrin.h>
+
 #define USE_ATOMIC_RIVAL_PTR 0
 
 #ifndef _SHIPPING
-#define DEADLOCK_TIMER 1 // Debug break unfriendly, disabled unless you need to debug deak lock
+#define DEADLOCK_TIMER 1 // Debug break unfriendly, disabled unless you need to debug dead lock
 #else
 #define DEADLOCK_TIMER 0
 #endif // !_SHIPPING
 
 #if DEADLOCK_TIMER
-#define SET_DEADLOCK_TIMER() Timer __timer
-#define ASSERT_DEADLOCK_TIMER() ASSERT(__timer.Mark() < 1.0f, "Dead lock?")
+#define SET_DEADLOCK_TIMER() LazyTimer _timer
+#define ASSERT_DEADLOCK_TIMER() ASSERT(_timer.Mark() < .016f, "Dead lock?")
 #else
 #define SET_DEADLOCK_TIMER()
 #define ASSERT_DEADLOCK_TIMER()
 #endif
 
-#define THREAD_YIELD() //std::this_thread::yield()
+#define SPIN_COUNT 16
+#define THREAD_PAUSE() _mm_pause() // pause for ~75 clocks on intel 11th-i7 11700
+#define THREAD_YIELD() std::this_thread::yield() // pause for ~400 clocks on intel 11th-i7 11700
 
 namespace longmarch
 {
@@ -87,13 +91,22 @@ namespace longmarch
             }
 
             SET_DEADLOCK_TIMER();
+            int32_t spin_count = SPIN_COUNT;
 #if USE_ATOMIC_RIVAL_PTR
             RivalGroup* temp = nullptr;
             while (!m_currentGroupPtr.compare_exchange_weak(temp, groupPtr) && temp != groupPtr)
             {
+                do
+                {
+                    temp = nullptr;
+                    THREAD_PAUSE();
+                } while ((!m_currentGroupPtr.compare_exchange_weak(temp, groupPtr) && temp != groupPtr) && --spin_count);
+                if (!spin_count)
+                {
+                    temp = nullptr;
+                    THREAD_YIELD();
+                }
                 ASSERT_DEADLOCK_TIMER();
-                temp = nullptr;
-                THREAD_YIELD();
             }
 #else
             auto _address = (void**)&m_currentGroupPtr;
@@ -101,8 +114,15 @@ namespace longmarch
             // TODO @yuhang : InterlockedCompareExchangePointer is limited to windows platform, implement a generic platform interface for this
             while (InterlockedCompareExchangePointer(_address, groupPtr, nullptr) != groupPtr)
             {
+                do
+                {
+                    THREAD_PAUSE();
+                } while ((InterlockedCompareExchangePointer(_address, groupPtr, nullptr) != groupPtr) && --spin_count);
+                if (!spin_count)
+                {
+                    THREAD_YIELD();
+                }
                 ASSERT_DEADLOCK_TIMER();
-                THREAD_YIELD();
             }
 #endif
             ++m_programCounter;
@@ -156,4 +176,7 @@ namespace longmarch
 #undef DEADLOCK_TIMER
 #undef SET_DEADLOCK_TIMER
 #undef ASSERT_DEADLOCK_TIMER
+
+#undef SPIN_COUNT
+#undef THREAD_PAUSE
 #undef THREAD_YIELD

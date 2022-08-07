@@ -7,9 +7,9 @@ namespace longmarch
 {
 	struct Particle
 	{
-		glm::vec3 Position;
-		glm::vec3 Speed;
-		glm::vec3 Velocity, VelocityVariation;
+		Vec3f Position;
+		Vec3f Speed;
+		Vec3f Velocity, VelocityVariation;
 		glm::vec4 ColorBegin, ColorEnd;
 		float Rotation = 0.0f;
 		float SizeBegin, SizeEnd, SizeVariation;

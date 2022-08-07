@@ -10,9 +10,9 @@ namespace longmarch {
 		static void Init();
 		static void End();
 
-		static void DrawLine(const glm::vec3& fromPosition, const glm::vec3& toPosition, glm::vec3 color, float lineWidth = 1.0f);		
-		static void DrawCircle(const glm::vec3& centerPosition, float radius, glm::vec3 color);
-		static void DrawAABB(const glm::vec3& position, const glm::vec2& size, float rotation, glm::vec3& color);
+		static void DrawLine(const Vec3f& fromPosition, const Vec3f& toPosition, Vec3f color, float lineWidth = 1.0f);		
+		static void DrawCircle(const Vec3f& centerPosition, float radius, Vec3f color);
+		static void DrawAABB(const Vec3f& position, const glm::vec2& size, float rotation, Vec3f& color);
 	};
 }
 

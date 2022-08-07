@@ -41,7 +41,7 @@
 // Header-only externals are also included in the pch
 
 // GL Math
-//#define GLM_FORCE_MESSAGES
+#define GLM_FORCE_MESSAGES
 #define GLM_FORCE_CXX2A
 #define GLM_FORCE_CTOR_INIT
 #define GLM_FORCE_AVX2

@@ -11,22 +11,22 @@ namespace longmarch
 
 		void SetProjection(float left, float right, float bottom, float top);
 
-		const glm::vec3& GetPosition() const { return m_Position; }
-		void SetPosition(glm::vec3& position) { m_Position = position; }
+		const Vec3f& GetPosition() const { return m_Position; }
+		void SetPosition(Vec3f& position) { m_Position = position; }
 
 		float GetRotation() const { return m_Rotation; }
 		void SetRotation(float rotation) { m_Rotation = rotation; }
 
-		inline const glm::mat4 GetViewProjectionMatrix() const { return m_ProjectionMatrix * m_ViewMatrix; }
+		inline const Mat4 GetViewProjectionMatrix() const { return m_ProjectionMatrix * m_ViewMatrix; }
 
 	private:
 		void RecalculateViewMatrix();
 
 	private:
-		glm::mat4 m_ProjectionMatrix;
-		glm::mat4 m_ViewMatrix;
+		Mat4 m_ProjectionMatrix;
+		Mat4 m_ViewMatrix;
 
-		glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
+		Vec3f m_Position = { 0.0f, 0.0f, 0.0f };
 		float m_Rotation = 0.0f;
 	};
 }

@@ -7,7 +7,7 @@ namespace longmarch {
 	Sprite::Sprite()
 	{
 		
-		m_Position = glm::vec3(0.0f);
+		m_Position = Vec3f(0.0f);
 		m_SpriteWidth = 0;
 		m_SpriteHeight = 0;
 		m_SpriteX = 0;
@@ -28,7 +28,7 @@ namespace longmarch {
 	Sprite::Sprite(Texture2D* texture2D)
 		: m_Texture2D(texture2D)
 	{
-		m_Position = glm::vec3(0.0f);
+		m_Position = Vec3f(0.0f);
 		m_SpriteWidth = GetTextureWidth();
 		m_SpriteHeight = GetTextureHeight();
 		m_SpriteX = 0;
@@ -99,10 +99,10 @@ namespace longmarch {
 		//
 		//Batch Rendering
 		m_VertexData = {
-			glm::vec3(-rect.x, -rect.y, 0.0f),
-			glm::vec3( rect.x, -rect.y, 0.0f),
-			glm::vec3( rect.x,  rect.y, 0.0f),
-			glm::vec3(-rect.x,  rect.y, 0.0f)
+			Vec3f(-rect.x, -rect.y, 0.0f),
+			Vec3f( rect.x, -rect.y, 0.0f),
+			Vec3f( rect.x,  rect.y, 0.0f),
+			Vec3f(-rect.x,  rect.y, 0.0f)
 		};
 
 		m_TexCoord = {
@@ -114,7 +114,7 @@ namespace longmarch {
 
 		Renderer2D::AddBatch(m_Position, m_Scale, m_Rotation, glm::vec4(1.0f, 1.0f, 1.0f, m_alpha), m_VertexData, m_TexCoord, m_Texture2D);
 	}
-	void Sprite::SetSpritePosition(const glm::vec3& pos) { m_Position = pos; }
+	void Sprite::SetSpritePosition(const Vec3f& pos) { m_Position = pos; }
 	void Sprite::SetSpriteTexture(const std::shared_ptr<Texture2D>& texture2D) {
 		m_Texture2D = texture2D;
 		m_SpriteWidth = GetTextureWidth();

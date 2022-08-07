@@ -9,7 +9,7 @@ namespace longmarch
 {
 	struct Vertex2D
 	{
-		glm::vec3 Position;
+		Vec3f Position;
 		glm::vec2 TexCoords;
 		glm::vec4 Color;
 		float TexIndex;
@@ -26,18 +26,18 @@ namespace longmarch
 		static void EndScene();
 
 		static void DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, const glm::vec4& color);
-		static void DrawQuad(const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color);
+		static void DrawQuad(const Vec3f& position, const glm::vec2& scale, float rotation, const glm::vec4& color);
 		static void DrawQuad(const glm::vec2& position, const glm::vec2& scale, float rotation, const std::shared_ptr<Texture2D>& texture);
-		static void DrawQuad(const glm::vec3& position, const glm::vec2& scale, float rotation, const std::shared_ptr<Texture2D>& texture);
-		static void DrawQuad(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<IndexBuffer>& indexBuffer, const glm::vec3& position, const glm::vec2& size, float rotation, const glm::vec4& color, const std::shared_ptr<Texture2D>& texture = nullptr);
-		static void DrawDebugQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const glm::vec4& color);
-		static void DrawSprite(const std::shared_ptr<VertexArray>& vertexArray, const glm::vec3& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture);
-		static void DrawSprite(const std::shared_ptr<VertexArray>& vertexArray, const glm::vec3& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture, const std::string& shader);
-		static void DrawSprite(const std::shared_ptr<VertexArray>& vertexArray, const glm::vec3& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture, const std::string& shader, float alpha);
+		static void DrawQuad(const Vec3f& position, const glm::vec2& scale, float rotation, const std::shared_ptr<Texture2D>& texture);
+		static void DrawQuad(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<IndexBuffer>& indexBuffer, const Vec3f& position, const glm::vec2& size, float rotation, const glm::vec4& color, const std::shared_ptr<Texture2D>& texture = nullptr);
+		static void DrawDebugQuad(const Vec3f& position, const glm::vec2& size, float rotation, const glm::vec4& color);
+		static void DrawSprite(const std::shared_ptr<VertexArray>& vertexArray, const Vec3f& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture);
+		static void DrawSprite(const std::shared_ptr<VertexArray>& vertexArray, const Vec3f& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture, const std::string& shader);
+		static void DrawSprite(const std::shared_ptr<VertexArray>& vertexArray, const Vec3f& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture, const std::string& shader, float alpha);
 
 		static void BeginBatch(const OrthographicCamera& camera);
 		static void EndBatch();
-		static void AddBatch(const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const std::vector<glm::vec3>& vertexData, const std::vector<glm::vec2>& texCoord, const std::shared_ptr<Texture2D>& texture = nullptr);
+		static void AddBatch(const Vec3f& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const std::vector<Vec3f>& vertexData, const std::vector<glm::vec2>& texCoord, const std::shared_ptr<Texture2D>& texture = nullptr);
 		static void DrawBatch();
 
 		struct BatchStats

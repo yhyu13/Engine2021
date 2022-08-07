@@ -46,7 +46,7 @@ namespace longmarch {
 		std::shared_ptr<Texture2D> RawTexture;
 
 		std::shared_ptr<Shader> BatchShader;
-		std::vector<glm::vec3> VertexData;
+		std::vector<Vec3f> VertexData;
 		std::vector<glm::vec2> TexCoord;
 
 		OrthographicCamera cam = OrthographicCamera(1.0f, 1.0f, 1.0f, 1.0f);
@@ -188,13 +188,13 @@ namespace longmarch {
 		DrawQuad({ position.x, position.y, 0.0f }, scale, rotation, color);
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color)
+	void Renderer2D::DrawQuad(const Vec3f& position, const glm::vec2& scale, float rotation, const glm::vec4& color)
 	{
 		s_Data->QuadShader->Bind();
 		s_Data->QuadShader->SetFloat4("u_Color", color);
 		s_Data->QuadTexture->BindTexture(0);
 
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(0.0f, 0.0f, 1.0f)) * glm::scale(glm::mat4(1.0f), { scale.x, scale.y, 1.0f });
+		Mat4 transform = glm::translate(Mat4(1.0f), position) * glm::rotate(Mat4(1.0f), rotation, Vec3f(0.0f, 0.0f, 1.0f)) * glm::scale(Mat4(1.0f), { scale.x, scale.y, 1.0f });
 		s_Data->QuadShader->SetMat4("u_Transform", transform);
 		s_Data->FullScreenQuadVAO->Bind();
 		RenderCommand::DrawTriangleIndexed(s_Data->FullScreenQuadVAO);
@@ -206,7 +206,7 @@ namespace longmarch {
 		DrawQuad({ position.x, position.y, 0.0f }, scale, rotation, texture);
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& scale, float rotation, const std::shared_ptr<Texture2D>& texture)
+	void Renderer2D::DrawQuad(const Vec3f& position, const glm::vec2& scale, float rotation, const std::shared_ptr<Texture2D>& texture)
 	{
 		s_Data->QuadShader->Bind();
 		s_Data->QuadShader->SetFloat4("u_Color", glm::vec4(1.0f));
@@ -215,7 +215,7 @@ namespace longmarch {
 		else
 			s_Data->QuadTexture->BindTexture(0);
 
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(0.0f, 0.0f, 1.0f)) * glm::scale(glm::mat4(1.0f), { scale.x, scale.y, 1.0f });
+		Mat4 transform = glm::translate(Mat4(1.0f), position) * glm::rotate(Mat4(1.0f), rotation, Vec3f(0.0f, 0.0f, 1.0f)) * glm::scale(Mat4(1.0f), { scale.x, scale.y, 1.0f });
 		s_Data->QuadShader->SetMat4("u_Transform", transform);
 
 		s_Data->FullScreenQuadVAO->Bind();
@@ -223,14 +223,14 @@ namespace longmarch {
 		s_Data->FullScreenQuadVAO->Unbind();
 	}
 
-	void Renderer2D::DrawQuad(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<IndexBuffer>& indexBuffer, const glm::vec3& position, const glm::vec2& size, float rotation, const glm::vec4& color, const std::shared_ptr<Texture2D>& texture)
+	void Renderer2D::DrawQuad(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<IndexBuffer>& indexBuffer, const Vec3f& position, const glm::vec2& size, float rotation, const glm::vec4& color, const std::shared_ptr<Texture2D>& texture)
 	{
 		s_Data->QuadShader->Bind();
 		s_Data->QuadShader->SetFloat4("u_Color", color);
 
 		texture ? texture->BindTexture(0) : s_Data->QuadTexture->BindTexture(0);
 
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(0.0f, 0.0f, 1.0f)) * glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
+		Mat4 transform = glm::translate(Mat4(1.0f), position) * glm::rotate(Mat4(1.0f), rotation, Vec3f(0.0f, 0.0f, 1.0f)) * glm::scale(Mat4(1.0f), { size.x, size.y, 1.0f });
 		s_Data->QuadShader->SetMat4("u_Transform", transform);
 
 		vertexArray->Bind();
@@ -239,12 +239,12 @@ namespace longmarch {
 		vertexArray->Unbind();
 	}
 
-	void Renderer2D::DrawDebugQuad(const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color)
+	void Renderer2D::DrawDebugQuad(const Vec3f& position, const glm::vec2& scale, float rotation, const glm::vec4& color)
 	{
 		s_Data->QuadShader->SetFloat4("u_Color", color);
 		s_Data->QuadTexture->BindTexture(0);
 
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(0.0f, 0.0f, 1.0f)) * glm::scale(glm::mat4(1.0f), { scale.x, scale.y, 1.0f });
+		Mat4 transform = glm::translate(Mat4(1.0f), position) * glm::rotate(Mat4(1.0f), rotation, Vec3f(0.0f, 0.0f, 1.0f)) * glm::scale(Mat4(1.0f), { scale.x, scale.y, 1.0f });
 		s_Data->QuadShader->SetMat4("u_Transform", transform);
 		s_Data->FullScreenQuadVAO->Bind();
 		s_Data->FullScreenQuadVAO->SetIndexBuffer(s_Data->QuadIndexBuffer);
@@ -255,13 +255,13 @@ namespace longmarch {
 		s_Data->FullScreenQuadVAO->Unbind();
 	}
 
-	void Renderer2D::DrawSprite(const std::shared_ptr<VertexArray>& vertexArray, const glm::vec3& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture)
+	void Renderer2D::DrawSprite(const std::shared_ptr<VertexArray>& vertexArray, const Vec3f& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture)
 	{
 		s_Data->QuadShader->Bind();
 		s_Data->QuadShader->SetFloat4("u_Color", glm::vec4(1.0f));
 		texture->BindTexture(0);
 
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(0.0f, 0.0f, 1.0f)) * glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
+		Mat4 transform = glm::translate(Mat4(1.0f), position) * glm::rotate(Mat4(1.0f), rotation, Vec3f(0.0f, 0.0f, 1.0f)) * glm::scale(Mat4(1.0f), { size.x, size.y, 1.0f });
 		s_Data->QuadShader->SetMat4("u_Transform", transform);
 
 		vertexArray->Bind();
@@ -270,7 +270,7 @@ namespace longmarch {
 		vertexArray->Unbind();
 	}
 
-	void Renderer2D::DrawSprite(const std::shared_ptr<VertexArray>& vertexArray, const glm::vec3& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture, const std::string& shader)
+	void Renderer2D::DrawSprite(const std::shared_ptr<VertexArray>& vertexArray, const Vec3f& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture, const std::string& shader)
 	{
 		if (s_Data->ShaderMap.find(shader) == s_Data->ShaderMap.end())
 		{
@@ -279,7 +279,7 @@ namespace longmarch {
 		s_Data->QuadShader = s_Data->ShaderMap[shader];
 		s_Data->QuadShader->Bind();
 		s_Data->QuadShader->SetFloat4("u_Color", glm::vec4(1.0f));
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(0.0f, 0.0f, 1.0f)) * glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
+		Mat4 transform = glm::translate(Mat4(1.0f), position) * glm::rotate(Mat4(1.0f), rotation, Vec3f(0.0f, 0.0f, 1.0f)) * glm::scale(Mat4(1.0f), { size.x, size.y, 1.0f });
 		s_Data->QuadShader->SetMat4("u_Transform", transform);
 		texture->BindTexture(0);
 		vertexArray->Bind();
@@ -287,7 +287,7 @@ namespace longmarch {
 		RenderCommand::DrawTriangleIndexed(vertexArray);
 		vertexArray->Unbind();
 	}
-	void Renderer2D::DrawSprite(const std::shared_ptr<VertexArray>& vertexArray, const glm::vec3& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture, const std::string& shader, float alpha)
+	void Renderer2D::DrawSprite(const std::shared_ptr<VertexArray>& vertexArray, const Vec3f& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture, const std::string& shader, float alpha)
 	{
 		if (s_Data->ShaderMap.find(shader) == s_Data->ShaderMap.end())
 		{
@@ -296,7 +296,7 @@ namespace longmarch {
 		s_Data->QuadShader = s_Data->ShaderMap[shader];
 		s_Data->QuadShader->Bind();
 		s_Data->QuadShader->SetFloat4("u_Color", glm::vec4(1, 1, 1, alpha));
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(0.0f, 0.0f, 1.0f)) * glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
+		Mat4 transform = glm::translate(Mat4(1.0f), position) * glm::rotate(Mat4(1.0f), rotation, Vec3f(0.0f, 0.0f, 1.0f)) * glm::scale(Mat4(1.0f), { size.x, size.y, 1.0f });
 		s_Data->QuadShader->SetMat4("u_Transform", transform);
 		texture->BindTexture(0);
 		vertexArray->Bind();
@@ -310,7 +310,7 @@ namespace longmarch {
 		s_BatchData->cam = camera;
 		s_BatchData->BatchShader->Bind();
 		s_BatchData->BatchShader->SetMat4("u_ViewProjection", s_BatchData->cam.GetViewProjectionMatrix());
-		s_BatchData->BatchShader->SetMat4("u_Transform", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f)));
+		s_BatchData->BatchShader->SetMat4("u_Transform", glm::translate(Mat4(1.0f), Vec3f(0.0f)));
 		s_BatchData->BatchBufferPtr = s_BatchData->BatchBuffer;
 	}
 
@@ -321,7 +321,7 @@ namespace longmarch {
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size, s_BatchData->BatchBuffer);
 	}
 
-	void Renderer2D::AddBatch(const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const std::vector<glm::vec3>& vertexData, const std::vector<glm::vec2>& texCoord, const std::shared_ptr<Texture2D>& texture)
+	void Renderer2D::AddBatch(const Vec3f& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const std::vector<Vec3f>& vertexData, const std::vector<glm::vec2>& texCoord, const std::shared_ptr<Texture2D>& texture)
 	{
 		if (texture)
 		{
@@ -376,10 +376,10 @@ namespace longmarch {
 		if (!vertexData.size())
 		{
 			s_BatchData->VertexData = {
-				glm::vec3(-0.5f, -0.5f, 0.0f),
-				glm::vec3(0.5f, -0.5f, 0.0f),
-				glm::vec3(0.5f,  0.5f, 0.0f),
-				glm::vec3(-0.5f,  0.5f, 0.0f)
+				Vec3f(-0.5f, -0.5f, 0.0f),
+				Vec3f(0.5f, -0.5f, 0.0f),
+				Vec3f(0.5f,  0.5f, 0.0f),
+				Vec3f(-0.5f,  0.5f, 0.0f)
 			};
 		}
 		else
@@ -401,7 +401,7 @@ namespace longmarch {
 			s_BatchData->TexCoord = texCoord;
 		}
 
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(0.0f, 0.0f, 1.0f)) * glm::scale(glm::mat4(1.0f), { scale.x, scale.y, 1.0f });
+		Mat4 transform = glm::translate(Mat4(1.0f), position) * glm::rotate(Mat4(1.0f), rotation, Vec3f(0.0f, 0.0f, 1.0f)) * glm::scale(Mat4(1.0f), { scale.x, scale.y, 1.0f });
 
 		pos = transform * glm::vec4(s_BatchData->VertexData[0], 1.0f);
 		s_BatchData->BatchBufferPtr->Position = { pos.x, pos.y, pos.z };

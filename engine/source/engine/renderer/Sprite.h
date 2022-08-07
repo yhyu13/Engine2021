@@ -18,7 +18,7 @@ namespace longmarch {
 		void Draw();
 		void DrawInternal(const glm::vec2& rect, const glm::vec2& texCoord, const glm::vec2& texCoordOffset);
 
-		void SetSpritePosition(const glm::vec3& pos);
+		void SetSpritePosition(const Vec3f& pos);
 		void SetSpriteTexture(const std::shared_ptr<Texture2D>& texture2D);
 
 		uint32_t GetTextureWidth() const;
@@ -47,7 +47,7 @@ namespace longmarch {
 		std::shared_ptr<VertexArray> m_SpriteVertexArray = nullptr;
 		std::shared_ptr<VertexBuffer> m_SpriteVertexBuffer = nullptr;
 		std::vector<float> m_Vertices;
-		glm::vec3 m_Position;
+		Vec3f m_Position;
 		uint32_t m_SpriteWidth, m_SpriteHeight;
 		uint32_t m_SpriteX, m_SpriteY;
 		glm::vec2 m_Scale;
@@ -56,7 +56,7 @@ namespace longmarch {
 		float_t m_alpha;
 		bool m_init;
 
-		std::vector<glm::vec3> m_VertexData;
+		std::vector<Vec3f> m_VertexData;
 		std::vector<glm::vec2> m_TexCoord;
 	};
 }

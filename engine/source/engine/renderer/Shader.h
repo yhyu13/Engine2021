@@ -16,12 +16,12 @@ namespace longmarch
 		virtual void SetInt(const std::string& name, int value) = 0;
 		virtual void SetFloat(const std::string& name, float value) = 0;
 		virtual void SetMat3(const std::string& name, const glm::mat3& matrix) = 0;
-		virtual void SetMat4(const std::string& name, const glm::mat4& matrix) = 0;
+		virtual void SetMat4(const std::string& name, const Mat4& matrix) = 0;
 		virtual void SetFloat2(const std::string& name, const glm::vec2& value) = 0;
-		virtual void SetFloat3(const std::string& name, const glm::vec3& value) = 0;
+		virtual void SetFloat3(const std::string& name, const Vec3f& value) = 0;
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) = 0;
 		virtual void SetIntV(const std::string& name, int count, const int* value) = 0;
-		virtual void SetFloat3V(const std::string& name, int count, const glm::vec3* value) = 0;
+		virtual void SetFloat3V(const std::string& name, int count, const Vec3f* value) = 0;
 
 		virtual uint32_t GetShaderID() = 0;
 

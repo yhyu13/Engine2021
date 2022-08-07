@@ -65,9 +65,9 @@ namespace longmarch
 
         //virtual void InsertObject(const std::shared_ptr<RigidBody>& ptr) = 0;
 
-        //void InsertObject(std::shared_ptr<RigidBody>, glm::vec3& pos, double radius);
+        //void InsertObject(std::shared_ptr<RigidBody>, Vec3f& pos, double radius);
 
-        //void InsertObject(size_t objectID, glm::vec3& lowerBound, glm::vec3& upperBound);
+        //void InsertObject(size_t objectID, Vec3f& lowerBound, Vec3f& upperBound);
 
         virtual int GetNumObjects() = 0;
 
@@ -78,9 +78,9 @@ namespace longmarch
         // Update object if it moves outside its enclosing shape
         //virtual bool UpdateObject(const std::shared_ptr<RigidBody>& ptr) = 0;
 
-        //bool UpdateObject(size_t id, glm::vec3& pos, double radius, bool alwaysReinsert = false);
+        //bool UpdateObject(size_t id, Vec3f& pos, double radius, bool alwaysReinsert = false);
 
-        //bool UpdateObject(size_t id, glm::vec3& lowerBound, glm::vec3& upperBound, bool alwaysReinsert = false);
+        //bool UpdateObject(size_t id, Vec3f& lowerBound, Vec3f& upperBound, bool alwaysReinsert = false);
 
         // Query the tree to find intersecting objects
         virtual std::vector<std::shared_ptr<RigidBody>> Query(const std::shared_ptr<RigidBody>& ptr) = 0;
@@ -148,7 +148,7 @@ namespace longmarch
         void RemoveAllObjects();
 
         // Update object if it moves outside its fattened AABB
-        //bool UpdateObject(size_t id, glm::vec3& pos, double radius, bool alwaysReinsert = false);
+        //bool UpdateObject(size_t id, Vec3f& pos, double radius, bool alwaysReinsert = false);
 
         bool UpdateObject(const std::shared_ptr<RigidBody>& ptr, bool alwaysReInsert = false);
 

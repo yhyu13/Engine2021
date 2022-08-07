@@ -655,7 +655,7 @@ namespace longmarch
 	}
 }
 
-std::ostream& operator<<(std::ostream& o, const glm::mat4& n)
+std::ostream& operator<<(std::ostream& o, const Mat4& n)
 {
 	o.precision(3);
 	o << '\n';
@@ -683,7 +683,7 @@ std::ostream& operator<<(std::ostream& o, const glm::vec4& n)
 	return o;
 }
 
-std::ostream& operator<<(std::ostream& o, const glm::vec3& n)
+std::ostream& operator<<(std::ostream& o, const Vec3f& n)
 {
 	o.precision(3);
 	o << "(" << n.x << "," << n.y << "," << n.z << ") ";

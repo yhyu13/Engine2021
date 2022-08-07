@@ -18,11 +18,11 @@ namespace longmarch
 		float GetAspectRatio() const { return m_AspectRatio; }
 		void SetAspectRatio(float aspectRatio) { m_AspectRatio = aspectRatio; }
 		void SetZoomLevel(float level) { m_ZoomLevel = level; }
-		void SetPosition(const glm::vec3& pos) { m_CameraPosition = pos; }
-		const glm::vec3& GetPosition() const { return m_CameraPosition; }
+		void SetPosition(const Vec3f& pos) { m_CameraPosition = pos; }
+		const Vec3f& GetPosition() const { return m_CameraPosition; }
 	private:
 		OrthographicCamera m_Camera;
-		glm::vec3 m_CameraPosition = { 0.0f, 0.0f, 0.0f };
+		Vec3f m_CameraPosition = { 0.0f, 0.0f, 0.0f };
 		float m_CameraRotation = 0.0f;
 		float m_CameraMoveSpeed = 5.0f;
 		float m_CameraRotationSpeed = PI;

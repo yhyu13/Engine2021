@@ -216,7 +216,7 @@ namespace longmarch
 		UploadUniformMat3(name, matrix);
 	}
 
-	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& matrix)
+	void OpenGLShader::SetMat4(const std::string& name, const Mat4& matrix)
 	{
 		UploadUniformMat4(name, matrix);
 	}
@@ -226,7 +226,7 @@ namespace longmarch
 		UploadUniformFloat2(name, value);
 	}
 
-	void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& value)
+	void OpenGLShader::SetFloat3(const std::string& name, const Vec3f& value)
 	{
 		UploadUniformFloat3(name, value);
 	}
@@ -241,7 +241,7 @@ namespace longmarch
 		UploadUniformIntV(name, count, value);
 	}
 
-	void OpenGLShader::SetFloat3V(const std::string& name, int count, const glm::vec3* value)
+	void OpenGLShader::SetFloat3V(const std::string& name, int count, const Vec3f* value)
 	{
 		UploadUniformFloat3V(name, count, value);
 	}
@@ -273,7 +273,7 @@ namespace longmarch
 		}
 	}
 
-	void OpenGLShader::UploadUniformFloat3(const std::string& name, const glm::vec3& value)
+	void OpenGLShader::UploadUniformFloat3(const std::string& name, const Vec3f& value)
 	{
 		GLint location = GetUniformLocationCached(name);
 		if (location != -1)
@@ -300,7 +300,7 @@ namespace longmarch
 		}
 	}
 
-	void OpenGLShader::UploadUniformFloat3V(const std::string& name, int count, const glm::vec3* value)
+	void OpenGLShader::UploadUniformFloat3V(const std::string& name, int count, const Vec3f* value)
 	{
 		GLint location = GetUniformLocationCached(name);
 		if (location != -1)
@@ -318,7 +318,7 @@ namespace longmarch
 		}
 	}
 
-	void OpenGLShader::UploadUniformMat4(const std::string& name, const glm::mat4& matrix)
+	void OpenGLShader::UploadUniformMat4(const std::string& name, const Mat4& matrix)
 	{
 		GLint location = GetUniformLocationCached(name);
 		if (location != -1)

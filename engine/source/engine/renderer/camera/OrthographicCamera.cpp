@@ -20,7 +20,7 @@ namespace longmarch {
 
 	 void OrthographicCamera::RecalculateViewMatrix()
 	 {
-		 glm::mat4 transform = Geommath::ToTranslateMatrix(m_Position) * glm::rotate(glm::mat4(1.0f), (m_Rotation * DEG2RAD), glm::vec3(0,0,1));
+		 Mat4 transform = Geommath::ToTranslateMatrix(m_Position) * glm::rotate(Mat4(1.0f), (m_Rotation * DEG2RAD), Vec3f(0,0,1));
 		 m_ViewMatrix = Geommath::SmartInverse(transform);
 	 }
 }

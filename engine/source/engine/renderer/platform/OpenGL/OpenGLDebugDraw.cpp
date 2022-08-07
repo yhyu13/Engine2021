@@ -40,7 +40,7 @@ namespace longmarch {
 		glDeleteBuffers(1, &s_DebugDrawProps->VBO);
 	}
 
-	void OpenGLDebugDraw::DrawLine(const glm::vec3& fromPosition, const glm::vec3& toPosition, glm::vec3 color, float lineWidth)
+	void OpenGLDebugDraw::DrawLine(const Vec3f& fromPosition, const Vec3f& toPosition, Vec3f color, float lineWidth)
 	{
 		s_DebugDrawProps->DebugShader->Bind();
 		s_DebugDrawProps->DebugShader->SetFloat4("u_Color", glm::vec4(color, 1.0f));
@@ -61,7 +61,7 @@ namespace longmarch {
 		glLineWidth(1.0f);
 	}
 
-	void OpenGLDebugDraw::DrawCircle(const glm::vec3& centerPosition, float radius, glm::vec3 color)
+	void OpenGLDebugDraw::DrawCircle(const Vec3f& centerPosition, float radius, Vec3f color)
 	{
 		const int numVertices = 37;
 
@@ -97,7 +97,7 @@ namespace longmarch {
 		glBindVertexArray(0);
 	}
 
-	void OpenGLDebugDraw::DrawAABB(const glm::vec3& position, const glm::vec2& size, float rotation, glm::vec3& color)
+	void OpenGLDebugDraw::DrawAABB(const Vec3f& position, const glm::vec2& size, float rotation, Vec3f& color)
 	{
 		Renderer2D::DrawDebugQuad(position, size, rotation, glm::vec4(color, 1.0f));
 	}

@@ -7,7 +7,6 @@
 
 namespace longmarch
 {
-#define MULTITHREAD_PRE_RENDER_UPDATE
 
 	class Scene3DComSys final : public BaseComponentSystem 
 	{
@@ -53,10 +52,8 @@ namespace longmarch
 		};
 		VFCParam m_vfcParam;
 		DistanceCParam m_distanceCParam;
-		std::string m_RenderShaderName = { "" };
+		std::string m_RenderShaderName;
 		bool m_enableDebugDraw{ true };
-#ifdef MULTITHREAD_PRE_RENDER_UPDATE
 		AtomicQueueNC<std::shared_future<void>> m_threadJob;
-#endif
 	};
 }

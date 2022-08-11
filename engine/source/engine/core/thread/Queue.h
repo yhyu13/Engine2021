@@ -143,8 +143,8 @@ namespace longmarch
         }
 
     private:
-        CACHE_ALIGN mutable std::mutex m_mutex;
-        CACHE_ALIGN std::condition_variable m_ready;
+        mutable std::mutex m_mutex;
+        std::condition_variable m_ready;
         std::queue<T> m_queue;
         bool m_done = false;
     };

@@ -2,6 +2,8 @@
 #include "../EngineCore.h"
 #include <atomic>
 
+#define PADDING 0
+
 namespace longmarch
 {
     // used in stbi image parallel read/write
@@ -94,8 +96,10 @@ namespace longmarch
     protected:
         mutable std::atomic_flag nc_flag;
     private:
+#if PADDING
         // yuhang : use byte padding instead of CACHE_ALIGN specifier so that inherited class is not affected by this alignment
         std::byte COMBINE(__PADDING_, __LINE__)[PLATFORM_CACHE_LINE - sizeof(std::atomic_flag)];
+#endif
     };
 
     // 1. It is a base class for all atomic copyable classes. The lock state is not copied.
@@ -133,8 +137,10 @@ namespace longmarch
     protected:
         mutable std::atomic_flag m_flag;
     private:
+#if PADDING
         // yuhang : use byte padding instead of CACHE_ALIGN specifier so that inherited class is not affected by this alignment
         std::byte COMBINE(__PADDING_, __LINE__)[PLATFORM_CACHE_LINE - sizeof(std::atomic_flag)];
+#endif
     };
 
     
@@ -163,8 +169,12 @@ namespace longmarch
         mutable int64_t nc_period_nano{2000ull};
 
     private:
+#if PADDING
         // yuhang : use byte padding instead of CACHE_ALIGN specifier so that inherited class is not affected by this alignment
         // yuhang : std::mutex is usually larger than 64 bytes. Need double check its size with cache line size
         std::byte COMBINE(__PADDING_, __LINE__)[((sizeof(std::mutex) > PLATFORM_CACHE_LINE) ? 2 * PLATFORM_CACHE_LINE : PLATFORM_CACHE_LINE) - sizeof(std::mutex) - sizeof(std::int64_t)];
+#endif
     };
 }
+
+#undef PADDING

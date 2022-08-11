@@ -34,19 +34,20 @@ longmarch::atomic_flag_guard::atomic_flag_guard(std::atomic_flag& flag) noexcept
     m_lock(&flag)
 {
     SET_DEADLOCK_TIMER();
-    int32_t spin_count = SPIN_COUNT;
     while (m_lock->test_and_set(std::memory_order_acq_rel))
     {
+        int32_t spin_count = SPIN_COUNT;
         do
         {
             THREAD_PAUSE();
         }
-        while (m_lock->test(std::memory_order_relaxed) && --spin_count);
-        if (!spin_count)
+        while (m_lock->test_and_set(std::memory_order_acq_rel) && --spin_count);
+        if (spin_count)
         {
-            THREAD_YIELD();
+            break;
         }
         ASSERT_DEADLOCK_TIMER();
+        THREAD_YIELD();
     }
 }
 
@@ -86,19 +87,20 @@ longmarch::adaptive_atomic_guard::~adaptive_atomic_guard() noexcept
 void longmarch::BaseAtomicClassStatic::LockS() noexcept
 {
     SET_DEADLOCK_TIMER();
-    int32_t spin_count = SPIN_COUNT;
     while (sc_flag.test_and_set(std::memory_order_acq_rel))
     {
+        int32_t spin_count = SPIN_COUNT;
         do
         {
             THREAD_PAUSE();
         }
-        while (sc_flag.test(std::memory_order_relaxed) && --spin_count);
-        if (!spin_count)
+        while (sc_flag.test_and_set(std::memory_order_acq_rel) && --spin_count);
+        if (spin_count)
         {
-            THREAD_YIELD();
+            break;
         }
         ASSERT_DEADLOCK_TIMER();
+        THREAD_YIELD();
     }
 }
 
@@ -110,19 +112,20 @@ void longmarch::BaseAtomicClassStatic::UnLockS() noexcept
 void longmarch::BaseAtomicClassNI::LockNI() noexcept
 {
     SET_DEADLOCK_TIMER();
-    int32_t spin_count = SPIN_COUNT;
     while (ni_flag.test_and_set(std::memory_order_acq_rel))
     {
+        int32_t spin_count = SPIN_COUNT;
         do
         {
             THREAD_PAUSE();
         }
-        while (ni_flag.test(std::memory_order_relaxed) && --spin_count);
-        if (!spin_count)
+        while (ni_flag.test_and_set(std::memory_order_acq_rel) && --spin_count);
+        if (spin_count)
         {
-            THREAD_YIELD();
+            break;
         }
         ASSERT_DEADLOCK_TIMER();
+        THREAD_YIELD();
     }
 }
 
@@ -134,19 +137,20 @@ void longmarch::BaseAtomicClassNI::UnLockNI() noexcept
 void longmarch::BaseAtomicClassNC::LockNC() const noexcept
 {
     SET_DEADLOCK_TIMER();
-    int32_t spin_count = SPIN_COUNT;
     while (nc_flag.test_and_set(std::memory_order_acq_rel))
     {
+        int32_t spin_count = SPIN_COUNT;
         do
         {
             THREAD_PAUSE();
         }
-        while (nc_flag.test(std::memory_order_relaxed) && --spin_count);
-        if (!spin_count)
+        while (nc_flag.test_and_set(std::memory_order_acq_rel) && --spin_count);
+        if (spin_count)
         {
-            THREAD_YIELD();
+            break;
         }
         ASSERT_DEADLOCK_TIMER();
+        THREAD_YIELD();
     }
 }
 
@@ -158,19 +162,20 @@ void longmarch::BaseAtomicClassNC::UnLockNC() const noexcept
 void longmarch::BaseAtomicClass::Lock() const noexcept
 {
     SET_DEADLOCK_TIMER();
-    int32_t spin_count = SPIN_COUNT;
     while (m_flag.test_and_set(std::memory_order_acq_rel))
     {
+        int32_t spin_count = SPIN_COUNT;
         do
         {
             THREAD_PAUSE();
         }
-        while (m_flag.test(std::memory_order_relaxed) && --spin_count);
-        if (!spin_count)
+        while (m_flag.test_and_set(std::memory_order_acq_rel) && --spin_count);
+        if (spin_count)
         {
-            THREAD_YIELD();
+            break;
         }
         ASSERT_DEADLOCK_TIMER();
+        THREAD_YIELD();
     }
 }
 

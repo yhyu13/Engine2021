@@ -3,6 +3,8 @@
 #include "engine/ecs/header/header.h"
 #include "engine/core/thread/StealThreadPool.h"
 
+#define MULTITHREAD_PRE_RENDER_UPDATE 1
+
 longmarch::Scene3DComSys::Scene3DComSys()
 {
 	m_systemSignature.AddComponent<Transform3DCom>();
@@ -181,7 +183,7 @@ void longmarch::Scene3DComSys::PrepareScene(double dt)
 			}
 			if (auto childrenCom = GetComponent<ChildrenCom>(child).GetPtr(); !childrenCom->IsLeaf())
 			{
-#ifdef MULTITHREAD_PRE_RENDER_UPDATE
+#if MULTITHREAD_PRE_RENDER_UPDATE == 1
 				m_threadJob.push(std::move(StealThreadPool::GetInstance()->enqueue_task([this, dt, child, trans, childrenCom]() {RecursivePrepareScene(dt, child, trans, childrenCom, 0); }).share()));
 #else
 				RecursivePrepareScene(dt, child, trans, childrenCom, 0);
@@ -189,7 +191,7 @@ void longmarch::Scene3DComSys::PrepareScene(double dt)
 			}
 		}
 	}
-#ifdef MULTITHREAD_PRE_RENDER_UPDATE
+#if MULTITHREAD_PRE_RENDER_UPDATE == 1
 	while (!m_threadJob.empty())
 	{
 		m_threadJob.front().wait();
@@ -223,7 +225,7 @@ void longmarch::Scene3DComSys::RecursivePrepareScene(double dt, const Entity& pa
 		}
 		if (auto childrenCom = GetComponent<ChildrenCom>(child).GetPtr(); !childrenCom->IsLeaf())
 		{
-#ifdef MULTITHREAD_PRE_RENDER_UPDATE
+#if MULTITHREAD_PRE_RENDER_UPDATE == 1
 			m_threadJob.push(std::move(StealThreadPool::GetInstance()->enqueue_task([this, dt, child, trans, childrenCom, level]() {RecursivePrepareScene(dt, child, trans, childrenCom, level + 1); }).share()));
 #else
 			RecursivePrepareScene(dt, child, trans, childrenCom, level + 1);
@@ -395,11 +397,11 @@ bool longmarch::Scene3DComSys::ViewFustrumCullingTest(const std::shared_ptr<Shap
 
 bool longmarch::Scene3DComSys::DistanceCullingTest(const std::shared_ptr<Shape>& BoudingVolume)
 {
-	if (!m_distanceCParam.enableDistanceCulling)
+	if (!m_distanceCParam.enableDistanceCulling) [[unlikely]]
 	{
 		return false;
 	}
-	else
+	else [[likely]]
 	{
 		return BoudingVolume->DistanceTest(m_distanceCParam.center, m_distanceCParam.Near, m_distanceCParam.Far);
 	}

@@ -91,38 +91,40 @@ namespace longmarch
             }
 
             SET_DEADLOCK_TIMER();
-            int32_t spin_count = SPIN_COUNT;
 #if USE_ATOMIC_RIVAL_PTR
             RivalGroup* temp = nullptr;
             while (!m_currentGroupPtr.compare_exchange_weak(temp, groupPtr) && temp != groupPtr)
             {
+                int32_t spin_count = SPIN_COUNT;
                 do
                 {
                     temp = nullptr;
                     THREAD_PAUSE();
                 } while ((!m_currentGroupPtr.compare_exchange_weak(temp, groupPtr) && temp != groupPtr) && --spin_count);
-                if (!spin_count)
+                if (spin_count)
                 {
-                    temp = nullptr;
-                    THREAD_YIELD();
+                    break;
                 }
                 ASSERT_DEADLOCK_TIMER();
+                temp = nullptr;
+                THREAD_YIELD();
             }
 #else
             auto _address = (void**)&m_currentGroupPtr;
-
             // TODO @yuhang : InterlockedCompareExchangePointer is limited to windows platform, implement a generic platform interface for this
             while (InterlockedCompareExchangePointer(_address, groupPtr, nullptr) != groupPtr)
             {
+                int32_t spin_count = SPIN_COUNT;
                 do
                 {
                     THREAD_PAUSE();
                 } while ((InterlockedCompareExchangePointer(_address, groupPtr, nullptr) != groupPtr) && --spin_count);
-                if (!spin_count)
+                if (spin_count)
                 {
-                    THREAD_YIELD();
+                    break;
                 }
                 ASSERT_DEADLOCK_TIMER();
+                THREAD_YIELD();
             }
 #endif
             ++m_programCounter;
@@ -138,13 +140,13 @@ namespace longmarch
         }
 
     private:
+        RivalGroup m_groups[NUM_GROUPS];
 #if USE_ATOMIC_RIVAL_PTR
         CACHE_ALIGN std:atomic<RivalGroup*> m_currentGroupPtr{nullptr};
 #else
         CACHE_ALIGN volatile RivalGroup* m_currentGroupPtr{nullptr};
 #endif
-        CACHE_ALIGN std::atomic_uint_fast32_t m_programCounter{0};
-        RivalGroup m_groups[NUM_GROUPS];
+        std::atomic_int_fast32_t m_programCounter{0};
     };
 
     template <int _NUM_GROUPS_>

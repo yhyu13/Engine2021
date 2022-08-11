@@ -5,7 +5,7 @@
 namespace longmarch
 {
     /* Data class of LIfe Time */
-    struct CACHE_ALIGN ActiveCom final : public BaseComponent<ActiveCom>
+    struct MS_ALIGN8 ActiveCom final : public BaseComponent<ActiveCom>
     {
         ActiveCom() = default;
 

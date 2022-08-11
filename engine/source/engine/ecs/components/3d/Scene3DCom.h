@@ -12,7 +12,7 @@ namespace longmarch
     struct Animation3DCom;
 
     /* Data class of mesh, material */
-    struct CACHE_ALIGN Scene3DCom final : public BaseComponent<Scene3DCom>
+    struct MS_ALIGN8 Scene3DCom final : public BaseComponent<Scene3DCom>
     {
         using SceneDataRef = std::shared_ptr<Scene3DNode>;
 

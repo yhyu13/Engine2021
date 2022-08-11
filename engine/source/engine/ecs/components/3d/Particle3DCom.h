@@ -9,7 +9,7 @@
 
 namespace longmarch
 {
-	struct CACHE_ALIGN Particle3DCom final : public BaseComponent<Particle3DCom>
+	struct MS_ALIGN8 Particle3DCom final : public BaseComponent<Particle3DCom>
 	{
 		Particle3DCom() = default;
 		explicit Particle3DCom(const EntityDecorator& _this);

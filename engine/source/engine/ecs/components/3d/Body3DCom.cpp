@@ -8,7 +8,7 @@ longmarch::Body3DCom::Body3DCom(const Entity& e)
 {
 }
 
-std::shared_ptr<Shape> longmarch::Body3DCom::GetBoundingVolume() const
+const std::shared_ptr<Shape>& longmarch::Body3DCom::GetBoundingVolume() const
 {
 	LOCK_GUARD();
 	return m_boundingVolume;

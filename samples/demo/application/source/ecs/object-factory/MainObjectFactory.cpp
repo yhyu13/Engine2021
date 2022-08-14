@@ -15,7 +15,7 @@ longmarch::MainObjectFactory::MainObjectFactory()
 
 	const LongMarch_Vector<std::string> components{
 	};
-	std::move(components.begin(), components.end(), std::back_inserter(m_ComponentNameList));
+	std::ranges::move(components.begin(), components.end(), std::back_inserter(m_ComponentNameList));
 
 	const LongMarch_Vector<std::string> componentSys{
 		"EditorCameraControllerComSys",
@@ -25,7 +25,7 @@ longmarch::MainObjectFactory::MainObjectFactory()
 		"AIControllerComSys",
 		"Particle3DComSys",
 	};
-	std::move(componentSys.begin(), componentSys.end(), std::back_inserter(m_ComponentSystemNameList));
+	std::ranges::move(componentSys.begin(), componentSys.end(), std::back_inserter(m_ComponentSystemNameList));
 }
 
 BaseComponentInterface* longmarch::MainObjectFactory::AddComponentByName(const std::string& com_type, EntityDecorator e) const

@@ -36,6 +36,9 @@ namespace longmarch
 			case 1:
 				// Vulkan context
 				break;
+			default:
+				throw NotImplementedException();
+				break;
 			}
 		}
 	}
@@ -385,6 +388,9 @@ namespace longmarch
 			// Vulkan context
 			m_windowProperties.m_context = VulkanContext::Create(m_window);
 			m_windowProperties.m_context->Init();
+			break;
+		default:
+			throw NotImplementedException();
 			break;
 		}
 

@@ -54,7 +54,7 @@ namespace replacement
 #define RAD2DEG 57.2957795131f
 #endif // !PI
 //
-#define RAND_SEED_SET_TIME {replacement::srand((unsigned int)std::time(NULL));};
+#define RAND_SEED_SET_TIME() do {replacement::srand((unsigned int)std::time(NULL));} while(0)
 #define RAND_I(LO, HI) int(LO) + int(replacement::rand()) / (int(int(RAND_MAX) / (int(HI) - int(LO))))
 #define RAND_F(LO, HI) float(LO) + float(replacement::rand()) / (float(float(RAND_MAX) / (float(HI) - float(LO))))
 #define IN_RANGE(a, x, y) (a >= x && a <= y)

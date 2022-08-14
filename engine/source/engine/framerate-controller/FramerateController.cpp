@@ -44,27 +44,19 @@ namespace longmarch
             {
                 while (m_targetFrameTimeMilli - m_tickEnd > static_cast<double>(k))
                 {
-                    std::this_thread::sleep_for(std::chrono::milliseconds{k - 1});
+                    std::this_thread::sleep_for(std::chrono::milliseconds{k-1});
                     m_tickEnd = m_timer.Mark<std::milli, double>();
                 }
             }
         }
 
         // 2. thread yield has roughly +/- 30 microsecond accuracy, it could work as a more accurate sleep function at fine grain.
-        while (m_tickEnd < m_targetFrameTimeMilli * .99)
+        while (m_tickEnd < m_targetFrameTimeMilli * .995)
         {
             std::this_thread::yield();
             m_tickEnd = m_timer.Mark<std::milli, double>();
         }
 
-        // 3. busy wait
-        do
-        {
-            m_tickEnd = m_timer.Mark<std::milli, double>();
-        }
-        while (m_tickEnd < m_targetFrameTimeMilli * .9999);
-
-        m_frameTimeSec = m_tickEnd * 1e-3; // converting milliseconds to seconds
 
 #ifndef _SHIPPING
         Instrumentor::GetEngineInstance()->AddInstrumentorResult({"Frame Time", m_tickEnd, "ms"});
@@ -72,6 +64,15 @@ namespace longmarch
         Instrumentor::GetApplicationInstance()->AddInstrumentorResult({"Frame Time", m_tickEnd, "ms"});
         Instrumentor::GetApplicationInstance()->AddInstrumentorResult({"FPS", 1.0 / m_frameTimeSec, "  "});
 #endif
+
+        // 3. busy wait
+        do
+        {
+            m_tickEnd = m_timer.Mark<std::milli, double>();
+        }
+        while (m_tickEnd < m_targetFrameTimeMilli * .99995);
+
+        m_frameTimeSec = m_tickEnd * 1e-3; // converting milliseconds to seconds
     }
 
     const double FramerateController::GetFrameTime() const

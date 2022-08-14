@@ -59,7 +59,7 @@ namespace longmarch
             auto task = std::make_shared<task_type>(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
             auto result = task->get_future();
             auto work = [task = std::move(task)]() { (*task)(); };
-            const auto i = (m_index = ++m_index % m_count);
+            const auto i = (m_index.fetch_add(1, std::memory_order_relaxed) % m_count);
 
             for (auto n(0u); n < m_count * K; ++n)
             {

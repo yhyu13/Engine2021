@@ -1,7 +1,7 @@
 #pragma once
 #include "MathUtil.h"
 
-#define GLM_FORCE_MESSAGES
+//#define GLM_FORCE_MESSAGES
 #define GLM_FORCE_CXX2A
 #define GLM_FORCE_CTOR_INIT
 #define GLM_FORCE_AVX2
@@ -186,7 +186,12 @@ namespace longmarch
             return glm::clamp(v, lower, higher);
         }
 
-        static Vec3f Lerp(const Vec3f& v1, const Vec3f& v2, float dt);
+        template <typename T>
+        static auto Lerp(const T& v1, const T& v2, float dt)
+        {
+            dt = glm::clamp(dt, 0.0f, 1.0f);
+            return (1.0f - dt) * v1 + dt * v2;
+        }
 
         static Vec3f Normalize(const Vec3f& v);
 

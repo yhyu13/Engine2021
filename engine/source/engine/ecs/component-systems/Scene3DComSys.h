@@ -17,7 +17,7 @@ namespace longmarch
 		Scene3DComSys();
 		//! Prepare lights and scene rendering data in pre-render phase
 		virtual void PreRenderUpdate(double dt) override;
-		virtual void Render();
+		virtual void Render() override;
 		
 		void RenderOpaqueObj(); 
 		void RenderTransparentObj();
@@ -28,7 +28,7 @@ namespace longmarch
 
 	private:
 		void PrepareScene(double dt);
-		void RecursivePrepareScene(double dt, const Entity& parent, Transform3DCom* parentTr, ChildrenCom* childChildrenCom, unsigned int level);
+		void RecursivePrepareScene(double dt, const Entity& parent, Transform3DCom* parentTrCom, ChildrenCom* parentChildrenCom, unsigned int level);
 		void RenderWithModeOpaque(Renderer3D::RenderObj_CPU& renderObj);
 		void RenderWithModeTransparent(Renderer3D::RenderObj_CPU& renderObj);
 		void RenderWithModeParticle(Renderer3D::RenderObj_CPU& renderObj);

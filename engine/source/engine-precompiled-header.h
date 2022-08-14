@@ -2,7 +2,9 @@
 
 #if defined(WIN32) || defined(WINDOWS_APP)
 #define NOMINMAX // NOMINMAX for WINDOWS
-#define _ENABLE_EXTENDED_ALIGNED_STORAGE // VS2017 15.8 fix on aligned allocation (for phmap to work)
+    #if _MSC_VER >= 1500
+        #define _ENABLE_EXTENDED_ALIGNED_STORAGE // VS2017 15.8 fix on aligned allocation (for phmap to work)
+    #endif
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
@@ -41,7 +43,7 @@
 // Header-only externals are also included in the pch
 
 // GL Math
-#define GLM_FORCE_MESSAGES
+//#define GLM_FORCE_MESSAGES
 #define GLM_FORCE_CXX2A
 #define GLM_FORCE_CTOR_INIT
 #define GLM_FORCE_AVX2

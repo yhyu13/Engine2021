@@ -152,6 +152,7 @@ void longmarch::Scene3DCom::SetShouldDraw(bool b, bool _override)
 
 bool longmarch::Scene3DCom::GetShouldDraw() const
 {
+	LOCK_GUARD();
 	return m_shoudlDraw;
 }
 
@@ -166,7 +167,7 @@ void longmarch::Scene3DCom::Draw()
 			const auto& shaderName = m_shaderName;
 			Renderer3D::Draw(m_this, m_objDatasRef, trans->GetModelTr(), trans->GetPrevModelTr(), shaderName);
 		}
-		// Automatically retset the drawable flag on render completion (always set shouldDraw before Render)
+		// Automatically retset the drawable flag on render completion (always set shouldDraw before Draw)
 		m_shoudlDraw = true;
 	}
 }

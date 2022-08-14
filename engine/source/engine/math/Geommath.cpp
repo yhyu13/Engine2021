@@ -80,12 +80,6 @@ namespace longmarch
 	{
 		return glm::any(glm::isinf(v[0])) || glm::any(glm::isinf(v[1])) || glm::any(glm::isinf(v[2])) || glm::any(glm::isinf(v[3]));
 	}
-	Vec3f Geommath::Lerp(const Vec3f& v1, const Vec3f& v2, float dt)
-	{
-		dt = glm::clamp(dt, 0.0f, 1.0f);
-		auto _dt = 1.0f - dt;
-		return _dt * v1 + dt * v2;
-	}
 	Vec3f Geommath::Normalize(const Vec3f& v)
 	{
 		return glm::normalize(v);

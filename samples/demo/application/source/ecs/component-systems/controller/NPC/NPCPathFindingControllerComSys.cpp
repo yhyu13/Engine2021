@@ -206,7 +206,7 @@ void longmarch::NPCPathFindingControllerComSys::DebugDrawOriginalPath(PathMoverD
         auto mesh = rm->TryGet(meshName)->Get()->Copy();
         auto scene = debug_node.GetComponent<Scene3DCom>();
         scene->SetVisiable(true);
-        mesh->ModifyAllMaterial([&](Material* material)
+        mesh->ModifyAllMaterial([](Material* material)
         {
             material->Kd = Vec3f(0.85, 0.1, 0.1);
         });

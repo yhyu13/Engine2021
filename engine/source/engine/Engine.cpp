@@ -63,7 +63,7 @@ namespace longmarch
 			}
 			if (engineConfiguration["test"]["Reset-random-seed"].asBool())
 			{
-				RAND_SEED_SET_TIME;
+				RAND_SEED_SET_TIME();
 			}
 		}
 		// Engine updaters

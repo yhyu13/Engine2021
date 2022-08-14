@@ -37,7 +37,7 @@ namespace longmarch
 			m_boundingVolume = MemoryManager::Make_shared<Shape>(args...);
 		}
 
-		std::shared_ptr<Shape> GetBoundingVolume() const;
+		const std::shared_ptr<Shape>& GetBoundingVolume() const;
 
 		//void Integrate(float dt);
 		bool HasRigidBody() const;

@@ -9,7 +9,7 @@
 namespace longmarch
 {
 #ifndef EARLY_RETURN
-#define  EARLY_RETURN(dt) {if (!dt) return; }
+#define  EARLY_RETURN(dt) do { if (!(dt)) return; } while(0)
 #endif // !EARLY_RETURN
 
 #define RESERVE_SIZE 1

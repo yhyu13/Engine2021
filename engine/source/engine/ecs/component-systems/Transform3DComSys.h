@@ -7,44 +7,44 @@
 
 namespace longmarch
 {
-	class Transform3DComSys final : public BaseComponentSystem
-	{
-	public:
-		NONCOPYABLE(Transform3DComSys);
-		COMSYS_DEFAULT_COPY(Transform3DComSys);
+    class Transform3DComSys final : public BaseComponentSystem
+    {
+    public:
+        NONCOPYABLE(Transform3DComSys);
+        COMSYS_DEFAULT_COPY(Transform3DComSys);
 
-		Transform3DComSys()
-		{
-			m_systemSignature.AddComponent<Transform3DCom>();
-		}
+        Transform3DComSys()
+        {
+            m_systemSignature.AddComponent<Transform3DCom>();
+        }
 
-		virtual void PreRenderUpdate(double dt) override
-		{
-			ForEach(
-				[dt, this](EntityDecorator e)
-			{
+        virtual void PreRenderUpdate(double dt) override
+        {
+            ForEach(
+                [dt, this](EntityDecorator e)
+                {
 #ifdef DEBUG_DRAW
-				DebugDraw(e);
+                    DebugDraw(e);
 #endif
-			}
-			);
-		}
+                }
+            );
+        }
 
-		virtual void Update(double dt) override
-		{
-			EARLY_RETURN(dt);
-			ForEach(
-				[dt](EntityDecorator e)
-			{
-				e.GetComponent<Transform3DCom>()->Update(dt);
-			}
-			);
-		}
+        virtual void Update(double dt) override
+        {
+            EARLY_RETURN(dt);
+            ParEach(
+                [dt](EntityDecorator e)
+                {
+                    e.GetComponent<Transform3DCom>()->Update(dt);
+                }
+            ).wait();
+        }
 
 #ifdef DEBUG_DRAW
-	private:
-		//! Debug drawing for transform component
-		void DebugDraw(EntityDecorator e);
+    private:
+        //! Debug drawing for transform component
+        void DebugDraw(EntityDecorator e);
 #endif
-	};
+    };
 }

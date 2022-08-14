@@ -46,7 +46,7 @@ namespace longmarch
      * @author Hang Yu (yohan680919@gmail.com)
      */
     template <int _NUM_GROUPS_>
-    class RivalLock : private BaseAtomicClassNC
+    class RivalLock
     {
     public:
         static constexpr auto NUM_GROUPS = _NUM_GROUPS_;
@@ -76,17 +76,20 @@ namespace longmarch
             {
                 if (group == m_groups[i])
                 {
-                    groupPtr = &m_groups[i];
+                    groupPtr = m_groups + i;
                     break;
                 }
             }
 
+            if (m_currentGroupPtr == groupPtr)
             {
-                LOCK_GUARD_NC();
-                if (m_currentGroupPtr == groupPtr)
+                if (m_programCounter.fetch_add(1, std::memory_order_acq_rel) > 0)
                 {
-                    ++m_programCounter;
                     return;
+                }
+                else
+                {
+                    m_programCounter.fetch_add(-1, std::memory_order_relaxed);
                 }
             }
 
@@ -118,7 +121,8 @@ namespace longmarch
                 do
                 {
                     THREAD_PAUSE();
-                } while ((InterlockedCompareExchangePointer(_address, groupPtr, nullptr) != groupPtr) && --spin_count);
+                }
+                while ((InterlockedCompareExchangePointer(_address, groupPtr, nullptr) != groupPtr) && --spin_count);
                 if (spin_count)
                 {
                     break;
@@ -127,26 +131,25 @@ namespace longmarch
                 THREAD_YIELD();
             }
 #endif
-            ++m_programCounter;
+            m_programCounter.fetch_add(1, std::memory_order_relaxed);
         }
 
         void Unlock()
         {
-            LOCK_GUARD_NC();
-            if (--m_programCounter == 0)
+            if (m_programCounter.fetch_add(-1, std::memory_order_acq_rel) == 1)
             {
                 m_currentGroupPtr = nullptr;
             }
         }
 
     private:
-        RivalGroup m_groups[NUM_GROUPS];
 #if USE_ATOMIC_RIVAL_PTR
         CACHE_ALIGN std:atomic<RivalGroup*> m_currentGroupPtr{nullptr};
 #else
         CACHE_ALIGN volatile RivalGroup* m_currentGroupPtr{nullptr};
 #endif
         std::atomic_int_fast32_t m_programCounter{0};
+        RivalGroup m_groups[NUM_GROUPS];
     };
 
     template <int _NUM_GROUPS_>

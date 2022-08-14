@@ -572,6 +572,7 @@ void longmarch::GameWorld::ForEach(const LongMarch_Vector<Entity>& es,
                                    const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func)
 const
 {
+    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
     for (const auto& e : es)
     {
         if (auto activeCom = this->GetComponent<ActiveCom>(e); activeCom.Valid() && activeCom->IsActive())
@@ -617,7 +618,8 @@ void longmarch::GameWorld::_ParEach2(const LongMarch_Vector<Entity>& es,
 {
     try
     {
-        auto& pool = s_parEach2Pool;
+        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+        auto& pool = s_parEachJobPool;
         if (es.empty())
         {
             // Early return on empty entities

@@ -280,7 +280,7 @@ namespace longmarch
         inline static GameWorld* s_currentWorld = {nullptr};
 
         //! Multithreaded pool used in ParEach2 for inner function multithreading to avoid thread overflow stalling the default thread pool and the entire program
-        inline static StealThreadPool s_parEach2Pool;
+        inline static StealThreadPool s_parEachJobPool;
         constexpr static int s_parEachMinSplit{16};
 
         //! GameWorld class level job pool, used in running game thread in the background or any other async tasks

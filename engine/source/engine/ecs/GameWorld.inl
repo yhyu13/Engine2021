@@ -144,6 +144,7 @@ namespace longmarch
     inline void GameWorld::ForEach(
         const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func) const
     {
+        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
         for (const auto& e : EntityView<Components...>())
         {
             if (auto activeCom = this->GetComponent<ActiveCom>(e); activeCom.Valid() && activeCom->IsActive())
@@ -193,7 +194,8 @@ namespace longmarch
     {
         try
         {
-            auto& pool = s_parEach2Pool;
+            LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+            auto& pool = s_parEachJobPool;
             auto es = EntityView<Components...>();
             if (es.empty())
             {

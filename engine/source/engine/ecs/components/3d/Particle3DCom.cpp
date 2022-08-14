@@ -46,7 +46,7 @@ namespace longmarch
 				instanceData.textureOffsets.push_back(Vec4f{ particle.m_currentTextureOffset.xy, particle.m_nextTextureOffset.xy });
 				instanceData.blendFactors.push_back(particle.m_blendFactor);
 			}
-			m_instancedDataList.emplace_back(std::move(texture), std::move(instanceData));
+			m_instancedDataList.emplace_back(texture, std::move(instanceData));
 		}
 	}
 
@@ -183,22 +183,9 @@ namespace longmarch
 
 	Mat4 Particle3DCom::GetModelViewMatrix(const Particle3D& particle, const Mat4& viewMatrix)
 	{
-		const auto& view = viewMatrix;
-		Mat4 model(1.0f);
-		model[0][0] = view[0][0];
-		model[0][1] = view[1][0];
-		model[0][2] = view[2][0];
-
-		model[1][0] = view[0][1];
-		model[1][1] = view[1][1];
-		model[1][2] = view[2][1];
-
-		model[2][0] = view[0][2];
-		model[2][1] = view[1][2];
-		model[2][2] = view[2][2];
-
+		Mat4 model;
 		Geommath::SetTranslation(model, particle.m_position);
-		model = view * model;
+		model[3] = std::move(viewMatrix * model[3]);
 		Geommath::SetRotation(model, Geommath::FromAxisRot(glm::radians(particle.m_rotation), Vec3f(0.0, 0.0, 1.0)));
 		Geommath::SetScale(model, Vec3f(particle.m_scale)); 
 		return model;

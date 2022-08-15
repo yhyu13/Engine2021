@@ -1,6 +1,9 @@
 #include "engine-precompiled-header.h"
 #include "FramerateController.h"
 #include "engine/core/profiling/InstrumentorCore.h"
+#include "engine/core/utility/Timer.h"
+
+#include <timeapi.h>
 
 namespace longmarch
 {
@@ -40,11 +43,14 @@ namespace longmarch
         if (!m_highPrecisionMode)
         {
             auto k = static_cast<int>(m_targetFrameTimeMilli);
-            while (--k >= 2)
+            while (--k > 2)
             {
                 while (m_targetFrameTimeMilli - m_tickEnd > static_cast<double>(k))
                 {
-                    std::this_thread::sleep_for(std::chrono::milliseconds{k-1});
+                    // yuhang : timeBeginPeriod/timeEndPeriod is windows only, 
+                    timeBeginPeriod(1);
+                    std::this_thread::sleep_for(std::chrono::milliseconds{k - 1});
+                    timeEndPeriod(1);
                     m_tickEnd = m_timer.Mark<std::milli, double>();
                 }
             }

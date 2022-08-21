@@ -1,5 +1,5 @@
 #pragma once
-#include "../exception/EngineException.h"
+
 #include <chrono>
 
 namespace longmarch
@@ -119,7 +119,7 @@ namespace longmarch
 
         //! Templated method that return time between now and the last reset, default in sec.
         template <typename ratio = std::ratio<1>, typename ret_type = double>
-        inline ret_type Mark() noexcept
+        inline ret_type Mark() noexcept 
         {
             if (!m_init)
             {

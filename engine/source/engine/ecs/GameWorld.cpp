@@ -380,7 +380,7 @@ EntityDecorator longmarch::GameWorld::GenerateEntity3DNoCollision(EntityType typ
 bool longmarch::GameWorld::HasEntity(const Entity& entity) const
 {
     LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
-    
+
     return LongMarch_contains(m_entityMaskMap, entity);
 }
 
@@ -478,7 +478,7 @@ const LongMarch_Vector<Entity> longmarch::GameWorld::GetAllEntityWithType(
     const LongMarch_Vector<EntityType>& types) const
 {
     LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
-    
+
     LongMarch_Vector<Entity> result;
     for (auto& type : types)
     {
@@ -498,7 +498,7 @@ const Entity longmarch::GameWorld::GetEntityFromID(EntityID ID) const
 const LongMarch_Vector<BaseComponentInterface*> longmarch::GameWorld::GetAllComponent(const Entity& entity) const
 {
     LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
-    
+
     LongMarch_Vector<BaseComponentInterface*> ret;
     if (auto it = m_entityMaskMap.find(entity);
         it != m_entityMaskMap.end())
@@ -551,7 +551,7 @@ void longmarch::GameWorld::RemoveAllComponent(const Entity& entity)
 const LongMarch_Vector<Entity> GameWorld::EntityView(const BitMaskSignature& mask) const
 {
     LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
-    
+
     ENGINE_EXCEPT_IF(mask == BitMaskSignature(),
                      L"GameWorld::EntityView should not receive a trivial bit mask. Double check EntityView argument.");
     // TODO @yuhang : allow caching and setting dirty mechanism to entity view

@@ -90,7 +90,7 @@ namespace longmarch
 	}
 	Vec3f Geommath::ToDegree(const Vec3f& v)
 	{
-		return v * RAD2DEG;;
+		return v * RAD2DEG;
 	}
 	Mat4 Geommath::RotationMat(ROT_AXIS axis, float angle_rad)
 	{

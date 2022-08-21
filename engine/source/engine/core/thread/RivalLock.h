@@ -2,8 +2,6 @@
 #include "engine/core/EngineCore.h"
 #include "engine/core/utility/TypeHelper.h"
 
-#include <intrin.h>
-
 #define USE_ATOMIC_RIVAL_PTR 0
 
 #ifndef _SHIPPING
@@ -83,13 +81,13 @@ namespace longmarch
 
             if (m_currentGroupPtr == groupPtr)
             {
-                if (m_programCounter.fetch_add(1, std::memory_order_acq_rel) > 0)
+                if (m_programCounter.fetch_add(1, std::memory_order_relaxed) > 0)
                 {
                     return;
                 }
                 else
                 {
-                    m_programCounter.fetch_add(-1, std::memory_order_relaxed);
+                    m_programCounter.fetch_sub(1, std::memory_order_relaxed);
                 }
             }
 
@@ -136,7 +134,7 @@ namespace longmarch
 
         void Unlock()
         {
-            if (m_programCounter.fetch_add(-1, std::memory_order_acq_rel) == 1)
+            if (m_programCounter.fetch_sub(1, std::memory_order_relaxed) == 1)
             {
                 m_currentGroupPtr = nullptr;
             }
@@ -148,7 +146,7 @@ namespace longmarch
 #else
         CACHE_ALIGN volatile RivalGroup* m_currentGroupPtr{nullptr};
 #endif
-        std::atomic_int_fast32_t m_programCounter{0};
+        std::atomic_uint_fast32_t m_programCounter{0};
         RivalGroup m_groups[NUM_GROUPS];
     };
 

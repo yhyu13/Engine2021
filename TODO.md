@@ -20,9 +20,15 @@ c, Condsider refactor Entity holding method from class instances into reference 
 
 <!-- (1) Using RefPtr to hold GameWorld life cycle -->
 
-(0) Adding pause command in the spin lock
+<!-- (0) Adding pause command in the spin lock
 
-(1) Enable GLM SIMD instructions
+(1) Enable GLM SIMD instructions -->
+
+(1) Remove most uses of Rival lock as we will setup deferred command for ECS sync points.
+
+(1.1) Expose component arrray pointer as UE5 Mass ECS
+
+(1.2) Allow iterating on a view of entities within a chunk
 
 (2) Implement adding multiple components in the same time to avoid repeately moving components one at a time
 

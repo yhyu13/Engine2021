@@ -3783,6 +3783,7 @@ void longmarch::Renderer3D::BeginPostProcessing()
 
 
     {
+        GPU_NAMED_SCOPE(CopyToPreviousFrameBuffer_pass);
         // Fill in prev frame buffer from current frame buffer
         RenderCommand::TransferColorBit(
             s_Data.gpuBuffer.CurrentFrameBuffer->GetFrameBufferID(),
@@ -3944,6 +3945,7 @@ void longmarch::Renderer3D::_BeginTAAPass(const std::shared_ptr<FrameBuffer>& fr
 {
     if (s_Data.enable_taa)
     {
+        GPU_NAMED_SCOPE(TAA_pass);
         GPU_TIME(TAA);
         RenderCommand::PolyModeFill(); // Draw full model
         RenderCommand::DepthTest(false, false); // Disable depth testing
@@ -3999,6 +4001,7 @@ void longmarch::Renderer3D::_BeginFXAAPass(const std::shared_ptr<FrameBuffer>& f
 {
     if (s_Data.enable_fxaa)
     {
+        GPU_NAMED_SCOPE(FXAA_pass);
         GPU_TIME(FXAA);
         RenderCommand::PolyModeFill(); // Draw full model
         RenderCommand::DepthTest(false, false); // Disable depth testing
@@ -4050,6 +4053,7 @@ void longmarch::Renderer3D::_BeginSMAAPass(const std::shared_ptr<FrameBuffer>& f
 {
     if (s_Data.SMAASettings.enable)
     {
+        GPU_NAMED_SCOPE(SMAA_pass);
         GPU_TIME(SMAA);
         RenderCommand::PolyModeFill(); // Draw full model
         RenderCommand::DepthTest(false, false); // Disable depth testing
@@ -4223,6 +4227,7 @@ void longmarch::Renderer3D::_BeginMotionBlurPass(const std::shared_ptr<FrameBuff
 {
     if (s_Data.MotionBlur.enable_motionblur)
     {
+        GPU_NAMED_SCOPE(MotionBlur_pass);
         GPU_TIME(Motion_Blur);
         RenderCommand::PolyModeFill(); // Draw full model
         RenderCommand::DepthTest(false, false); // Disable depth testing
@@ -4280,6 +4285,7 @@ void longmarch::Renderer3D::_BeginBloomPass(const std::shared_ptr<FrameBuffer>& 
 {
     if (s_Data.BloomSettings.enable)
     {
+        GPU_NAMED_SCOPE(Bloom_pass);
         GPU_TIME(Bloom);
         if (auto downscale = s_Data.BloomSettings.bloom_sample_resolution_downScale;
             s_Data.gpuBuffer.CurrentDynamicBloomBuffer->GetBufferSize() != s_Data.resolution / downscale)
@@ -4406,6 +4412,7 @@ void longmarch::Renderer3D::_BeginDOFPass(const std::shared_ptr<FrameBuffer>& fr
 {
     if (s_Data.DOFSettings.enable)
     {
+        GPU_NAMED_SCOPE(DOF_pass);
         GPU_TIME(DOF);
         if (auto downscale = s_Data.DOFSettings.dof_sample_resolution_downScale;
             s_Data.gpuBuffer.CurrentDynamicDOFBuffer->GetBufferSize() != s_Data.resolution / downscale)
@@ -4565,6 +4572,7 @@ void longmarch::Renderer3D::_BeginDOFPass(const std::shared_ptr<FrameBuffer>& fr
 void longmarch::Renderer3D::_BeginToneMappingPass(const std::shared_ptr<FrameBuffer>& framebuffer_in,
                                                   const std::shared_ptr<FrameBuffer>& framebuffer_out)
 {
+    GPU_NAMED_SCOPE(ToneMapping_pass);
     GPU_TIME(Tone_Mapping);
     RenderCommand::PolyModeFill(); // Draw full model
     RenderCommand::DepthTest(false, false); // Disable depth testing

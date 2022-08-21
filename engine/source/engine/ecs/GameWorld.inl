@@ -9,7 +9,6 @@ namespace longmarch
     inline bool GameWorld::HasComponent(const Entity& entity) const
     {
         LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
-
         if (const auto it = m_entityMaskMap.find(entity);
             it != m_entityMaskMap.end())
         {
@@ -92,7 +91,6 @@ namespace longmarch
     inline ComponentDecorator<ComponentType> GameWorld::GetComponent(const Entity& entity) const
     {
         LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
-
         ComponentType* com = nullptr;
         if (const auto it = m_entityMaskMap.find(entity);
             it != m_entityMaskMap.end())

@@ -2,8 +2,6 @@
 #include "engine/core/utility/Timer.h"
 #include "Lock.h"
 
-#include <intrin.h>
-
 #ifndef _SHIPPING
 #define DEADLOCK_TIMER 1 // Debug break unfriendly, disabled unless you need to debug dead lock
 #else

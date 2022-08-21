@@ -2,14 +2,14 @@
 #include "Entity.h"
 #include "BaseComponent.h"
 #include "engine/core/allocator/MemoryManager.h"
+#include "engine/core/allocator/TemplateMemoryManager.h"
 #include "engine/core/thread/Lock.h"
 #include "engine/core/utility/TypeHelper.h"
 
-#ifndef _SHIPPING
-#define RESERVE_SIZE 1 // w/o shipping, we need to test reallocation of component array
-#else
 #define RESERVE_SIZE 64
-#endif
+#define NUM_COMPONENTS_PER_CHUNK 64
+#define CHUNK_INDEX(x) (x / NUM_COMPONENTS_PER_CHUNK)
+#define COM_INDEX(x) (x % NUM_COMPONENTS_PER_CHUNK)
 
 namespace longmarch
 {
@@ -26,12 +26,9 @@ namespace longmarch
         virtual void MoveBaseComponentByIndex(size_t index, BaseComponentInterface* component) = 0;
         virtual BaseComponentInterface* GetBaseComponentByIndex(size_t index) const = 0;
         virtual bool RemoveComponentByIndex(size_t index) = 0;
-        virtual bool HasIndex(size_t index) const = 0;
+        virtual bool HasIndex(size_t index, size_t& o_chunk_index, size_t& o_com_index) const = 0;
         virtual size_t Size() const = 0;
         virtual void ExpandSize(size_t newSize) = 0;
-
-        virtual void SwapBack(size_t index) = 0;
-        virtual void PopBack() = 0;
 
         //! Copy/Clone all data from component manager to a new one
         virtual std::shared_ptr<BaseComponentManager> Copy() const = 0;
@@ -56,19 +53,23 @@ namespace longmarch
     class ComponentManager : public BaseComponentManager
     {
     public:
-        NONCOPYABLE(ComponentManager);
-
-        ComponentManager()
+        // fixed elements component chunk
+        struct ComponentChunk
         {
-            m_components.reserve(RESERVE_SIZE);
-        }
+            std::array<ComponentType, NUM_COMPONENTS_PER_CHUNK> chunk;
+            size_t size{0};
+        };
+
+        NONCOPYABLE(ComponentManager);
+        ComponentManager() = default;
 
         //! ComponentType* is local and temporals because it might subject to change upon vector reallocation happens in the component manager internally
         ComponentType* GetComponentByIndex(size_t index) const
         {
-            if (HasIndex(index))
+            size_t chunk_index, com_index;
+            if (HasIndex(index, chunk_index, com_index))
             {
-                return const_cast<ComponentType*>(&m_components[index]);
+                return const_cast<ComponentType*>(&_GetComponentInChunkByIndex(chunk_index, com_index));
             }
             else
             {
@@ -78,14 +79,16 @@ namespace longmarch
 
         void AddComponentToIndex(size_t index, const ComponentType& component)
         {
-            ASSERT(HasIndex(index));
-            m_components[index] = component;
+            size_t chunk_index, com_index;
+            ASSERT(HasIndex(index, chunk_index, com_index));
+            _GetComponentInChunkByIndex(chunk_index, com_index) = component;
         }
 
         void MoveComponentToIndex(size_t index, ComponentType&& component)
         {
-            ASSERT(HasIndex(index));
-            m_components[index] = std::move(component);
+            size_t chunk_index, com_index;
+            ASSERT(HasIndex(index, chunk_index, com_index));
+            _GetComponentInChunkByIndex(chunk_index, com_index) = std::move(component);
         }
 
         virtual void MoveBaseComponentByIndex(size_t index, BaseComponentInterface* component) override
@@ -102,13 +105,15 @@ namespace longmarch
 
         virtual bool RemoveComponentByIndex(size_t index) override
         {
-            if (HasIndex(index))
+            size_t chunk_index, com_index;
+            if (HasIndex(index, chunk_index, com_index))
             {
-                if (index != m_components.size() - 1)
+                auto& chunk = m_componentChunks[chunk_index];
+                if (com_index != (chunk->size - 1))
                 {
-                    std::iter_swap(m_components.begin() + index, m_components.end() - 1);
+                    std::iter_swap(chunk->chunk.begin() + com_index, chunk->chunk.begin() + chunk->size - 1);
                 }
-                m_components.pop_back();
+                --chunk->size;
                 return true;
             }
             else
@@ -117,37 +122,63 @@ namespace longmarch
             }
         }
 
-        virtual bool HasIndex(size_t index) const override
+        virtual bool HasIndex(size_t index, size_t& o_chunk_index, size_t& o_com_index) const override
         {
-            return index < m_components.size();
+            if (o_chunk_index = CHUNK_INDEX(index);
+                o_chunk_index < m_componentChunks.size())
+            {
+                o_com_index = COM_INDEX(index);
+                return o_com_index < m_componentChunks[o_chunk_index]->size;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         virtual size_t Size() const override
         {
-            return m_components.size();
+            size_t ret = 0;
+            for (const auto& chunk : m_componentChunks)
+            {
+                ret += chunk->size;
+            }
+            return ret;
         }
 
         virtual void ExpandSize(size_t newSize) override
         {
-            ASSERT(newSize >= m_components.size());
-            m_components.resize(newSize);
-        }
+            auto chunk_index = CHUNK_INDEX(newSize);
+            auto com_index = COM_INDEX(newSize);
 
-        virtual void SwapBack(size_t index) override
-        {
-            ASSERT(HasIndex(index));
-            std::iter_swap(m_components.begin() + index, m_components.end() - 1);
-        }
-
-        virtual void PopBack() override
-        {
-            m_components.pop_back();
+            if (m_componentChunks.empty()) [[unlikely]]
+            {
+                ASSERT(chunk_index == 0);
+                auto chunk = TemplateMemoryManager<ComponentChunk>::Make_shared();
+                chunk->size = com_index + 1;
+                m_componentChunks.emplace_back(std::move(chunk));
+            }
+            else [[likely]]
+            {
+                auto last_available_chunk_index = m_componentChunks.size() - 1;
+                ASSERT(chunk_index >= last_available_chunk_index);
+                for (int i = (chunk_index - last_available_chunk_index); i > 0; --i)
+                {
+                    auto chunk = TemplateMemoryManager<ComponentChunk>::Make_shared();
+                    chunk->size = NUM_COMPONENTS_PER_CHUNK;
+                    m_componentChunks.emplace_back(std::move(chunk));
+                }
+                m_componentChunks[chunk_index]->size = com_index + 1;
+            }
         }
 
         virtual std::shared_ptr<BaseComponentManager> Copy() const override
         {
             auto ret = MemoryManager::Make_shared<ComponentManager>();
-            ret->m_components = m_components;
+            for (const auto& chunk : m_componentChunks)
+            {
+                ret->m_componentChunks.emplace_back(std::move(TemplateMemoryManager<ComponentChunk>::Make_shared(*chunk)));
+            }
             return ret;
         }
 
@@ -158,16 +189,26 @@ namespace longmarch
 
         virtual void SetWorld(GameWorld* world) const override
         {
-            for (auto& com : m_components)
+            for (auto& chunk : m_componentChunks)
             {
-                com.SetWorld(world);
+                for (size_t i = 0; i < chunk->size; ++i)
+                {
+                    chunk->chunk[i].SetWorld(world);
+                }
             }
         }
 
     private:
+        [[nodiscard]] ComponentType& _GetComponentInChunkByIndex(size_t chunk_index, size_t com_index) const
+        {
+            return m_componentChunks[chunk_index]->chunk[com_index];
+        }
+
+
+    private:
         friend class ArcheTypeManager;
         // Stores all the component instances in an array
-        LongMarch_Vector<ComponentType> m_components;
+        LongMarch_Vector<std::shared_ptr<ComponentChunk>> m_componentChunks;
     };
 
     /**
@@ -220,7 +261,8 @@ namespace longmarch
                 ASSERT(m_componentManagers.contains(comTypeIndex));
                 const auto& manager = m_componentManagers.at(comTypeIndex);
                 ASSERT(manager, Str("ArcheType should already contain %ud", comTypeIndex));
-                ASSERT(manager->HasIndex(index),
+                
+                ASSERT([=](){size_t _1; size_t _2; return manager->HasIndex(index,_1,_2);}(),
                        Str("ArcheType component manager %ud should already contain index %ull", comTypeIndex, index));
                 return manager->GetBaseComponentByIndex(index);
             }
@@ -241,7 +283,7 @@ namespace longmarch
                 auto manager = static_cast<ComponentManager<ComponentType>*>(m_componentManagers.at(
                     GetComponentTypeIndex<ComponentType>()).get());
                 ASSERT(manager, Str("ArcheType should already contain %s", typeid(ComponentType).name()));
-                ASSERT(manager->HasIndex(index),
+                ASSERT([=](){size_t _1; size_t _2; return manager->HasIndex(index,_1,_2);}(),
                        Str("ArcheType component manager %s should already contain index %ull", typeid(ComponentType).
                            name(), index));
                 return manager->GetComponentByIndex(index);
@@ -389,30 +431,22 @@ namespace longmarch
         {
             ASSERT(index < m_entities.size());
             const bool shouldSwapBack = index != (m_entities.size() - 1);
-
-            auto lastEntity = m_entities.back();
+            
             if (shouldSwapBack)
-            [[likely]]
+            {
+                m_entitiesAndComponentIndexes[m_entities.back()] = index;
+            }
+            m_entitiesAndComponentIndexes.erase(entity);
+            
+            if (shouldSwapBack)
             {
                 std::iter_swap(m_entities.begin() + index, m_entities.end() - 1);
             }
             m_entities.pop_back();
 
-            if (shouldSwapBack)
-            [[likely]]
+            for (auto& [_, comManager] : m_componentManagers)
             {
-                m_entitiesAndComponentIndexes[lastEntity] = index;
-            }
-            m_entitiesAndComponentIndexes.erase(entity);
-
-            for (const auto& [comType, comManager] : m_componentManagers)
-            {
-                if (shouldSwapBack)
-                [[likely]]
-                {
-                    comManager->SwapBack(index);
-                }
-                comManager->PopBack();
+                comManager->RemoveComponentByIndex(index);
             }
         }
 
@@ -441,3 +475,6 @@ namespace longmarch
 }
 
 #undef RESERVE_SIZE
+#undef NUM_COMPONENTS_PER_CHUNK 64
+#undef CHUNK_INDEX
+#undef COM_INDEX

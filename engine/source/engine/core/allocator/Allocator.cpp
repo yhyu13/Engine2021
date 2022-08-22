@@ -24,7 +24,6 @@ void longmarch::Allocator::Reset(size_t data_size, size_t page_size, size_t alig
     m_szBlockSize = ALIGN(minimal_size, alignment);
 
     // Storing m_szDataSize as blockSize_t right before each block
-    assert(m_szBlockSize == (size_t)blockSize_t(m_szBlockSize));
 
     m_szAlignmentSize = m_szBlockSize - minimal_size;
     m_nBlocksPerPage = (m_szPageSize) / (m_szBlockSize + sizeof(BlockHeader));
@@ -52,17 +51,14 @@ void longmarch::Allocator::AllocateNewPage() noexcept
         alloc->m_pPageList.push_back(pNewPage);
 
         BlockHeader* pBlock = pNewPage->GetBlockHeader();
-        blockSize_t size = alloc->m_szBlockSize;
         // link each block in the page
         for (auto i(0u); i < alloc->m_nBlocksPerPage - 1; ++i)
         {
-            pBlock->pNext.size = size;
             pBlock->pNext.free = true;
             pBlock->pNext = BlockHeader::NextBlock(pBlock, alloc->m_szBlockSize);
             pBlock = pBlock->pNext;
         }
         //link the last block
-        pBlock->pNext.size = size;
         pBlock->pNext.free = true;
         pBlock->pNext = nullptr;
 
@@ -97,11 +93,6 @@ void longmarch::Allocator::Free(void* p)
     [[unlikely]]
     {
         throw std::runtime_error(std::string("Double free!"));
-    }
-    else if (block->pNext.size != m_szBlockSize)
-    [[unlikely]]
-    {
-        throw std::runtime_error(std::string("Segementation fault!"));
     }
     else
     [[likely]]

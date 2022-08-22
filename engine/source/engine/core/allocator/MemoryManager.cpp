@@ -70,7 +70,7 @@ void longmarch::MemoryManager::Free(void* p, const size_t size) noexcept
         /*
         Find the block size that was used to allocate pointer p by querying the block header.
         */
-        (s_pAllocators + s_pBlockSizeLookup[BlockHeader::GetSize(p)])->Free(p);
+        (s_pAllocators + s_pBlockSizeLookup[size])->Free(p);
     }
     else
     [[unlikely]]

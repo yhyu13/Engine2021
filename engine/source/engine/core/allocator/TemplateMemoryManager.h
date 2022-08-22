@@ -28,7 +28,7 @@ namespace longmarch
         [[nodiscard]] inline static std::shared_ptr<T> Make_shared(Arguments&&... args) noexcept
         {
 #if CUSTOM_ALLOCATOR == 1
-            return std::shared_ptr<T>(New<T>(std::forward<Arguments>(args)...), Delete);
+            return std::shared_ptr<T>(New(std::forward<Arguments>(args)...), Delete);
 #else
 			return std::make_shared<T>(std::forward<Arguments>(args)...);
 #endif // CUSTOM_ALLOCATOR
@@ -88,8 +88,10 @@ namespace longmarch
     private:
         constexpr inline static bool bUseLargeBlock = {sizeof(T) > MemoryManager::kMaxBlockSize};
         constexpr inline static uint32_t kPageSize = {1u << 12};
-        constexpr inline static uint32_t kMaxElementSize = {kPageSize - sizeof(BlockHeader)};
         constexpr inline static uint32_t kPageSizeLarge = {1u << 21};
+        constexpr inline static uint32_t kMaxElementSize = {
+            (bUseLargeBlock) ? kPageSizeLarge : kPageSize - sizeof(BlockHeader)
+        };
         constexpr inline static uint32_t kAlignment = {1u << 3};
 
         inline static CACHE_ALIGN std::atomic_size_t s_AllocatedSize = {0u};

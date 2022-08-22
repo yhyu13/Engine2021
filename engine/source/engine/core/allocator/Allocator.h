@@ -5,18 +5,13 @@
 
 namespace longmarch
 {
-    typedef uint16_t blockSize_t;
-
     //! Reference : https://stackoverflow.com/questions/16198700/using-the-extra-16-bits-in-64-bit-pointers
     template <typename T>
     struct MS_ALIGN8 LongMarch_64Ptr
     {
         NONINSTANTIABLE(LongMarch_64Ptr);
-        signed long long ptr : 48; // as per phuclv's comment, we need the type to be signed to be sign extended
-        unsigned long long size : 15;
-        // ...and, what's more, as Peter Cordes pointed out, it's better to mark signedness of bit field explicitly (before C++14)
+        signed long long ptr : 63; 
         unsigned long long free : 1;
-        // Additionally, as Peter found out, types can differ by sign and it doesn't mean the beginning of another bit field (MSVC is particularly strict about it: other type == new bit field)
         inline void operator=(T* rhs)
         {
             ptr = reinterpret_cast<signed long long>(rhs);
@@ -47,11 +42,6 @@ namespace longmarch
         inline static bool GetFree(void* ptr) noexcept
         {
             return GetBlock(ptr)->pNext.free;
-        }
-
-        inline static blockSize_t GetSize(void* ptr) noexcept
-        {
-            return GetBlock(ptr)->pNext.size;
         }
 
         inline static BlockHeader* GetBlock(void* content) noexcept

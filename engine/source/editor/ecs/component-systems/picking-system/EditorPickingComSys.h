@@ -18,14 +18,14 @@ namespace longmarch
 
         EditorPickingComSys() = default;
         virtual void Init() override;
-        virtual void Render() override;
-        virtual void Render2() override;
+        virtual void PreRenderPass() override;
+        virtual void PostRenderPass() override;
         virtual void RenderUI() override;
 
         void SetSceneDockDrawList(ImDrawList* drawList);
 
     private:
-        void ManipulatePickedEntityGizmos(const Entity& e);
+        void ManipulatePickedEntityGizmos(const Entity& picked_entity);
 
     private:
         PickingPass m_pickingPass;

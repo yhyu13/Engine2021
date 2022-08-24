@@ -70,7 +70,7 @@ namespace longmarch
 		std::shared_ptr<Shape> m_boundingVolume{ nullptr }; //!< For view frustum culling
 
 		// Physics body variable
-		std::shared_ptr<RigidBody> m_body{ nullptr };
-		RigidBodyInfo m_bodyInfo;
+		std::shared_ptr<RigidBody> m_rigidBody{ nullptr };
+		RigidBodyInfo m_rigidBodyInfo;
 	};
 }

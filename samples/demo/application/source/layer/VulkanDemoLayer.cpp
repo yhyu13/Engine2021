@@ -180,9 +180,9 @@ void longmarch::VulkanDemoLayer::Render(double ts)
 	case Engine::ENGINE_MODE::INGAME:
 	{
 		GPU_TIME(Total_Render);
-		GameWorld::GetCurrent()->Render(ts);
+		GameWorld::GetCurrent()->PreRenderPass(ts);
 		m_Data.mainRenderPipeline(ts);
-		GameWorld::GetCurrent()->Render2(ts);
+		GameWorld::GetCurrent()->PostRenderPass(ts);
 		Renderer3D::SubmitFrameBufferToScreen();
 	}
 	break;

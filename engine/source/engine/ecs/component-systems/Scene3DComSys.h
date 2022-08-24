@@ -17,7 +17,7 @@ namespace longmarch
 		Scene3DComSys();
 		//! Prepare lights and scene rendering data in pre-render phase
 		virtual void PreRenderUpdate(double dt) override;
-		virtual void Render() override;
+		virtual void PreRenderPass() override;
 		
 		void RenderOpaqueObj(); 
 		void RenderTransparentObj();

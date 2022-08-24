@@ -58,7 +58,10 @@ GameWorld* longmarch::GameWorld::GetInstance(bool setCurrent, const std::string&
     bool setCurrent, const std::string& name, const fs::path& filePath)
 {
     return StealThreadPool::GetInstance()->enqueue_task(
-        [setCurrent, name, filePath]()-> GameWorld* { return GetInstance(setCurrent, name, filePath); }
+        [setCurrent, name, filePath]()-> GameWorld*
+        {
+            return GetInstance(setCurrent, name, filePath);
+        }
     );
 }
 
@@ -243,27 +246,26 @@ void longmarch::GameWorld::Update(double frameTime)
     }
 }
 
-void longmarch::GameWorld::Update2(double frameTime)
+void longmarch::GameWorld::LateUpdate(double frameTime)
 {
     if (m_paused) frameTime = 0.0;
     for (auto& system : m_systems)
     {
-        system->Update2(frameTime);
+        system->LateUpdate(frameTime);
     }
 }
 
 void longmarch::GameWorld::MultiThreadUpdate(double frameTime)
 {
-    m_jobs.push(
-        std::move(s_jobPool.enqueue_task([frameTime, this]()
+    m_jobs.push(s_jobPool.enqueue_task([frameTime, this]()
+    {
+        ENGINE_TRY_CATCH(
             {
-                _MultiThreadExceptionCatcher([frameTime, this]()
-                {
-                    Update(frameTime);
-                    Update2(frameTime);
-                });
-            })
-        ).share());
+            Update(frameTime);
+            LateUpdate(frameTime);
+            }
+        );
+    }));
 }
 
 void longmarch::GameWorld::MultiThreadJoin()
@@ -284,19 +286,19 @@ void longmarch::GameWorld::PreRenderUpdate(double frameTime)
     }
 }
 
-void longmarch::GameWorld::Render(double frameTime)
+void longmarch::GameWorld::PreRenderPass(double frameTime)
 {
     for (auto& system : m_systems)
     {
-        system->Render();
+        system->PreRenderPass();
     }
 }
 
-void longmarch::GameWorld::Render2(double frameTime)
+void longmarch::GameWorld::PostRenderPass(double frameTime)
 {
     for (auto& system : m_systems)
     {
-        system->Render2();
+        system->PostRenderPass();
     }
 }
 
@@ -553,8 +555,7 @@ const LongMarch_Vector<Entity> GameWorld::EntityView(const BitMaskSignature& mas
     LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
 
     ENGINE_EXCEPT_IF(mask == BitMaskSignature(),
-                     L"GameWorld::EntityView should not receive a trivial bit mask. Double check EntityView argument.");
-    // TODO @yuhang : allow caching and setting dirty mechanism to entity view
+                     L"GameWorld::EntityChunkView should not receive a trivial bit mask. Double check EntityChunkView argument.");
     LongMarch_Vector<Entity> ret;
     ret.reserve(256);
     for (const auto& [comTypes, manager] : m_maskArcheTypeMap)
@@ -575,10 +576,7 @@ const
     LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
     for (const auto& e : es)
     {
-        if (auto activeCom = this->GetComponent<ActiveCom>(e); activeCom.Valid() && activeCom->IsActive())
-        {
-            func(EntityDecorator(e, this));
-        }
+        func(EntityDecorator(e, this));
     }
 }
 
@@ -589,13 +587,9 @@ std::future<void> longmarch::GameWorld::BackEach(const LongMarch_Vector<Entity>&
                                                  func) const
 {
     return StealThreadPool::GetInstance()->enqueue_task(
-        [this, es, func = std::move(func)]()
+        [this, es, func]()
         {
-            this->_MultiThreadExceptionCatcher(
-                [this, &es, &func]()
-                {
-                    this->ForEach(es, func);
-                });
+            ENGINE_TRY_CATCH(this->ForEach(es, func););
         }
     );
 }
@@ -606,83 +600,228 @@ std::future<void> longmarch::GameWorld::ParEach(const LongMarch_Vector<Entity>& 
                                                     (const EntityDecorator& e)>>&
                                                 func, int min_split) const
 {
-    return StealThreadPool::GetInstance()->enqueue_task([this, es, min_split, func = std::move(func)]()
+    return StealThreadPool::GetInstance()->enqueue_task([this, es, min_split, func]()
     {
-        _ParEach2(es, func, min_split);
+        ENGINE_TRY_CATCH(_ParEach(es, func, min_split););
     });
 }
 
-void longmarch::GameWorld::_ParEach2(const LongMarch_Vector<Entity>& es,
-                                     const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func,
-                                     int min_split) const
+void longmarch::GameWorld::_ParEach(const LongMarch_Vector<Entity>& es,
+                                    const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func,
+                                    int min_split) const
 {
-    try
+    if (es.empty())
     {
-        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
-        auto& pool = s_parEachJobPool;
-        if (es.empty())
-        {
-            // Early return on empty entities
-            return;
-        }
-        int num_e = es.size();
-        auto _begin = es.begin();
-        auto _end = es.end();
-        int split_size = num_e / pool.threads;
-        // Minimum split size
-        min_split = std::max(s_parEachMinSplit, min_split);
-        split_size = std::max(split_size, min_split);
-        // Even number split size
-        if (split_size % 2 != 0)
-        {
-            ++split_size;
-        }
-        int num_e_left = num_e;
-        LongMarch_Vector<std::future<void>> _jobs;
+        // Early return on empty entities
+        return;
+    }
 
-        while ((num_e_left -= split_size) > 0)
+    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+    auto& pool = s_parEachJobPool;
+
+    // Init splitting parameters
+    const int num_e = es.size();
+    auto _begin = es.begin();
+    auto _end = es.end();
+    int split_size = num_e / pool.threads;
+
+    // Adjust minimum split size & set actual split size
+    min_split = std::max(s_parEachMinSplit, min_split);
+    split_size = std::max(split_size, min_split);
+
+    // Even number split size
+    if (split_size % 2 != 0)
+    {
+        ++split_size;
+    }
+
+    // Ready for splitting jobs
+    int num_e_left = num_e;
+    LongMarch_Vector<std::future<void>> _jobs;
+
+    while ((num_e_left -= split_size) > 0)
+    {
+        LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
+        _begin += split_size;
+        _jobs.emplace_back(pool.enqueue_task([this, &func, split_es = std::move(split_es)]()
+            {
+                ENGINE_TRY_CATCH(
+                    {
+                    this->ForEach(split_es, func);
+                    }
+                );
+            }
+        ));
+    }
+
+    // Check any entities left
+    if (num_e_left <= 0)
+    {
+        split_size += num_e_left;
+        LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
+        ENGINE_EXCEPT_IF((_begin + split_size) != _end, L"Reach end condition does not meet!");
+        _jobs.emplace_back(pool.enqueue_task([this, &func, split_es = std::move(split_es)]()
+            {
+                ENGINE_TRY_CATCH(
+                    {
+                    this->ForEach(split_es, func);
+                    }
+                );
+            }
+        ));
+    }
+
+    // Wait for each job to finish
+    for (auto& job : _jobs)
+    {
+        job.wait();
+    }
+}
+
+const LongMarch_Vector<EntityChunkContext> GameWorld::EntityChunkView(const BitMaskSignature& mask) const
+{
+    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
+
+    ENGINE_EXCEPT_IF(mask == BitMaskSignature(),
+                     L"GameWorld::EntityChunkView should not receive a trivial bit mask. Double check EntityChunkView argument.");
+    LongMarch_Vector<EntityChunkContext> ret;
+    for (const auto& [comTypes, manager] : m_maskArcheTypeMap)
+    {
+        if (manager && comTypes.IsAMatch(mask))
         {
-            LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
-            _begin += split_size;
-            _jobs.emplace_back(std::move(pool.enqueue_task([this, &func, split_es = std::move(split_es)]()
-                {
-                    this->_MultiThreadExceptionCatcher(
-                        [this, &func, &split_es]()
-                        {
-                            this->ForEach(split_es, func);
-                        });
-                }
-            )));
-        }
-        // Check any entities left
-        if (num_e_left <= 0)
-        {
-            split_size += num_e_left;
-            LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
-            ENGINE_EXCEPT_IF((_begin+split_size) != _end, L"Reach end condition does not meet!");
-            _jobs.emplace_back(std::move(pool.enqueue_task([this, &func, split_es = std::move(split_es)]()
-                {
-                    this->_MultiThreadExceptionCatcher(
-                        [this, &func, &split_es]()
-                        {
-                            this->ForEach(split_es, func);
-                        });
-                }
-            )));
-        }
-        for (auto& job : _jobs)
-        {
-            job.wait();
+            for (size_t i = 0; i < manager->NumOfChunks(); ++i)
+            {
+                ret.emplace_back(manager.get(), i);
+            }
         }
     }
-    catch (EngineException& e) { EngineException::Push(std::move(e)); }
-    catch (std::exception& e)
+    return ret;
+}
+
+void GameWorld::ForEachChunk(const LongMarch_Vector<EntityChunkContext>& es,
+                             const std::type_identity_t<std::function<void(const EntityChunkContext& e)>>& func) const
+{
+    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+    for (const auto& e : es)
     {
-        EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, wStr(e.what()), L"STL Exception"));
+        func(e);
     }
-    catch (...)
+}
+
+std::future<void> GameWorld::BackEachChunk(const LongMarch_Vector<EntityChunkContext>& es,
+                                           const std::type_identity_t<std::function<void(const EntityChunkContext& e)>>&
+                                           func) const
+{
+    return StealThreadPool::GetInstance()->enqueue_task(
+        [this, es, func]()
+        {
+            ENGINE_TRY_CATCH(this->ForEachChunk(es, func););
+        }
+    );
+}
+
+std::future<void> GameWorld::ParEachChunk(const LongMarch_Vector<EntityChunkContext>& es,
+                                          const std::type_identity_t<std::function<void(const EntityChunkContext& e)>>&
+                                          func, int min_split) const
+{
+    return StealThreadPool::GetInstance()->enqueue_task([this, es, min_split, func]()
     {
-        EngineException::Push(
-            EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Lib or dll exception", L"Non-STL Exception"));
+        ENGINE_TRY_CATCH(_ParEachChunk(es, func, min_split););
+    });
+}
+
+void GameWorld::_ParEachChunk(const LongMarch_Vector<EntityChunkContext>& es,
+                              const std::type_identity_t<std::function<void(const EntityChunkContext& e)>>& func,
+                              int min_split) const
+{
+    if (es.empty())
+    {
+        // Early return on empty entities
+        return;
+    }
+
+    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+    auto& pool = s_parEachJobPool;
+
+    // Init splitting parameters
+    const int num_e = es.size();
+    const bool should_split = num_e / pool.threads < 1;
+
+    // Ready for splitting jobs
+    LongMarch_Vector<std::future<void>> _jobs;
+
+    if (should_split)
+    [[unlikely]]
+    {
+        int splits = pool.threads - num_e;
+        for (auto& e : es)
+        {
+            if (splits > 0)
+            [[unlikely]]
+            {
+                // Try split entity chunks into two parts
+                --splits;
+                auto e1 = e;
+                e1.m_iterEndIndex /= 2;
+                if (e1.m_iterBeginIndex <= e1.m_iterEndIndex)
+                {
+                    _jobs.emplace_back(pool.enqueue_task([this, &func, &e1]()
+                        {
+                            ENGINE_TRY_CATCH(
+                                LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+                                func(e1);
+                            );
+                        }
+                    ));
+                }
+
+                auto e2 = e;
+                e2.m_iterBeginIndex = e1.m_iterEndIndex + 1;
+                if (e2.m_iterBeginIndex <= e2.m_iterEndIndex)
+                {
+                    _jobs.emplace_back(pool.enqueue_task([this, &func, &e2]()
+                        {
+                            ENGINE_TRY_CATCH(
+                                LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+                                func(e2);
+                            );
+                        }
+                    ));
+                }
+            }
+            else
+            [[likely]]
+            {
+                _jobs.emplace_back(pool.enqueue_task([this, &func, &e]()
+                    {
+                        ENGINE_TRY_CATCH(
+                            LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+                            func(e);
+                        );
+                    }
+                ));
+            }
+        }
+    }
+    else
+    [[likely]]
+    {
+        for (auto& e : es)
+        {
+            _jobs.emplace_back(pool.enqueue_task([this, &func, &e]()
+                {
+                    ENGINE_TRY_CATCH(
+                        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+                        func(e);
+                    );
+                }
+            ));
+        }
+    }
+    
+    // Wait for each job to finish
+    for (auto& job : _jobs)
+    {
+        job.wait();
     }
 }

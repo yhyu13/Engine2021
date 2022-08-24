@@ -16,13 +16,13 @@ void longmarch::EditorPickingComSys::Init()
     m_outlinePass.Init();
 }
 
-void longmarch::EditorPickingComSys::Render()
+void longmarch::EditorPickingComSys::PreRenderPass()
 {
     m_pickingPass.BeginRenderPass();
     m_pickingPass.EndRenderPass();
 }
 
-void longmarch::EditorPickingComSys::Render2()
+void longmarch::EditorPickingComSys::PostRenderPass()
 {
     m_outlinePass.BeginRenderPass();
     m_outlinePass.EndRenderPass();

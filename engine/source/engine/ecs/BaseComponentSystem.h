@@ -1,5 +1,4 @@
 #pragma once
-#include "engine/EngineEssential.h"
 #include "EntityDecorator.h"
 #include "BitMaskSignature.h"
 #include "ComponentDecorator.h"
@@ -9,10 +8,8 @@
 namespace longmarch
 {
 #ifndef EARLY_RETURN
-#define  EARLY_RETURN(dt) do { if (!(dt)) return; } while(0)
+#define  EARLY_RETURN(cond) do { if (!(cond)) return; } while(0)
 #endif // !EARLY_RETURN
-
-#define RESERVE_SIZE 1
 
     /**
      * @brief Systems are the places where the actual game-code goes. The entities and
@@ -54,10 +51,7 @@ namespace longmarch
     public:
         NONCOPYABLE(BaseComponentSystem);
 
-        BaseComponentSystem()
-        {
-            m_UserRegisteredEntities.reserve(RESERVE_SIZE);
-        }
+        BaseComponentSystem() = default;
 
         virtual ~BaseComponentSystem() = default;
 
@@ -72,6 +66,18 @@ namespace longmarch
             return ret; \
         }
 
+        enum class EInvokationPhase
+        {
+            INIT = 0,
+            UPDATE,
+            LATE_UPDATE,
+            PRE_RENDER_UPDATE,
+            PRE_RENDER_PASS,
+            POST_RENDER_PASS,
+            POST_RENDER_UPDATE,
+            RENDER_UI
+        };
+
         /*
             Override Init to register components and event call backs
         */
@@ -83,7 +89,7 @@ namespace longmarch
         {
         }
 
-        virtual void Update2(double frameTime)
+        virtual void LateUpdate(double frameTime)
         {
         }
 
@@ -92,12 +98,12 @@ namespace longmarch
         }
 
         //! Can be used for debug rendering, it is called just before the main render pipeline
-        virtual void Render()
+        virtual void PreRenderPass()
         {
         }
 
         //! Can be used for debug rendering, it is called just after the main render pipeline
-        virtual void Render2()
+        virtual void PostRenderPass()
         {
         }
 
@@ -134,27 +140,45 @@ namespace longmarch
             return m_parentWorld->HasComponent<ComponentType>(entity);
         }
 
-        //! Dispatcher to parent world
-        __LongMarch_TRIVIAL_TEMPLATE__
+        //! Dispatcher to parent world : UE5 Mass ECS per Entity Chunk iteration
         inline void ForEach(const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func) const
         {
             m_parentWorld->ForEach(GetRegisteredEntities(), func);
         }
 
-        //! Dispatcher to parent world
-        __LongMarch_TRIVIAL_TEMPLATE__
+        //! Dispatcher to parent world : Unity DOTS ECS per Entity iteration
         [[nodiscard]] inline std::future<void> BackEach(
             const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func) const
         {
             return m_parentWorld->BackEach(GetRegisteredEntities(), func);
         }
 
-        //! Dispatcher to parent world
-        __LongMarch_TRIVIAL_TEMPLATE__
+        //! Dispatcher to parent world : Unity DOTS ECS per Entity iteration
         [[nodiscard]] inline std::future<void> ParEach(
             const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func, int min_split = -1) const
         {
             return m_parentWorld->ParEach(GetRegisteredEntities(), func, min_split);
+        }
+
+        //! Dispatcher to parent world : Unity DOTS ECS per Entity iteration
+        inline void ForEachChunk(const std::type_identity_t<std::function<void(const EntityChunkContext& e)>>& func) const
+        {
+            m_parentWorld->ForEachChunk(GetRegisteredEntityChunks(), func);
+        }
+        
+        //! Dispatcher to parent world : UE5 Mass ECS per Entity Chunk iteration
+        [[nodiscard]] inline std::future<void> BackEachChunk(
+            const std::type_identity_t<std::function<void(const EntityChunkContext& e)>>& func) const
+        {
+            return m_parentWorld->BackEachChunk(GetRegisteredEntityChunks(), func);
+        }
+        
+        //! Dispatcher to parent world : UE5 Mass ECS per Entity Chunk iteration
+        [[nodiscard]] inline std::future<void> ParEachChunk(
+            const std::type_identity_t<std::function<void(const EntityChunkContext& e)>>& func,
+            int min_split = -1) const
+        {
+            return m_parentWorld->ParEachChunk(GetRegisteredEntityChunks(), func, min_split);
         }
 
         //! Dispatcher to parent world
@@ -164,7 +188,6 @@ namespace longmarch
         }
 
         //! Dispatcher to parent world
-        __LongMarch_TRIVIAL_TEMPLATE__
         [[nodiscard]] inline std::future<void> BackEachUser(
             const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func) const
         {
@@ -172,7 +195,6 @@ namespace longmarch
         }
 
         //! Dispatcher to parent world
-        __LongMarch_TRIVIAL_TEMPLATE__
         [[nodiscard]] inline std::future<void> ParEachUser(
             const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func, int min_split = -1) const
         {
@@ -195,6 +217,25 @@ namespace longmarch
                 ENGINE_EXCEPT(
                     L"GetRegisteredEntities() called on a trivial bit mask. This should not happen because system with trivial bit mask should always use User Registered Entities.");
                 return LongMarch_Vector<Entity>();
+            }
+        }
+
+        /*
+         *	@brief Get a copy of all gamework registered entities because registered entities are subjected to change
+         **/
+        inline const LongMarch_Vector<EntityChunkContext> GetRegisteredEntityChunks() const
+        {
+            if (m_systemSignature != BitMaskSignature())
+            [[likely]]
+            {
+                return m_parentWorld->EntityChunkView(m_systemSignature);
+            }
+            else
+            [[unlikely]]
+            {
+                ENGINE_EXCEPT(
+                    L"GetRegisteredEntityChunks() called on a trivial bit mask. This should not happen because system with trivial bit mask should always use User Registered Entities.");
+                return LongMarch_Vector<EntityChunkContext>();
             }
         }
 
@@ -257,9 +298,10 @@ namespace longmarch
 
     protected:
         LongMarch_Vector<Entity> m_UserRegisteredEntities;
+        //! Use Per InvokationPhase Job Queue to pass lambda that wait on futures (e.g. pareach in Update and wait in LateUpdate)
+        std::unordered_map<EInvokationPhase, AtomicQueueNC<std::function<void()>>> m_perInvokationPhaseJobQueue;
+
         BitMaskSignature m_systemSignature;
         mutable GameWorld* m_parentWorld{nullptr};
     };
-
-#undef RESERVE_SIZE
 }

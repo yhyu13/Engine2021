@@ -105,14 +105,15 @@ namespace longmarch
         inline bool IsPaused() const { return m_paused; }
 
         void Update(double frameTime);
-        void Update2(double frameTime);
+        void LateUpdate(double frameTime);
 
         void MultiThreadUpdate(double frameTime);
         void MultiThreadJoin();
 
         void PreRenderUpdate(double frameTime);
-        void Render(double frameTime);
-        void Render2(double frameTime);
+        
+        void PreRenderPass(double frameTime);
+        void PostRenderPass(double frameTime);
 
         void PostRenderUpdate(double frameTime);
         void RenderUI();
@@ -212,50 +213,62 @@ namespace longmarch
         template <typename ComponentType>
         ComponentDecorator<ComponentType> GetComponent(const Entity& entity) const;
 
+        // Unity DOTS ECS like for each function ------------------------------------------------------------------
         template <class... Components>
         const LongMarch_Vector<Entity> EntityView() const;
 
         const LongMarch_Vector<Entity> EntityView(const BitMaskSignature& bitMask) const;
-
-        //! Unity ECS like for each function
+        
         template <class... Components>
         void ForEach(
             const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func) const;
 
-        //! Unity ECS like for each function (single worker thread)
         template <class... Components>
         [[nodiscard]] auto BackEach(
             const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func) const;
 
-        //! Unity ECS like for each function (multi worker thread)
         template <class... Components>
         [[nodiscard]] auto ParEach(
             const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func,
             int min_split = -1) const;
 
-        //! Unity ECS like for each function
         void ForEach(const LongMarch_Vector<Entity>& es,
                      const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func) const;
 
-        //! Unity ECS like for each function (single worker thread)
+        // Running job in a single backgroud thread
         [[nodiscard]] std::future<void> BackEach(const LongMarch_Vector<Entity>& es,
                                                  const std::type_identity_t<std::function<void
                                                      (const EntityDecorator& e)>>&
                                                  func) const;
 
-        //! Unity ECS like for each function (multi worker thread)
+        // Running jobs in a thread pool
         [[nodiscard]] std::future<void> ParEach(const LongMarch_Vector<Entity>& es,
                                                 const std::type_identity_t<std::function<void
                                                     (const EntityDecorator& e)>>&
                                                 func, int min_split = -1) const;
 
+        // UE5 Mass ECS like for each chunk function ------------------------------------------------------------------
+        template <class... Components>
+        const LongMarch_Vector<EntityChunkContext> EntityChunkView() const;
+
+        const LongMarch_Vector<EntityChunkContext> EntityChunkView(const BitMaskSignature& bitMask) const;
+
+        void ForEachChunk(const LongMarch_Vector<EntityChunkContext>& es,
+             const std::type_identity_t<std::function<void(const EntityChunkContext& e)>>& func) const;
+
+        // Running job in a single background thread
+        [[nodiscard]] std::future<void> BackEachChunk(const LongMarch_Vector<EntityChunkContext>& es,
+                                                 const std::type_identity_t<std::function<void
+                                                     (const EntityChunkContext& e)>>&
+                                                 func) const;
+
+        // Running jobs in a thread pool
+        [[nodiscard]] std::future<void> ParEachChunk(const LongMarch_Vector<EntityChunkContext>& es,
+                                                const std::type_identity_t<std::function<void
+                                                    (const EntityChunkContext& e)>>&
+                                                func, int min_split = -1) const;
+
     private:
-        //! Helper method that wraps exception handling for thread job
-        inline void _MultiThreadExceptionCatcher(const std::type_identity_t<std::function<void()>>& func) const
-        {
-            ENGINE_TRY_CATCH({ func(); });
-        };
-        
         //! Init ECS systems
         void InitECS();
         //! Init both system and scene from a single file
@@ -266,14 +279,18 @@ namespace longmarch
         void InitScene(const fs::path& scene_file);
 
         //! Helper method for pareach
-        void _ParEach2(const LongMarch_Vector<Entity>& es,
-                       const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func,
-                       int min_split = -1) const;
-
-        //! Helper method for pareach
         template <class... Components>
         void _ParEach(const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func,
                       int min_split = -1) const;
+
+        //! Helper method for pareach
+        void _ParEach(const LongMarch_Vector<Entity>& es,
+                       const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func,
+                       int min_split = -1) const;
+
+        void _ParEachChunk(const LongMarch_Vector<EntityChunkContext>& es,
+                       const std::type_identity_t<std::function<void(const EntityChunkContext& e)>>& func,
+                       int min_split = -1) const;
 
     private:
         inline static LongMarch_UnorderedMap_flat<std::string, RefPtr<GameWorld>> s_allManagedWorlds;

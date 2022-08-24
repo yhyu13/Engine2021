@@ -137,7 +137,23 @@ namespace longmarch
         }
     }
 
-    //! Unity ECS like for each function
+    template <class ...Components>
+    inline const LongMarch_Vector<EntityChunkContext> GameWorld::EntityChunkView() const
+    {
+        if constexpr (sizeof...(Components) == 0)
+        {
+            // Should not reach this statement, double check EntityView argument
+            ENGINE_EXCEPT(
+                L"GameWorld::EntityView should not receive a trivial bit mask. Double check EntityView argument.");
+            return LongMarch_Vector<EntityChunkContext>();
+        }
+        else
+        {
+            return EntityChunkView(BitMaskSignature::Create<Components...>());
+        }
+    }
+
+    //! Unity DOTS ECS like for each function
     template <class ...Components>
     inline void GameWorld::ForEach(
         const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func) const
@@ -145,42 +161,34 @@ namespace longmarch
         LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
         for (const auto& e : EntityView<Components...>())
         {
-            if (auto activeCom = this->GetComponent<ActiveCom>(e); activeCom.Valid() && activeCom->IsActive())
-            {
-                auto ed = EntityDecorator(e, this);
-                func(ed, *(ed.template GetComponent<Components>().GetPtr())...);
-            }
+            auto ed = EntityDecorator(e, this);
+            func(ed, *(ed.template GetComponent<Components>().GetPtr())...);
         }
     }
 
-    //! Unity ECS like for each function (single worker thread)
+    //! Unity DOTS ECS like for each function (single worker thread)
     template <class ...Components>
     [[nodiscard]]
     inline auto GameWorld::BackEach(
         const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func) const
     {
         return StealThreadPool::GetInstance()->enqueue_task(
-            [this, func = std::move(func)]()
+            [this, func]()
             {
-                this->_MultiThreadExceptionCatcher(
-                    [this, &func]()
-                    {
-                        this->ForEach<Components...>(func);
-                    }
-                );
+                ENGINE_TRY_CATCH(this->ForEach<Components...>(func););
             }
         );
     }
 
-    //! Unity ECS like for each function (multi worker thread)
+    //! Unity DOTS ECS like for each function (multi worker thread)
     template <class ... Components>
     auto GameWorld::ParEach(
         const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func,
         int min_split) const
     {
-        return StealThreadPool::GetInstance()->enqueue_task([this, min_split, func = std::move(func)]()
+        return StealThreadPool::GetInstance()->enqueue_task([this, min_split, func]()
         {
-            _ParEach<Components...>(func, min_split);
+            ENGINE_TRY_CATCH(_ParEach<Components...>(func, min_split););
         });
     }
 
@@ -190,89 +198,76 @@ namespace longmarch
         const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func,
         int min_split) const
     {
-        try
+        auto es = EntityView<Components...>();
+        if (es.empty())
         {
-            LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
-            auto& pool = s_parEachJobPool;
-            auto es = EntityView<Components...>();
-            if (es.empty())
-            {
-                // Early return on empty entities
-                return;
-            }
-            int num_e = es.size();
-            auto _begin = es.begin();
-            auto _end = es.end();
-            int split_size = num_e / pool.threads;
-            // Minimum split size
-            min_split = std::max(s_parEachMinSplit, min_split);
-            split_size = std::max(split_size, min_split);
-            // Even number split size
-            if (split_size % 2 != 0)
-            {
-                ++split_size;
-            }
-            int num_e_left = num_e;
-            LongMarch_Vector<std::future<void>> _jobs;
+            // Early return on empty entities
+            return;
+        }
+        
+        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+        auto& pool = s_parEachJobPool;
 
-            while ((num_e_left -= split_size) > 0)
-            {
-                LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
-                _begin += split_size;
-                _jobs.emplace_back(std::move(pool.enqueue_task([this, &func, split_es = std::move(split_es)]()
-                {
-                    this->_MultiThreadExceptionCatcher(
-                        [this, &func, &split_es]()
-                        {
-                            for (const auto& e : split_es)
-                            {
-                                if (auto activeCom = this->GetComponent<ActiveCom>(e); activeCom.Valid() && activeCom->
-                                    IsActive())
-                                {
-                                    auto ed = EntityDecorator(e, this);
-                                    func(ed, *(ed.template GetComponent<Components>().GetPtr())...);
-                                }
-                            }
-                        });
-                })));
-            }
-            // Check any entities left
-            if (num_e_left <= 0)
-            {
-                split_size += num_e_left;
-                LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
-                ENGINE_EXCEPT_IF((_begin + split_size) != _end, L"Reach end condition does not meet!");
-                _jobs.emplace_back(std::move(pool.enqueue_task([this, &func, split_es = std::move(split_es)]()
-                {
-                    this->_MultiThreadExceptionCatcher(
-                        [this, &func, &split_es]()
-                        {
-                            for (const auto& e : split_es)
-                            {
-                                if (auto activeCom = this->GetComponent<ActiveCom>(e); activeCom.Valid() && activeCom->
-                                    IsActive())
-                                {
-                                    auto ed = EntityDecorator(e, this);
-                                    func(ed, *(ed.template GetComponent<Components>().GetPtr())...);
-                                }
-                            }
-                        });
-                })));
-            }
-            for (auto& job : _jobs)
-            {
-                job.wait();
-            }
-        }
-        catch (EngineException& e) { EngineException::Push(std::move(e)); }
-        catch (std::exception& e)
+        const int num_e = es.size();
+        auto _begin = es.begin();
+        auto _end = es.end();
+        int split_size = num_e / pool.threads;
+        
+        // Minimum split size
+        min_split = std::max(s_parEachMinSplit, min_split);
+        split_size = std::max(split_size, min_split);
+        
+        // Even number split size
+        if (split_size % 2 != 0)
         {
-            EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, wStr(e.what()), L"STL Exception"));
+            ++split_size;
         }
-        catch (...)
+        
+        int num_e_left = num_e;
+        LongMarch_Vector<std::future<void>> _jobs;
+
+        while ((num_e_left -= split_size) > 0)
         {
-            EngineException::Push(
-                EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Lib or dll exception", L"Non-STL Exception"));
+            LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
+            _begin += split_size;
+            _jobs.emplace_back(pool.enqueue_task([this, &func, split_es = std::move(split_es)]()
+            {
+                ENGINE_TRY_CATCH(
+                    {
+                        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+                        for (const auto& e : split_es)
+                        {
+                            auto ed = EntityDecorator(e, this);
+                            func(ed, *(ed.template GetComponent<Components>().GetPtr())...);
+                        }
+                    });
+            }));
+        }
+        
+        // Check any entities left
+        if (num_e_left <= 0)
+        {
+            split_size += num_e_left;
+            LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
+            ENGINE_EXCEPT_IF((_begin + split_size) != _end, L"Reach end condition does not meet!");
+            _jobs.emplace_back(pool.enqueue_task([this, &func, split_es = std::move(split_es)]()
+            {
+                ENGINE_TRY_CATCH(
+                    {
+                        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+                        for (const auto& e : split_es)
+                        {
+                            auto ed = EntityDecorator(e, this);
+                            func(ed, *(ed.template GetComponent<Components>().GetPtr())...);
+                        }
+                    });
+            }));
+        }
+
+        // Wait on jobs to finish
+        for (auto& job : _jobs)
+        {
+            job.wait();
         }
     }
 }

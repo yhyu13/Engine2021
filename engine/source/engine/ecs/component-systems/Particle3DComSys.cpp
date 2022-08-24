@@ -28,12 +28,38 @@ void longmarch::Particle3DComSys::Update(double dt)
 	const auto& player = world->GetTheOnlyEntityWithType(e_type);
 	auto camera = world->GetComponent<PerspectiveCameraCom>(player)->GetCamera();
 
-	ForEach(
-		[dt, camera](EntityDecorator e)
-	{
-		auto particleCom = e.GetComponent<Particle3DCom>();
-		particleCom->SetCenter(e.GetComponent<Transform3DCom>()->GetGlobalPos());
-		particleCom->Update(dt, camera);
-	}
+	auto jobHandle = ParEachChunk(
+		[dt, camera](const EntityChunkContext& e)
+		{
+			const auto particleComs = e.GetComponentPtr<Particle3DCom>();
+			const auto transform3DComs = e.GetComponentPtr<Transform3DCom>();
+	
+			for (auto i = e.BeginIndex(); i <= e.EndIndex(); ++i)
+			{
+				const auto particleCom = particleComs + i;
+				const auto transform3DCom = transform3DComs + i;
+				particleCom->SetCenter(transform3DCom->GetGlobalPos());
+				particleCom->Update(dt, camera);
+			}
+		}
+	).share();
+
+	m_perInvokationPhaseJobQueue[EInvokationPhase::LATE_UPDATE].push(
+		[jobHandle = std::move(jobHandle)]()
+		{
+			jobHandle.wait();
+		}
 	);
 }
+
+void Particle3DComSys::LateUpdate(double dt)
+{
+	auto& jobQueue = m_perInvokationPhaseJobQueue[EInvokationPhase::LATE_UPDATE];
+	while(!jobQueue.empty())
+	{
+		jobQueue.front()();
+		jobQueue.pop();
+	}
+}
+
+

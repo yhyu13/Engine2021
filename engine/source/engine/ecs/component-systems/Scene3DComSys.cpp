@@ -132,7 +132,7 @@ void longmarch::Scene3DComSys::PreRenderUpdate(double dt)
     }
 }
 
-void longmarch::Scene3DComSys::Render()
+void longmarch::Scene3DComSys::PreRenderPass()
 {
     // Debug draw view frustum test bounding volume for each renderable objects
     if (m_enableDebugDraw)
@@ -200,18 +200,11 @@ void longmarch::Scene3DComSys::PrepareScene(double dt)
 
             if (auto childrenCom = GetComponent<ChildrenCom>(child).GetPtr(); !childrenCom->IsLeaf())
             {
-                //if (i != last_child_idx)
-                {
-                    m_threadJob.push(StealThreadPool::GetInstance()->enqueue_task(
+                m_threadJob.push(StealThreadPool::GetInstance()->enqueue_task(
                         [this, dt, child, trans, childrenCom]()
                         {
                             RecursivePrepareScene(dt, child, trans, childrenCom, 0);
                         }).share());
-                }
-                //else
-                //{
-                //    RecursivePrepareScene(dt, child, trans, childrenCom, 0);
-                //}
             }
         }
     }
@@ -237,18 +230,11 @@ void longmarch::Scene3DComSys::RecursivePrepareScene(double dt, const Entity& pa
 
         if (auto childrenCom = GetComponent<ChildrenCom>(child).GetPtr(); !childrenCom->IsLeaf())
         {
-            //if (i != last_child_idx)
-            {
-                m_threadJob.push(StealThreadPool::GetInstance()->enqueue_task(
+            m_threadJob.push(StealThreadPool::GetInstance()->enqueue_task(
                     [this, dt, child, trans, childrenCom, level]()
                     {
                         RecursivePrepareScene(dt, child, trans, childrenCom, level + 1);
                     }).share());
-            }
-            //else
-            //{
-            //    RecursivePrepareScene(dt, child, trans, childrenCom, level + 1);
-            //}
         }
     }
 }

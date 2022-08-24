@@ -18,5 +18,6 @@ namespace longmarch
 
 		Particle3DComSys();
 		virtual void Update(double dt) override;
+		virtual void LateUpdate(double dt) override;
 	};
 }

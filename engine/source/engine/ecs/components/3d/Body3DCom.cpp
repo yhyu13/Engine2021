@@ -17,15 +17,15 @@ const std::shared_ptr<Shape>& longmarch::Body3DCom::GetBoundingVolume() const
 bool longmarch::Body3DCom::HasRigidBody() const
 {
 	LOCK_GUARD();
-	return m_body != nullptr;
+	return m_rigidBody != nullptr;
 }
 
 RBType longmarch::Body3DCom::GetRigidBodyType() const
 {
 	LOCK_GUARD();
-	if (m_body)
+	if (m_rigidBody)
 	{
-		return m_body->GetRBType();
+		return m_rigidBody->GetRBType();
 	}
 	return RBType::EMPTY;
 }
@@ -33,51 +33,51 @@ RBType longmarch::Body3DCom::GetRigidBodyType() const
 void longmarch::Body3DCom::AssignRigidBody(const std::shared_ptr<RigidBody>& rb)
 {
 	LOCK_GUARD();
-	m_body = rb;
+	m_rigidBody = rb;
 }
 
 void longmarch::Body3DCom::UnassignRigidBody()
 {
 	LOCK_GUARD();
-	m_body = nullptr;
+	m_rigidBody = nullptr;
 }
 
 void longmarch::Body3DCom::UpdateRigidBody()
 {
 	LOCK_GUARD();
-	if (m_body)
+	if (m_rigidBody)
 	{
-		m_body->SetMass(m_mass);
-		m_body->UpdateAABBShape();
+		m_rigidBody->SetMass(m_mass);
+		m_rigidBody->UpdateAABBShape();
 	}
 }
 
 void longmarch::Body3DCom::UpdateBody3DCom()
 {
 	LOCK_GUARD();
-	if (m_body)
+	if (m_rigidBody)
 	{
-		m_mass = m_body->GetMass();
-		m_invMass = m_body->GetInvMass();
+		m_mass = m_rigidBody->GetMass();
+		m_invMass = m_rigidBody->GetInvMass();
 	}
 }
 
 const longmarch::RBTransform& longmarch::Body3DCom::GetRBTrans() const
 {
 	LOCK_GUARD();
-	ENGINE_EXCEPT_IF(m_body == nullptr, L"Trying to access Rigid Body Transform but Rigid Body does not exist!");
+	ENGINE_EXCEPT_IF(m_rigidBody == nullptr, L"Trying to access Rigid Body Transform but Rigid Body does not exist!");
 
-	return m_body->GetRBTrans();
+	return m_rigidBody->GetRBTrans();
 }
 
 bool longmarch::Body3DCom::IsRBAwake() const
 {
 	LOCK_GUARD();
-	if (!m_body)
+	if (!m_rigidBody)
 	{
 		return false;
 	}
-	return m_body->IsAwake();
+	return m_rigidBody->IsAwake();
 }
 
 void longmarch::Body3DCom::JsonSerialize(Json::Value& value) const
@@ -93,9 +93,9 @@ void longmarch::Body3DCom::JsonSerialize(Json::Value& value) const
 		{
 			auto& rigigBodyData = val["rigid-body"];
 			{
-				if (m_bodyInfo.type != _default.m_bodyInfo.type)
+				if (m_rigidBodyInfo.type != _default.m_rigidBodyInfo.type)
 				{
-					switch (m_bodyInfo.type)
+					switch (m_rigidBodyInfo.type)
 					{
 					case RBType::noCollision:
 						rigigBodyData["type"] = "no_collision";
@@ -111,34 +111,34 @@ void longmarch::Body3DCom::JsonSerialize(Json::Value& value) const
 						break;
 					}
 				}
-				if (m_bodyInfo.mass != _default.m_bodyInfo.mass)
+				if (m_rigidBodyInfo.mass != _default.m_rigidBodyInfo.mass)
 				{
-					rigigBodyData["mass"] = m_bodyInfo.mass;
+					rigigBodyData["mass"] = m_rigidBodyInfo.mass;
 				}
-				if (m_bodyInfo.restitution != _default.m_bodyInfo.restitution)
+				if (m_rigidBodyInfo.restitution != _default.m_rigidBodyInfo.restitution)
 				{
-					rigigBodyData["restitution"] = m_bodyInfo.restitution;
+					rigigBodyData["restitution"] = m_rigidBodyInfo.restitution;
 				}
-				if (m_bodyInfo.linearDamping != _default.m_bodyInfo.linearDamping)
+				if (m_rigidBodyInfo.linearDamping != _default.m_rigidBodyInfo.linearDamping)
 				{
-					rigigBodyData["linear-damping"] = m_bodyInfo.linearDamping;
+					rigigBodyData["linear-damping"] = m_rigidBodyInfo.linearDamping;
 				}
-				if (m_bodyInfo.friction != _default.m_bodyInfo.friction)
+				if (m_rigidBodyInfo.friction != _default.m_rigidBodyInfo.friction)
 				{
-					rigigBodyData["friction"] = m_bodyInfo.friction;
+					rigigBodyData["friction"] = m_rigidBodyInfo.friction;
 				}
-				if (m_bodyInfo.linearVelocity != _default.m_bodyInfo.linearVelocity)
+				if (m_rigidBodyInfo.linearVelocity != _default.m_rigidBodyInfo.linearVelocity)
 				{
-					rigigBodyData["linear-velocity"] = LongMarch_ArrayToJsonValue(m_bodyInfo.linearVelocity, 3);
+					rigigBodyData["linear-velocity"] = LongMarch_ArrayToJsonValue(m_rigidBodyInfo.linearVelocity, 3);
 				}
-				if (m_bodyInfo.colliderDimensionExtent != _default.m_bodyInfo.colliderDimensionExtent)
+				if (m_rigidBodyInfo.colliderDimensionExtent != _default.m_rigidBodyInfo.colliderDimensionExtent)
 				{
-					rigigBodyData["collider-extent"] = m_bodyInfo.colliderDimensionExtent;
+					rigigBodyData["collider-extent"] = m_rigidBodyInfo.colliderDimensionExtent;
 				}
-				if (m_bodyInfo.entityTypeIngoreSet != _default.m_bodyInfo.entityTypeIngoreSet)
+				if (m_rigidBodyInfo.entityTypeIngoreSet != _default.m_rigidBodyInfo.entityTypeIngoreSet)
 				{
 					LongMarch_Vector<std::string> vec;
-					for (auto& type : m_bodyInfo.entityTypeIngoreSet)
+					for (auto& type : m_rigidBodyInfo.entityTypeIngoreSet)
 					{
 						vec.push_back(ObjectFactory::s_instance->GetEntityNameFromType(type));
 					}
@@ -186,63 +186,63 @@ void longmarch::Body3DCom::JsonDeserialize(const Json::Value& value)
 				auto bodyType = val.asString();
 				if (bodyType == "dynamic")
 				{
-					m_bodyInfo.type = RBType::dynamicBody;
+					m_rigidBodyInfo.type = RBType::dynamicBody;
 				}
 				else if (bodyType == "static")
 				{
-					m_bodyInfo.type = RBType::staticBody;
+					m_rigidBodyInfo.type = RBType::staticBody;
 				}
 				else if (bodyType == "no_collision")
 				{
-					m_bodyInfo.type = RBType::noCollision;
+					m_rigidBodyInfo.type = RBType::noCollision;
 				}
 			}
 
 			if (auto& val = rigigBodyData["mass"]; !val.isNull())
 			{
-				m_bodyInfo.mass = val.asFloat();
+				m_rigidBodyInfo.mass = val.asFloat();
 			}
 
 			if (auto& val = rigigBodyData["restitution"]; !val.isNull())
 			{
-				m_bodyInfo.restitution = val.asFloat();
+				m_rigidBodyInfo.restitution = val.asFloat();
 			}
 
 			if (auto& val = rigigBodyData["linear-damping"]; !val.isNull())
 			{
-				m_bodyInfo.linearDamping = val.asFloat();
+				m_rigidBodyInfo.linearDamping = val.asFloat();
 			}
 
 			if (auto& val = rigigBodyData["linear-friction"]; !val.isNull())
 			{
-				m_bodyInfo.friction = val.asFloat();
+				m_rigidBodyInfo.friction = val.asFloat();
 			}
 
 			if (auto& val = rigigBodyData["linear-velocity"]; !val.isNull())
 			{
 				ASSERT(val.size() == 3, "must be a vec3!");
-				m_bodyInfo.linearVelocity.x = val[0].asFloat();
-				m_bodyInfo.linearVelocity.y = val[1].asFloat();
-				m_bodyInfo.linearVelocity.z = val[2].asFloat();
+				m_rigidBodyInfo.linearVelocity.x = val[0].asFloat();
+				m_rigidBodyInfo.linearVelocity.y = val[1].asFloat();
+				m_rigidBodyInfo.linearVelocity.z = val[2].asFloat();
 			}
 
 			if (auto& val = rigigBodyData["collider-extent"]; !val.isNull())
 			{
-				m_bodyInfo.colliderDimensionExtent = val.asFloat();
+				m_rigidBodyInfo.colliderDimensionExtent = val.asFloat();
 			}
 
 			if (auto& val = rigigBodyData["type-to-ingore"]; !val.isNull())
 			{
 				for (int i = 0; i < val.size(); ++i)
 				{
-					m_bodyInfo.entityTypeIngoreSet.emplace(ObjectFactory::s_instance->GetEntityTypeFromName(val[i].asString()));
+					m_rigidBodyInfo.entityTypeIngoreSet.emplace(ObjectFactory::s_instance->GetEntityTypeFromName(val[i].asString()));
 				}
 			}
 		}
 	}
 
 	{
-		m_mass = m_bodyInfo.mass;
+		m_mass = m_rigidBodyInfo.mass;
 		m_invMass = m_invMass = 1.0f / (m_mass + FLT_EPSILON);
 	}
 }

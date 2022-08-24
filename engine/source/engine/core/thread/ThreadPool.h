@@ -27,7 +27,7 @@ namespace longmarch
             return &pool;
         }
 
-        explicit ThreadPool(unsigned int threads = std::thread::hardware_concurrency());
+        explicit ThreadPool(unsigned int threads = std::thread::hardware_concurrency() - 1);
         ~ThreadPool();
 
         // add new task item to the pool

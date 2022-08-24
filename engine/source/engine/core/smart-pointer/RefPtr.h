@@ -13,12 +13,12 @@ namespace longmarch
         
         inline void IncrementRef() const noexcept
         {
-            ++m_refCounter;
+            m_refCounter.fetch_add(1, std::memory_order_relaxed);
         }
 
         inline bool DecrementRef() const noexcept
         {
-            return --m_refCounter > 0;
+            return m_refCounter.fetch_sub(1, std::memory_order_relaxed) > 1;
         }
 
     protected:
@@ -27,8 +27,6 @@ namespace longmarch
 
     private:
         mutable std::atomic_uint_fast32_t m_refCounter{0};
-        // yuhang : use byte padding instead of CACHE_ALIGN specifier so that inherited class is not affected by this alignment
-        std::byte COMBINE(__PADDING_, __LINE__)[PLATFORM_CACHE_LINE - sizeof(std::atomic_uint_fast32_t)];
     };
 
     // Concept for reference countable classes

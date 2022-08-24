@@ -2,16 +2,11 @@
 
 // Reference: https://github.com/mvorbrodt/blog/blob/master/src/pool.hpp
 #include <vector>
-#include <queue>
 #include <memory>
 #include <thread>
-#include <mutex>
-#include <condition_variable>
 #include <future>
 #include <functional>
 #include <stdexcept>
-#include "ThreadUtil.h"
-#include "Lock.h"
 #include "Queue.h"
 
 namespace longmarch
@@ -27,7 +22,7 @@ namespace longmarch
             return &pool;
         }
 
-        explicit StealThreadPool(unsigned int threads = std::thread::hardware_concurrency());
+        explicit StealThreadPool(unsigned int threads = std::thread::hardware_concurrency() - 1);
         ~StealThreadPool();
 
         template <typename F, typename... Args>
@@ -37,7 +32,7 @@ namespace longmarch
             {
                 std::apply(p, t);
             };
-            const auto i = (m_index = ++m_index % m_count);
+            const auto i = (m_index.fetch_add(1, std::memory_order_relaxed) % m_count);
 
             for (auto n(0u); n < m_count * K; ++n)
             {
@@ -87,6 +82,6 @@ namespace longmarch
         Queues m_queues;
         Threads m_threads;
         const unsigned int m_count;
-        std::atomic_uint m_index = {0u};
+        std::atomic_uint_fast32_t m_index = {0u};
     };
 }

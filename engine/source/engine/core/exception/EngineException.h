@@ -8,10 +8,10 @@ namespace longmarch
 #define ENGINE_EXCEPT(ARG) EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, ARG))
 #define ENGINE_EXCEPT_IF(COND, ARG) if (COND) EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, ARG))
 
-#define ENGINE_TRY_CATCH(X) try { X } \
+#define ENGINE_TRY_CATCH(X) do { try { X } \
 	catch (EngineException& e) { EngineException::Push(std::move(e)); } \
 	catch (std::exception& e) { EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, wStr(e.what()), L"STL Exception")); } \
-	catch (...) { EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Lib or dll exception", L"Non-STL Exception")); } 
+	catch (...) { EngineException::Push(EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Lib or dll exception", L"Non-STL Exception")); } } while(0)
 
 	class ENGINE_API EngineException
 	{

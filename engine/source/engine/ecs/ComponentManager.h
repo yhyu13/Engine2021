@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma optimize("", off)
-
 #include "Entity.h"
 #include "BaseComponent.h"
 #include "engine/core/allocator/MemoryManager.h"
@@ -16,7 +14,7 @@
 
 namespace longmarch
 {
-    struct EntityChunkContext;
+    class EntityChunkContext;
     class GameWorld;
 
     class BaseComponentManager
@@ -197,10 +195,10 @@ namespace longmarch
         }
 
         //! Helper method to define a EntityChunkContext
-         ComponentType* GetComponentChunkPtr(size_t chunk_index) const
+        ComponentType* GetComponentChunkPtr(size_t chunk_index) const
         {
             ASSERT(chunk_index < m_componentChunks.size());
-            return &(m_componentChunks[chunk_index]->m_chunk[0]);
+            return m_componentChunks[chunk_index]->m_chunk.data();
         }
 
         //! Helper method to define a EntityChunkContext
@@ -289,10 +287,13 @@ namespace longmarch
         template <typename ComponentType>
         void AddComponentManger()
         {
-            ASSERT(this->m_entities.empty(), Str("AddComponentManger should only be invoked on a newly allocated Archetype"));
-            ASSERT(this->m_entitiesAndComponentIndices.empty(), Str("AddComponentManger should only be invoked on a newly allocated Archetype"));
+            ASSERT(this->m_entities.empty(),
+                   Str("AddComponentManger should only be invoked on a newly allocated Archetype"));
+            ASSERT(this->m_entitiesAndComponentIndices.empty(),
+                   Str("AddComponentManger should only be invoked on a newly allocated Archetype"));
             auto type = GetComponentTypeIndex<ComponentType>();
-            ASSERT(!m_componentManagers.contains(type),  Str("AddComponentManger should not add a existing component manager"));
+            ASSERT(!m_componentManagers.contains(type),
+                   Str("AddComponentManger should not add a existing component manager"));
             m_componentManagers[type] = MemoryManager::Make_shared<ComponentManager<ComponentType>>();
         }
 
@@ -426,13 +427,13 @@ namespace longmarch
             size_t _;
             return _HasEntity(entity, _);
         }
-        
-        template<typename ComponentType>
+
+        template <typename ComponentType>
         [[nodiscard]] ComponentManager<ComponentType>* GetComponentManger() const
         {
             ASSERT(m_componentManagers.contains(GetComponentTypeIndex<ComponentType>()));
             return static_cast<ComponentManager<ComponentType>*>(m_componentManagers.at(
-                    GetComponentTypeIndex<ComponentType>()).get());
+                GetComponentTypeIndex<ComponentType>()).get());
         }
 
         const LongMarch_Vector<Entity>& GetEntityView() const
@@ -442,11 +443,13 @@ namespace longmarch
 
         size_t NumOfChunks() const
         {
-            if (m_componentManagers.empty()) [[unlikely]]
+            if (m_componentManagers.empty())
+            [[unlikely]]
             {
                 return 0;
             }
-            else [[likely]]
+            else
+            [[likely]]
             {
                 const auto& arbitraryComponentManager = this->m_componentManagers.begin()->second;
                 return arbitraryComponentManager->NumOfChunks();
@@ -544,7 +547,6 @@ namespace longmarch
     class EntityChunkContext
     {
     public:
-
         explicit EntityChunkContext(ArcheTypeManager* archetype_manger, size_t chunk_index)
             :
             m_manager(archetype_manger),
@@ -554,7 +556,7 @@ namespace longmarch
             m_iterEndIndex = arbitraryComponentManager->GetNumOfComponentsAtChunk(chunk_index) - 1;
         }
 
-        template<typename ComponentType>
+        template <typename ComponentType>
         ComponentType* GetComponentPtr() const
         {
             auto componentManager = m_manager->GetComponentManger<ComponentType>();
@@ -585,5 +587,3 @@ namespace longmarch
 #undef NUM_COMPONENTS_PER_CHUNK 64
 #undef CHUNK_INDEX
 #undef COM_INDEX
-
-#pragma optimize("", on)

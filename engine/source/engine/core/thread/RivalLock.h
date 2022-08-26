@@ -11,8 +11,8 @@
 #endif // !_SHIPPING
 
 #if DEADLOCK_TIMER
-#define SET_DEADLOCK_TIMER() LazyTimer _timer
-#define ASSERT_DEADLOCK_TIMER() ASSERT(_timer.Mark() < .016f, "Dead lock?")
+#define SET_DEADLOCK_TIMER() LazyInitializedTimer _timer
+#define ASSERT_DEADLOCK_TIMER() ASSERT(_timer.Mark() < 1.f, "Dead lock?")
 #else
 #define SET_DEADLOCK_TIMER()
 #define ASSERT_DEADLOCK_TIMER()

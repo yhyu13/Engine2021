@@ -93,18 +93,18 @@ namespace longmarch
     };
 
     /**
-     * @brief Timer that set and return time point in sec/millisec, etc. LazyTimer will now initialized until user called Reset() or Mark()
+     * @brief Timer that set and return time point in sec/millisec, etc. LazyInitializedTimer will now initialized until user called Reset() or Mark()
      *        This class has the advantage of trivial construction (save couple hundred clocks) for counting down only when you need it. 
      *
      * @author Hang Yu (yohan680919@gmail.com)
      */
-    class LazyTimer
+    class LazyInitializedTimer
     {
     public:
-        LazyTimer() = default;
+        LazyInitializedTimer() = default;
 
         //! Init timer with period in secs
-        explicit LazyTimer(double period)
+        explicit LazyInitializedTimer(double period)
             :
             m_period(period)
         {

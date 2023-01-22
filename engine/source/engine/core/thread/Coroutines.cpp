@@ -20,15 +20,6 @@ namespace longmarch
 
 		// ----------------------------------------------------------------------------
 
-		// Trick for allowing forward-declaration of std::thread.
-		class Coroutine::Thread : public std::thread
-		{
-		public:
-			using std::thread::thread;
-		};
-
-		// ----------------------------------------------------------------------------
-
 		Coroutine::Coroutine(std::string_view debug_name_base, std::function<void(InnerControl& ic)> fun)
 		{
 			_debug_name = std::string(debug_name_base) + "_" + std::to_string(s_cr_counter++);

@@ -34,6 +34,11 @@ namespace longmarch
 		*/
 
 		class InnerControl;
+		class Thread : public std::thread
+		{
+		public:
+			using std::thread::thread;
+		};
 
 		// ----------------------------------------------------------------------------
 
@@ -61,7 +66,6 @@ namespace longmarch
 
 		private:
 
-			class Thread;
 			friend class InnerControl;
 
 			std::string                   _debug_name = { "" };

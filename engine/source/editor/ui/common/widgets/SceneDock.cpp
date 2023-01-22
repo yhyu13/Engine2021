@@ -46,7 +46,7 @@ void longmarch::SceneDock::Render()
 	//DEBUG_PRINT(Str("Window pos : %d, %d Scene Dock pos : %.2f, %.2f | size : %.2f, %.2f Cursor Pos %.2f, %.2f", prop.m_xpos, prop.m_ypos, pos.x, pos.y, size.x, size.y, cursor_pos.x, cursor_pos.y));
 
 	{
-		// Set viewport rect is size with scene dock rect
+		// Set viewport rect based to fit the scene dock rect
 		EntityType e_type;
 		switch (Engine::GetEngineMode())
 		{
@@ -60,6 +60,7 @@ void longmarch::SceneDock::Render()
 		auto camera = GameWorld::GetCurrent()->GetTheOnlyEntityWithType(e_type);
 		auto cam = GameWorld::GetCurrent()->GetComponent<PerspectiveCameraCom>(camera)->GetCamera();
 
+		// Update Editor camera's viewport rect with scene dock widget's rect, so that we only renders to the extent of the scene dock widget
 		cam->SetViewPort(Vec2u(pos.x - prop.m_xpos, pos.y - prop.m_ypos), Vec2u(size.x, size.y));
 		cam->cameraSettings.aspectRatioWbyH = float(size.x) / float(size.y);
 

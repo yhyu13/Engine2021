@@ -1156,9 +1156,14 @@ void longmarch::Renderer3D::EditorRenderGraphicsSettings()
                 ImGui::Dummy(ImVec2(0, yoffset_item));
                 // 2. Window resolution
                 {
-                    if (ImGui::Combo("Resolution", &selected_windowReso, windowReso, IM_ARRAYSIZE(windowReso)))
+                    // if (ImGui::Combo("Resolution", &selected_windowReso, windowReso, IM_ARRAYSIZE(windowReso)))
+                    // {
+                    //     // TODO : Set window resolution Event
+                    // }
+                    static int resolution_ratio = s_Data.resolution_ratio * 100;
+                    if (ImGui::SliderInt("Resolution Scale", &resolution_ratio, 50, 150))
                     {
-                        // TODO : Event
+                        s_Data.resolution_ratio = resolution_ratio * 0.01f;
                     }
                 }
                 ImGui::Dummy(ImVec2(0, yoffset_item));

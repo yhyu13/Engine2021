@@ -44,7 +44,6 @@ longmarch::AABB::AABB(const LongMarch_Vector<std::shared_ptr<MeshData>>& meshs)
 
 void longmarch::AABB::InitWithMeshData(const MeshData::VertexList& vertex_data, const MeshData::IndexList& index_data)
 {
-    LOCK_GUARD_NC();
     if (vertex_data.empty())
     {
         throw EngineException(
@@ -98,11 +97,10 @@ void longmarch::AABB::UpdateOriginal(const Vec3f& point)
     o_max = (glm::max)(o_max, point);
 }
 
-const std::vector<Vec3f> longmarch::AABB::GetAllVertex()
+const LongMarch_Vector<Vec3f> longmarch::AABB::GetAllVertex() const
 {
-    LOCK_GUARD_NC();
-    std::vector<Vec3f> ret(8);
-    Vec3f _min = Min, _max = Max;
+    LongMarch_Vector<Vec3f> ret(8);
+    const Vec3f &_min = Min, _max = Max;
     Vec4f abc = Vec4f(_max - _min, 0);
     ret[0] = _min;
     ret[1] = _min + abc.xww;
@@ -138,12 +136,16 @@ Vec3f longmarch::AABB::GetOriginalMin() const
 
 void longmarch::AABB::SetModelTrAndUpdate(const Mat4& transform)
 {
-    LOCK_GUARD_NC();
-    Reset();
-    m_ObjectTr = transform;
-    for (const auto& v : GetAllVertexOriginal())
+    if (!m_isObjectTrInit || m_ObjectTr != transform)
     {
-        Update(Geommath::Mat4ProdVec3(transform, v));
+        m_ObjectTr = transform;
+        m_isObjectTrInit = true;
+        
+        Reset();
+        for (const auto& v : GetAllVertexOriginal())
+        {
+            Update(Geommath::Mat4ProdVec3(transform, v));
+        }
     }
 }
 
@@ -153,11 +155,11 @@ void longmarch::AABB::Reset()
     Max = Vec3f((std::numeric_limits<float>::lowest)());
 }
 
-const std::vector<Vec3f> longmarch::AABB::GetAllVertexOriginal()
+const LongMarch_Vector<Vec3f> longmarch::AABB::GetAllVertexOriginal() const
 {
-    std::vector<Vec3f> ret(8);
+    LongMarch_Vector<Vec3f> ret(8);
     {
-        Vec3f _min = o_min, _max = o_max;
+        const Vec3f &_min = o_min, _max = o_max;
         Vec4f abc = Vec4f(_max - _min, 0);
         ret[0] = _min;
         ret[1] = _min + abc.xww;
@@ -180,47 +182,49 @@ void longmarch::AABB::Update(const Vec3f& point)
 
 bool longmarch::AABB::VFCTest(const ViewFrustum& VF, const Mat4& worldSpaceToViewFrustumSpace)
 {
-    LOCK_GUARD_NC();
     /*
         Reference: https://old.cescg.org/CESCG-2002/DSykoraJJelinek/
         Reference: http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-testing-boxes-ii/
     */
     const auto& _min = Min;
     const auto& _max = Max;
+    m_isCulled = false;
 
     // Original: const auto& plane_tr = Geommath::SmartInverseTranspose(Geommath::SmartInverse(worldSpaceToViewFrustumSpace));
     // Simplified as: glm::transpose(worldSpaceToViewFrustumSpace);
-    // Could be event more simplified as worldSpaceToViewFrustumSpace to take advantage of row vector operation
-
+    // Could be even more simplified as worldSpaceToViewFrustumSpace to take advantage of row vector operation
     const auto& plane_tr = worldSpaceToViewFrustumSpace;
     for (const auto& plane : VF.planes)
     {
-        const auto& pl = Geommath::Plane::Normalize(plane * plane_tr);
+        // No need to normalize plane equation here due to it will be normalized later in Plane::Distance method
+        //const auto& pl = Geommath::Plane::Normalize(plane * plane_tr);
+        const auto pl = plane * plane_tr;
+        
         // vec * mat would treat the vector as a row vector, this is equivalent to trans(mat) * vec
         // N-P vertex test
-        Vec3f p{
-            Geommath::Lerp(_max[0], _min[0], signbit(pl[0])),
-            Geommath::Lerp(_max[1], _min[1], signbit(pl[1])),
-            Geommath::Lerp(_max[2], _min[2], signbit(pl[2]))
-        };
         // Vec3f p;
         // for (int i = 0; i < 3; ++i)
         // {
         //     p[i] = (pl[i] > 0) ? _max[i] : _min[i];
         // }
+        // Branchless optimization
+        Vec3f p{
+            Geommath::Lerp(_max[0], _min[0], signbit(pl[0])),
+            Geommath::Lerp(_max[1], _min[1], signbit(pl[1])),
+            Geommath::Lerp(_max[2], _min[2], signbit(pl[2]))
+        };
+        
         if (Geommath::Plane::Distance(pl, p) < 0)
         {
             m_isCulled = true;
-            return m_isCulled;
+            break;
         }
     }
-    m_isCulled = false;
     return m_isCulled;
 }
 
 bool longmarch::AABB::DistanceTest(const Vec3f& center, float Near, float Far)
 {
-    LOCK_GUARD_NC();
     auto r = GetRadius();
     auto pos = GetCenter();
     auto distance = glm::length(center - pos);
@@ -232,7 +236,6 @@ bool longmarch::AABB::DistanceTest(const Vec3f& center, float Near, float Far)
 
 void longmarch::AABB::RenderShape()
 {
-    LOCK_GUARD_NC();
     Mat4 local_tr = Geommath::ToTranslateMatrix(GetCenter()) * Geommath::ToScaleMatrix(GetDiag());
     Renderer3D::RenderBoundingBox(local_tr);
 }

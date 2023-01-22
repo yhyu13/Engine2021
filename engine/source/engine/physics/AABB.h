@@ -14,7 +14,7 @@ namespace longmarch
         explicit AABB(const LongMarch_Vector<std::shared_ptr<MeshData>>& meshs);
         void InitWithMeshData(const MeshData::VertexList& vertex_data, const MeshData::IndexList& index_data);
 
-        const std::vector<Vec3f> GetAllVertex();
+        const LongMarch_Vector<Vec3f> GetAllVertex() const;
         Vec3f GetMax() const;
         Vec3f GetMin() const;
         Vec3f GetOriginalMax() const;
@@ -45,7 +45,7 @@ namespace longmarch
         Vec3f GetOriginalCenter() const;
         void Update(const Vec3f& point);
         void UpdateOriginal(const Vec3f& point);
-        const std::vector<Vec3f> GetAllVertexOriginal();
+        const LongMarch_Vector<Vec3f> GetAllVertexOriginal() const;
 
     private:
         Vec3f Min, Max;

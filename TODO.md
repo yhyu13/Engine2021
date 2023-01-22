@@ -2,28 +2,6 @@ TODO List :
 
 *Major feature*:
 
-<!-- (1) Refactor ECS Archtype memory management : instead of using entities and component manager, using entity->Archtype->component managers.
-
-a, You need a archtype2component managers dictionary such that all allocations of components of certain archtype can be managed in per-archtype fashion. **This way, we can eliminate memory diffusion**
-
-b, Change the way delete an entity works: 
-
-1, on delete, Entity at index M is invalidate, its components at index M is also destructed 
-
-2, when a new entity is pushed into this archtype, it is placed at location M. (This means you need maintain a free list of index that are available to be allocated) 
-
-3, We need a GC cycle that periodically and smartly (through timing the cost of GC) **do memory defragmenting**.
-
-c, Condsider refactor Entity holding method from class instances into reference counting pointers. This way, we can add validation and archetype bit mask into Entity class (as we no longer cares about sizeof(Entity) since we use pointer now)
-
-(2) RenderDoc debug marker for OpenGL. [check here](https://stackoverflow.com/questions/54278607/how-to-create-debugging-markers-in-opengl) -->
-
-<!-- (1) Using RefPtr to hold GameWorld life cycle -->
-
-<!-- (0) Adding pause command in the spin lock
-
-(1) Enable GLM SIMD instructions -->
-
 (1) Remove most uses of Rival lock as we will setup deferred command for ECS sync points.
 
 (1.1) Expose component arrray pointer as UE5 Mass ECS

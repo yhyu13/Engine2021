@@ -138,7 +138,6 @@ namespace longmarch
         Mat3 m_invInertiaWorld;
 
         RBTransform m_transform;
-        Quaternion m_quat;
 
         std::shared_ptr<Shape> m_shape;
 

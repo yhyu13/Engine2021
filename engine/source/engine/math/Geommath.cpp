@@ -1,6 +1,8 @@
 #include "engine-precompiled-header.h"
 #include "Geommath.h"
 
+#include "glm/gtx/fast_square_root.hpp"
+
 namespace longmarch
 {
 	Mat4 Geommath::World2OpenGLTr = Mat4(
@@ -389,10 +391,12 @@ namespace longmarch
 	}
 	Quaternion Geommath::GetRotation(const Mat4& m)
 	{
-		const auto& _scale = GetScale(m);
-		Mat4f64 _m(m);
-		Mat3 _m2(_m[0] / static_cast<double>(_scale[0]), _m[1] / static_cast<double>(_scale[1]), _m[2] / static_cast<double>(_scale[2]));
-		return glm::normalize(Quaternion(_m2));
+		// const auto& _scale = GetScale(m);
+		// Mat4f64 _m(m);
+		// Mat3 _m2(_m[0] / static_cast<double>(_scale[0]), _m[1] / static_cast<double>(_scale[1]), _m[2] / static_cast<double>(_scale[2]));
+		// return glm::normalize(Quaternion(_m2));
+		Mat3 _m3(glm::normalize(m[0]), glm::normalize(m[1]), glm::normalize(m[2]));
+		return glm::normalize(Quaternion(_m3));
 	}
 	Vec3f Geommath::GetScale(const Mat4& m)
 	{
@@ -622,8 +626,14 @@ namespace longmarch
 	}
 	Vec4f Geommath::Plane::Normalize(const Vec4f& p)
 	{
-		auto _p = Vec4f64(p);
-		return Vec4f(_p * (glm::inversesqrt(_p.x * _p.x + _p.y * _p.y + _p.z * _p.z + 1e-8)));
+		auto _p3 = Vec3f(p);
+		return p * glm::fastInverseSqrt(glm::dot(_p3, _p3));
+	}
+	Vec4f Geommath::Plane::NormalizeSlow(const Vec4f& p)
+	{
+		auto _p4 = Vec4f64(p);
+		auto _p3 = Vec3f64(p);
+		return Vec4f(_p4 * glm::inversesqrt(glm::dot(_p3, _p3) + 1e-8));
 	}
 	float Geommath::Plane::Distance(const Vec4f& plane, const Vec3f& point)
 	{

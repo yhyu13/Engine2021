@@ -16,9 +16,10 @@ void longmarch::Transform3DCom::Update(double ts)
 	}
 	LOCK_GUARD();
 	float dt = static_cast<float>(ts);
+	float Inv_dt = static_cast<float>(1.0 / ts);
 	{
-		g_total_velocity = (Geommath::GetTranslation(parentTr) - Geommath::GetTranslation(prev_parentTr)) / (dt);
-		g_rotational_velocity = (Geommath::ToEulerAngles(Geommath::GetRotation(parentTr)) - Geommath::ToEulerAngles(Geommath::GetRotation(prev_parentTr))) / (dt);
+		g_total_velocity = (Geommath::GetTranslation(parentTr) - Geommath::GetTranslation(prev_parentTr)) * Inv_dt;
+		g_rotational_velocity = (Geommath::ToEulerAngles(Geommath::GetRotation(parentTr)) - Geommath::ToEulerAngles(Geommath::GetRotation(prev_parentTr))) * Inv_dt;
 		prev_parentTr = parentTr;
 		prev_rtp_pos = rtp_pos;
 		rtp_pos += dt * (rtp_velocity + rtp_rotation * l_velocity);

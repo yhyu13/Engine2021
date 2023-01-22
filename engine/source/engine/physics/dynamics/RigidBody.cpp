@@ -222,14 +222,6 @@ namespace longmarch
         m_transform.m_scale = scale;
     }
 
-    void RigidBody::SetWorldTransform(const Mat4& trans)
-    {
-        m_prevPos = Geommath::GetTranslation(trans);
-        m_transform.m_pos = Geommath::GetTranslation(trans);
-        m_transform.m_rot = Geommath::GetRotation(trans);
-        m_transform.m_scale = Geommath::GetScale(trans);
-    }
-
     void RigidBody::SetGravityScale(float gravityScale)
     {
         m_gravityScale = gravityScale;
@@ -243,7 +235,7 @@ namespace longmarch
     void RigidBody::UpdateAABBShape()
     {
         m_shape->SetModelTrAndUpdate(
-            Geommath::ToTransformMatrix(m_transform.m_pos, m_transform.m_rot, m_transform.m_scale));
+                        Geommath::ToTransformMatrix(m_transform.m_pos, m_transform.m_rot, m_transform.m_scale));
     }
 
     void RigidBody::SetAABBShape(const Vec3f& aabbMin, const Vec3f& aabbMax)

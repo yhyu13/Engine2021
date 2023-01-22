@@ -331,6 +331,7 @@ namespace longmarch
             static Vec4f FromNP(const Vec3f& N, const Vec3f& p);
 
             static Vec4f Normalize(const Vec4f& p);
+            static Vec4f NormalizeSlow(const Vec4f& p);
 
             static float Distance(const Vec4f& plane, const Vec3f& point);
 

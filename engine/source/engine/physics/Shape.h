@@ -5,7 +5,7 @@
 
 namespace longmarch
 {
-    class Shape : protected BaseAtomicClassNC
+    class Shape
     {
     public:
         enum class SHAPE_TYPE
@@ -40,34 +40,31 @@ namespace longmarch
 
         inline bool IsVFCulled()
         {
-            LOCK_GUARD_NC();
             return m_isCulled;
         }
 
         inline SHAPE_TYPE GetType()
         {
-            LOCK_GUARD_NC();
             return m_type;
         }
 
         inline Entity GetOwnerEntity()
         {
-            LOCK_GUARD_NC();
             return m_ownerEntity;
         }
 
         inline void SetOwnerEntity(const Entity& e)
         {
-            LOCK_GUARD_NC();
             m_ownerEntity = e;
         }
 
         //! (1) copy the same shape type (2) Convert one shape to another
         static void Copy(Shape* shape1, Shape* shape2);
     protected:
-        Mat4 m_ObjectTr = {Mat4(1.0f)};
+        Mat4 m_ObjectTr;
         Entity m_ownerEntity;
-        SHAPE_TYPE m_type = {SHAPE_TYPE::EMPTY};
-        bool m_isCulled = {false};
+        SHAPE_TYPE m_type {SHAPE_TYPE::EMPTY};
+        bool m_isCulled {false};
+        bool m_isObjectTrInit {false};
     };
 }

@@ -13,7 +13,7 @@ namespace longmarch
         explicit OOBB(const std::shared_ptr<MeshData>& mesh);
         explicit OOBB(const LongMarch_Vector<std::shared_ptr<MeshData>>& meshs);
         void InitWithMeshData(const MeshData::VertexList& vertex_data, const MeshData::IndexList& index_data);
-        const LongMarch_Vector<Vec3f> GetAllVertex();
+        const LongMarch_Vector<Vec3f> GetAllVertex() const;
         Vec3f GetDiag();
         virtual float GetRadius() override;
         virtual Vec3f GetCenter() override;
@@ -31,7 +31,8 @@ namespace longmarch
         Vec3f GetOriginalCenter() const;
         void Update(const Vec3f& point);
         void UpdateOriginal(const Vec3f& point);
-        const LongMarch_Vector<Vec3f> GetAllVertexOriginal();
+        const LongMarch_Vector<Vec3f> GetAllVertexOriginal() const;
+        
     private:
         Vec3f Min, Max; // These two variables are not the same as for AABB, they are here just to get diag and center.
         Vec3f o_min, o_max;

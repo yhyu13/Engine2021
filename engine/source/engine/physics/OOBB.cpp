@@ -39,7 +39,6 @@ longmarch::OOBB::OOBB(const LongMarch_Vector<std::shared_ptr<MeshData>>& meshs)
 
 void longmarch::OOBB::InitWithMeshData(const MeshData::VertexList& vertex_data, const MeshData::IndexList& index_data)
 {
-    LOCK_GUARD_NC();
     if (vertex_data.empty())
     {
         throw EngineException(
@@ -93,9 +92,8 @@ void longmarch::OOBB::UpdateOriginal(const Vec3f& point)
     o_max = (glm::max)(o_max, point);
 }
 
-const LongMarch_Vector<Vec3f> longmarch::OOBB::GetAllVertex()
+const LongMarch_Vector<Vec3f> longmarch::OOBB::GetAllVertex() const
 {
-    LOCK_GUARD_NC();
     LongMarch_Vector<Vec3f> ret = GetAllVertexOriginal();
     for (auto& v : ret)
     {
@@ -104,11 +102,11 @@ const LongMarch_Vector<Vec3f> longmarch::OOBB::GetAllVertex()
     return ret;
 }
 
-const LongMarch_Vector<Vec3f> longmarch::OOBB::GetAllVertexOriginal()
+const LongMarch_Vector<Vec3f> longmarch::OOBB::GetAllVertexOriginal() const
 {
     LongMarch_Vector<Vec3f> ret(8);
     {
-        Vec3f _min = o_min, _max = o_max;
+        const Vec3f &_min = o_min, _max = o_max;
         Vec4f abc = Vec4f(_max - _min, 0);
         ret[0] = _min;
         ret[1] = _min + abc.xww;
@@ -140,54 +138,62 @@ Vec3f longmarch::OOBB::GetCenter()
 
 void longmarch::OOBB::SetModelTrAndUpdate(const Mat4& transform)
 {
-    LOCK_GUARD_NC();
-    m_ObjectTr = transform;
-    Min = std::move(Geommath::Mat4ProdVec3(transform, o_min));
-    Max = std::move(Geommath::Mat4ProdVec3(transform, o_max));
+    if (!m_isObjectTrInit || m_ObjectTr != transform)
+    {
+        m_ObjectTr = transform;
+        m_isObjectTrInit = true;
+        
+        m_ObjectTr = transform;
+        Min = std::move(Geommath::Mat4ProdVec3(transform, o_min));
+        Max = std::move(Geommath::Mat4ProdVec3(transform, o_max));
+    }
 }
 
 bool longmarch::OOBB::VFCTest(const ViewFrustum& VF, const Mat4& worldSpaceToViewFrustumSpace)
 {
-    LOCK_GUARD_NC();
     /*
         Reference: https://old.cescg.org/CESCG-2002/DSykoraJJelinek/
         Reference: http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-testing-boxes-ii/
     */
     const auto& _min = o_min;
     const auto& _max = o_max;
+    m_isCulled = false;
 
     // Original: const auto& plane_tr = Geommath::SmartInverseTranspose(Geommath::SmartInverse(worldSpaceToViewFrustumSpace * m_ObjectTr));
     // Simplified as: glm::transpose(worldSpaceToViewFrustumSpace * m_ObjectTr);
-    // Could be event more simplified as worldSpaceToViewFrustumSpace * m_ObjectTr to take advantage of row vector operation
+    // Could be even more simplified as worldSpaceToViewFrustumSpace * m_ObjectTr to take advantage of row vector operation
     const auto& plane_tr = worldSpaceToViewFrustumSpace * m_ObjectTr;
     for (const auto& plane : VF.planes)
     {
-        const auto& pl = Geommath::Plane::Normalize(plane * plane_tr);
+        // No need to normalize plane equation here due to it will be normalized later in Plane::Distance method
+        //const auto& pl = Geommath::Plane::Normalize(plane * plane_tr);
+        const auto pl = plane * plane_tr;
+        
         // vec * mat would treat the vector as a row vector, this is equivalent to trans(mat) * vec
         // N-P vertex test
-        Vec3f p{
-            Geommath::Lerp(_max[0], _min[0], signbit(pl[0])),
-            Geommath::Lerp(_max[1], _min[1], signbit(pl[1])),
-            Geommath::Lerp(_max[2], _min[2], signbit(pl[2]))
-        };
         // Vec3f p;
         // for (int i = 0; i < 3; ++i)
         // {
         //     p[i] = (pl[i] > 0) ? _max[i] : _min[i];
         // }
+        // Branchless optimization
+        Vec3f p{
+            Geommath::Lerp(_max[0], _min[0], signbit(pl[0])),
+            Geommath::Lerp(_max[1], _min[1], signbit(pl[1])),
+            Geommath::Lerp(_max[2], _min[2], signbit(pl[2]))
+        };
+        
         if (Geommath::Plane::Distance(pl, p) < 0)
         {
             m_isCulled = true;
-            return m_isCulled;
+            break;
         }
     }
-    m_isCulled = false;
     return m_isCulled;
 }
 
 bool longmarch::OOBB::DistanceTest(const Vec3f& center, float Near, float Far)
 {
-    LOCK_GUARD_NC();
     auto r = GetRadius();
     auto pos = GetCenter();
     auto distance = glm::length(center - pos);
@@ -199,7 +205,6 @@ bool longmarch::OOBB::DistanceTest(const Vec3f& center, float Near, float Far)
 
 void longmarch::OOBB::RenderShape()
 {
-    LOCK_GUARD_NC();
     Mat4 local_tr = Geommath::ToTranslateMatrix(GetOriginalCenter()) * Geommath::ToScaleMatrix(GetOriginalDiag());
     Renderer3D::RenderBoundingBox(m_ObjectTr * local_tr);
 }

@@ -2,7 +2,7 @@
 #include "engine/core/EngineCore.h"
 #include "engine/core/utility/TypeHelper.h"
 
-#define USE_ATOMIC_RIVAL_PTR 0
+#define USE_ATOMIC_RIVAL_PTR 0 // Use std atomic pointer or use platform specific interlock exchange method
 
 #ifndef _SHIPPING
 #define DEADLOCK_TIMER 1 // Debug break unfriendly, disabled unless you need to debug dead lock

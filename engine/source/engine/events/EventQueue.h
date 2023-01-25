@@ -42,11 +42,11 @@ namespace longmarch
 	private:
 		EventQueue()
 		{
-			m_eventsUpdateHandle = Scheduler::GetInstance(33)->set_interval(std::chrono::milliseconds(33), [this]() { UpdateAsync(33e-3); });
+			m_eventsAsyncUpdateHandle = Scheduler::GetInstance(33)->set_interval(std::chrono::milliseconds(33), [this]() { UpdateAsync(33e-3); });
 		}
 		~EventQueue()
 		{
-			m_eventsUpdateHandle->signal();
+			m_eventsAsyncUpdateHandle->signal();
 		}
 
 		using BaseEventPtr = std::shared_ptr<BaseEventHandler>;
@@ -192,7 +192,7 @@ namespace longmarch
 		//! Instanct execution of an async event in a background thread
 		inline void PublishAsync(EventPtr e)
 		{
-			LongMarch_DeamonThread(std::async(std::launch::async, [this, e]()
+			LongMarch_UseDeamonThreadWaitAsyncJob(std::async(std::launch::async, [this, e]()
 			{
 				auto& _e = std::static_pointer_cast<BaseEvent>(e);
 				LockNC();
@@ -354,7 +354,7 @@ namespace longmarch
 				*/
 				if ((delayedEvent->m_triggerTime -= frameTime) <= 0)
 				{
-					LongMarch_DeamonThread(std::async(std::launch::async, [this, delayedEvent]() { Publish(delayedEvent->m_event); }));
+					LongMarch_UseDeamonThreadWaitAsyncJob(std::async(std::launch::async, [this, delayedEvent]() { Publish(delayedEvent->m_event); }));
 				}
 				else
 				{
@@ -368,8 +368,8 @@ namespace longmarch
 		EventSubsriberLUT m_subscribers;
 		delayed_queue m_events;
 		delayed_queue m_eventsAsync;
-		Scheduler::SchedulerHandle m_eventsUpdateHandle = { nullptr };
-		bool m_bDelayedEventShouldBeCleared = { false };
+		Scheduler::SchedulerHandle m_eventsAsyncUpdateHandle { nullptr };
+		bool m_bDelayedEventShouldBeCleared { false };
 	};
 	/**
 	 * @brief Base class event subscriber helper class

@@ -360,6 +360,15 @@ namespace longmarch
 		Vec4f _v2(_mat * _v);
 		return ToVec3(_v2);
 	}
+
+	void Geommath::FromTransformMatrix(const Mat4& m, Vec3f& pos, Quaternion& quat, Vec3f& scale)
+	{
+		pos = Geommath::GetTranslation(m);
+		scale = Vec3f(glm::length(m[0]), glm::length(m[1]), glm::length(m[2]));
+		Mat3 _m3(m[0] * (1.0f / scale[0]), m[1] * (1.0f / scale[1]), m[2] * (1.0f / scale[2]));
+		quat = glm::normalize(Quaternion(std::move(_m3)));
+	}
+
 	Mat4 Geommath::ToTransformMatrix(const Vec3f& pos, const Quaternion& quat, const Vec3f& scale)
 	{
 		Mat4 mat = Geommath::ToMat4(quat);

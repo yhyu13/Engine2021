@@ -181,7 +181,7 @@ namespace longmarch
         RivalLock<ARG_NUM_GROUPS>* m_lock;
         bool m_enabled;
     };
-#define LOCK_GUARD_RIVAL(lock, group, ...) rival_lock_guard_cond<(lock).NUM_GROUPS> __lock_rival_cond(lock, group, __VA_ARGS__)
+#define LOCK_GUARD_RIVAL(lock, group, ...) rival_lock_guard_cond<(lock).NUM_GROUPS> __lock_rival_cond(lock, group, __VA_ARGS__);ATOMIC_THREAD_FENCE
 }
 
 #undef USE_ATOMIC_RIVAL_PTR

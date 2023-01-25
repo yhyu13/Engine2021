@@ -9,9 +9,9 @@
 #include "engine/core/thread/RivalLock.h"
 #include "engine/core/smart-pointer/RefPtr.h"
 
-#include "engine/ecs/EntityDecorator.h"
 #include "engine/ecs/EntityManager.h"
 #include "engine/ecs/BitMaskSignature.h"
+#include "engine/ecs/EntityDecorator.h"
 #include "engine/ecs/ComponentManager.h"
 #include "engine/ecs/ComponentDecorator.h"
 #include "engine/ecs/EntityType.h"
@@ -31,8 +31,67 @@ namespace longmarch
      *
      * @author Dushyant Shukla (dushyant.shukla@digipen.edu | 60000519), Hang Yu (yohan680919@gmail.com)
      */
-    class GameWorld final : private BaseAtomicClassNC, private BaseAtomicClassStatic, public BaseRefCountClassNC
+    class GameWorld final : private BaseAtomicClassStatic, public BaseRefCountClassNC
     {
+    public:
+        struct GameWorldReadOnlyMode_Guard
+        {
+            GameWorldReadOnlyMode_Guard() = delete;
+            GameWorldReadOnlyMode_Guard(const GameWorld* world)
+                :
+                m_world(world)
+            {
+                m_world->m_RWMode = GameWorldReadWriteMode::READ_ONLY;
+            }
+            ~GameWorldReadOnlyMode_Guard()
+            {
+                m_world->m_RWMode = GameWorldReadWriteMode::VOLATILE;
+            }
+            const GameWorld* m_world;
+        };
+        
+    private:
+        enum class GameWorldReadWriteMode : uint8_t
+        {
+            VOLATILE = 0, // Allow unordered read & write by applying rival locks
+            READ_ONLY = 1, // Only allow read, will throw an exception on write
+        };
+
+        typedef LongMarch_UnorderedMap_flat<ComponentTypeIndex_T, void*> ComponentCacheMap_T;
+        struct EntityMaskValue_T
+        {
+            EntityMaskValue_T() = default;
+            EntityMaskValue_T(const EntityMaskValue_T& other)
+            {
+                GetBitMask() = std::get<0>(other.EntityMaskValue);
+            }
+            EntityMaskValue_T& operator=(const EntityMaskValue_T& other)
+            {
+                GetBitMask() = std::get<0>(other.EntityMaskValue);
+                return *this;
+            }
+            EntityMaskValue_T(EntityMaskValue_T&& other) noexcept
+            {
+                GetBitMask() = std::move(std::get<0>(other.EntityMaskValue));
+            }
+            EntityMaskValue_T& operator=(EntityMaskValue_T&& other) noexcept
+            {
+                GetBitMask() = std::move(std::get<0>(other.EntityMaskValue));
+                return *this;
+            }
+            
+            BitMaskSignature& GetBitMask() const
+            {
+                return std::get<0>(EntityMaskValue);
+            }
+            ComponentCacheMap_T& GetComponentCache() const
+            {
+                return std::get<1>(EntityMaskValue);
+            }
+        private:
+            mutable std::tuple<BitMaskSignature, ComponentCacheMap_T> EntityMaskValue;
+        };
+        
     private:
         NONCOPYABLE(GameWorld);
         GameWorld() = delete;
@@ -105,10 +164,11 @@ namespace longmarch
         inline bool IsPaused() const { return m_paused; }
 
         void Update(double frameTime);
-        void LateUpdate(double frameTime);
 
+#if MULTITHREAD_UPDATE
         void MultiThreadUpdate(double frameTime);
         void MultiThreadJoin();
+#endif
 
         void PreRenderUpdate(double frameTime);
         
@@ -292,66 +352,27 @@ namespace longmarch
                        const std::type_identity_t<std::function<void(const EntityChunkContext& e)>>& func,
                        int min_split = -1) const;
 
+        bool ShouldApplyRivalLock() const
+        {
+            return m_RWMode != GameWorldReadWriteMode::READ_ONLY;
+        }
+
     private:
         inline static LongMarch_UnorderedMap_flat<std::string, RefPtr<GameWorld>> s_allManagedWorlds;
-        inline static GameWorld* s_currentWorld = {nullptr};
+        inline static GameWorld* s_currentWorld {nullptr};
 
         //! Multithreaded pool used in ParEach2 for inner function multithreading to avoid thread overflow stalling the default thread pool and the entire program
         inline static StealThreadPool s_parEachJobPool;
-        constexpr static int s_parEachMinSplit{16};
+        constexpr inline static int s_parEachMinSplit{32};
 
         //! GameWorld class level job pool, used in running game thread in the background or any other async tasks
         inline static StealThreadPool s_jobPool{4};
-
+        
     private:
         // Entity (E)
         //!< Contains all entities
         std::shared_ptr<EntityManager> m_entityManager;
         //!< Contains all entities and their component bit masks and component pointer location cache (do not copy this component cache map when cloning a gameworld)
-        typedef LongMarch_UnorderedMap_flat<ComponentTypeIndex_T, void*> ComponentCacheMap_T;
-        struct EntityMaskValue_T
-        {
-            EntityMaskValue_T() = default;
-            EntityMaskValue_T(const EntityMaskValue_T& Other)
-            {
-                GetBitMask() = std::get<0>(Other.EntityMaskValue);
-            }
-            EntityMaskValue_T& operator=(const EntityMaskValue_T& Other)
-            {
-                GetBitMask() = std::get<0>(Other.EntityMaskValue);
-                return *this;
-            }
-            EntityMaskValue_T(EntityMaskValue_T&& Other) noexcept
-            {
-                GetBitMask() = std::move(std::get<0>(Other.EntityMaskValue));
-            }
-            EntityMaskValue_T& operator=(EntityMaskValue_T&& Other) noexcept
-            {
-                GetBitMask() = std::move(std::get<0>(Other.EntityMaskValue));
-                return *this;
-            }
-            
-            BitMaskSignature& GetBitMask() const
-            {
-                return std::get<0>(EntityMaskValue);
-            }
-            void SetBitMask(const BitMaskSignature& Mask) const
-            {
-                GetBitMask() = Mask;
-            }
-
-            ComponentCacheMap_T& GetComponentCache() const
-            {
-                return std::get<1>(EntityMaskValue);
-            }
-            void SetComponentCache(ComponentTypeIndex_T Index, void* Com) const
-            {
-                GetComponentCache()[Index] = Com;
-            }
-
-        private:
-            mutable std::tuple<BitMaskSignature, ComponentCacheMap_T> EntityMaskValue;
-        };
         LongMarch_UnorderedMap_Par_node<Entity, EntityMaskValue_T> m_entityMaskMap;
 
         // Component (C)
@@ -367,14 +388,26 @@ namespace longmarch
         LongMarch_UnorderedMap_node<std::string, std::shared_ptr<BaseComponentSystem>> m_systemsNameMap;
 
         // Misc
+        //! Read & Write access mode
+        mutable GameWorldReadWriteMode m_RWMode {GameWorldReadWriteMode::VOLATILE};
         //! Rival group lock
         mutable RivalLock<2> m_rivalLock;
         //! Holds multi-threaded job that are created in a instance of Gameworld
-        AtomicQueueNC<std::shared_future<void>> m_jobs;
+        std::future<void> m_asyncUpdatejob;
         //! Name of the game world
         std::string m_name;
         //! Is game world paused
-        std::atomic_bool m_paused = {false};
+        std::atomic_bool m_paused {false};
+
+#define TRY_LOCK_READ() LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0}, ShouldApplyRivalLock())
+#define TRY_LOCK_WRITE() LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{1}, ShouldApplyRivalLock()); \
+do {ASSERT(m_RWMode != GameWorldReadWriteMode::READ_ONLY);} while(0)
+
+#if GAMEWORLD_UPDATE_READ_ONLY
+        #define LOCK_GUARD_GAMEWORLD_READYONLY(world) GameWorld::GameWorldReadOnlyMode_Guard _gw_read_only_guard(world);ATOMIC_THREAD_FENCE
+#else
+        #define LOCK_GUARD_GAMEWORLD_READYONLY(...) 
+#endif
     };
 }
 

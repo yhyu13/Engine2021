@@ -45,7 +45,7 @@ namespace longmarch {
 
 	public:
 		static AudioManager* GetInstance();
-		void Update(double deltaTime);
+		void Update();
 
 		static int ErrorCheck(FMOD_RESULT result);
 

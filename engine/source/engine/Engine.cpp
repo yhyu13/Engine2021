@@ -69,7 +69,8 @@ namespace longmarch
 		// Engine updaters
 		{
 			PreUpdate().Connect(AssetLoader::Update);
-			Update().Connect([](double dt)
+			
+			EventQueueUpdate().Connect([](double dt)
 			{
 				{
 					auto queue = EventQueue<EngineEventType>::GetInstance();
@@ -84,14 +85,16 @@ namespace longmarch
 					queue->Update(dt);
 				}
 			});
-			Update().Connect([this](double dt) 
+			EventQueueUpdate().Connect([this](double dt) 
 			{
-				m_engineWindow->Update(dt);
+				m_engineWindow->EvetQueueUpdate();
 			});
+			
 			Render().Connect([this]() 
 			{ 
 				m_engineWindow->Render(); 
 			});
+			
 			PostRenderUpdate().Connect(EngineException::Update);
 			PostRenderUpdate().Connect([this]() 
 			{
@@ -171,8 +174,8 @@ namespace longmarch
 				PreUpdate().Update();
 
 				double dt = rateController->GetFrameTime();
-				// Engine update
-				Update().Update(dt);
+				// Event queue update
+				EventQueueUpdate().Update(dt);
 
 				if (!Engine::GetPaused())
 				{

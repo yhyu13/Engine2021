@@ -72,7 +72,7 @@ namespace longmarch
 		explicit Window(const Json::Value& engineConfiguration);
 		virtual ~Window();
 
-		void Update(double dt);
+		void EvetQueueUpdate();
 		void Render();
 		void Shutdown();
 		bool ShouldExit();

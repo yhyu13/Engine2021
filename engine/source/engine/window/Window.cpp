@@ -17,7 +17,7 @@ namespace longmarch
 		return std::make_shared<Window>(windowConfiguration);
 	}
 
-	void Window::Update(double dt) 
+	void Window::EvetQueueUpdate() 
 	{
 		glfwPollEvents();
 	}

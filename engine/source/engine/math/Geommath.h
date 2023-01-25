@@ -269,6 +269,8 @@ namespace longmarch
 
         static Vec3f Mat4ProdVec3(const Mat4& mat, const Vec3f& v);
 
+        static void FromTransformMatrix(const Mat4& m, Vec3f& pos, Quaternion& quat, Vec3f& scale);
+
         static Mat4 ToTransformMatrix(const Vec3f& pos, const Quaternion& quat, const Vec3f& scale);
 
         static Mat4 ToTranslateMatrix(const Vec3f& v);

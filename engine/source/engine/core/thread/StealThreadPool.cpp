@@ -11,29 +11,30 @@ longmarch::StealThreadPool::StealThreadPool(unsigned int threads)
     {
         throw std::invalid_argument("Invalid thread count!");
     }
-    auto worker = [this](auto i)
-    {
-        while (true)
-        {
-            Proc task;
-            for (auto n(0u); n < m_count * K; ++n)
-            {
-                if (m_queues[(i + n) % m_count].try_pop(task))
-                {
-                    break;
-                }
-            }
-            if (!task && !m_queues[i].pop(task))
-            {
-                break;
-            }
-            task();
-        }
-    };
-    m_threads.reserve(threads);
+
     for (auto i(0u); i < threads; ++i)
     {
-        m_threads.emplace_back(worker, i);
+        m_threads.emplace_back(
+            [this, i = i]
+            {
+                for (;;)
+                {
+                    Proc task;
+                    for (auto n(0u); n < m_count * K; ++n)
+                    {
+                        if (m_queues[(i + n) % m_count].try_pop(task))
+                        {
+                            break;
+                        }
+                    }
+                    if (!task && !m_queues[i].pop(task))
+                    {
+                        break;
+                    }
+                    task();
+                }
+            }
+        );
     }
 }
 

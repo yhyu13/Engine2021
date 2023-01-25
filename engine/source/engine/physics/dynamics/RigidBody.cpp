@@ -275,9 +275,7 @@ namespace longmarch
 
     void RigidBody::SetRBTrans(const Mat4& trans)
     {
-        m_transform.m_pos = Geommath::GetTranslation(trans);
-        m_transform.m_rot = Geommath::GetRotation(trans);
-        m_transform.m_scale = Geommath::GetScale(trans);
+        Geommath::FromTransformMatrix(trans, m_transform.m_pos, m_transform.m_rot, m_transform.m_scale);
     }
 
     const RBTransform& RigidBody::GetRBTrans() const

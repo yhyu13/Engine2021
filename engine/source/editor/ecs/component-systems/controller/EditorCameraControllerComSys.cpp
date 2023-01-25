@@ -212,7 +212,7 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 		/*
 			Scheduler
 		*/
-		LongMarch_DeamonThread(ThreadPool::GetInstance()->enqueue_task(
+		LongMarch_UseDeamonThreadWaitAsyncJob(ThreadPool::GetInstance()->enqueue_task(
 			[]()
 		{
 			using namespace std;
@@ -683,7 +683,7 @@ void longmarch::EditorCameraControllerComSys::Update(double ts)
 		/*
 			Test emilib coroutine
 		*/
-		LongMarch_DeamonThread(ThreadPool::GetInstance()->enqueue_task(
+		LongMarch_UseDeamonThreadWaitAsyncJob(ThreadPool::GetInstance()->enqueue_task(
 			[]()
 		{
 			constexpr double dt = 1.0 / 60;

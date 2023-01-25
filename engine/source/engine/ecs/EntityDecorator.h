@@ -7,7 +7,7 @@
 namespace longmarch
 {
     class GameWorld;
-
+    
     template <typename ComponentType>
     class ComponentDecorator;
 
@@ -17,8 +17,7 @@ namespace longmarch
             :
             m_entity(entity),
             m_world(world)
-        {
-        }
+        {}
 
         template <typename ComponentType>
         void AddComponent(const ComponentType& component) const;

@@ -43,19 +43,22 @@ void longmarch::VulkanDemoLayer::OnUpdate(double ts)
 			PreUpdate(dt);
 		}
 		{
-			APP_TIME("PreRender update");
-			PreRenderUpdate(dt);
-		}
-		{
-			APP_TIME("System update");
-			Update(dt);
-		}
-		{
-			APP_TIME("Render");
-			Render(dt);
-		}
-		{
-			JoinAll();
+			LOCK_GUARD_GAMEWORLD_READYONLY(GameWorld::GetCurrent());
+			{
+				APP_TIME("PreRender update");
+				PreRenderUpdate(dt);
+			}
+			{
+				APP_TIME("System update");
+				Update(dt);
+			}
+			{
+				APP_TIME("Render");
+				Render(dt);
+			}
+			{
+				JoinAll();
+			}
 		}
 		{
 			APP_TIME("PostRender update");

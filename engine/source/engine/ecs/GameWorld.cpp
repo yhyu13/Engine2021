@@ -156,7 +156,7 @@ GameWorld* longmarch::GameWorld::Clone(const std::string& newName, const GameWor
     ASSERT(newName != from->GetName(), "Clone world must have a different name!");
     auto newWorld = GetInstance(false, newName, "");
     {
-        from->LockNC();
+        LOCK_GUARD_GAMEWORLD_READYONLY(from);
         {
             // (E) Copy entities
             newWorld->m_entityManager = from->m_entityManager->Copy();
@@ -194,7 +194,6 @@ GameWorld* longmarch::GameWorld::Clone(const std::string& newName, const GameWor
                 newWorld->m_systemsNameMap[newWorld->m_systemsName[i]] = newWorld->m_systems[i];
             }
         }
-        from->UnLockNC();
     }
     newWorld->InitECS();
     return newWorld;
@@ -244,38 +243,30 @@ void longmarch::GameWorld::Update(double frameTime)
     {
         system->Update(frameTime);
     }
-}
-
-void longmarch::GameWorld::LateUpdate(double frameTime)
-{
-    if (m_paused) frameTime = 0.0;
     for (auto& system : m_systems)
     {
         system->LateUpdate(frameTime);
     }
 }
 
+#if MULTITHREAD_UPDATE
 void longmarch::GameWorld::MultiThreadUpdate(double frameTime)
 {
-    m_jobs.push(s_jobPool.enqueue_task([frameTime, this]()
+    m_asyncUpdatejob = s_jobPool.enqueue_task([frameTime, this]()
     {
         ENGINE_TRY_CATCH(
             {
-            Update(frameTime);
-            LateUpdate(frameTime);
+                Update(frameTime);
             }
         );
-    }));
+    });
 }
 
 void longmarch::GameWorld::MultiThreadJoin()
 {
-    while (!m_jobs.empty())
-    {
-        m_jobs.front().wait();
-        m_jobs.pop();
-    }
+    m_asyncUpdatejob.wait();
 }
+#endif
 
 void longmarch::GameWorld::PreRenderUpdate(double frameTime)
 {
@@ -346,8 +337,7 @@ EntityDecorator longmarch::GameWorld::GenerateEntity(EntityType type, bool activ
 {
     EntityDecorator entity;
     {
-        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{1});
-        LOCK_GUARD_NC();
+        TRY_LOCK_WRITE();
         entity = EntityDecorator{m_entityManager->Create(type), this};
     }
     entity.Volatile().AddComponent(ActiveCom(active));
@@ -381,7 +371,7 @@ EntityDecorator longmarch::GameWorld::GenerateEntity3DNoCollision(EntityType typ
 
 bool longmarch::GameWorld::HasEntity(const Entity& entity) const
 {
-    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
+    TRY_LOCK_READ();
     return LongMarch_contains(m_entityMaskMap, entity);
 }
 
@@ -442,14 +432,14 @@ void longmarch::GameWorld::RemoveEntity(const Entity& entity)
         // Remove components first
         RemoveAllComponent(entity);
     }
-
-    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{1});
-    // Then remove the entity
-    LOCK_GUARD_NC();
-    m_entityManager->Destroy(entity);
-    const auto it = m_entityMaskMap.find(entity);
-    ASSERT(it != m_entityMaskMap.end());
-    m_entityMaskMap.erase(it);
+    {
+        TRY_LOCK_WRITE();
+        // Then remove the entity
+        m_entityManager->Destroy(entity);
+        const auto it = m_entityMaskMap.find(entity);
+        ASSERT(it != m_entityMaskMap.end());
+        m_entityMaskMap.erase(it);
+    }
 }
 
 const Entity longmarch::GameWorld::GetTheOnlyEntityWithType(EntityType type) const
@@ -480,7 +470,7 @@ const LongMarch_Vector<Entity> longmarch::GameWorld::GetAllEntityWithType(
 const LongMarch_Vector<Entity> longmarch::GameWorld::GetAllEntityWithType(
     const LongMarch_Vector<EntityType>& types) const
 {
-    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
+    TRY_LOCK_READ();
 
     LongMarch_Vector<Entity> result;
     for (auto& type : types)
@@ -494,13 +484,13 @@ const LongMarch_Vector<Entity> longmarch::GameWorld::GetAllEntityWithType(
 
 const Entity longmarch::GameWorld::GetEntityFromID(EntityID ID) const
 {
-    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
+    TRY_LOCK_READ();
     return m_entityManager->GetEntityFromID(ID);
 }
 
 const LongMarch_Vector<BaseComponentInterface*> longmarch::GameWorld::GetAllComponent(const Entity& entity) const
 {
-    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
+    TRY_LOCK_READ();
     LongMarch_Vector<BaseComponentInterface*> ret;
     if (auto it = m_entityMaskMap.find(entity);
         it != m_entityMaskMap.end())
@@ -535,8 +525,7 @@ const LongMarch_Vector<BaseComponentInterface*> longmarch::GameWorld::GetAllComp
 
 void longmarch::GameWorld::RemoveAllComponent(const Entity& entity)
 {
-    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{1});
-    LOCK_GUARD_NC();
+    TRY_LOCK_WRITE();
     if (auto it = m_entityMaskMap.find(entity);
         it != m_entityMaskMap.end())
     {
@@ -552,7 +541,7 @@ void longmarch::GameWorld::RemoveAllComponent(const Entity& entity)
 
 const LongMarch_Vector<Entity> GameWorld::EntityView(const BitMaskSignature& mask) const
 {
-    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
+    TRY_LOCK_READ();
 
     ENGINE_EXCEPT_IF(mask == BitMaskSignature(),
                      L"GameWorld::EntityView should not receive a trivial bit mask. Double check EntityView argument.");
@@ -573,7 +562,7 @@ void longmarch::GameWorld::ForEach(const LongMarch_Vector<Entity>& es,
                                    const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func)
 const
 {
-    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+    TRY_LOCK_READ();
     for (const auto& e : es)
     {
         func(EntityDecorator(e, this));
@@ -616,7 +605,7 @@ void longmarch::GameWorld::ParEach_Internal(const LongMarch_Vector<Entity>& es,
         return;
     }
 
-    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+    TRY_LOCK_READ();
     auto& pool = s_parEachJobPool;
 
     // Init splitting parameters
@@ -680,7 +669,7 @@ void longmarch::GameWorld::ParEach_Internal(const LongMarch_Vector<Entity>& es,
 
 const LongMarch_Vector<EntityChunkContext> GameWorld::EntityChunkView(const BitMaskSignature& mask) const
 {
-    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
+    TRY_LOCK_READ();
 
     ENGINE_EXCEPT_IF(mask == BitMaskSignature(),
                      L"GameWorld::EntityChunkView should not receive a trivial bit mask. Double check EntityChunkView argument.");
@@ -701,7 +690,7 @@ const LongMarch_Vector<EntityChunkContext> GameWorld::EntityChunkView(const BitM
 void GameWorld::ForEachChunk(const LongMarch_Vector<EntityChunkContext>& es,
                              const std::type_identity_t<std::function<void(const EntityChunkContext& e)>>& func) const
 {
-    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+    TRY_LOCK_READ();
     for (const auto& e : es)
     {
         func(e);
@@ -740,7 +729,7 @@ void GameWorld::ParEachChunk_Internal(const LongMarch_Vector<EntityChunkContext>
         return;
     }
 
-    LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+    TRY_LOCK_READ();
     auto& pool = s_parEachJobPool;
 
     // Init splitting parameters

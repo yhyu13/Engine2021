@@ -12,7 +12,6 @@ namespace longmarch
 
     InputManager::InputManager()
     {
-        LOCK_GUARD_NC();
         {
             memset(m_previousKeyBoardState, false, sizeof(m_previousKeyBoardState));
             memset(m_currentKeyBoardState, false, sizeof(m_currentKeyBoardState));
@@ -21,7 +20,7 @@ namespace longmarch
             memset(m_currentMouseButtonState, false, sizeof(m_currentMouseButtonState));
         }
         {
-            m_deltaTime = -100.0;
+            m_deltaTime = std::numeric_limits<double>::lowest();
             m_updateTimeStamp = std::chrono::steady_clock::now();
             for (int i = 0; i < KEY_LAST + 1; ++i)
             {
@@ -34,7 +33,7 @@ namespace longmarch
         }
         {
             // Register input manager update to late update so that the input state is all available in any layer
-            Engine::GetInstance()->LateUpdate().Connect(std::bind(&InputManager::Update, this, std::placeholders::_1));
+            Engine::GetInstance()->EventQueueUpdate().Connect(std::bind(&InputManager::Update, this, std::placeholders::_1));
         }
     }
 

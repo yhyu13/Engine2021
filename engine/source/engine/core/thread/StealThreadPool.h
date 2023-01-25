@@ -22,7 +22,7 @@ namespace longmarch
             return &pool;
         }
 
-        explicit StealThreadPool(unsigned int threads = std::thread::hardware_concurrency() - 1);
+        explicit StealThreadPool(unsigned int threads = std::thread::hardware_concurrency());
         ~StealThreadPool();
 
         template <typename F, typename... Args>
@@ -68,7 +68,7 @@ namespace longmarch
         }
 
     public:
-        const unsigned int threads;
+        unsigned int threads;
 
     private:
         using Proc = std::function<void(void)>;
@@ -77,11 +77,11 @@ namespace longmarch
         using Thread = std::thread;
         using Threads = std::vector<Thread>;
 
-        constexpr inline static const unsigned int K = {2u};
+        constexpr inline static unsigned int K = {2u};
 
         Queues m_queues;
         Threads m_threads;
-        const unsigned int m_count;
+        unsigned int m_count;
         std::atomic_uint_fast32_t m_index = {0u};
     };
 }

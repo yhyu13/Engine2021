@@ -8,7 +8,7 @@ namespace longmarch
     template <typename ComponentType>
     inline bool GameWorld::HasComponent(const Entity& entity) const
     {
-        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
+        TRY_LOCK_READ();
         if (const auto it = m_entityMaskMap.find(entity);
             it != m_entityMaskMap.end())
         {
@@ -24,8 +24,7 @@ namespace longmarch
     template <typename ComponentType>
     inline void GameWorld::AddComponent(const Entity& entity, const ComponentType& component)
     {
-        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{1});
-        LOCK_GUARD_NC();
+        TRY_LOCK_WRITE();
         auto& EntityMaskValue = m_entityMaskMap[entity];
         auto& newMask = EntityMaskValue.GetBitMask();
         auto& ComponentCache = EntityMaskValue.GetComponentCache();
@@ -70,8 +69,7 @@ namespace longmarch
     template <typename ComponentType>
     inline void GameWorld::RemoveComponent(const Entity& entity)
     {
-        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{1});
-        LOCK_GUARD_NC();
+        TRY_LOCK_WRITE();
         auto& EntityMaskValue = m_entityMaskMap[entity];
         auto& newMask = EntityMaskValue.GetBitMask();
         auto& ComponentCache = EntityMaskValue.GetComponentCache();
@@ -96,7 +94,7 @@ namespace longmarch
     template <typename ComponentType>
     inline ComponentDecorator<ComponentType> GameWorld::GetComponent(const Entity& entity) const
     {
-        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
+        TRY_LOCK_READ();
         ComponentType* com = nullptr;
         if (const auto it = m_entityMaskMap.find(entity);
             it != m_entityMaskMap.end())
@@ -172,7 +170,7 @@ namespace longmarch
     inline void GameWorld::ForEach(
         const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func) const
     {
-        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+        TRY_LOCK_READ();
         for (const auto& e : EntityView<Components...>())
         {
             auto ed = EntityDecorator(e, this);
@@ -219,7 +217,7 @@ namespace longmarch
             return;
         }
         
-        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+        TRY_LOCK_READ();
         auto& pool = s_parEachJobPool;
 
         const int num_e = es.size();

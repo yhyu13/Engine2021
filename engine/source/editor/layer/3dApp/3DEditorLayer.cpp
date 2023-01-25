@@ -31,7 +31,7 @@ void longmarch::_3DEditorLayer::Init()
 		ManageEventSubHandle(queue->Subscribe<_3DEditorLayer>(this, EditorEventType::EDITOR_SWITCH_TO_EDITING_MODE, &_3DEditorLayer::_ON_EDITOR_SWITCH_TO_EDITING_MODE));
 		ManageEventSubHandle(queue->Subscribe<_3DEditorLayer>(this, EditorEventType::EDITOR_SWITCH_TO_GAME_MODE, &_3DEditorLayer::_ON_EDITOR_SWITCH_TO_GAME_MODE));
 	
-		Engine::GetInstance()->Update().Connect([](double dt) 
+		Engine::GetInstance()->EventQueueUpdate().Connect([](double dt) 
 		{
 			{
 				auto queue = EventQueue<EditorEventType>::GetInstance();
@@ -50,19 +50,22 @@ void longmarch::_3DEditorLayer::OnUpdate(double ts)
 			PreUpdate(dt);
 		}
 		{
-			ENG_TIME("PreRender update");
-			PreRenderUpdate(dt);
-		}
-		{
-			ENG_TIME("System update");
-			Update(dt);
-		}
-		{
-			ENG_TIME("Render");
-			Render(dt);
-		}
-		{
-			JoinAll();
+			LOCK_GUARD_GAMEWORLD_READYONLY(GameWorld::GetCurrent());
+			{
+				ENG_TIME("PreRender update");
+				PreRenderUpdate(dt);
+			}
+			{
+				ENG_TIME("System update");
+				Update(dt);
+			}
+			{
+				ENG_TIME("Render");
+				Render(dt);
+			}
+			{
+				JoinAll();
+			}
 		}
 		{
 			ENG_TIME("PostRender update");
@@ -121,8 +124,6 @@ void longmarch::_3DEditorLayer::Update(double ts)
 	GameWorld::GetCurrent()->MultiThreadUpdate(ts);
 #else
 	GameWorld::GetCurrent()->Update(ts);
-	GameWorld::GetCurrent()->Update2(ts);
-	GameWorld::GetCurrent()->Update3(ts);
 #endif // MULTITHREAD_UPDATE
 }
 

@@ -38,7 +38,7 @@ void longmarch::Scene3DComSys::PreRenderUpdate(double dt)
                 if (sceneDataRef)
                 {
                     const auto& sceneData = *(sceneDataRef);
-                    for (const auto& [level, data] : sceneData)
+                    for (const auto& [_, data] : sceneData)
                     {
                         if (auto& mat = data->material; mat->emissive)
                         {

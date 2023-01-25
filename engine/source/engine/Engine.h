@@ -10,60 +10,30 @@
 
 namespace longmarch
 {
-	struct ConnectableUpdater : private BaseAtomicClassNC
+	template<typename... Args>
+	struct ConnectableUpdater
 	{
 		NONCOPYABLE(ConnectableUpdater);
 		ConnectableUpdater() = default;
-		size_t Connect(const std::function<void()>& callback)
+		size_t Connect(const std::function<void(Args...)>& callback)
 		{
-			LOCK_GUARD_NC();
 			auto index = m_updaters.size();
 			m_updaters.emplace_back(callback);
 			return index;
 		}
 		void Disconnect(size_t index)
 		{
-			LOCK_GUARD_NC();
 			m_updaters.erase(m_updaters.begin() + index);
 		}
-		void Update()
+		void Update(Args... args)
 		{
-			LOCK_GUARD_NC();
 			for (auto& update : m_updaters)
 			{
-				update();
+				update(args...);
 			}
 		}
 	private:
-		std::vector<std::function<void()>> m_updaters;
-	};
-
-	struct ConnectableUpdater2 : private BaseAtomicClassNC
-	{
-		NONCOPYABLE(ConnectableUpdater2);
-		ConnectableUpdater2() = default;
-		size_t Connect(const std::function<void(double)>& callback)
-		{
-			LOCK_GUARD_NC();
-			auto index = m_updaters.size();
-			m_updaters.emplace_back(callback);
-			return index;
-		}
-		void Disconnect(size_t index)
-		{
-			LOCK_GUARD_NC();
-			m_updaters.erase(m_updaters.begin() + index);
-		}
-		void Update(double dt)
-		{
-			LOCK_GUARD_NC();
-			for (auto& update : m_updaters)
-			{
-				update(dt);
-			}
-		}
-	private:
-		std::vector<std::function<void(double)>> m_updaters;
+		std::vector<std::function<void(Args...)>> m_updaters;
 	};
 
 	/**
@@ -90,11 +60,11 @@ namespace longmarch
 		virtual void Init();
 		void Run();
 
-		inline ConnectableUpdater& PreUpdate() { return m_preUpdate; }
-		inline ConnectableUpdater2& Update() { return m_update; }
-		inline ConnectableUpdater2& LateUpdate() { return m_lateUpdate; }
-		inline ConnectableUpdater& Render() { return m_renderUpdate; }
-		inline ConnectableUpdater& PostRenderUpdate() { return m_postRenderUpdate; }
+		inline auto& PreUpdate() { return m_preUpdate; }
+		inline auto& EventQueueUpdate() { return m_eventQueueUpdate; }
+		inline auto& LateUpdate() { return m_lateUpdate; }
+		inline auto& Render() { return m_renderUpdate; }
+		inline auto& PostRenderUpdate() { return m_postRenderUpdate; }
 
 		inline void SwitchCurrentLayer(Layer::LAYER_TYPE layer) { m_LayerStack.SwitchCurrentLayer(layer); }
 		inline void PushLayer(const std::shared_ptr<Layer>& layer) { m_LayerStack.PushLayer(layer); }
@@ -109,11 +79,11 @@ namespace longmarch
 
 	private:
 		std::shared_ptr<Window> m_engineWindow{ nullptr };
-		ConnectableUpdater m_preUpdate;
-		ConnectableUpdater2 m_update;
-		ConnectableUpdater2 m_lateUpdate;
-		ConnectableUpdater m_renderUpdate;
-		ConnectableUpdater m_postRenderUpdate;
+		ConnectableUpdater<> m_preUpdate;
+		ConnectableUpdater<double> m_eventQueueUpdate;
+		ConnectableUpdater<double> m_lateUpdate;
+		ConnectableUpdater<> m_renderUpdate;
+		ConnectableUpdater<> m_postRenderUpdate;
 		LayerStack m_LayerStack;
 		ENGINE_MODE m_engineMode{ ENGINE_MODE::EDITING };
 		unsigned int m_maxFrameRate{ 60u };

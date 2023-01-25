@@ -185,6 +185,7 @@ project "engine"
 			"WINDOWS_APP",
 			"GLFW_INCLUDE_NONE",
 			"MULTITHREAD_UPDATE",
+			"GAMEWORLD_UPDATE_READ_ONLY",
 		}
 
 		postbuildcommands

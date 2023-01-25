@@ -4,6 +4,8 @@
 
 #define PADDING 0
 
+#define ATOMIC_THREAD_FENCE std::atomic_thread_fence(std::memory_order_acq_rel)
+
 namespace longmarch
 {
     // used in stbi image parallel read/write
@@ -43,7 +45,7 @@ namespace longmarch
     struct BaseAtomicClassStatic
     {
     public:
-#define LOCK_GUARD_S() atomic_flag_guard __lock_s(sc_flag)
+#define LOCK_GUARD_S() atomic_flag_guard __lock_s(sc_flag);ATOMIC_THREAD_FENCE
         static void LockS() noexcept;
         static void UnLockS() noexcept;
     protected:
@@ -64,7 +66,7 @@ namespace longmarch
     {
     public:
         NONINSTANTIABLE(BaseAtomicClassNI);
-#define LOCK_GUARD_NI() atomic_flag_guard __lock_ni(ni_flag)
+#define LOCK_GUARD_NI() atomic_flag_guard __lock_ni(ni_flag);ATOMIC_THREAD_FENCE
         static void LockNI() noexcept;
         static void UnLockNI() noexcept;
     protected:
@@ -83,7 +85,7 @@ namespace longmarch
     public:
         NONCOPYABLE(BaseAtomicClassNC);
 
-#define LOCK_GUARD_NC() atomic_flag_guard __lock_nc(nc_flag)
+#define LOCK_GUARD_NC() atomic_flag_guard __lock_nc(nc_flag);ATOMIC_THREAD_FENCE
 
         BaseAtomicClassNC() = default;
 
@@ -111,7 +113,7 @@ namespace longmarch
     struct MS_ALIGN8 BaseAtomicClass
     {
     public:
-#define LOCK_GUARD() atomic_flag_guard __lock(m_flag)
+#define LOCK_GUARD() atomic_flag_guard __lock(m_flag);ATOMIC_THREAD_FENCE
 
         BaseAtomicClass() noexcept = default;
 
@@ -154,7 +156,7 @@ namespace longmarch
     public:
         NONCOPYABLE(AdaptiveAtomicClassNC);
 
-#define LOCK_GUARD_ADAPTIVE_NC() adaptive_atomic_guard __lock_adaptive_nc(nc_mutex, nc_period_nano)
+#define LOCK_GUARD_ADAPTIVE_NC() adaptive_atomic_guard __lock_adaptive_nc(nc_mutex, nc_period_nano);ATOMIC_THREAD_FENCE
 
         AdaptiveAtomicClassNC() noexcept = default;
 

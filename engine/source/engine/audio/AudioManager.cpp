@@ -56,7 +56,7 @@ longmarch::AudioManager::AudioManager()
 {
 	m_fmodInstance = std::make_unique<FMODInstance>();
 	{
-		Engine::GetInstance()->Update().Connect(std::bind(&AudioManager::Update, this, std::placeholders::_1));
+		Engine::GetInstance()->PostRenderUpdate().Connect(std::bind(&AudioManager::Update, this));
 	}
 	{
 		auto queue = EventQueue<EngineEventType>::GetInstance();
@@ -64,7 +64,7 @@ longmarch::AudioManager::AudioManager()
 	}
 }
 
-void longmarch::AudioManager::Update(double deltaTime)
+void longmarch::AudioManager::Update()
 {
 	m_fmodInstance->Update();
 }

@@ -18,7 +18,7 @@ namespace longmarch
 
         inline bool DecrementRef() const noexcept
         {
-            return m_refCounter.fetch_sub(1, std::memory_order_relaxed) > 1;
+            return m_refCounter.fetch_add(-1, std::memory_order_relaxed) > 1;
         }
 
     protected:
@@ -26,7 +26,7 @@ namespace longmarch
         ~BaseRefCountClassNC() noexcept = default;
 
     private:
-        mutable std::atomic_uint_fast32_t m_refCounter{0};
+        mutable std::atomic_int_fast32_t m_refCounter{0};
     };
 
     // Concept for reference countable classes

@@ -12,7 +12,7 @@ namespace longmarch
         if (const auto it = m_entityMaskMap.find(entity);
             it != m_entityMaskMap.end())
         {
-            return it->second.IsAMatch(BitMaskSignature::Create<ComponentType>());
+            return it->second.GetBitMask().IsAMatch(BitMaskSignature::Create<ComponentType>());
         }
         else
         {
@@ -26,7 +26,9 @@ namespace longmarch
     {
         LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{1});
         LOCK_GUARD_NC();
-        BitMaskSignature& newMask = m_entityMaskMap[entity];
+        auto& EntityMaskValue = m_entityMaskMap[entity];
+        auto& newMask = EntityMaskValue.GetBitMask();
+        auto& ComponentCache = EntityMaskValue.GetComponentCache();
         const auto oldMask = newMask;
         newMask.AddComponent<ComponentType>();
 
@@ -62,6 +64,7 @@ namespace longmarch
         }
         component.SetWorld(this);
         newManager->AddComponentToEntity(entity, component);
+        ComponentCache.clear();
     }
 
     template <typename ComponentType>
@@ -69,7 +72,9 @@ namespace longmarch
     {
         LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{1});
         LOCK_GUARD_NC();
-        BitMaskSignature& newMask = m_entityMaskMap[entity];
+        auto& EntityMaskValue = m_entityMaskMap[entity];
+        auto& newMask = EntityMaskValue.GetBitMask();
+        auto& ComponentCache = EntityMaskValue.GetComponentCache();
         const auto oldMask = newMask;
         newMask.RemoveComponent<ComponentType>();
 
@@ -85,6 +90,7 @@ namespace longmarch
         ASSERT(oldManager && newManager);
         // Transfer entity from old manager to new manager
         oldManager->MoveOutEntity(entity, *newManager);
+        ComponentCache.clear();
     }
 
     template <typename ComponentType>
@@ -95,16 +101,24 @@ namespace longmarch
         if (const auto it = m_entityMaskMap.find(entity);
             it != m_entityMaskMap.end())
         {
-            if (const auto& mask = it->second;
+            if (const auto& mask = it->second.GetBitMask();
                 mask.IsAMatch(BitMaskSignature::Create<ComponentType>()))
             {
-                if (const auto iter_manager = m_maskArcheTypeMap.find(mask);
+                auto& ComponentCache = it->second.GetComponentCache();
+                auto ComTypeIndex = GetComponentTypeIndex<ComponentType>();
+                if (const auto iter_com = ComponentCache.find(ComTypeIndex);
+                    iter_com != ComponentCache.end())
+                {
+                    com = reinterpret_cast<ComponentType*>(iter_com->second);
+                }
+                else if (const auto iter_manager = m_maskArcheTypeMap.find(mask);
                     iter_manager != m_maskArcheTypeMap.end())
                 {
                     if (const auto& manager = iter_manager->second;
                         manager)
                     {
                         com = manager->GetComponentByEntity<ComponentType>(entity);
+                        ComponentCache[ComTypeIndex] = com;
                     }
                     else
                     {
@@ -188,13 +202,13 @@ namespace longmarch
     {
         return StealThreadPool::GetInstance()->enqueue_task([this, min_split, func]()
         {
-            ENGINE_TRY_CATCH(_ParEach<Components...>(func, min_split););
+            ENGINE_TRY_CATCH(ParEach_Internal<Components...>(func, min_split););
         });
     }
 
     //! Helper method for pareach (defined in Gameworld.h)
     template <class... Components>
-    void GameWorld::_ParEach(
+    void GameWorld::ParEach_Internal(
         const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func,
         int min_split) const
     {

@@ -122,10 +122,10 @@ namespace longmarch
         *	Helper
         **************************************************************/
         //! Helper method that inactivates an entity
-        void InactivateHelper(Entity e);
+        void InactivateEntity_Helper(Entity e);
 
         //! Helper method that removes an entity from its parent
-        void RemoveFromParentHelper(Entity e);
+        void RemoveFromParent_Helper(Entity e);
 
         /**************************************************************
         *	Entity
@@ -164,7 +164,7 @@ namespace longmarch
         bool HasEntity(const Entity& entity) const;
 
         //! Helper method that links an entity to a new parent, remove older parent as well.
-        void AddChildHelper(Entity parent, Entity child);
+        void AddChild_Helper(Entity parent, Entity child);
 
         //! Type must have one entity. If that entity does not exist or there exists more than one, throw an exception
         const Entity GetTheOnlyEntityWithType(EntityType type) const;
@@ -280,15 +280,15 @@ namespace longmarch
 
         //! Helper method for pareach
         template <class... Components>
-        void _ParEach(const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func,
+        void ParEach_Internal(const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func,
                       int min_split = -1) const;
 
         //! Helper method for pareach
-        void _ParEach(const LongMarch_Vector<Entity>& es,
+        void ParEach_Internal(const LongMarch_Vector<Entity>& es,
                        const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func,
                        int min_split = -1) const;
 
-        void _ParEachChunk(const LongMarch_Vector<EntityChunkContext>& es,
+        void ParEachChunk_Internal(const LongMarch_Vector<EntityChunkContext>& es,
                        const std::type_identity_t<std::function<void(const EntityChunkContext& e)>>& func,
                        int min_split = -1) const;
 
@@ -307,8 +307,52 @@ namespace longmarch
         // Entity (E)
         //!< Contains all entities
         std::shared_ptr<EntityManager> m_entityManager;
-        //!< Contains all entities and their component bit masks
-        LongMarch_UnorderedMap_Par_node<Entity, BitMaskSignature> m_entityMaskMap;
+        //!< Contains all entities and their component bit masks and component pointer location cache (do not copy this component cache map when cloning a gameworld)
+        typedef LongMarch_UnorderedMap_flat<ComponentTypeIndex_T, void*> ComponentCacheMap_T;
+        struct EntityMaskValue_T
+        {
+            EntityMaskValue_T() = default;
+            EntityMaskValue_T(const EntityMaskValue_T& Other)
+            {
+                GetBitMask() = std::get<0>(Other.EntityMaskValue);
+            }
+            EntityMaskValue_T& operator=(const EntityMaskValue_T& Other)
+            {
+                GetBitMask() = std::get<0>(Other.EntityMaskValue);
+                return *this;
+            }
+            EntityMaskValue_T(EntityMaskValue_T&& Other) noexcept
+            {
+                GetBitMask() = std::move(std::get<0>(Other.EntityMaskValue));
+            }
+            EntityMaskValue_T& operator=(EntityMaskValue_T&& Other) noexcept
+            {
+                GetBitMask() = std::move(std::get<0>(Other.EntityMaskValue));
+                return *this;
+            }
+            
+            BitMaskSignature& GetBitMask() const
+            {
+                return std::get<0>(EntityMaskValue);
+            }
+            void SetBitMask(const BitMaskSignature& Mask) const
+            {
+                GetBitMask() = Mask;
+            }
+
+            ComponentCacheMap_T& GetComponentCache() const
+            {
+                return std::get<1>(EntityMaskValue);
+            }
+            void SetComponentCache(ComponentTypeIndex_T Index, void* Com) const
+            {
+                GetComponentCache()[Index] = Com;
+            }
+
+        private:
+            mutable std::tuple<BitMaskSignature, ComponentCacheMap_T> EntityMaskValue;
+        };
+        LongMarch_UnorderedMap_Par_node<Entity, EntityMaskValue_T> m_entityMaskMap;
 
         // Component (C)
         //!< Contains all components bit masks and their corresponding entities
@@ -323,8 +367,8 @@ namespace longmarch
         LongMarch_UnorderedMap_node<std::string, std::shared_ptr<BaseComponentSystem>> m_systemsNameMap;
 
         // Misc
-        mutable RivalLock<2> m_rivalLock{{RivalGroup{0}, RivalGroup{1}}};
-
+        //! Rival group lock
+        mutable RivalLock<2> m_rivalLock;
         //! Holds multi-threaded job that are created in a instance of Gameworld
         AtomicQueueNC<std::shared_future<void>> m_jobs;
         //! Name of the game world

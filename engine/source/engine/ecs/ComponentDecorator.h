@@ -19,13 +19,14 @@ namespace longmarch
 
         explicit ComponentDecorator(const EntityDecorator& owner, ComponentType* component)
             :
-            m_entity(owner), m_component(component)
+            m_entityDecorator(owner), m_component(component)
         {
         }
 
+        // Update internal component from gameworld
         inline bool Update(bool throw_on_invalid = true)
         {
-            m_component = m_entity.GetComponent<ComponentType>().GetPtr();
+            m_component = m_entityDecorator.GetComponent<ComponentType>().GetPtr();
             if (Valid())
             {
                 return true;
@@ -35,7 +36,7 @@ namespace longmarch
                 if (throw_on_invalid)
                 {
                     ENGINE_EXCEPT(
-                        wStr(Str(m_entity)) + L" fails to update component " + wStr(typeid(ComponentType).name()));
+                        wStr(Str(m_entityDecorator)) + L" fails to update component " + wStr(typeid(ComponentType).name()));
                 }
                 return false;
             }
@@ -43,7 +44,7 @@ namespace longmarch
 
         inline bool Valid() const
         {
-            return m_component != nullptr && m_entity.Valid();
+            return m_component != nullptr && m_entityDecorator.Valid();
         }
 
         inline ComponentType* operator->() const
@@ -63,7 +64,7 @@ namespace longmarch
 
         inline EntityDecorator GetOwner() const
         {
-            return m_entity;
+            return m_entityDecorator;
         }
 
         friend inline void swap(ComponentDecorator<ComponentType>& x, ComponentDecorator<ComponentType>& y)
@@ -82,7 +83,7 @@ namespace longmarch
         }
 
     private:
-        EntityDecorator m_entity;
+        EntityDecorator m_entityDecorator;
         ComponentType* m_component = {nullptr};
     };
 }

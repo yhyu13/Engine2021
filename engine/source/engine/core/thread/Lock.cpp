@@ -32,14 +32,14 @@ longmarch::atomic_flag_guard::atomic_flag_guard(std::atomic_flag& flag) noexcept
     m_lock(&flag)
 {
     SET_DEADLOCK_TIMER();
-    while (m_lock->test_and_set(std::memory_order_acq_rel))
+    while (m_lock->test_and_set(std::memory_order_relaxed))
     {
-        int32_t spin_count = SPIN_COUNT;
+        int spin_count = SPIN_COUNT;
         do
         {
             THREAD_PAUSE();
         }
-        while (m_lock->test_and_set(std::memory_order_acq_rel) && --spin_count);
+        while (m_lock->test_and_set(std::memory_order_relaxed) && --spin_count);
         if (spin_count)
         {
             break;
@@ -51,7 +51,7 @@ longmarch::atomic_flag_guard::atomic_flag_guard(std::atomic_flag& flag) noexcept
 
 longmarch::atomic_flag_guard::~atomic_flag_guard() noexcept
 {
-    m_lock->clear(std::memory_order_release);
+    m_lock->clear(std::memory_order_relaxed);
 }
 
 longmarch::adaptive_atomic_guard::adaptive_atomic_guard(std::mutex& flag, int64_t& period) noexcept
@@ -87,7 +87,7 @@ void longmarch::BaseAtomicClassStatic::LockS() noexcept
     SET_DEADLOCK_TIMER();
     while (sc_flag.test_and_set(std::memory_order_acq_rel))
     {
-        int32_t spin_count = SPIN_COUNT;
+        int spin_count = SPIN_COUNT;
         do
         {
             THREAD_PAUSE();
@@ -112,7 +112,7 @@ void longmarch::BaseAtomicClassNI::LockNI() noexcept
     SET_DEADLOCK_TIMER();
     while (ni_flag.test_and_set(std::memory_order_acq_rel))
     {
-        int32_t spin_count = SPIN_COUNT;
+        int spin_count = SPIN_COUNT;
         do
         {
             THREAD_PAUSE();
@@ -137,7 +137,7 @@ void longmarch::BaseAtomicClassNC::LockNC() const noexcept
     SET_DEADLOCK_TIMER();
     while (nc_flag.test_and_set(std::memory_order_acq_rel))
     {
-        int32_t spin_count = SPIN_COUNT;
+        int spin_count = SPIN_COUNT;
         do
         {
             THREAD_PAUSE();
@@ -162,7 +162,7 @@ void longmarch::BaseAtomicClass::Lock() const noexcept
     SET_DEADLOCK_TIMER();
     while (m_flag.test_and_set(std::memory_order_acq_rel))
     {
-        int32_t spin_count = SPIN_COUNT;
+        int spin_count = SPIN_COUNT;
         do
         {
             THREAD_PAUSE();

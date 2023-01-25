@@ -76,7 +76,7 @@ void longmarch::SceneHierarchyDock::Render()
                             auto e_type = ObjectFactory::s_instance->GetEntityTypeFromName(
                                 list_char_ptr[selected_entity_type]);
                             auto e = GameWorld::GetCurrent()->GenerateEntity3DNoCollision(e_type, true, false);
-                            GameWorld::GetCurrent()->AddChildHelper(entity_0, e);
+                            GameWorld::GetCurrent()->AddChild_Helper(entity_0, e);
                             m_addEntityPopup = []()
                             {
                             };

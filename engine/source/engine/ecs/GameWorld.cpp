@@ -323,7 +323,7 @@ void longmarch::GameWorld::RenderUI()
 *	Remover
 **************************************************************/
 
-void longmarch::GameWorld::InactivateHelper(Entity e)
+void longmarch::GameWorld::InactivateEntity_Helper(Entity e)
 {
     if (auto com = GetComponent<ActiveCom>(e); com.Valid())
     {
@@ -331,7 +331,7 @@ void longmarch::GameWorld::InactivateHelper(Entity e)
     }
 }
 
-void longmarch::GameWorld::RemoveFromParentHelper(Entity e)
+void longmarch::GameWorld::RemoveFromParent_Helper(Entity e)
 {
     if (auto parentCom = GetComponent<ParentCom>(e); parentCom.Valid())
     {
@@ -357,7 +357,7 @@ EntityDecorator longmarch::GameWorld::GenerateEntity(EntityType type, bool activ
     if (add_to_root)
     {
         auto root = GetTheOnlyEntityWithType((EntityType)(EngineEntityType::SCENE_ROOT));
-        AddChildHelper(root, entity);
+        AddChild_Helper(root, entity);
     }
     return entity;
 }
@@ -382,13 +382,12 @@ EntityDecorator longmarch::GameWorld::GenerateEntity3DNoCollision(EntityType typ
 bool longmarch::GameWorld::HasEntity(const Entity& entity) const
 {
     LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
-
     return LongMarch_contains(m_entityMaskMap, entity);
 }
 
-void longmarch::GameWorld::AddChildHelper(Entity parent, Entity child)
+void longmarch::GameWorld::AddChild_Helper(Entity parent, Entity child)
 {
-    RemoveFromParentHelper(child);
+    RemoveFromParent_Helper(child);
     if (auto com = GetComponent<ChildrenCom>(parent); com.Valid())
     {
         com->AddEntity(child);
@@ -439,8 +438,10 @@ longmarch::GameWorld::GetAllComponentSystemNamePair() const
 
 void longmarch::GameWorld::RemoveEntity(const Entity& entity)
 {
-    // Remove components first
-    RemoveAllComponent(entity);
+    {
+        // Remove components first
+        RemoveAllComponent(entity);
+    }
 
     LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{1});
     // Then remove the entity
@@ -500,12 +501,11 @@ const Entity longmarch::GameWorld::GetEntityFromID(EntityID ID) const
 const LongMarch_Vector<BaseComponentInterface*> longmarch::GameWorld::GetAllComponent(const Entity& entity) const
 {
     LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
-
     LongMarch_Vector<BaseComponentInterface*> ret;
     if (auto it = m_entityMaskMap.find(entity);
         it != m_entityMaskMap.end())
     {
-        const auto& mask = it->second;
+        const auto& mask = it->second.GetBitMask();
         if (const auto iter_manager = m_maskArcheTypeMap.find(mask);
             iter_manager != m_maskArcheTypeMap.end())
         {
@@ -540,7 +540,7 @@ void longmarch::GameWorld::RemoveAllComponent(const Entity& entity)
     if (auto it = m_entityMaskMap.find(entity);
         it != m_entityMaskMap.end())
     {
-        auto& mask = it->second;
+        auto& mask = it->second.GetBitMask();
         if (auto& manager = m_maskArcheTypeMap[mask];
             manager)
         {
@@ -555,7 +555,7 @@ const LongMarch_Vector<Entity> GameWorld::EntityView(const BitMaskSignature& mas
     LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{0});
 
     ENGINE_EXCEPT_IF(mask == BitMaskSignature(),
-                     L"GameWorld::EntityChunkView should not receive a trivial bit mask. Double check EntityChunkView argument.");
+                     L"GameWorld::EntityView should not receive a trivial bit mask. Double check EntityView argument.");
     LongMarch_Vector<Entity> ret;
     ret.reserve(256);
     for (const auto& [comTypes, manager] : m_maskArcheTypeMap)
@@ -602,11 +602,11 @@ std::future<void> longmarch::GameWorld::ParEach(const LongMarch_Vector<Entity>& 
 {
     return StealThreadPool::GetInstance()->enqueue_task([this, es, min_split, func]()
     {
-        ENGINE_TRY_CATCH(_ParEach(es, func, min_split););
+        ENGINE_TRY_CATCH(ParEach_Internal(es, func, min_split););
     });
 }
 
-void longmarch::GameWorld::_ParEach(const LongMarch_Vector<Entity>& es,
+void longmarch::GameWorld::ParEach_Internal(const LongMarch_Vector<Entity>& es,
                                     const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func,
                                     int min_split) const
 {
@@ -726,11 +726,11 @@ std::future<void> GameWorld::ParEachChunk(const LongMarch_Vector<EntityChunkCont
 {
     return StealThreadPool::GetInstance()->enqueue_task([this, es, min_split, func]()
     {
-        ENGINE_TRY_CATCH(_ParEachChunk(es, func, min_split););
+        ENGINE_TRY_CATCH(ParEachChunk_Internal(es, func, min_split););
     });
 }
 
-void GameWorld::_ParEachChunk(const LongMarch_Vector<EntityChunkContext>& es,
+void GameWorld::ParEachChunk_Internal(const LongMarch_Vector<EntityChunkContext>& es,
                               const std::type_identity_t<std::function<void(const EntityChunkContext& e)>>& func,
                               int min_split) const
 {

@@ -47,7 +47,7 @@ namespace longmarch
 		}
 	}
 
-	std::map<const char*, InstrumentorResult>& Instrumentor::GetResults() 
+	std::map<std::string, InstrumentorResult>& Instrumentor::GetResults() 
 	{
 		return m_results;
 	}

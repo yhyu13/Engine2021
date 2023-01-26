@@ -30,25 +30,25 @@ namespace longmarch
         explicit ThreadPool(unsigned int threads = std::thread::hardware_concurrency() - 1);
         ~ThreadPool();
 
-        // add new task item to the pool
-        template <class F, class ...Args>
-        void enqueue_work(F&& f, Args&& ...args)
-        {
-            auto work = [p = std::forward<F>(f), t = std::make_tuple(std::forward<Args>(args)...)]()
-            {
-                std::apply(p, t);
-            };
-            {
-                std::unique_lock<std::mutex> lock(queue_mutex);
-                // don't allow enqueueing after stopping the pool
-                if (stop)
-                {
-                    throw std::runtime_error("enqueue on stopped ThreadPool");
-                }
-                tasks.emplace(work);
-            }
-            condition.notify_one();
-        }
+        // // add new task item to the pool
+        // template <class F, class ...Args>
+        // void enqueue_work(F&& f, Args&& ...args)
+        // {
+        //     auto work = [p = std::forward<F>(f), t = std::make_tuple(std::forward<Args>(args)...)]()
+        //     {
+        //         std::apply(p, t);
+        //     };
+        //     {
+        //         std::unique_lock<std::mutex> lock(queue_mutex);
+        //         // don't allow enqueueing after stopping the pool
+        //         if (stop)
+        //         {
+        //             throw std::runtime_error("enqueue on stopped ThreadPool");
+        //         }
+        //         tasks.emplace(work);
+        //     }
+        //     condition.notify_one();
+        // }
 
         // add new task item to the pool
         template <class F, class ...Args>

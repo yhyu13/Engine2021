@@ -155,9 +155,9 @@ namespace longmarch
 
         //! Dispatcher to parent world : Unity DOTS ECS per Entity iteration
         [[nodiscard]] inline std::future<void> ParEach(
-            const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func, int min_split = -1) const
+            const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func, int min_batch = -1) const
         {
-            return m_parentWorld->ParEach(GetRegisteredEntities(), func, min_split);
+            return m_parentWorld->ParEach(GetRegisteredEntities(), func, min_batch);
         }
 
         //! Dispatcher to parent world : Unity DOTS ECS per Entity iteration
@@ -176,9 +176,9 @@ namespace longmarch
         //! Dispatcher to parent world : UE5 Mass ECS per Entity Chunk iteration
         [[nodiscard]] inline std::future<void> ParEachChunk(
             const std::type_identity_t<std::function<void(const EntityChunkContext& e)>>& func,
-            int min_split = -1) const
+            int min_batch = -1) const
         {
-            return m_parentWorld->ParEachChunk(GetRegisteredEntityChunks(), func, min_split);
+            return m_parentWorld->ParEachChunk(GetRegisteredEntityChunks(), func, min_batch);
         }
 
         //! Dispatcher to parent world
@@ -196,9 +196,9 @@ namespace longmarch
 
         //! Dispatcher to parent world
         [[nodiscard]] inline std::future<void> ParEachUser(
-            const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func, int min_split = -1) const
+            const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func, int min_batch = -1) const
         {
-            return m_parentWorld->ParEach(GetUserRegisteredEntities(), func, min_split);
+            return m_parentWorld->ParEach(GetUserRegisteredEntities(), func, min_batch);
         }
 
         /*

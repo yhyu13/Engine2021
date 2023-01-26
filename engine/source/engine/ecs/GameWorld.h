@@ -290,7 +290,7 @@ namespace longmarch
         template <class... Components>
         [[nodiscard]] auto ParEach(
             const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func,
-            int min_split = -1) const;
+            int min_batch = -1) const;
 
         void ForEach(const LongMarch_Vector<Entity>& es,
                      const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func) const;
@@ -305,7 +305,7 @@ namespace longmarch
         [[nodiscard]] std::future<void> ParEach(const LongMarch_Vector<Entity>& es,
                                                 const std::type_identity_t<std::function<void
                                                     (const EntityDecorator& e)>>&
-                                                func, int min_split = -1) const;
+                                                func, int min_batch = -1) const;
 
         // UE5 Mass ECS like for each chunk function ------------------------------------------------------------------
         template <class... Components>
@@ -326,7 +326,7 @@ namespace longmarch
         [[nodiscard]] std::future<void> ParEachChunk(const LongMarch_Vector<EntityChunkContext>& es,
                                                 const std::type_identity_t<std::function<void
                                                     (const EntityChunkContext& e)>>&
-                                                func, int min_split = -1) const;
+                                                func, int min_batch = -1) const;
 
     private:
         //! Init ECS systems
@@ -341,16 +341,16 @@ namespace longmarch
         //! Helper method for pareach
         template <class... Components>
         void ParEach_Internal(const std::type_identity_t<std::function<void(const EntityDecorator& e, Components&...)>>& func,
-                      int min_split = -1) const;
+                      int min_batch = -1) const;
 
         //! Helper method for pareach
         void ParEach_Internal(const LongMarch_Vector<Entity>& es,
                        const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func,
-                       int min_split = -1) const;
+                       int min_batch = -1) const;
 
         void ParEachChunk_Internal(const LongMarch_Vector<EntityChunkContext>& es,
                        const std::type_identity_t<std::function<void(const EntityChunkContext& e)>>& func,
-                       int min_split = -1) const;
+                       int min_batch = -1) const;
 
         bool ShouldApplyRivalLock() const
         {
@@ -363,10 +363,7 @@ namespace longmarch
 
         //! Multithreaded pool used in ParEach2 for inner function multithreading to avoid thread overflow stalling the default thread pool and the entire program
         inline static StealThreadPool s_parEachJobPool;
-        constexpr inline static int s_parEachMinSplit{32};
-
-        //! GameWorld class level job pool, used in running game thread in the background or any other async tasks
-        inline static StealThreadPool s_jobPool{4};
+        constexpr inline static int s_parEachMinBatch{64};
         
     private:
         // Entity (E)

@@ -25,11 +25,11 @@ namespace longmarch
 		void BeginSession();
 		void EndSession();
 		void AddInstrumentorResult(const InstrumentorResult& result);
-		std::map<const char*, InstrumentorResult>& GetResults();
+		std::map<std::string, InstrumentorResult>& GetResults();
 
 	private:
 		Instrumentor();
-		std::map<const char*, InstrumentorResult> m_results;
+		std::map<std::string, InstrumentorResult> m_results;
 	};
 
 	class RemoteryInstrumentor

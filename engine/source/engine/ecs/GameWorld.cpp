@@ -252,6 +252,7 @@ void longmarch::GameWorld::Update(double frameTime)
 #if MULTITHREAD_UPDATE
 void longmarch::GameWorld::MultiThreadUpdate(double frameTime)
 {
+    static StealThreadPool s_jobPool{1};
     m_asyncUpdatejob = s_jobPool.enqueue_task([frameTime, this]()
     {
         ENGINE_TRY_CATCH(
@@ -587,17 +588,17 @@ std::future<void> longmarch::GameWorld::BackEach(const LongMarch_Vector<Entity>&
 std::future<void> longmarch::GameWorld::ParEach(const LongMarch_Vector<Entity>& es,
                                                 const std::type_identity_t<std::function<void
                                                     (const EntityDecorator& e)>>&
-                                                func, int min_split) const
+                                                func, int min_batch) const
 {
-    return StealThreadPool::GetInstance()->enqueue_task([this, es, min_split, func]()
+    return StealThreadPool::GetInstance()->enqueue_task([this, es, min_batch, func]()
     {
-        ENGINE_TRY_CATCH(ParEach_Internal(es, func, min_split););
+        ENGINE_TRY_CATCH(ParEach_Internal(es, func, min_batch););
     });
 }
 
 void longmarch::GameWorld::ParEach_Internal(const LongMarch_Vector<Entity>& es,
                                     const std::type_identity_t<std::function<void(const EntityDecorator& e)>>& func,
-                                    int min_split) const
+                                    int min_batch) const
 {
     if (es.empty())
     {
@@ -612,48 +613,49 @@ void longmarch::GameWorld::ParEach_Internal(const LongMarch_Vector<Entity>& es,
     const int num_e = es.size();
     auto _begin = es.begin();
     auto _end = es.end();
-    int split_size = num_e / pool.threads;
+    int batch_size = num_e / pool.threads;
 
     // Adjust minimum split size & set actual split size
-    min_split = std::max(s_parEachMinSplit, min_split);
-    split_size = std::max(split_size, min_split);
+    min_batch = std::max(s_parEachMinBatch, min_batch);
+    batch_size = std::max(batch_size, min_batch);
 
     // Even number split size
-    if (split_size % 2 != 0)
+    if (batch_size % 2 != 0)
     {
-        ++split_size;
+        ++batch_size;
     }
 
     // Ready for splitting jobs
     int num_e_left = num_e;
     LongMarch_Vector<std::future<void>> _jobs;
 
-    while ((num_e_left -= split_size) > 0)
+    // Iterate until the last batch
+    while ((num_e_left -= batch_size) > 0)
     {
-        LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
-        _begin += split_size;
+        LongMarch_Vector<Entity> split_es(_begin, _begin + batch_size);
+        _begin += batch_size;
         _jobs.emplace_back(pool.enqueue_task([this, &func, split_es = std::move(split_es)]()
             {
                 ENGINE_TRY_CATCH(
                     {
-                    this->ForEach(split_es, func);
+                        this->ForEach(split_es, func);
                     }
                 );
             }
         ));
     }
 
-    // Check any entities left
+    // Check any entities left, subtract from last batch size (the last batch should have size <= normal batch size)
     if (num_e_left <= 0)
     {
-        split_size += num_e_left;
-        LongMarch_Vector<Entity> split_es(_begin, _begin + split_size);
-        ENGINE_EXCEPT_IF((_begin + split_size) != _end, L"Reach end condition does not meet!");
+        batch_size += num_e_left;
+        LongMarch_Vector<Entity> split_es(_begin, _begin + batch_size);
+        ENGINE_EXCEPT_IF((_begin + batch_size) != _end, L"Reach end condition does not meet!");
         _jobs.emplace_back(pool.enqueue_task([this, &func, split_es = std::move(split_es)]()
             {
                 ENGINE_TRY_CATCH(
                     {
-                    this->ForEach(split_es, func);
+                        this->ForEach(split_es, func);
                     }
                 );
             }
@@ -711,17 +713,17 @@ std::future<void> GameWorld::BackEachChunk(const LongMarch_Vector<EntityChunkCon
 
 std::future<void> GameWorld::ParEachChunk(const LongMarch_Vector<EntityChunkContext>& es,
                                           const std::type_identity_t<std::function<void(const EntityChunkContext& e)>>&
-                                          func, int min_split) const
+                                          func, int min_batch) const
 {
-    return StealThreadPool::GetInstance()->enqueue_task([this, es, min_split, func]()
+    return StealThreadPool::GetInstance()->enqueue_task([this, es, min_batch, func]()
     {
-        ENGINE_TRY_CATCH(ParEachChunk_Internal(es, func, min_split););
+        ENGINE_TRY_CATCH(ParEachChunk_Internal(es, func, min_batch););
     });
 }
 
 void GameWorld::ParEachChunk_Internal(const LongMarch_Vector<EntityChunkContext>& es,
                               const std::type_identity_t<std::function<void(const EntityChunkContext& e)>>& func,
-                              int min_split) const
+                              int min_batch) const
 {
     if (es.empty())
     {
@@ -757,7 +759,7 @@ void GameWorld::ParEachChunk_Internal(const LongMarch_Vector<EntityChunkContext>
                     _jobs.emplace_back(pool.enqueue_task([this, &func, &e1]()
                         {
                             ENGINE_TRY_CATCH(
-                                LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+                                TRY_LOCK_READ();
                                 func(e1);
                             );
                         }
@@ -771,7 +773,7 @@ void GameWorld::ParEachChunk_Internal(const LongMarch_Vector<EntityChunkContext>
                     _jobs.emplace_back(pool.enqueue_task([this, &func, &e2]()
                         {
                             ENGINE_TRY_CATCH(
-                                LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+                                TRY_LOCK_READ();
                                 func(e2);
                             );
                         }
@@ -784,7 +786,7 @@ void GameWorld::ParEachChunk_Internal(const LongMarch_Vector<EntityChunkContext>
                 _jobs.emplace_back(pool.enqueue_task([this, &func, &e]()
                     {
                         ENGINE_TRY_CATCH(
-                            LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+                            TRY_LOCK_READ();
                             func(e);
                         );
                     }
@@ -800,7 +802,7 @@ void GameWorld::ParEachChunk_Internal(const LongMarch_Vector<EntityChunkContext>
             _jobs.emplace_back(pool.enqueue_task([this, &func, &e]()
                 {
                     ENGINE_TRY_CATCH(
-                        LOCK_GUARD_RIVAL(m_rivalLock, RivalGroup{ 0 });
+                        TRY_LOCK_READ();
                         func(e);
                     );
                 }

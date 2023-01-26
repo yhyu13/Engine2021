@@ -26,3 +26,9 @@
 
 //// Audio /////
 #include "engine/audio/AudioManager.h"
+
+//// Event /////
+#include "engine/events/header/header.h"
+
+//// Delegate /////
+#include "engine/delegate/header/header.h"

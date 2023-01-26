@@ -11,7 +11,7 @@
 
 namespace longmarch
 {
-    class StealThreadPool
+    class StealThreadPool : public BaseAtomicClassStatic
     {
     public:
         NONCOPYABLE(StealThreadPool);
@@ -22,28 +22,28 @@ namespace longmarch
             return &pool;
         }
 
-        explicit StealThreadPool(unsigned int threads = std::thread::hardware_concurrency());
+        explicit StealThreadPool(int threads = std::thread::hardware_concurrency() - 1);
         ~StealThreadPool();
 
-        template <typename F, typename... Args>
-        void enqueue_work(F&& f, Args&&... args)
-        {
-            auto work = [p = std::forward<F>(f), t = std::make_tuple(std::forward<Args>(args)...)]()
-            {
-                std::apply(p, t);
-            };
-            const auto i = (m_index.fetch_add(1, std::memory_order_relaxed) % m_count);
-
-            for (auto n(0u); n < m_count * K; ++n)
-            {
-                if (m_queues[(i + n) % m_count].try_push(work))
-                {
-                    return;
-                }
-            }
-
-            m_queues[i % m_count].push(std::move(work));
-        }
+        // template <typename F, typename... Args>
+        // void enqueue_work(F&& f, Args&&... args)
+        // {
+        //     auto work = [p = std::forward<F>(f), t = std::make_tuple(std::forward<Args>(args)...)]()
+        //     {
+        //         std::apply(p, t);
+        //     };
+        //     const auto i = (m_index.fetch_add(1, std::memory_order_relaxed) % m_count);
+        //
+        //     for (auto n(0u); n < m_count * K; ++n)
+        //     {
+        //         if (m_queues[(i + n) % m_count].try_push(work))
+        //         {
+        //             return;
+        //         }
+        //     }
+        //
+        //     m_queues[i % m_count].push(std::move(work));
+        // }
 
         template <typename F, typename... Args>
         [[nodiscard]] auto enqueue_task(F&& f, Args&&... args) -> std::future<std::invoke_result_t<F, Args...>>
@@ -56,19 +56,31 @@ namespace longmarch
             auto work = [task = std::move(task)]() { (*task)(); };
             const auto i = (m_index.fetch_add(1, std::memory_order_relaxed) % m_count);
 
-            for (auto n(0u); n < m_count * K; ++n)
+            for (auto n(0); n < m_count * K; ++n)
             {
-                if (m_queues[(i + n) % m_count].try_push(work))
+                if (m_queues[(i + n) % m_count].try_push(work, true))
                 {
                     return result;
                 }
             }
-            m_queues[i % m_count].push(std::move(work));
+            m_queues[i].push(std::move(work));
             return result;
         }
 
     public:
-        unsigned int threads;
+        static void ResetStats();
+
+        static void ThreadReportWait(uint32_t t_id, uint32_t worker_id, double time);
+        static void ThreadReportExec(uint32_t t_id, uint32_t worker_id, double time);
+
+        static void ReportStats();
+
+    private:
+        inline static std::unordered_map<uint64_t, double> s_threadWaitMap;
+        inline static std::unordered_map<uint64_t, double> s_threadExecMap;
+        
+    public:
+        int threads;
 
     private:
         using Proc = std::function<void(void)>;
@@ -77,11 +89,11 @@ namespace longmarch
         using Thread = std::thread;
         using Threads = std::vector<Thread>;
 
-        constexpr inline static unsigned int K = {2u};
+        constexpr inline static int K = {2};
 
         Queues m_queues;
         Threads m_threads;
-        unsigned int m_count;
-        std::atomic_uint_fast32_t m_index = {0u};
+        int m_count;
+        std::atomic_int_fast32_t m_index = {0};
     };
 }

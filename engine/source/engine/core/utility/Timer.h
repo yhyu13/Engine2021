@@ -14,7 +14,7 @@ namespace longmarch
     public:
         Timer()
         {
-            m_last = std::chrono::steady_clock::now();
+            Reset();
         }
 
         //! Init timer with period in secs
@@ -22,7 +22,7 @@ namespace longmarch
             :
             m_period(period)
         {
-            m_last = std::chrono::steady_clock::now();
+            Reset();
         }
 
         //! Reset timer to now
@@ -39,24 +39,44 @@ namespace longmarch
         }
 
         //! Return time in seconds between now and the last reset
-        inline double MarkSec() noexcept
+        inline double MarkSec(bool reset = false) noexcept
         {
-            return Mark<std::ratio<1>, double>();
+            const auto ret = Mark<std::ratio<1>, double>();
+            if (reset)
+            {
+                Reset();
+            }
+            return ret;
         }
 
-        inline double MarkMilli() noexcept
+        inline double MarkMilli(bool reset = false) noexcept
         {
-            return Mark<std::milli, double>();
+            const auto ret = Mark<std::milli, double>();
+            if (reset)
+            {
+                Reset();
+            }
+            return ret;
         }
 
-        inline double MarkMicro() noexcept
+        inline double MarkMicro(bool reset = false) noexcept
         {
-            return Mark<std::micro, double>();
+            const auto ret = Mark<std::micro, double>();
+            if (reset)
+            {
+                Reset();
+            }
+            return ret;
         }
 
-        inline double MarkNano() noexcept
+        inline double MarkNano(bool reset = false) noexcept
         {
-            return Mark<std::nano, double>();
+            const auto ret = Mark<std::nano, double>();
+            if (reset)
+            {
+                Reset();
+            }
+            return ret;
         }
 
         //! Set period. Use Check to check if period is met.
@@ -114,7 +134,6 @@ namespace longmarch
         inline void Reset() noexcept
         {
             m_last = std::chrono::steady_clock::now();
-            m_init = true;
         }
 
         //! Templated method that return time between now and the last reset, default in sec.
@@ -124,29 +143,50 @@ namespace longmarch
             if (!m_init)
             {
                 Reset();
+                m_init = true;
             }
             return std::chrono::duration<ret_type, ratio>(std::chrono::steady_clock::now() - m_last).count();
         }
 
         //! Return time in seconds between now and the last reset
-        inline double MarkSec() noexcept
+        inline double MarkSec(bool reset = false) noexcept
         {
-            return Mark<std::ratio<1>, double>();
+            const auto ret = Mark<std::ratio<1>, double>();
+            if (reset)
+            {
+                Reset();
+            }
+            return ret;
         }
 
-        inline double MarkMilli() noexcept
+        inline double MarkMilli(bool reset = false) noexcept
         {
-            return Mark<std::milli, double>();
+            const auto ret = Mark<std::milli, double>();
+            if (reset)
+            {
+                Reset();
+            }
+            return ret;
         }
 
-        inline double MarkMicro() noexcept
+        inline double MarkMicro(bool reset = false) noexcept
         {
-            return Mark<std::micro, double>();
+            const auto ret = Mark<std::micro, double>();
+            if (reset)
+            {
+                Reset();
+            }
+            return ret;
         }
 
-        inline double MarkNano() noexcept
+        inline double MarkNano(bool reset = false) noexcept
         {
-            return Mark<std::nano, double>();
+            const auto ret = Mark<std::nano, double>();
+            if (reset)
+            {
+                Reset();
+            }
+            return ret;
         }
 
         //! Set period. Use Check to check if period is met.

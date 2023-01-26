@@ -39,13 +39,16 @@ namespace longmarch
 
         template <typename Q = T>
         typename std::enable_if<std::is_copy_constructible<Q>::value, bool>::type
-        try_push(const T& item)
+        try_push(const T& item, bool only_push_on_empty = false)
         {
             {
                 std::unique_lock lock(m_mutex, std::try_to_lock);
                 if (!lock)
                     return false;
-                m_queue.push(item);
+                if (!only_push_on_empty || m_queue.empty())
+                    m_queue.push(item);
+                else
+                    return false;
             }
             m_ready.notify_one();
             return true;
@@ -53,13 +56,16 @@ namespace longmarch
 
         template <typename Q = T>
         typename std::enable_if<std::is_move_constructible<Q>::value, bool>::type
-        try_push(T&& item)
+        try_push(T&& item, bool only_push_on_empty = false)
         {
             {
                 std::unique_lock lock(m_mutex, std::try_to_lock);
                 if (!lock)
                     return false;
-                m_queue.emplace(std::forward<T>(item));
+                if (!only_push_on_empty || m_queue.empty())
+                    m_queue.emplace(std::forward<T>(item));
+                else
+                    return false;
             }
             m_ready.notify_one();
             return true;

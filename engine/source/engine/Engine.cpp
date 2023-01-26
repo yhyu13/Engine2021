@@ -1,8 +1,11 @@
 #include "engine-precompiled-header.h"
 #include "Engine.h"
+
 #include "engine/events/engineEvents/EngineCustomEvent.h"
 #include "engine/renderer/material/Material.h"
 #include "engine/core/utility/Random.h"
+#include "engine/core/thread/StealThreadPool.h"
+#include "engine/delegate/EngineDelegates/EngineDelegates.h"
 
 namespace longmarch
 {
@@ -89,12 +92,22 @@ namespace longmarch
 			{
 				m_engineWindow->EvetQueueUpdate();
 			});
+
+			LateUpdate().Connect([this](double dt)
+			{
+				// Nothing
+			});
 			
 			Render().Connect([this]() 
 			{ 
 				m_engineWindow->Render(); 
 			});
-			
+
+			PostRenderUpdate().Connect([this]
+			{
+				StealThreadPool::ReportStats();
+				StealThreadPool::ResetStats();
+			});
 			PostRenderUpdate().Connect(EngineException::Update);
 			PostRenderUpdate().Connect([this]() 
 			{
@@ -106,11 +119,13 @@ namespace longmarch
 			});
 		}
 
+		// Init modules
 		{
 			ImGuiDriver::Init(); //!< Initializing imgui layer after window creation
 			Material::Init(); //!< Initializing material instances after window creation
 			Random::Init(); //!< Initializing random engine
-		} 
+		}
+		// Bind events
 		{
 			auto queue = EventQueue<EngineEventType>::GetInstance();
 			{
@@ -130,6 +145,11 @@ namespace longmarch
 			{
 				ManageEventSubHandle(queue->Subscribe<Engine>(s_instance, EngineSettingEventType::TOGGLE_WINDOW_INTERRUTPTION_HANDLE, &Engine::_ON_TOGGLE_WINDOW_INTERRUTPTION_HANDLE));
 			}
+		}
+		// Bind delegates
+		{
+			delegates::WorkerThreadReportWait.BindGlobal(StealThreadPool::ThreadReportWait);
+			delegates::WorkerThreadReportExec.BindGlobal(StealThreadPool::ThreadReportExec);
 		}
 	}
 

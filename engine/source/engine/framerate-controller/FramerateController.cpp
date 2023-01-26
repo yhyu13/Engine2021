@@ -3,7 +3,9 @@
 #include "engine/core/profiling/InstrumentorCore.h"
 #include "engine/core/utility/Timer.h"
 
+#ifdef WIN32
 #include <timeapi.h>
+#endif
 
 namespace longmarch
 {
@@ -47,10 +49,14 @@ namespace longmarch
             {
                 while (m_targetFrameTimeMilli - m_tickEnd > static_cast<double>(k))
                 {
-                    // yuhang : timeBeginPeriod/timeEndPeriod is windows only, 
+                    // yuhang : timeBeginPeriod/timeEndPeriod is windows only,
+#ifdef WIN32
                     timeBeginPeriod(1);
+#endif
                     std::this_thread::sleep_for(std::chrono::milliseconds{k - 1});
+#ifdef WIN32
                     timeEndPeriod(1);
+#endif
                     m_tickEnd = m_timer.Mark<std::milli, double>();
                 }
             }

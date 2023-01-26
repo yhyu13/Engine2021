@@ -169,6 +169,10 @@ namespace longmarch
 #define LongMarch_contains(c, x) (c.contains(x))
 #endif
 
+#ifndef LongMarch_SetEmplace
+#define LongMarch_SetEmplace(c, x) (c.emplace(x).second)
+#endif
+
 	template<typename Func, typename T>
 	void LongMarch_ForEach(Func callback, std::initializer_list<const std::vector<T>*> list) 
 	{

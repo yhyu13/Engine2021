@@ -27,6 +27,7 @@ namespace longmarch
 		virtual bool VFCTest(const ViewFrustum& VF, const Mat4& worldSpaceToViewFrustumSpace)override { throw NotImplementedException(); }
 		virtual bool DistanceTest(const Vec3f& center, float Near, float Far) override { throw NotImplementedException(); }
 		virtual void RenderShape() override { throw NotImplementedException(); };
+        virtual void GetBoundingBoxMinMax(Vec3f& Min, Vec3f& Max) const override { throw NotImplementedException(); };
 
 	public:
 		Vec3f center;

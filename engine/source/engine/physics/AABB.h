@@ -37,6 +37,7 @@ namespace longmarch
         virtual bool VFCTest(const ViewFrustum& VF, const Mat4& worldSpaceToViewFrustumSpace) override;
         virtual bool DistanceTest(const Vec3f& center, float Near, float Far) override;
         virtual void RenderShape() override;
+        virtual void GetBoundingBoxMinMax(Vec3f& Min, Vec3f& Max) const override;
 
     private:
         void Reset();

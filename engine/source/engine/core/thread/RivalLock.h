@@ -3,7 +3,7 @@
 #include "engine/core/utility/TypeHelper.h"
 
 // Use std atomic pointer or use platform specific interlock exchange method
-#ifdef WIN32
+#if defined(WIN32) || defined(WINDOWS_APP)
 #define USE_ATOMIC_RIVAL_PTR 0 
 #else
 #define USE_ATOMIC_RIVAL_PTR 1

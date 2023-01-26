@@ -44,8 +44,9 @@ namespace longmarch
         /*
             Drawable flag will be reset to true upon calling the Render() function,
             meaning SetDrawable() shall be called before each Render() call.
+            If not override, then drawable flag is &= with input value
         */
-        void SetShouldDraw(bool b, bool _override = true);
+        void SetShouldDraw(bool b, bool override = true);
         bool GetShouldDraw() const;
 
         void Draw();

@@ -37,6 +37,7 @@ namespace longmarch
         virtual bool DistanceTest(const Vec3f& center, float Near, float Far) = 0;
         //! Implement this interface for the renderer to visualize this bounding volume
         virtual void RenderShape() = 0;
+        virtual void GetBoundingBoxMinMax(Vec3f& Min, Vec3f& Max) const = 0;
 
         inline bool IsVFCulled()
         {

@@ -240,6 +240,12 @@ void longmarch::AABB::RenderShape()
     Renderer3D::RenderBoundingBox(local_tr);
 }
 
+void AABB::GetBoundingBoxMinMax(Vec3f& Min, Vec3f& Max) const
+{
+    Min = GetMin();
+    Max = GetMax();
+}
+
 void longmarch::AABB::SetMax(const Vec3f& max)
 {
     Max = max;
@@ -314,12 +320,11 @@ void longmarch::AABB::Merge(const AABB& aabb1, const AABB& aabb2)
 Vec3f longmarch::AABB::GetDiag()
 {
     return (Max - Min);
-    //return o_max = o_min;
 }
 
 float longmarch::AABB::GetRadius()
 {
-    return glm::length(GetDiag() * 0.5f);
+    return glm::length(GetDiag()) * 0.5f;
 }
 
 Vec3f longmarch::AABB::GetCenter()

@@ -209,6 +209,12 @@ void longmarch::OOBB::RenderShape()
     Renderer3D::RenderBoundingBox(m_ObjectTr * local_tr);
 }
 
+void OOBB::GetBoundingBoxMinMax(Vec3f& Min, Vec3f& Max) const
+{
+    Min = GetMin();
+    Max = GetMax();
+}
+
 const Vec3f& longmarch::OOBB::GetMin() const
 {
     return Min;

@@ -292,6 +292,7 @@ project "application"
 			"DEBUG_DRAW",
 			"WINDOWS_APP",
 			"MULTITHREAD_UPDATE",
+			"GAMEWORLD_UPDATE_READ_ONLY"
 		}
 
 

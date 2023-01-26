@@ -5,6 +5,8 @@
 #include "engine/core/thread/Lock.h"
 #include "engine/core/exception/EngineException.h"
 
+#define ENABLE_COMPONENT_LOCK_DEFAULT 0 // By default, turn component wise lock to false
+
 namespace longmarch
 {
     class GameWorld;
@@ -69,10 +71,14 @@ namespace longmarch
     template <typename ComponentType>
     struct BaseComponent : protected BaseAtomicClass, public BaseComponentInterface
     {
-        BaseComponent() = default;
+        BaseComponent()
+        {
+            m_atomic_lock_enabled = ENABLE_COMPONENT_LOCK_DEFAULT;
+        }
 
         explicit BaseComponent(GameWorld* world) : m_world(world)
         {
+            m_atomic_lock_enabled = ENABLE_COMPONENT_LOCK_DEFAULT;
         }
 
         virtual ~BaseComponent() = default;

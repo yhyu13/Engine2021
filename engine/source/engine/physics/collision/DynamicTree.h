@@ -18,11 +18,10 @@ namespace longmarch
         //! Converts a sphere to a bounding box.
         //! \param sphere The sphere to convert to a bounding box.
         //! \return A bounding box that encapsulates the sphere.
-        FastBVH::BBox<Float> operator()(const RigidBody* rb) const noexcept {
-            auto center = rb->GetShape()->GetCenter();
-            auto radius = rb->GetShape()->GetRadius();
-            auto min = center - radius;
-            auto max = center + radius;
+        FastBVH::BBox<Float> operator()(const RigidBody* rb) const noexcept 
+        {
+            Vec3f min, max;
+            rb->GetShape()->GetBoundingBoxMinMax(min, max);
             return FastBVH::BBox<float>(FastBVH::Vector3<Float>{min.x, min.y, min.z}, FastBVH::Vector3<Float>{max.x, max.y, max.z});
         }
     };

@@ -10,6 +10,7 @@ longmarch::Scene3DCom::Scene3DCom(const EntityDecorator& _this)
 	BaseComponent(_this.Volatile().GetWorld()),
 	m_this(_this.GetEntity())
 {
+	//m_atomic_lock_enabled = true;
 }
 
 void longmarch::Scene3DCom::SetSceneData(const Scene3DCom::SceneDataRef& obj)
@@ -117,7 +118,10 @@ bool longmarch::Scene3DCom::IsParticleRenderType() const
 void longmarch::Scene3DCom::SetParticleRenderType(bool v)
 {
 	LOCK_GUARD();
-	m_renderType = Renderer3D::RENDER_TYPE::PARTICLE;
+	if (v)
+	{
+		m_renderType = Renderer3D::RENDER_TYPE::PARTICLE;
+	}
 }
 
 bool longmarch::Scene3DCom::IsTranslucenctRenderType() const
@@ -129,7 +133,10 @@ bool longmarch::Scene3DCom::IsTranslucenctRenderType() const
 void longmarch::Scene3DCom::SetTranslucenctRenderType(bool v)
 {
 	LOCK_GUARD();
-	m_renderType = Renderer3D::RENDER_TYPE::TRANSLUCENT;
+	if (v)
+	{
+		m_renderType = Renderer3D::RENDER_TYPE::TRANSLUCENT;
+	}
 }
 
 int longmarch::Scene3DCom::GetTranslucencySortPriority() const
@@ -144,10 +151,10 @@ void longmarch::Scene3DCom::SetTranslucencySortPriority(int v)
 	m_translucencySortPriority = v;
 }
 
-void longmarch::Scene3DCom::SetShouldDraw(bool b, bool _override)
+void longmarch::Scene3DCom::SetShouldDraw(bool b, bool override)
 {
 	LOCK_GUARD();
-	(_override) ? m_shoudlDraw = b : m_shoudlDraw &= b;
+	(override) ? m_shoudlDraw = b : m_shoudlDraw &= b;
 }
 
 bool longmarch::Scene3DCom::GetShouldDraw() const
@@ -167,7 +174,7 @@ void longmarch::Scene3DCom::Draw()
 			const auto& shaderName = m_shaderName;
 			Renderer3D::Draw(m_this, m_objDatasRef, trans->GetModelTr(), trans->GetPrevModelTr(), shaderName);
 		}
-		// Automatically retset the drawable flag on render completion (always set shouldDraw before Draw)
+		// Automatically reset the drawable flag on render completion (always set shouldDraw before Draw)
 		m_shoudlDraw = true;
 	}
 }
@@ -188,7 +195,7 @@ void longmarch::Scene3DCom::Draw(const std::function<void(const Renderer3D::Rend
 				drawFunc(Renderer3D::RenderData_CPU{ (Entity)m_this, mesh, mat, trans->GetModelTr(), trans->GetPrevModelTr() });
 			}
 		}
-		// Automatically retset the drawable flag on render completion (always set shouldDraw before Render)
+		// Automatically reset the drawable flag on render completion (always set shouldDraw before Render)
 		m_shoudlDraw = true;
 	}
 }

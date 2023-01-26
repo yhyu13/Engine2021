@@ -369,8 +369,7 @@ namespace longmarch
             LongMarch_Vector<Mat4> MultiDraw_BoneTransformMatrix; // animation
             LongMarch_Vector<uint32_t> MultiDraw_BoneBaseOffset; // animation
             LongMarch_Vector<DrawIndexedIndirectCommand> MultiDraw_CmdBuffer; // Multidraw shared
-            LongMarch_UnorderedMap_Par_flat<std::shared_ptr<MeshData>, LongMarch_Vector<uint32_t>>
-            MultiDraw_MeshDataToDraw; // Multidraw shared
+            LongMarch_UnorderedMap_Par_flat<std::shared_ptr<MeshData>, LongMarch_Vector<uint32_t>> MultiDraw_MeshDataToDraw; // Multidraw shared
             LongMarch_UnorderedMap_Par_flat<std::shared_ptr<MeshData>, CmdBufferSimplified> MeshData_CmdBuffer_Map;
             // Multidraw shared
 

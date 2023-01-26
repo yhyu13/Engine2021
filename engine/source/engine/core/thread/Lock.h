@@ -24,6 +24,17 @@ namespace longmarch
         std::atomic_flag* m_lock;
     };
 
+    struct atomic_flag_guard_cond
+    {
+        NONCOPYABLE(atomic_flag_guard_cond);
+        atomic_flag_guard_cond() = delete;
+        explicit atomic_flag_guard_cond(std::atomic_flag& flag, bool enabled) noexcept;
+        ~atomic_flag_guard_cond() noexcept;
+    private:
+        std::atomic_flag* m_lock;
+        bool m_enabled;
+    };
+
     // A RAII wrapper for a mutex.
     struct adaptive_atomic_guard
     {
@@ -113,18 +124,20 @@ namespace longmarch
     struct MS_ALIGN8 BaseAtomicClass
     {
     public:
-#define LOCK_GUARD() atomic_flag_guard __lock(m_flag);ATOMIC_THREAD_FENCE
+#define LOCK_GUARD() atomic_flag_guard_cond _cond_lock(m_flag, m_atomic_lock_enabled);ATOMIC_THREAD_FENCE
 
         BaseAtomicClass() noexcept = default;
 
         BaseAtomicClass(const BaseAtomicClass& other) noexcept
         {
-            // Leave as empty to not copy the atomic flag
+            // Not copy the atomic flag
+            m_atomic_lock_enabled = other.m_atomic_lock_enabled;
         }
 
         BaseAtomicClass(BaseAtomicClass&& other) noexcept
         {
-            // Leave as empty to not copy the atomic flag
+            // Not copy the atomic flag
+            m_atomic_lock_enabled = other.m_atomic_lock_enabled;
         }
 
         BaseAtomicClass& operator=(const BaseAtomicClass& rhs) noexcept { return *this; }
@@ -138,10 +151,11 @@ namespace longmarch
 
     protected:
         mutable std::atomic_flag m_flag;
+        bool m_atomic_lock_enabled{true};
     private:
 #if PADDING
         // yuhang : use byte padding instead of CACHE_ALIGN specifier so that inherited class is not affected by this alignment
-        std::byte COMBINE(__PADDING_, __LINE__)[PLATFORM_CACHE_LINE - sizeof(std::atomic_flag)];
+        std::byte COMBINE(__PADDING_, __LINE__)[PLATFORM_CACHE_LINE - sizeof(std::atomic_flag) - sizeof(bool)];
 #endif
     };
 

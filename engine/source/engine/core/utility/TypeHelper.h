@@ -1,5 +1,5 @@
 #pragma once
-#if defined(WIN32)
+#if defined(WIN32) || defined(WINDOWS_APP)
 #define _ENABLE_EXTENDED_ALIGNED_STORAGE // VS2017 15.8 fix on aligned allocation (for phmap to work)
 #endif
 #include <type_traits>
@@ -59,18 +59,29 @@ namespace longmarch
 	template <typename Key, typename T>
 	using LongMarch_UnorderedMap_flat = phmap::flat_hash_map<Key, T, LongMarch_HashType<Key>>;
 
-	// For large set of data > 64, warning : no internal lock for parallel access within the same bucket
-	template <typename Key, typename T>
-	using LongMarch_UnorderedMap_Par = phmap::parallel_flat_hash_map<Key, T, LongMarch_HashType<Key>>;
+	// // For large set of data > 64, warning : no internal lock for parallel access within the same bucket
+	// template <typename Key, typename T>
+	// using LongMarch_UnorderedMap_Par = phmap::parallel_flat_hash_map<Key, T, LongMarch_HashType<Key>>;
+	//
+	// // For large set of data > 64, warning : no internal lock for parallel access within the same bucket. All inputs are stable upon insertion, and use this if move is expensive or not allowed
+	// template <typename Key, typename T>
+	// using LongMarch_UnorderedMap_Par_node = phmap::parallel_node_hash_map<Key, T, LongMarch_HashType<Key>>;
+	//
+	// // For large set of data > 64, warning : no internal lock for parallel access within the same bucket. Might move all data on insertion
+	// template <typename Key, typename T>
+	// using LongMarch_UnorderedMap_Par_flat = phmap::parallel_flat_hash_map<Key, T, LongMarch_HashType<Key>>;
 
-	// For large set of data > 64, warning : no internal lock for parallel access within the same bucket. All inputs are stable upon insertion, and use this if move is expensive or not allowed
+	// Parallel hash map should be called as concurrent hash map, which does not support faster look up 
 	template <typename Key, typename T>
-	using LongMarch_UnorderedMap_Par_node = phmap::parallel_node_hash_map<Key, T, LongMarch_HashType<Key>>;
-
-	// For large set of data > 64, warning : no internal lock for parallel access within the same bucket. Might move all data on insertion
+	using LongMarch_UnorderedMap_Par = phmap::flat_hash_map<Key, T, LongMarch_HashType<Key>>;
+	
 	template <typename Key, typename T>
-	using LongMarch_UnorderedMap_Par_flat = phmap::parallel_flat_hash_map<Key, T, LongMarch_HashType<Key>>;
+	using LongMarch_UnorderedMap_Par_node = phmap::node_hash_map<Key, T, LongMarch_HashType<Key>>;
+	
+	template <typename Key, typename T>
+	using LongMarch_UnorderedMap_Par_flat = phmap::flat_hash_map<Key, T, LongMarch_HashType<Key>>;
 
+	
 	template<typename T>
 	struct LongMarch_ContainerView
 	{

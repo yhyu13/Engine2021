@@ -54,6 +54,40 @@ longmarch::atomic_flag_guard::~atomic_flag_guard() noexcept
     m_lock->clear(std::memory_order_release);
 }
 
+atomic_flag_guard_cond::atomic_flag_guard_cond(std::atomic_flag& flag, bool enabled) noexcept
+    :
+    m_lock(&flag),
+    m_enabled(enabled)
+{
+    if (m_enabled)
+    {
+        SET_DEADLOCK_TIMER();
+        while (m_lock->test_and_set(std::memory_order_acq_rel))
+        {
+            int spin_count = SPIN_COUNT;
+            do
+            {
+                THREAD_PAUSE();
+            }
+            while (m_lock->test_and_set(std::memory_order_acq_rel) && --spin_count);
+            if (spin_count)
+            {
+                break;
+            }
+            ASSERT_DEADLOCK_TIMER();
+            THREAD_YIELD();
+        }
+    }
+}
+
+atomic_flag_guard_cond::~atomic_flag_guard_cond() noexcept
+{
+    if (m_enabled)
+    {
+        m_lock->clear(std::memory_order_release);
+    }
+}
+
 longmarch::adaptive_atomic_guard::adaptive_atomic_guard(std::mutex& flag, int64_t& period) noexcept
     :
     m_lock(&flag),
@@ -159,27 +193,33 @@ void longmarch::BaseAtomicClassNC::UnLockNC() const noexcept
 
 void longmarch::BaseAtomicClass::Lock() const noexcept
 {
-    SET_DEADLOCK_TIMER();
-    while (m_flag.test_and_set(std::memory_order_acq_rel))
+    if (m_atomic_lock_enabled)
     {
-        int spin_count = SPIN_COUNT;
-        do
+        SET_DEADLOCK_TIMER();
+        while (m_flag.test_and_set(std::memory_order_acq_rel))
         {
-            THREAD_PAUSE();
+            int spin_count = SPIN_COUNT;
+            do
+            {
+                THREAD_PAUSE();
+            }
+            while (m_flag.test_and_set(std::memory_order_acq_rel) && --spin_count);
+            if (spin_count)
+            {
+                break;
+            }
+            ASSERT_DEADLOCK_TIMER();
+            THREAD_YIELD();
         }
-        while (m_flag.test_and_set(std::memory_order_acq_rel) && --spin_count);
-        if (spin_count)
-        {
-            break;
-        }
-        ASSERT_DEADLOCK_TIMER();
-        THREAD_YIELD();
     }
 }
 
 void longmarch::BaseAtomicClass::UnLock() const noexcept
 {
-    m_flag.clear(std::memory_order_release);
+    if (m_atomic_lock_enabled)
+    {
+        m_flag.clear(std::memory_order_release);
+    }
 }
 
 void AdaptiveAtomicClassNC::LockAdaptiveNC() const noexcept

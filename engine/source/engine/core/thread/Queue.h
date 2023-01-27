@@ -168,88 +168,235 @@ namespace longmarch
         void push(T&& value) noexcept
         {
             LOCK_GUARD_NC();
-            m_queque.emplace_back(value);
+            m_queue.emplace_back(value);
         }
 
         void push(const T& value) noexcept
         {
             LOCK_GUARD_NC();
-            m_queque.emplace_back(value);
+            m_queue.emplace_back(value);
         }
 
-        T& front() noexcept
+        T& peek_front() const noexcept
         {
             LOCK_GUARD_NC();
-            return m_queque.front();
+            return m_queue.front();
         }
 
-        const T& front() const noexcept
+        T pop_front() noexcept
         {
             LOCK_GUARD_NC();
-            return m_queque.front();
-        }
-
-        void pop() noexcept
-        {
-            LOCK_GUARD_NC();
-            m_queque.pop_front();
+            auto ret = m_queue.front();
+            m_queue.pop_front();
+            return ret;
         }
 
         bool empty() const noexcept
         {
             LOCK_GUARD_NC();
-            return m_queque.empty();
+            return m_queue.empty();
         }
 
-        bool contains(const T& value) const noexcept
-        {
-            LOCK_GUARD_NC();
-            return std::find(m_queque.begin(), m_queque.end(), value) != m_queque.end();
-        }
+        // bool contains(const T& value) const noexcept
+        // {
+        //     LOCK_GUARD_NC();
+        //     return std::find(m_queue.begin(), m_queue.end(), value) != m_queue.end();
+        // }
 
-        size_t size() noexcept
+        size_t size() const noexcept
         {
             LOCK_GUARD_NC();
-            return m_queque.size();
-        }
-
-        auto begin() noexcept
-        {
-            LOCK_GUARD_NC();
-            return m_queque.begin();
-        }
-
-        auto end() noexcept
-        {
-            LOCK_GUARD_NC();
-            return m_queque.end();
-        }
-
-        auto begin() const noexcept
-        {
-            LOCK_GUARD_NC();
-            return m_queque.begin();
-        }
-
-        auto end() const noexcept
-        {
-            LOCK_GUARD_NC();
-            return m_queque.end();
-        }
-
-        auto cbegin() const noexcept
-        {
-            LOCK_GUARD_NC();
-            return m_queque.cbegin();
-        }
-
-        auto cend() const noexcept
-        {
-            LOCK_GUARD_NC();
-            return m_queque.cend();
+            return m_queue.size();
         }
 
     private:
-        std::deque<T> m_queque;
+        std::deque<T> m_queue;
+    };
+
+    /**
+     * Enumerates concurrent queue modes.
+     */
+    enum class EConcurrentQueueMode : uint8_t
+    {
+        Spsc,
+        Mpsc,
+        Mpmc,
+    };
+
+    /**
+     * Noncopyable lock-free concurrent queue, copy from Unreal Engine's TQueue
+     *
+     */
+    template <typename T, EConcurrentQueueMode Mode = EConcurrentQueueMode::Spsc>
+    class ConcurrentQueueNC
+    {
+        /*
+         * 
+         *  Head = Tail
+         *
+         *  Push 1
+            OldHead1=null NewNode1=SomePtr
+            Push 2
+            OldHead2=null NewNode2=SomePtr
+
+            Push 2 Interlock step1
+            OldHead2 = Head = Tail
+            Head = NewNode2
+
+            Push 1 Interlock step1
+            OldHead1 = Head = NewNode2
+            Head = NewNode1
+
+            Push 2 Interlock step2
+            OldHead2->Next = Tail->Next = NewNode2
+            
+            Pop
+            Tail->Next is poped
+            delete Tail
+            Tail = Tail->Next 
+            Tail->Item = Empty
+
+            Push 1 Interlock step2
+            OldHead1->Next = NewNode2->Next = Tail->Next = NewNode1
+         */
+    private:
+        /** Structure for the internal linked list. */
+        struct QueueNode
+        {
+            QueueNode() = default;
+
+            explicit QueueNode(const T& InItem)
+                :
+                m_item(InItem)
+            {}
+
+            explicit QueueNode(T&& InItem)
+                :
+                m_item(std::move(InItem))
+            {}
+
+            QueueNode* volatile m_nextNode{nullptr};
+            T m_item;
+        };
+        
+    public:
+        NONCOPYABLE(ConcurrentQueueNC);
+        ConcurrentQueueNC()
+        {
+            m_head = m_tail = new QueueNode();
+        }
+
+        ~ConcurrentQueueNC()
+        {
+            while(auto temp = m_tail)
+            {
+                m_tail = m_tail->m_nextNode;
+                delete temp;
+            }
+        }
+
+        void push(const T& item) noexcept
+        {
+            push_internal(new QueueNode(item));
+        }
+
+        void push(T&& item) noexcept
+        {
+            push_internal(new QueueNode(item));
+        }
+
+        T& peek_front() const noexcept
+        {
+            return m_tail->m_nextNode->m_item;
+        }
+
+        bool pop_front(T& ret) noexcept
+        {
+            if (auto poped_node = m_tail->m_nextNode)
+            {
+                if constexpr (Mode <= EConcurrentQueueMode::Mpsc)
+                {
+                    // Step1 swap tail pointer
+                    auto old_tail = m_tail;
+                    m_tail = poped_node;
+                    
+                    // Step2 assign value
+                    ret = poped_node->m_item;
+
+                    // Step3 delete old tail
+                    delete old_tail;
+                    
+                    m_size.fetch_add(-1, std::memory_order_relaxed);
+                    return true;
+                }
+                else
+                {
+#if defined(WIN32) || defined(WINDOWS_APP)
+                    auto ptr_address = (void**)&m_tail;
+                    auto old_tail = m_tail;
+                    // Step1 swap tail pointer
+                    if (old_tail->m_nextNode == poped_node
+                        && old_tail == (QueueNode*)InterlockedCompareExchangePointer(ptr_address, poped_node, old_tail))
+                    {
+                        // Step2 assign value
+                        ret = poped_node->m_item;
+                        
+                        // Step3 delete old tail
+                        delete old_tail;
+                        
+                        m_size.fetch_add(-1, std::memory_order_relaxed);
+                        return true;
+                    }
+#else
+                    static_assert(false, "Not implemented yet");
+#endif
+                }
+            }
+
+            return false;
+        }
+
+        size_t size() const noexcept
+        {
+            return m_size.load(std::memory_order_relaxed);
+        }
+
+    private:
+        void push_internal(QueueNode* NewNode) noexcept
+        {
+            QueueNode* OldHead;
+            if constexpr (Mode >= EConcurrentQueueMode::Mpsc)
+            {
+#if defined(WIN32) || defined(WINDOWS_APP)
+                // Step1, swap pointer
+                OldHead = (QueueNode*)InterlockedExchangePointer((void**)&m_head, NewNode);
+                // Step2, chain pointer
+                InterlockedExchangePointer((void**)&OldHead->NextNode, NewNode);
+#else
+                static_assert(false, "Not implemented yet");
+#endif
+            }
+            else
+            {
+                // Step1, swap pointer
+                OldHead = m_head;
+                m_head = NewNode;
+
+                // Step2, chain pointer
+                // Prevent compiler reordering step2 into step1
+                std::atomic_thread_fence(std::memory_order_release);
+                OldHead->NextNode = NewNode;
+            }
+
+            m_size.fetch_add(1, std::memory_order_relaxed);
+        }
+    
+    private:
+        /** Holds a pointer to the head of the list. */
+        CACHE_ALIGN QueueNode* volatile m_head{nullptr};
+        /** Holds a pointer to the tail of the list. */
+        QueueNode* m_tail{nullptr};
+
+        std::atomic_int32_t m_size{0};
     };
 }

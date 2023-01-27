@@ -28,7 +28,7 @@ namespace longmarch
 
 	private:
 		void PrepareScene(double dt);
-		void RecursivePrepareScene(double dt, const Entity& parent, Transform3DCom* parentTrCom, ChildrenCom* parentChildrenCom, unsigned int level);
+		void RecursivePrepareScene(const Entity& parent, Transform3DCom* parentTrCom, ChildrenCom* parentChildrenCom);
 		void RenderWithModeOpaque(Renderer3D::RenderObj_CPU& renderObj);
 		void RenderWithModeTransparent(Renderer3D::RenderObj_CPU& renderObj);
 		void RenderWithModeParticle(Renderer3D::RenderObj_CPU& renderObj);

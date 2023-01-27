@@ -52,7 +52,6 @@ void longmarch::EngineException::Update()
 	while (!m_queue.empty())
 	{
 	    ASSERT(false, "EngineException::Update throw!");
-		throw m_queue.front();
-		m_queue.pop();
+		throw m_queue.pop_front();
 	}
 }

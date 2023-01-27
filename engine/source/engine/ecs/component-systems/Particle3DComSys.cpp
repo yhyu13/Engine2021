@@ -57,8 +57,7 @@ void Particle3DComSys::LateUpdate(double dt)
 	auto& jobQueue = m_perInvokationPhaseJobQueue[EInvokationPhase::LATE_UPDATE];
 	while(!jobQueue.empty())
 	{
-		jobQueue.front()();
-		jobQueue.pop();
+		jobQueue.pop_front()();
 	}
 }
 

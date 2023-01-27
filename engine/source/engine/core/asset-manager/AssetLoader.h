@@ -25,7 +25,7 @@ namespace longmarch
 			Options() = default;
 			Options(bool async, bool Watch) : Asynchronous(async), Watch(Watch) {}
 			bool Asynchronous{ false };
-			bool Watch{ false };
+			bool Watch{ false }; //Put the asset in the watch list, and track whether the asset is modified. If modifies, auto reload asset
 		};
 
 		//! Blocking loader
@@ -52,7 +52,11 @@ namespace longmarch
 			//! Returns whether the asset needs to be reloaded or not.
 			bool Watch()
 			{
-				if (!m_options.Watch) throw std::logic_error("Watch should not be called on loader with Option::Watch set to false!");
+				if (!m_options.Watch)
+				{
+					throw std::logic_error("Watch should be called on loader with Option::Watch set to true!");
+					return false;
+				}
 				if (auto ftime = fs::last_write_time(m_path); m_lastTimeWritten != ftime)
 				{
 					m_lastTimeWritten = ftime;
@@ -194,12 +198,13 @@ namespace longmarch
 		//! Update job in the default job queue
 		inline static void Update()
 		{
+			// Check watch list
 			if (s_watcherTimer.Check(true))
 			{
-				for (auto i(0u); i < s_watcherQueue.size(); ++i)
+				std::vector<LoaderRef> watchedRefs;
+				while (!s_watcherQueue.empty())
 				{
-					auto loader = s_watcherQueue.front();
-					s_watcherQueue.pop();
+					auto loader = s_watcherQueue.pop_front();
 					if (loader->Watch())
 					{
 						PRINT("Reload : " + loader->m_path.string());
@@ -217,22 +222,33 @@ namespace longmarch
 							ENGINE_EXCEPT_IF(!loader->IsLoaded(), L"Loader failed : " + loader->m_path.wstring());
 						}
 					}
-					s_watcherQueue.push(std::move(loader));
+					watchedRefs.push_back(std::move(loader));
+				}
+				for (auto&& loadRef : watchedRefs)
+				{
+					s_asyncLoaderQueue.push(std::move(loadRef));
 				}
 			}
-			for (auto i(0u); i < s_asyncLoaderQueue.size(); ++i)
+			// Check load list
 			{
-				auto loader = s_asyncLoaderQueue.front();
-				s_asyncLoaderQueue.pop();
-				if (loader->IsLoaded())
+				std::vector<LoaderRef> notLoadedRefs;
+				while (!s_asyncLoaderQueue.empty())
 				{
-					loader->Update();
-					UnrecordLoading(loader);
-					DEBUG_PRINT("Done loading : " + loader->Path().string());
+					auto loader = s_asyncLoaderQueue.pop_front();
+					if (loader->IsLoaded())
+					{
+						loader->Update();
+						UnrecordLoading(loader);
+						DEBUG_PRINT("Done loading : " + loader->Path().string());
+					}
+					else
+					{
+						notLoadedRefs.push_back(std::move(loader));
+					}
 				}
-				else
+				for (auto&& loadRef : notLoadedRefs)
 				{
-					s_asyncLoaderQueue.push(std::move(loader));
+					s_asyncLoaderQueue.push(std::move(loadRef));
 				}
 			}
 		}

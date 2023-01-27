@@ -185,25 +185,22 @@ void longmarch::Scene3DComSys::PrepareScene(double dt)
         }
     });
 
-    auto root = m_parentWorld->GetTheOnlyEntityWithType((EntityType)(EngineEntityType::SCENE_ROOT));
     {
+        auto root = m_parentWorld->GetTheOnlyEntityWithType((EntityType)(EngineEntityType::SCENE_ROOT));
         auto parentTrCom = GetComponent<Transform3DCom>(root).GetPtr();
         // Reset scene root transform component
         parentTrCom->Reset();
-        const auto& children = GetComponent<ChildrenCom>(root)->GetChildren();
-        const int last_child_idx = (children.empty()) ? -1 : children.size() - 1;
-        for (int i = 0; i <= last_child_idx; ++i)
+        for (const auto child : GetComponent<ChildrenCom>(root)->GetChildren())
         {
-            const auto& child = children[i];
             auto trans = GetComponent<Transform3DCom>(child);
             trans->SetParentModelTr(parentTrCom->GetSuccessionModelTr(trans));
 
             if (auto childrenCom = GetComponent<ChildrenCom>(child).GetPtr(); !childrenCom->IsLeaf())
             {
                 m_threadJob.push(StealThreadPool::GetInstance()->enqueue_task(
-                        [this, dt, child, trans, childrenCom]()
+                        [this, child, trans, childrenCom]()
                         {
-                            RecursivePrepareScene(dt, child, trans, childrenCom, 0);
+                            RecursivePrepareScene(child, trans, childrenCom);
                         }).share());
             }
         }
@@ -211,29 +208,25 @@ void longmarch::Scene3DComSys::PrepareScene(double dt)
 
     while (!m_threadJob.empty())
     {
-        m_threadJob.front().wait();
-        m_threadJob.pop();
+        m_threadJob.pop_front().wait();
     }
     job.wait();
 }
 
-void longmarch::Scene3DComSys::RecursivePrepareScene(double dt, const Entity& parent, Transform3DCom* parentTrCom,
-                                                     ChildrenCom* parentChildrenCom, unsigned int level)
+void longmarch::Scene3DComSys::RecursivePrepareScene(const Entity& parent, Transform3DCom* parentTrCom,
+                                                     ChildrenCom* parentChildrenCom)
 {
-    const auto& children = parentChildrenCom->GetChildren();
-    const int last_child_idx = (children.empty()) ? -1 : children.size() - 1;
-    for (int i = 0; i <= last_child_idx; ++i)
+    for (const auto child : parentChildrenCom->GetChildren())
     {
-        const auto& child = children[i];
         auto trans = GetComponent<Transform3DCom>(child);
         trans->SetParentModelTr(parentTrCom->GetSuccessionModelTr(trans));
 
         if (auto childrenCom = GetComponent<ChildrenCom>(child).GetPtr(); !childrenCom->IsLeaf())
         {
             m_threadJob.push(StealThreadPool::GetInstance()->enqueue_task(
-                    [this, dt, child, trans, childrenCom, level]()
+                    [this, child, trans, childrenCom]()
                     {
-                        RecursivePrepareScene(dt, child, trans, childrenCom, level + 1);
+                        RecursivePrepareScene(child, trans, childrenCom);
                     }).share());
         }
     }

@@ -197,12 +197,6 @@ namespace longmarch
             return m_queue.empty();
         }
 
-        // bool contains(const T& value) const noexcept
-        // {
-        //     LOCK_GUARD_NC();
-        //     return std::find(m_queue.begin(), m_queue.end(), value) != m_queue.end();
-        // }
-
         size_t size() const noexcept
         {
             LOCK_GUARD_NC();
@@ -221,11 +215,11 @@ namespace longmarch
         Spsc,
         Mpsc,
         Mpmc,
+        Spmc
     };
-
+    
     /**
      * Noncopyable lock-free concurrent queue, copy from Unreal Engine's TQueue
-     *
      */
     template <typename T, EConcurrentQueueMode Mode = EConcurrentQueueMode::Spsc>
     class ConcurrentQueueNC
@@ -310,11 +304,25 @@ namespace longmarch
             return m_tail->m_nextNode->m_item;
         }
 
+        T pop_front() noexcept
+        {
+            T ret;
+            if constexpr (Mode == EConcurrentQueueMode::Mpsc || Mode == EConcurrentQueueMode::Spsc)
+            {
+                ASSERT(pop_front(ret));
+            }
+            else
+            {
+                ASSERT(false, "Multi-consumer queue should not use this method as pop_front does not guarantee to succeed!");
+            }
+            return ret;
+        }
+
         bool pop_front(T& ret) noexcept
         {
             if (auto poped_node = m_tail->m_nextNode)
             {
-                if constexpr (Mode <= EConcurrentQueueMode::Mpsc)
+                if constexpr (Mode == EConcurrentQueueMode::Mpsc || Mode == EConcurrentQueueMode::Spsc)
                 {
                     // Step1 swap tail pointer
                     auto old_tail = m_tail;
@@ -356,6 +364,11 @@ namespace longmarch
             return false;
         }
 
+        bool empty() const noexcept
+        {
+            return m_tail->m_nextNode == nullptr;
+        }
+
         size_t size() const noexcept
         {
             return m_size.load(std::memory_order_relaxed);
@@ -364,14 +377,14 @@ namespace longmarch
     private:
         void push_internal(QueueNode* NewNode) noexcept
         {
-            QueueNode* OldHead;
-            if constexpr (Mode >= EConcurrentQueueMode::Mpsc)
+            QueueNode* old_head;
+            if constexpr (Mode == EConcurrentQueueMode::Mpsc || Mode == EConcurrentQueueMode::Mpmc)
             {
 #if defined(WIN32) || defined(WINDOWS_APP)
                 // Step1, swap pointer
-                OldHead = (QueueNode*)InterlockedExchangePointer((void**)&m_head, NewNode);
+                old_head = (QueueNode*)InterlockedExchangePointer((void**)&m_head, NewNode);
                 // Step2, chain pointer
-                InterlockedExchangePointer((void**)&OldHead->NextNode, NewNode);
+                InterlockedExchangePointer((void**)&old_head->m_nextNode, NewNode);
 #else
                 static_assert(false, "Not implemented yet");
 #endif
@@ -379,13 +392,13 @@ namespace longmarch
             else
             {
                 // Step1, swap pointer
-                OldHead = m_head;
+                old_head = m_head;
                 m_head = NewNode;
 
                 // Step2, chain pointer
                 // Prevent compiler reordering step2 into step1
                 std::atomic_thread_fence(std::memory_order_release);
-                OldHead->NextNode = NewNode;
+                old_head->m_nextNode = NewNode;
             }
 
             m_size.fetch_add(1, std::memory_order_relaxed);

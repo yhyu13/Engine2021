@@ -10,6 +10,7 @@
 #include "engine/scene-graph/Scene3DNode.h"
 #include "engine/physics/AABB.h"
 #include "engine/ecs/GameWorld.h"
+#include "engine/renderer/platform/OpenGL/OpenGLUtil.h"
 
 void longmarch::Renderer3D::Init()
 {
@@ -1182,6 +1183,15 @@ void longmarch::Renderer3D::EditorRenderGraphicsSettings()
                         auto e = MemoryManager::Make_shared<ToggleGPUSyncEvent>(checkGPUSync);
                         graphicEventQueue->Publish(e);
                     }
+                }
+                // OpenGL Check Error (performance expensive)
+                {
+                    static bool bGLCheckError = longmarch::g_bGLCheckError;
+                    if (ImGui::Checkbox("OpenGL Check Error", &bGLCheckError))
+                    {
+                        longmarch::g_bGLCheckError = bGLCheckError;
+                    }
+                    ImGuiUtil::InlineHelpMarker("Enable OpenGL Error Check might cost performance hit.");
                 }
                 // High precision Frame control
                 {

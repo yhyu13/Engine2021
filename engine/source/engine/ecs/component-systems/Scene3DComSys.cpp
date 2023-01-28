@@ -197,7 +197,7 @@ void longmarch::Scene3DComSys::PrepareScene(double dt)
 
             if (auto childrenCom = GetComponent<ChildrenCom>(child).GetPtr(); !childrenCom->IsLeaf())
             {
-                m_threadJob.push(StealThreadPool::GetInstance()->enqueue_task(
+                m_threadJobs.push(StealThreadPool::GetInstance()->enqueue_task(
                         [this, child, trans, childrenCom]()
                         {
                             RecursivePrepareScene(child, trans, childrenCom);
@@ -206,9 +206,9 @@ void longmarch::Scene3DComSys::PrepareScene(double dt)
         }
     }
 
-    while (!m_threadJob.empty())
+    while (!m_threadJobs.empty())
     {
-        m_threadJob.pop_front().wait();
+        m_threadJobs.pop_front().wait();
     }
     job.wait();
 }
@@ -223,7 +223,7 @@ void longmarch::Scene3DComSys::RecursivePrepareScene(const Entity& parent, Trans
 
         if (auto childrenCom = GetComponent<ChildrenCom>(child).GetPtr(); !childrenCom->IsLeaf())
         {
-            m_threadJob.push(StealThreadPool::GetInstance()->enqueue_task(
+            m_threadJobs.push(StealThreadPool::GetInstance()->enqueue_task(
                     [this, child, trans, childrenCom]()
                     {
                         RecursivePrepareScene(child, trans, childrenCom);

@@ -3,15 +3,16 @@
 #include "engine/core/EngineCore.h"
 #include "engine/core/exception/EngineException.h"
 
-#ifndef _SHIPPING
-#define GLCHECKERROR {GLenum err = glGetError(); if (err != GL_NO_ERROR) { throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"OpenGL error " + wStr(err)); } }
-#else
-#define GLCHECKERROR
-#endif // DEBUG
-
-
 namespace longmarch
 {
+    extern bool g_bGLCheckError;
+    
+#ifndef _SHIPPING
+#define GLCHECKERROR() do { if (g_bGLCheckError) { GLenum err = glGetError(); if ( err != GL_NO_ERROR) { throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"OpenGL error " + wStr(err));}} } while (0)
+#else
+#define GLCHECKERROR()
+#endif // _SHIPPING
+
     // inspired from https://gist.github.com/liam-middlebrook/c52b069e4be2d87a6d2f
     __LongMarch_TRIVIAL_TEMPLATE__
     void GLDebugMessageCallback(GLenum source, GLenum type, GLuint id,

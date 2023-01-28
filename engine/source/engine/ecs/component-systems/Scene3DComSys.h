@@ -54,6 +54,6 @@ namespace longmarch
 		DistanceCParam m_distanceCParam;
 		std::string m_RenderShaderName;
 		bool m_enableDebugDraw{ true };
-		AtomicQueueNC<std::shared_future<void>> m_threadJob;
+		ConcurrentQueueNC<std::shared_future<void>> m_threadJobs;
 	};
 }

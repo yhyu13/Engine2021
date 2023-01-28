@@ -98,7 +98,7 @@ namespace longmarch {
 			glTextureParameteri(m_RenderTargetID, GL_TEXTURE_MAG_FILTER, (data.linear_filter) ? GL_LINEAR : GL_NEAREST);
 			glTextureParameteri(m_RenderTargetID, GL_TEXTURE_MIN_FILTER, (data.linear_filter) ? GL_LINEAR : GL_NEAREST);
 		}
-		GLCHECKERROR;
+		GLCHECKERROR();
 		if (_data)
 		{
 			delete[] _data;
@@ -219,7 +219,7 @@ namespace longmarch {
 			glGenerateMipmap(GL_TEXTURE_2D);
 			stbi_image_free(data);
 		}
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	OpenGLTexture2D::~OpenGLTexture2D()
@@ -230,13 +230,13 @@ namespace longmarch {
 	void OpenGLTexture2D::AttachToFrameBuffer() const
 	{
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_RenderTargetID, 0);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	void OpenGLTexture2D::BindTexture(uint32_t slot) const
 	{
 		glBindTextureUnit(slot, m_RenderTargetID);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	void OpenGLTexture2D::WriteToPNG(const fs::path& path) const
@@ -257,7 +257,7 @@ namespace longmarch {
 		/// READ THE CONTENT FROM THE FBO
 		glReadBuffer(GL_COLOR_ATTACHMENT0);
 		glReadPixels(0, 0, output_width, output_height, m_DataFormat, GL_UNSIGNED_BYTE, pixels);
-		GLCHECKERROR;
+		GLCHECKERROR();
 
 		// yuhang : Double check we file path is valid
 		FILE* output_image = nullptr;
@@ -301,7 +301,7 @@ namespace longmarch {
 		/// READ THE CONTENT FROM THE FBO
 		glReadBuffer(GL_COLOR_ATTACHMENT0);
 		glReadPixels(0, 0, output_width, output_height, m_DataFormat, GL_FLOAT, pixels);
-		GLCHECKERROR;
+		GLCHECKERROR();
 
 		// yuhang : Double check we file path is valid
 		FILE* output_image = nullptr;
@@ -332,6 +332,6 @@ namespace longmarch {
 		/// READ THE CONTENT FROM THE FBO
 		glReadBuffer(GL_COLOR_ATTACHMENT0);
 		glReadPixels(0, 0, m_Width, m_Height, m_DataFormat, IsFloatType() ? GL_FLOAT : GL_UNSIGNED_BYTE, tex);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 }

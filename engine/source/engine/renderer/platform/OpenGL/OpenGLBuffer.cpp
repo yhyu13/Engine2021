@@ -28,7 +28,7 @@ namespace longmarch
 		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 		glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()
@@ -39,13 +39,13 @@ namespace longmarch
 	void OpenGLVertexBuffer::Bind() const
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	void OpenGLVertexBuffer::Unbind() const
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	void OpenGLVertexBuffer::AppendBufferData(const std::shared_ptr<VertexBuffer>& read_buffer)
@@ -57,7 +57,7 @@ namespace longmarch
 	void OpenGLVertexBuffer::CopyBufferData(size_t write_offset, const std::shared_ptr<VertexBuffer>& read_buffer, size_t read_offset)
 	{
 		glCopyNamedBufferSubData(read_buffer->GetFrameBufferID(), m_RendererID, read_offset, write_offset, read_buffer->GetCount() * read_buffer->GetElementSize() - read_offset);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	void OpenGLVertexBuffer::AppendBufferData(const void* data, size_t size)
@@ -70,7 +70,7 @@ namespace longmarch
 	void OpenGLVertexBuffer::UpdateBufferSubData(const void* data, size_t size, size_t write_offset)
 	{
 		glNamedBufferSubData(m_RendererID, write_offset, size, data);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	void OpenGLVertexBuffer::UpdateBufferData(const void* data, size_t size)
@@ -87,7 +87,7 @@ namespace longmarch
 			m_Capcity = size;
 		}
 		glNamedBufferData(m_RendererID, size, data, GL_DYNAMIC_DRAW);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	/**************************************************************
 	*	Index Buffer
@@ -111,7 +111,7 @@ namespace longmarch
 		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	OpenGLIndexBuffer::~OpenGLIndexBuffer()
@@ -122,13 +122,13 @@ namespace longmarch
 	void OpenGLIndexBuffer::Bind() const
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	void OpenGLIndexBuffer::Unbind() const
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	void OpenGLIndexBuffer::AppendBufferData(const std::shared_ptr<IndexBuffer>& read_buffer)
@@ -140,7 +140,7 @@ namespace longmarch
 	void OpenGLIndexBuffer::CopyBufferData(size_t write_offset, const std::shared_ptr<IndexBuffer>& read_buffer, size_t read_offset)
 	{
 		glCopyNamedBufferSubData(read_buffer->GetFrameBufferID(), m_RendererID, read_offset, write_offset, read_buffer->GetCount() * read_buffer->GetElementSize() - read_offset);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	void OpenGLIndexBuffer::AppendBufferData(const void* data, size_t size)
@@ -153,7 +153,7 @@ namespace longmarch
 	void OpenGLIndexBuffer::UpdateBufferSubData(const void* data, size_t size, size_t write_offset)
 	{
 		glNamedBufferSubData(m_RendererID, write_offset, size, data);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	void OpenGLIndexBuffer::UpdateBufferData(const void* data, size_t size)
@@ -170,7 +170,7 @@ namespace longmarch
 			m_Capcity = size;
 		}
 		glNamedBufferData(m_RendererID, size, data, GL_DYNAMIC_DRAW);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	/**************************************************************
 	*	Uniform Buffer
@@ -181,7 +181,7 @@ namespace longmarch
 		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_UNIFORM_BUFFER, m_RendererID);
 		glBufferData(GL_UNIFORM_BUFFER, size, data, GL_DYNAMIC_DRAW);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	OpenGLUniformBuffer::~OpenGLUniformBuffer()
 	{
@@ -190,17 +190,17 @@ namespace longmarch
 	void OpenGLUniformBuffer::Bind(uint32_t slot) const
 	{
 		glBindBufferBase(GL_UNIFORM_BUFFER, slot, m_RendererID);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	void OpenGLUniformBuffer::Unbind() const
 	{
 		glBindBufferBase(GL_UNIFORM_BUFFER, 0, 0);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	void OpenGLUniformBuffer::UpdateBufferData(const void* data, size_t size)
 	{
 		glNamedBufferData(m_RendererID, size, data, GL_DYNAMIC_DRAW);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	void* OpenGLUniformBuffer::GetUniformBufferMapping(size_t size, size_t offset)
 	{
@@ -208,13 +208,13 @@ namespace longmarch
 			Reference: https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glMapBufferRange.xhtml
 		*/
 		void* ret = glMapBufferRange(GL_UNIFORM_BUFFER, offset, size, GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_WRITE_BIT);// | GL_MAP_INVALIDATE_BUFFER_BIT);
-		GLCHECKERROR;
+		GLCHECKERROR();
 		return ret;
 	}
 	void OpenGLUniformBuffer::EndUniformBufferMapping()
 	{
 		glUnmapBuffer(GL_UNIFORM_BUFFER);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	/**************************************************************
@@ -226,7 +226,7 @@ namespace longmarch
 		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_RendererID);
 		glBufferData(GL_SHADER_STORAGE_BUFFER, size, data, GL_DYNAMIC_DRAW);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	OpenGLShaderStorageBuffer::~OpenGLShaderStorageBuffer()
 	{
@@ -235,17 +235,17 @@ namespace longmarch
 	void OpenGLShaderStorageBuffer::Bind(uint32_t slot) const
 	{
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, slot, m_RendererID);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	void OpenGLShaderStorageBuffer::Unbind() const
 	{
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	void OpenGLShaderStorageBuffer::UpdateBufferData(const void* data, size_t size)
 	{
 		glNamedBufferData(m_RendererID, size, data, GL_DYNAMIC_DRAW);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	void* OpenGLShaderStorageBuffer::GetShaderStorageBufferMapping(size_t size, size_t offset)
 	{
@@ -253,13 +253,13 @@ namespace longmarch
 			Reference: https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glMapBufferRange.xhtml
 		*/
 		void* ret = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, offset, size, GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_WRITE_BIT);// | GL_MAP_INVALIDATE_BUFFER_BIT);
-		GLCHECKERROR;
+		GLCHECKERROR();
 		return ret;
 	}
 	void OpenGLShaderStorageBuffer::EndShaderStorageBufferMapping()
 	{
 		glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	/**************************************************************
@@ -281,7 +281,7 @@ namespace longmarch
 		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_RendererID);
 		glBufferData(GL_DRAW_INDIRECT_BUFFER, size, data, GL_DYNAMIC_DRAW);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	OpenGLIndexedIndirectCommandBuffer::~OpenGLIndexedIndirectCommandBuffer()
 	{
@@ -290,12 +290,12 @@ namespace longmarch
 	void OpenGLIndexedIndirectCommandBuffer::Bind() const
 	{
 		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_RendererID);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	void OpenGLIndexedIndirectCommandBuffer::Unbind() const
 	{
 		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	void OpenGLIndexedIndirectCommandBuffer::UpdateBufferData(const void* data, size_t size)
 	{
@@ -311,7 +311,7 @@ namespace longmarch
 			m_Capcity = size;
 		}
 		glNamedBufferData(m_RendererID, size, data, GL_DYNAMIC_DRAW);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	/**************************************************************
@@ -320,17 +320,17 @@ namespace longmarch
 	void OpenGLBaseTextureBuffer::Bind() const
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	void OpenGLBaseTextureBuffer::Unbind() const
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	void OpenGLBaseTextureBuffer::BindTexture(uint32_t slot)
 	{
 		glBindTextureUnit(slot, m_RenderTargetID);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	/**************************************************************
@@ -413,7 +413,7 @@ namespace longmarch
 
 		// Unbind the fbo until it's ready to be used
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	OpenGLFrameBuffer::~OpenGLFrameBuffer()
 	{
@@ -425,7 +425,7 @@ namespace longmarch
 	{
 		glBindTexture(GL_TEXTURE_2D, m_RenderTargetID);
 		glGenerateMipmap(GL_TEXTURE_2D);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	/**************************************************************
@@ -472,7 +472,7 @@ namespace longmarch
 		}
 		// Unbind the fbo until it's ready to be used
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	OpenGLShadowBuffer::~OpenGLShadowBuffer()
@@ -490,7 +490,7 @@ namespace longmarch
 		m_height = height;
 		m_type = ShadowBuffer::SHADOW_MAP_TYPE::BASIC_COMPARE;
 
-		GLCHECKERROR;
+		GLCHECKERROR();
 		glGenFramebuffers(1, &m_RendererID);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);		
 
@@ -515,7 +515,7 @@ namespace longmarch
 		}
 		// Unbind the fbo until it's ready to be used
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	OpenGLCompareShadowBuffer::~OpenGLCompareShadowBuffer()
 	{
@@ -569,7 +569,7 @@ namespace longmarch
 
 		// Unbind the fbo until it's ready to be used
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	OpenGLMSMShadowBuffer::~OpenGLMSMShadowBuffer()
 	{
@@ -635,7 +635,7 @@ namespace longmarch
 
 		// Unbind the fbo until it's ready to be used
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	OpenGLMSMCubeShadowBuffer::~OpenGLMSMCubeShadowBuffer()
 	{
@@ -687,7 +687,7 @@ namespace longmarch
 
 		// Unbind the fbo until it's ready to be used
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	OpenGLShadowArrayBuffer::~OpenGLShadowArrayBuffer()
 	{
@@ -698,7 +698,7 @@ namespace longmarch
 	void OpenGLShadowArrayBuffer::BindLayer(uint32_t slot) const
 	{
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_RenderTargetID, 0, slot);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	/**************************************************************
 	*	OpenGLMSMShadowArrayBuffer Buffer
@@ -741,7 +741,7 @@ namespace longmarch
 
 		// Unbind the fbo until it's ready to be used
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	OpenGLCompareShadowArrayBuffer::~OpenGLCompareShadowArrayBuffer()
 	{
@@ -751,7 +751,7 @@ namespace longmarch
 	void OpenGLCompareShadowArrayBuffer::BindLayer(uint32_t slot) const
 	{
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_RenderTargetID, 0, slot);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	/**************************************************************
 	*	OpenGLMSMShadowArrayBuffer Buffer
@@ -795,7 +795,7 @@ namespace longmarch
 		}
 		// Unbind the fbo until it's ready to be used
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	OpenGLMSMShadowArrayBuffer::~OpenGLMSMShadowArrayBuffer()
 	{
@@ -806,7 +806,7 @@ namespace longmarch
 	void OpenGLMSMShadowArrayBuffer::BindLayer(uint32_t slot) const
 	{
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_RenderTargetID, 0, slot);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	/**************************************************************
 	*	SKyBox Buffer
@@ -874,7 +874,7 @@ namespace longmarch
 
 		// Unbind the fbo until it's ready to be used
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	OpenGLSkyBoxBuffer::~OpenGLSkyBoxBuffer()
 	{
@@ -884,13 +884,13 @@ namespace longmarch
 	void OpenGLSkyBoxBuffer::BindMipMapLevel(uint32_t level) const
 	{
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_RenderTargetID, level);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	void OpenGLSkyBoxBuffer::GenerateMipMapLevel() const
 	{
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_RenderTargetID);
 		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	/**************************************************************
 	*	Geometry Buffer
@@ -979,7 +979,7 @@ namespace longmarch
 		}
 		// Unbind the fbo until it's ready to be used
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	OpenGLGBuffer::~OpenGLGBuffer()
 	{
@@ -995,7 +995,7 @@ namespace longmarch
 		for (auto& tex : texToBind)
 		{
 			glBindTextureUnit((GLuint)tex + offset, GetGBufferTexutureID(tex));
-			GLCHECKERROR;
+			GLCHECKERROR();
 		}
 	}
 	uint32_t OpenGLGBuffer::GetGBufferTexutureID(GBUFFER_TEXTURE_TYPE tex) const
@@ -1082,7 +1082,7 @@ namespace longmarch
 		}
 		// Unbind the fbo until it's ready to be used
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	OpenGLThinGBuffer::~OpenGLThinGBuffer()
 	{
@@ -1096,7 +1096,7 @@ namespace longmarch
 		for (auto& tex : texToBind)
 		{
 			glBindTextureUnit((GLuint)tex + offset, GetGBufferTexutureID(tex));
-			GLCHECKERROR;
+			GLCHECKERROR();
 		}
 	}
 	uint32_t OpenGLThinGBuffer::GetGBufferTexutureID(GBUFFER_TEXTURE_TYPE tex) const
@@ -1160,7 +1160,7 @@ namespace longmarch
 
 		// Unbind the fbo until it's ready to be used
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	OpenGLComputeBuffer::~OpenGLComputeBuffer()
 	{
@@ -1198,7 +1198,7 @@ namespace longmarch
 			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Unknown ComputeBuffer::TEXTURE_BIND_MODE type!");
 		}
 		glBindImageTexture(slot, m_RenderTargetID, 0, GL_FALSE, 0, texture_mode, format); 
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 
@@ -1270,7 +1270,7 @@ namespace longmarch
 		{
 			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"FBO Error : " + wStr(status));
 		}
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	OpenGLVoxelBuffer::~OpenGLVoxelBuffer()
 	{
@@ -1316,7 +1316,7 @@ namespace longmarch
 			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Unknown ComputeBuffer::TEXTURE_BIND_MODE type!");
 		}
 		glBindImageTexture(slot, m_RenderTargetID, 0, GL_TRUE, 0, texture_mode, format);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	void OpenGLVoxelBuffer::BindImage(uint32_t slot, BaseTextureBuffer::IMAGE_BIND_MODE mode, VoxelBuffer::BUFFER_FORMAT _format) const
 	{
@@ -1358,12 +1358,12 @@ namespace longmarch
 			throw EngineException(_CRT_WIDE(__FILE__), __LINE__, L"Unknown ComputeBuffer::TEXTURE_BIND_MODE type!");
 		}
 		glBindImageTexture(slot, m_RenderTargetID, 0, GL_TRUE, 0, texture_mode, format);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 	void OpenGLVoxelBuffer::GenerateMipMapLevel() const
 	{
 		glBindTexture(GL_TEXTURE_3D, m_RenderTargetID);
 		glGenerateMipmap(GL_TEXTURE_3D);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 }

@@ -3,7 +3,7 @@
 
 namespace longmarch
 {
-	enum class EngineEventType : int32_t
+	enum class EngineEventType : uint8_t
 	{
 		EMPTY = 0,
 		COLLISION,
@@ -17,7 +17,7 @@ namespace longmarch
 		NUM
 	};
 
-	enum class EngineIOEventType : int32_t
+	enum class EngineIOEventType : uint8_t
 	{
 		EMPTY = 0,
 		SAVE_SCENE_BEGIN,
@@ -29,7 +29,7 @@ namespace longmarch
 		NUM
 	};
 
-	enum class EngineGraphicsEventType : int32_t
+	enum class EngineGraphicsEventType : uint8_t
 	{
 		EMPTY = 0,
 		SWITCH_WINDOW_MODE,
@@ -53,7 +53,7 @@ namespace longmarch
 		NUM
 	};
 
-	enum class EngineGraphicsDebugEventType : int32_t
+	enum class EngineGraphicsDebugEventType : uint8_t
 	{
 		EMPTY = 0,
 		SWITCH_G_BUFFER_DISPLAY,
@@ -63,7 +63,7 @@ namespace longmarch
 		NUM
 	};
 
-	enum class EngineSettingEventType : int32_t
+	enum class EngineSettingEventType : uint8_t
 	{
 		EMPTY = 0,
 		TOGGLE_WINDOW_INTERRUTPTION_HANDLE,

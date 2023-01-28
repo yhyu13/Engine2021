@@ -193,7 +193,7 @@ namespace longmarch
 	void OpenGLShader::Bind() const
 	{
 		glUseProgram(m_RendererID);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	void OpenGLShader::Unbind() const

@@ -64,14 +64,14 @@ namespace longmarch
         NONCOPYABLE(Renderer3D);
         virtual ~Renderer3D() = default;
 
-        enum class LIGHT_TYPE : int32_t // Light type order is critical
+        enum class LIGHT_TYPE : uint8_t // Light type order is critical
         {
             DIRECTIONAL = 0,
             POINT = 1,
             SPOT = 2,
         };
 
-        enum class RENDER_PASS : int32_t
+        enum class RENDER_PASS : uint8_t
         {
             EMPTY = 0,
             SHADOW,
@@ -79,19 +79,19 @@ namespace longmarch
             CUSTOM,
         };
 
-        enum class RENDER_MODE : int32_t
+        enum class RENDER_MODE : uint8_t
         {
             CANONICAL = 0,
             MULTIDRAW,
         };
 
-        enum class RENDER_PIPE : int32_t
+        enum class RENDER_PIPE : uint8_t
         {
-            DEFERRED,
+            DEFERRED = 0,
             FORWARD,
         };
 
-        enum class RENDER_TYPE : int32_t
+        enum class RENDER_TYPE : uint8_t
         {
             OPAQUES = 0,
             TRANSLUCENT,

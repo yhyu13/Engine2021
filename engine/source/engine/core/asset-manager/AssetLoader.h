@@ -13,8 +13,8 @@ namespace longmarch
 	 */
 	class ENGINE_API AssetLoader : BaseAtomicClassNI
 	{
-		NONINSTANTIABLE(AssetLoader);
 	public:
+		NONINSTANTIABLE(AssetLoader);
 		using DataSourceRef = std::shared_ptr<void>;
 		using AsyncCallBack = std::function<DataSourceRef(const fs::path&)>;
 		using MainThreadCallBack = std::function<void(DataSourceRef)>;
@@ -239,7 +239,7 @@ namespace longmarch
 					{
 						loader->Update();
 						UnrecordLoading(loader);
-						DEBUG_PRINT("Done loading : " + loader->Path().string());
+						DEBUG_PRINT(Str("Done loading #%d: %s", ++s_asyncLoaderCounter, loader->m_path.string().c_str()));
 					}
 					else
 					{
@@ -266,7 +266,7 @@ namespace longmarch
 						{
 							loader->Update();
 							UnrecordLoading(loader);
-							DEBUG_PRINT("Done loading : " + loader->m_path.string());
+							DEBUG_PRINT(Str("Done loading #%d: %s", ++s_asyncLoaderCounter, loader->m_path.string().c_str()));
 							it = waitList.erase(it);
 						}
 						else
@@ -306,7 +306,8 @@ namespace longmarch
 	private:
 		inline static Timer s_watcherTimer{ 2.0 }; //!< timer for periodically checking watched files
 		inline static LongMarch_UnorderedMap_flat<std::string, bool> s_pathInLoadingLUT;
-		inline static AtomicQueueNC<LoaderRef> s_watcherQueue;
-		inline static AtomicQueueNC<LoaderRef> s_asyncLoaderQueue;
+		inline static ConcurrentQueueNC<LoaderRef> s_watcherQueue;
+		inline static ConcurrentQueueNC<LoaderRef> s_asyncLoaderQueue;
+		inline static int32_t s_asyncLoaderCounter{0};
 	};
 }

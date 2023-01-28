@@ -275,7 +275,7 @@ namespace longmarch
 		glBlitFramebuffer(
 			0, 0, src_w, src_h, 0, 0, dest_w, dest_h, GL_COLOR_BUFFER_BIT, GL_LINEAR
 		);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	void OpenGLRendererAPI::TransferColorBit(uint32_t src, uint32_t src_tex, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_tex, uint32_t dest_w, uint32_t dest_h)
@@ -306,7 +306,7 @@ namespace longmarch
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest);
 		glDrawBuffer(GL_COLOR_ATTACHMENT0);
 		glBlitFramebuffer(0, 0, src_w, src_h, 0, 0, dest_w, dest_h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	void OpenGLRendererAPI::TransferDepthBit(uint32_t src, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_w, uint32_t dest_h)
@@ -320,7 +320,7 @@ namespace longmarch
 		glBlitFramebuffer(
 			0, 0, src_w, src_h, 0, 0, dest_w, dest_h, GL_DEPTH_BUFFER_BIT, GL_NEAREST
 		); 
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	void OpenGLRendererAPI::TransferStencilBit(uint32_t src, uint32_t src_w, uint32_t src_h, uint32_t dest, uint32_t dest_w, uint32_t dest_h)
@@ -334,7 +334,7 @@ namespace longmarch
 		glBlitFramebuffer(
 			0, 0, src_w, src_h, 0, 0, dest_w, dest_h, GL_STENCIL_BUFFER_BIT, GL_NEAREST
 		);
-		GLCHECKERROR;
+		GLCHECKERROR();
 	}
 
 	void OpenGLRendererAPI::Reverse_Z(bool enabled)

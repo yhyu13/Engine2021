@@ -157,6 +157,16 @@ project "engine"
 		"%{LibName.fmod_studio}",
 	}
 
+	defines
+	{	
+		"GLFW_INCLUDE_NONE",
+
+		"DEBUG_DRAW",
+		"MULTITHREAD_UPDATE",
+		"WCHAR_UTF8_CHAR_CONV",
+		"GAMEWORLD_UPDATE_READ_ONLY"
+	}
+
 	filter "configurations:Debug"
 		links
 		{
@@ -180,12 +190,7 @@ project "engine"
 
 		defines
 		{
-			--"ENGINE_BUILD_DLL",
-			"DEBUG_DRAW",
 			"WINDOWS_APP",
-			"GLFW_INCLUDE_NONE",
-			"MULTITHREAD_UPDATE",
-			"GAMEWORLD_UPDATE_READ_ONLY",
 		}
 
 		postbuildcommands
@@ -279,6 +284,14 @@ project "application"
 	{
 		"engine"
 	}
+
+	defines
+	{
+		"DEBUG_DRAW",
+		"MULTITHREAD_UPDATE",
+		"WCHAR_UTF8_CHAR_CONV",
+		"GAMEWORLD_UPDATE_READ_ONLY"
+	}
 	
 	filter "system:windows"
 		cppdialect "C++20"
@@ -289,12 +302,8 @@ project "application"
 		
 		defines
 		{
-			"DEBUG_DRAW",
 			"WINDOWS_APP",
-			"MULTITHREAD_UPDATE",
-			"GAMEWORLD_UPDATE_READ_ONLY"
 		}
-
 
 		postbuildcommands
 		{

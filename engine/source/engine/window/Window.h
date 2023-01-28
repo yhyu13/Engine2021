@@ -60,7 +60,7 @@ namespace longmarch
 	class ENGINE_API Window 
 	{
 	public:
-		enum class CURSOR_MODE : int32_t
+		enum class CURSOR_MODE : uint8_t
 		{
 			None = 0,
 			NORMAL, // Disaply cursor and cursor has limited movement within the window

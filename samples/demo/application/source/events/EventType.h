@@ -4,7 +4,7 @@
 
 namespace longmarch
 {
-	enum class GameEventType : int32_t
+	enum class GameEventType : uint8_t
 	{
 		EMPTY = 0,
 		SOUND,									// Play sound event
@@ -18,7 +18,7 @@ namespace longmarch
 		NUM
 	};
 
-	enum class CS560EventType : int32_t
+	enum class CS560EventType : uint8_t
 	{
 		EMPTY = 0,
 		GEN_RND_PATH,
@@ -28,7 +28,7 @@ namespace longmarch
 		NUM
 	};
 
-	enum class Prototype2EventType : int32_t
+	enum class Prototype2EventType : uint8_t
 	{
 		EMPTY = 0,
 		GEN_PROJECTILE,
@@ -37,14 +37,14 @@ namespace longmarch
 		NUM
 	};
 
-	enum class GameDebugEventType : int32_t
+	enum class GameDebugEventType : uint8_t
 	{
 		EMPTY = 0,
 
 		NUM
 	};
 
-	enum class GameSettingEventType : int32_t
+	enum class GameSettingEventType : uint8_t
 	{
 		EMPTY = 0,
 		NUM
